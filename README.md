@@ -1,5 +1,16 @@
 # EduCore — College Management ERP
 
+<!-- Tech Stack Badges -->
+![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite_6-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js_18%2B-43853D?style=for-the-badge&logo=node.js&logoColor=white)
+![Express.js](https://img.shields.io/badge/Express_4-404D59?style=for-the-badge&logo=express&logoColor=white)
+![MariaDB](https://img.shields.io/badge/MariaDB-003545?style=for-the-badge&logo=mariadb&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=JSON%20web%20tokens&logoColor=white)
+
 A full-stack college/ERP system built for **EduCore**: student admissions, fee collection & receipts, scholarships, a drag-free dynamic form builder, campus notices, and admin reporting — all behind role-based auth.
 
 Built with **React 19 + TypeScript** on the front end and an **Express + TypeScript** API on the back, with a database layer that talks to **MariaDB in production** and transparently falls back to a **file-persisted SQLite store** for local development — so it runs with zero external setup.
@@ -78,6 +89,11 @@ The app serves both the API and the React frontend from a single Express process
 | Admin | `admin` | `admin123` |
 | Student | `aryan` | `student123` |
 | Staff | `staff01` | `staff123` |
+
+<img width="1902" height="923" alt="Screenshot 2026-08-21 223127" src="https://github.com/user-attachments/assets/609bb1f1-cf19-4888-8681-15784eccbdcc" />
+
+<img width="1899" height="910" alt="Screenshot 2026-08-21 224159" src="https://github.com/user-attachments/assets/4549354e-42dd-40bc-ad4c-96a2d27564e2" />
+
 
 ### Available scripts
 
