@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+
+# Local SQLite database (auto-generated fallback store)
+database/*.sqlite
+database/*.sqlite3
+database/*.db
+
+# Uploaded files (scholarship documents, avatars, etc.)
+uploads/
+
+# Logs
+*.log
+npm-debug.log*
+logs/
+
+# Coverage / test output
+coverage/
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Package manager artifacts (keep one lockfile of your choice tracked;
+# uncomment whichever this project isn't using)
+# bun.lock
+# package-lock.json

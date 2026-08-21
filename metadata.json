@@ -1,0 +1,7 @@
+{
+  "name": "EduCore College Management",
+  "description": "Comprehensive college management ERP featuring student and admin dashboards, multi-step admissions, fee ledgers & receipts, scholarships, dynamic form builder, and master reports for EduCore.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
