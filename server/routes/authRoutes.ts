@@ -46,6 +46,15 @@ authRouter.post('/login', authLimiter, async (req: Request, res: Response): Prom
     return;
   }
 
+  // Block staff accounts unconditionally from logging into this application
+  if (user.role === 'staff') {
+    res.status(403).json({
+      success: false,
+      error: 'Staff accounts are not authorized to access this application.',
+    });
+    return;
+  }
+
   // If role is specified, verify it matches
   if (role && user.role !== role) {
     res.status(403).json({

@@ -42,7 +42,7 @@ export function generateToken(user: User): string {
   );
 }
 
-export function authenticateToken(req: AuthRequest, res: Response, next: NextFunction): void {
+export async function authenticateToken(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
 
@@ -54,9 +54,13 @@ export function authenticateToken(req: AuthRequest, res: Response, next: NextFun
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as AuthRequest['user'];
     // Verify user still exists and is active in DB
-    const userInDb = db.users.find(u => u.id === decoded?.id && u.is_active);
-    if (!userInDb) {
+    const userInDb = await db.findUserById(decoded?.id) || db.users.find(u => u.id === decoded?.id && u.is_active);
+    if (!userInDb || !userInDb.is_active) {
       res.status(401).json({ success: false, error: 'User account not found or deactivated.' });
+      return;
+    }
+    if (userInDb.role === 'staff') {
+      res.status(403).json({ success: false, error: 'Staff accounts are not authorized to access this application.' });
       return;
     }
     req.user = {
