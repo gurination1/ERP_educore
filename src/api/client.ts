@@ -125,6 +125,17 @@ export const api = {
   // Notices
   getNotices: () => apiRequest('/api/notices'),
 
+  // AI Suite (Gemini Infused)
+  getAIStatus: () => apiRequest('/api/ai/status'),
+  parseAdmissionAI: (text: string) =>
+    apiRequest('/api/ai/parse-admission', { method: 'POST', body: JSON.stringify({ text }) }),
+  recommendFeeAI: (studentData: any, courseId?: string) =>
+    apiRequest('/api/ai/recommend-fee', { method: 'POST', body: JSON.stringify({ studentData, courseId }) }),
+  generateFeeNoticeAI: (studentId: string, urgency?: string) =>
+    apiRequest('/api/ai/fee-notice', { method: 'POST', body: JSON.stringify({ studentId, urgency }) }),
+  askCopilotAI: (query: string) =>
+    apiRequest('/api/ai/copilot', { method: 'POST', body: JSON.stringify({ query }) }),
+
   // Health
   getHealth: () => apiRequest('/api/health'),
 };

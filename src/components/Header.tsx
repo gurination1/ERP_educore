@@ -7,6 +7,7 @@ interface HeaderProps {
   onNavigate: (screen: ActiveScreen) => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
+  onOpenCopilot?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -14,6 +15,7 @@ export const Header: React.FC<HeaderProps> = ({
   onNavigate,
   searchQuery,
   onSearchChange,
+  onOpenCopilot,
 }) => {
   return (
     <header
@@ -39,6 +41,17 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Action icons & user profile */}
       <div className="flex items-center gap-3">
+        {/* AI Campus Copilot Button */}
+        <button
+          id="ai-copilot-btn"
+          type="button"
+          onClick={() => onOpenCopilot && onOpenCopilot()}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-linear-to-r from-[#00236f] to-[#1a4bb0] text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-all cursor-pointer"
+          title="Ask EduCore AI Campus Copilot"
+        >
+          <span className="material-symbols-outlined text-[17px] text-amber-300">smart_toy</span>
+          <span className="hidden sm:inline">AI Copilot</span>
+        </button>
         {/* Notifications Icon */}
         <button
           id="notifications-bell-btn"

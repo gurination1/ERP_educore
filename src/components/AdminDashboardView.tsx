@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import { ActiveScreen } from '../types';
+import { AIFeeNoticeModal } from './AIFeeNoticeModal';
 
 interface AdminDashboardViewProps {
   onNavigate: (screen: ActiveScreen) => void;
@@ -13,6 +14,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
 }) => {
   const [selectedCourse, setSelectedCourse] = useState('All Courses');
   const [selectedSemester, setSelectedSemester] = useState('Current Semester');
+  const [showAINotice, setShowAINotice] = useState(false);
+  const [selectedDefaulter, setSelectedDefaulter] = useState<any | null>(null);
   const [kpiData, setKpiData] = useState<any>({
     totalCollectedFormatted: '₹ 2.4 Cr',
     totalCollectedGrowth: '+12% vs last month',
@@ -310,19 +313,32 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                     <h4 className="text-xs font-bold text-[#191c1d]">{def.studentName}</h4>
                     <p className="text-[11px] text-[#757682] mt-0.5">{def.courseInfo}</p>
                   </div>
-                  <div className="text-right">
-                    <span className="text-xs font-bold text-[#191c1d] block">
-                      {def.dueAmountFormatted}
-                    </span>
-                    <span
-                      className={`inline-block mt-0.5 px-2 py-0.5 rounded text-[9px] font-extrabold uppercase ${
-                        def.badgeType === 'error'
-                          ? 'bg-[#ffdad6] text-[#ba1a1a]'
-                          : 'bg-[#fef3c7] text-[#b45309]'
-                      }`}
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <span className="text-xs font-bold text-[#191c1d] block">
+                        {def.dueAmountFormatted}
+                      </span>
+                      <span
+                        className={`inline-block mt-0.5 px-2 py-0.5 rounded text-[9px] font-extrabold uppercase ${
+                          def.badgeType === 'error'
+                            ? 'bg-[#ffdad6] text-[#ba1a1a]'
+                            : 'bg-[#fef3c7] text-[#b45309]'
+                        }`}
+                      >
+                        {def.status}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedDefaulter(def);
+                        setShowAINotice(true);
+                      }}
+                      className="p-1.5 bg-[#dce1ff] text-[#00236f] hover:bg-[#b6c4ff] rounded-lg transition-colors cursor-pointer"
+                      title="Generate AI Recovery Notice with Gemini"
                     >
-                      {def.status}
-                    </span>
+                      <span className="material-symbols-outlined text-[16px]">auto_awesome</span>
+                    </button>
                   </div>
                 </div>
               ))}
@@ -340,6 +356,16 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           </div>
         </div>
       </div>
+
+      {selectedDefaulter && (
+        <AIFeeNoticeModal
+          isOpen={showAINotice}
+          onClose={() => setShowAINotice(false)}
+          studentId={selectedDefaulter.id}
+          studentName={selectedDefaulter.studentName}
+          dueAmount={selectedDefaulter.dueAmount || 45000}
+        />
+      )}
     </div>
   );
 };

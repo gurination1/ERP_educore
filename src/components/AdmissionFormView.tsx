@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../api/client';
+import { AIAssistantModal } from './AIAssistantModal';
 
 interface AdmissionFormViewProps {
   onApplicationSubmitted?: (data: any) => void;
@@ -11,6 +12,8 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({ onApplicat
   const [draftSavedMsg, setDraftSavedMsg] = useState<string | null>(null);
   const [submittedSuccess, setSubmittedSuccess] = useState<any | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [showAIAssistant, setShowAIAssistant] = useState(false);
+  const [aiExtractedBadge, setAiExtractedBadge] = useState<any | null>(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -39,6 +42,32 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({ onApplicat
 
   const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleApplyAIData = (extracted: any) => {
+    setFormData(prev => ({
+      ...prev,
+      firstName: extracted.firstName || prev.firstName,
+      lastName: extracted.lastName || prev.lastName,
+      email: extracted.email || prev.email,
+      phone: extracted.phone || prev.phone,
+      gender: extracted.gender || prev.gender,
+      dob: extracted.dob || prev.dob,
+      guardianName: extracted.guardianName || prev.guardianName,
+      relationship: extracted.relationship || prev.relationship,
+      guardianPhone: extracted.guardianPhone || prev.guardianPhone,
+      courseId: extracted.courseId || prev.courseId,
+      previousSchool: extracted.previousSchool || prev.previousSchool,
+      previousScore: extracted.previousScore || prev.previousScore,
+    }));
+    setAiExtractedBadge({
+      meritScore: extracted.meritScore,
+      quota: extracted.recommendedQuota,
+      summary: extracted.aiSummary,
+      courseName: extracted.courseName,
+    });
+    setDraftSavedMsg('✨ Form populated instantly via Gemini AI Admission Intelligence!');
+    setTimeout(() => setDraftSavedMsg(null), 5000);
   };
 
   const handleSaveDraft = async () => {
@@ -178,13 +207,43 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({ onApplicat
 
   return (
     <div id="student-admission-screen" className="p-8 max-w-5xl mx-auto space-y-6 animate-fadeIn">
-      {/* Page Title */}
-      <div>
-        <h2 className="text-2xl font-bold text-[#191c1d] tracking-tight">Student Admission</h2>
-        <p className="text-sm text-[#444651] mt-1">
-          Complete the multi-step admission enrollment process for the academic session 2025-26.
-        </p>
+      {/* Page Title & AI Action Button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-[#191c1d] tracking-tight">Student Admission</h2>
+          <p className="text-sm text-[#444651] mt-1">
+            Complete the multi-step admission enrollment process for the academic session 2025-26.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowAIAssistant(true)}
+          className="px-4 py-2.5 bg-linear-to-r from-[#00236f] to-[#1a4bb0] text-white text-xs font-bold rounded-xl shadow-md hover:brightness-110 flex items-center gap-2 transition-all shrink-0 cursor-pointer"
+        >
+          <span className="material-symbols-outlined text-[18px] text-amber-300">auto_awesome</span>
+          AI Smart Auto-Fill
+        </button>
       </div>
+
+      {/* AI Extracted Banner if active */}
+      {aiExtractedBadge && (
+        <div className="p-4 bg-linear-to-r from-emerald-50 via-teal-50 to-blue-50 border border-emerald-200 rounded-xl flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-emerald-600 text-[24px]">verified</span>
+            <div>
+              <p className="text-xs font-bold text-emerald-900">
+                AI Parsed Profile: {formData.firstName} {formData.lastName}
+              </p>
+              <p className="text-[11px] text-emerald-700">
+                Merit Rating: <span className="font-bold">{aiExtractedBadge.meritScore || 90}%</span> • Quota: <span className="font-semibold uppercase">{aiExtractedBadge.quota || 'Merit'}</span>
+              </p>
+            </div>
+          </div>
+          <span className="text-[10px] px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full font-bold">
+            Gemini Infused
+          </span>
+        </div>
+      )}
 
       {/* 3-Step Progress Header */}
       <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
@@ -672,6 +731,12 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({ onApplicat
           </form>
         )}
       </div>
+
+      <AIAssistantModal
+        isOpen={showAIAssistant}
+        onClose={() => setShowAIAssistant(false)}
+        onApplyData={handleApplyAIData}
+      />
     </div>
   );
 };

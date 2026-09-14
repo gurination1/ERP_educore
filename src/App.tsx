@@ -17,6 +17,7 @@ import { PayNowModal } from './components/PayNowModal';
 import { ForgotPasswordModal } from './components/ForgotPasswordModal';
 import { EmailRemindersModal } from './components/EmailRemindersModal';
 import { StudentProfileModal } from './components/StudentProfileModal';
+import { AICopilotModal } from './components/AICopilotModal';
 
 interface LayoutProps {
   currentUser: User | null;
@@ -35,6 +36,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [showCopilot, setShowCopilot] = useState(false);
 
   const getActiveScreenFromPath = (path: string): ActiveScreen => {
     switch (path) {
@@ -85,9 +87,15 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
           onNavigate={handleNavigate}
           searchQuery={searchQuery}
           onSearchChange={onSearchChange}
+          onOpenCopilot={() => setShowCopilot(true)}
         />
         <main className="flex-1 pb-16">{children}</main>
       </div>
+
+      <AICopilotModal
+        isOpen={showCopilot}
+        onClose={() => setShowCopilot(false)}
+      />
     </div>
   );
 };
