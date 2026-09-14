@@ -18,7 +18,7 @@ RUN npm ci --omit=dev
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/database ./database
-COPY --from=builder /app/uploads ./uploads
+RUN mkdir -p uploads
 
 EXPOSE 3000
 
