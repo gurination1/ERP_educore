@@ -13,6 +13,7 @@ build/
 
 # Local SQLite database (auto-generated fallback store)
 database/*.sqlite
+!database/educore-seed.sqlite
 database/*.sqlite3
 database/*.db
 

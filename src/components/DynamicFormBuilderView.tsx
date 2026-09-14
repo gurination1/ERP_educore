@@ -13,6 +13,8 @@ export const DynamicFormBuilderView: React.FC<DynamicFormBuilderViewProps> = ({ 
   const [formResponses, setFormResponses] = useState<Record<string, any>>({});
   const [submissionSuccess, setSubmissionSuccess] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [submissions, setSubmissions] = useState<any[]>([]);
+  const [previewMode, setPreviewMode] = useState<boolean>(!isAdmin);
 
   // Admin New Form State
   const [isCreatingNew, setIsCreatingNew] = useState(false);
@@ -37,6 +39,18 @@ export const DynamicFormBuilderView: React.FC<DynamicFormBuilderViewProps> = ({ 
   useEffect(() => {
     loadForms();
   }, []);
+
+  useEffect(() => {
+    if (selectedForm && isAdmin) {
+      api.getFormSubmissions(selectedForm.id).then(res => {
+        if (res.success && res.submissions) {
+          setSubmissions(res.submissions);
+        } else {
+          setSubmissions([]);
+        }
+      });
+    }
+  }, [selectedForm, isAdmin]);
 
   const handleAddField = () => {
     setNewFields(prev => [
@@ -317,11 +331,24 @@ export const DynamicFormBuilderView: React.FC<DynamicFormBuilderViewProps> = ({ 
           {selectedForm ? (
             <div>
               <div className="border-b border-[#f3f4f5] pb-4">
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 bg-[#86f2e4]/30 text-[#006a61] rounded text-xs font-bold">
-                    {selectedForm.form_code}
-                  </span>
-                  <h3 className="text-lg font-bold text-[#191c1d]">{selectedForm.title}</h3>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 bg-[#86f2e4]/30 text-[#006a61] rounded text-xs font-bold">
+                      {selectedForm.form_code}
+                    </span>
+                    <h3 className="text-lg font-bold text-[#191c1d]">{selectedForm.title}</h3>
+                  </div>
+                  {isAdmin && (
+                    <button
+                      onClick={() => setPreviewMode(!previewMode)}
+                      className="px-3 py-1.5 bg-[#f3f4f5] hover:bg-[#e1e3e4] text-[#191c1d] rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[15px]">
+                        {previewMode ? 'format_list_bulleted' : 'edit_note'}
+                      </span>
+                      <span>{previewMode ? 'View Submissions' : 'Preview Student Form'}</span>
+                    </button>
+                  )}
                 </div>
                 <p className="text-xs text-[#757682] mt-1">{selectedForm.description}</p>
               </div>
@@ -341,67 +368,126 @@ export const DynamicFormBuilderView: React.FC<DynamicFormBuilderViewProps> = ({ 
                 </div>
               )}
 
-              {/* Dynamic JSON Schema Render Form */}
-              <form onSubmit={handleSubmitStudentResponse} className="mt-6 space-y-4 text-xs">
-                {selectedForm.schema_json?.map((field, idx) => (
-                  <div key={idx} className="space-y-1.5">
-                    <label className="block font-bold text-[#191c1d]">
-                      {field.label}{' '}
-                      {field.required && <span className="text-[#ba1a1a]">*</span>}
-                    </label>
-
-                    {field.type === 'textarea' ? (
-                      <textarea
-                        rows={3}
-                        required={field.required}
-                        value={formResponses[field.name] || ''}
-                        onChange={e =>
-                          setFormResponses(prev => ({ ...prev, [field.name]: e.target.value }))
-                        }
-                        placeholder={field.placeholder || ''}
-                        className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
-                      />
-                    ) : field.type === 'select' ? (
-                      <select
-                        required={field.required}
-                        value={formResponses[field.name] || ''}
-                        onChange={e =>
-                          setFormResponses(prev => ({ ...prev, [field.name]: e.target.value }))
-                        }
-                        className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
-                      >
-                        <option value="">Select option...</option>
-                        {field.options?.map((opt, oIdx) => (
-                          <option key={oIdx} value={opt}>
-                            {opt}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type={field.type}
-                        required={field.required}
-                        value={formResponses[field.name] || ''}
-                        onChange={e =>
-                          setFormResponses(prev => ({ ...prev, [field.name]: e.target.value }))
-                        }
-                        placeholder={field.placeholder || ''}
-                        className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
-                      />
-                    )}
+              {/* If Admin and not in preview mode: show real student submissions */}
+              {isAdmin && !previewMode ? (
+                <div className="mt-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-bold text-[#191c1d]">Student Submissions & Responses</h4>
+                      <p className="text-xs text-[#757682]">Real-time audit of submitted student survey entries</p>
+                    </div>
+                    <span className="px-3 py-1 bg-[#dce1ff] text-[#00236f] rounded-full text-xs font-bold">
+                      {submissions.length} Total Submissions
+                    </span>
                   </div>
-                ))}
 
-                <div className="pt-4 border-t border-[#f3f4f5] flex justify-end">
-                  <button
-                    type="submit"
-                    className="px-6 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-colors shadow-xs cursor-pointer flex items-center gap-1.5"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">send</span>
-                    <span>Submit Form Response</span>
-                  </button>
+                  {submissions.length === 0 ? (
+                    <div className="p-8 text-center text-xs text-[#757682] bg-[#f8f9fa] rounded-xl border border-dashed border-[#e1e3e4]">
+                      No student responses recorded yet for this dynamic form.
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto border border-[#e1e3e4] rounded-xl">
+                      <table className="w-full text-left border-collapse text-xs">
+                        <thead>
+                          <tr className="bg-[#f8f9fa] border-b border-[#e1e3e4] text-[11px] font-bold text-[#757682] uppercase">
+                            <th className="py-2.5 px-3">Student Submitter</th>
+                            <th className="py-2.5 px-3">Submitted At</th>
+                            <th className="py-2.5 px-3">Form Answers</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#f3f4f5]">
+                          {submissions.map((sub, sIdx) => (
+                            <tr key={sub.id || sIdx} className="hover:bg-[#f8f9fa]">
+                              <td className="py-3 px-3">
+                                <div className="font-bold text-[#191c1d]">{sub.userName}</div>
+                                <div className="text-[10px] text-[#757682]">{sub.userEmail}</div>
+                              </td>
+                              <td className="py-3 px-3 text-[#757682]">
+                                {new Date(sub.submitted_at).toLocaleString('en-IN', {
+                                  dateStyle: 'short',
+                                  timeStyle: 'short',
+                                })}
+                              </td>
+                              <td className="py-3 px-3">
+                                <div className="space-y-1">
+                                  {Object.entries(sub.response_json || {}).map(([k, v]) => (
+                                    <div key={k} className="text-[11px]">
+                                      <span className="font-semibold text-[#444651]">{k}:</span>{' '}
+                                      <span className="text-[#00236f] font-medium">{String(v)}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
-              </form>
+              ) : (
+                /* Dynamic JSON Schema Render Form */
+                <form onSubmit={handleSubmitStudentResponse} className="mt-6 space-y-4 text-xs">
+                  {selectedForm.schema_json?.map((field, idx) => (
+                    <div key={idx} className="space-y-1.5">
+                      <label className="block font-bold text-[#191c1d]">
+                        {field.label}{' '}
+                        {field.required && <span className="text-[#ba1a1a]">*</span>}
+                      </label>
+
+                      {field.type === 'textarea' ? (
+                        <textarea
+                          rows={3}
+                          required={field.required}
+                          value={formResponses[field.name] || ''}
+                          onChange={e =>
+                            setFormResponses(prev => ({ ...prev, [field.name]: e.target.value }))
+                          }
+                          placeholder={field.placeholder || ''}
+                          className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+                        />
+                      ) : field.type === 'select' ? (
+                        <select
+                          required={field.required}
+                          value={formResponses[field.name] || ''}
+                          onChange={e =>
+                            setFormResponses(prev => ({ ...prev, [field.name]: e.target.value }))
+                          }
+                          className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+                        >
+                          <option value="">Select option...</option>
+                          {field.options?.map((opt, oIdx) => (
+                            <option key={oIdx} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type={field.type}
+                          required={field.required}
+                          value={formResponses[field.name] || ''}
+                          onChange={e =>
+                            setFormResponses(prev => ({ ...prev, [field.name]: e.target.value }))
+                          }
+                          placeholder={field.placeholder || ''}
+                          className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+                        />
+                      )}
+                    </div>
+                  ))}
+
+                  <div className="pt-4 border-t border-[#f3f4f5] flex justify-end">
+                    <button
+                      type="submit"
+                      className="px-6 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-colors shadow-xs cursor-pointer flex items-center gap-1.5"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">send</span>
+                      <span>Submit Form Response</span>
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           ) : (
             <p className="text-center text-[#757682] py-12">

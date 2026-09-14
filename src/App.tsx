@@ -7,6 +7,7 @@ import { Header } from './components/Header';
 import { StudentDashboardView } from './components/StudentDashboardView';
 import { LoginView } from './components/LoginView';
 import { AdmissionFormView } from './components/AdmissionFormView';
+import { AdmissionsAdminView } from './components/AdmissionsAdminView';
 import { AdminDashboardView } from './components/AdminDashboardView';
 import { ManageStudentsView } from './components/ManageStudentsView';
 import { FeeLedgerView } from './components/FeeLedgerView';
@@ -338,11 +339,17 @@ function MainApp() {
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
               >
-                <AdmissionFormView
-                  onApplicationSubmitted={() => {
-                    navigate('/dashboard');
-                  }}
-                />
+                {currentUser.role === 'admin' ? (
+                  <AdmissionsAdminView
+                    onSelectStudent={student => setViewingStudent(student)}
+                  />
+                ) : (
+                  <AdmissionFormView
+                    onApplicationSubmitted={() => {
+                      navigate('/dashboard');
+                    }}
+                  />
+                )}
               </AuthenticatedLayout>
             )
           }

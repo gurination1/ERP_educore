@@ -7,10 +7,20 @@ interface ScholarshipsViewProps {
 }
 
 export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser }) => {
+  const isAdmin = currentUser?.role === 'admin';
   const [schemes, setSchemes] = useState<ScholarshipScheme[]>([]);
   const [applications, setApplications] = useState<ScholarshipApp[]>([]);
-  const [activeTab, setActiveTab] = useState<'schemes' | 'applications'>('schemes');
+  const [activeTab, setActiveTab] = useState<'schemes' | 'applications'>(currentUser?.role === 'admin' ? 'applications' : 'schemes');
   const [selectedScheme, setSelectedScheme] = useState<ScholarshipScheme | null>(null);
+
+  // Admin New Scheme state
+  const [isCreatingScheme, setIsCreatingScheme] = useState(false);
+  const [newSchemeTitle, setNewSchemeTitle] = useState('');
+  const [newSchemeCode, setNewSchemeCode] = useState('');
+  const [newSchemeAmount, setNewSchemeAmount] = useState('45000');
+  const [newSchemeDeadline, setNewSchemeDeadline] = useState('2025-12-31');
+  const [newSchemeCriteria, setNewSchemeCriteria] = useState('');
+  const [newSchemeDesc, setNewSchemeDesc] = useState('');
 
   // Application form state
   const [income, setIncome] = useState('350000');
@@ -23,8 +33,6 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
   const [reviewApp, setReviewApp] = useState<ScholarshipApp | null>(null);
   const [adminRemarks, setAdminRemarks] = useState('');
   const [isReviewing, setIsReviewing] = useState(false);
-
-  const isAdmin = currentUser?.role === 'admin';
 
   const loadData = async () => {
     const resSchemes = await api.getScholarshipSchemes();
@@ -85,41 +93,90 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
     }
   };
 
+  const handleCreateScheme = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSchemeTitle || !newSchemeAmount) return;
+    try {
+      const res = await api.createScholarshipScheme({
+        title: newSchemeTitle,
+        code: newSchemeCode || `SCH-${Date.now().toString().slice(-4)}`,
+        award_amount: parseFloat(newSchemeAmount),
+        deadline: newSchemeDeadline,
+        eligibility_criteria: newSchemeCriteria || 'Academic merit and verified financial eligibility.',
+        description: newSchemeDesc || 'Institutional scholarship endowment.',
+      });
+      if (res.success) {
+        setIsCreatingScheme(false);
+        setNewSchemeTitle('');
+        setNewSchemeCode('');
+        setNewSchemeCriteria('');
+        setNewSchemeDesc('');
+        loadData();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const totalDisbursed = applications
+    .filter(a => a.status === 'approved')
+    .reduce((acc, a) => {
+      const scheme = schemes.find(s => s.id === a.scheme_id || s.title === a.schemeTitle);
+      return acc + (scheme?.award_amount || 40000);
+    }, 0);
+
+  const pendingCount = applications.filter(a => a.status === 'submitted' || a.status === 'under_review').length;
+  const approvedCount = applications.filter(a => a.status === 'approved').length;
+
   return (
     <div id="scholarships-screen" className="p-8 max-w-7xl mx-auto space-y-6 animate-fadeIn">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-[#191c1d] tracking-tight">
-            Institutional Scholarships & Financial Schemes
+            {isAdmin ? 'Scholarships & Financial Aid Governance' : 'Institutional Scholarships & Financial Schemes'}
           </h2>
           <p className="text-sm text-[#444651] mt-1">
-            Explore grant opportunities, submit fee concession requests, and track committee status.
+            {isAdmin
+              ? 'Adjudicate student grant requests, manage endowment schemes, and allocate institutional fee concessions.'
+              : 'Explore grant opportunities, submit fee concession requests, and track committee status.'}
           </p>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="flex items-center p-1 bg-white border border-[#e1e3e4] rounded-lg shadow-xs">
-          <button
-            onClick={() => setActiveTab('schemes')}
-            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${
-              activeTab === 'schemes'
-                ? 'bg-[#00236f] text-white'
-                : 'text-[#444651] hover:text-[#191c1d]'
-            }`}
-          >
-            Available Schemes ({schemes.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('applications')}
-            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${
-              activeTab === 'applications'
-                ? 'bg-[#00236f] text-white'
-                : 'text-[#444651] hover:text-[#191c1d]'
-            }`}
-          >
-            Track Applications ({applications.length})
-          </button>
+        <div className="flex items-center gap-3">
+          {isAdmin && (
+            <button
+              onClick={() => setIsCreatingScheme(true)}
+              className="px-4 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[16px]">add</span>
+              <span>Create Scheme</span>
+            </button>
+          )}
+
+          {/* Tab Switcher */}
+          <div className="flex items-center p-1 bg-white border border-[#e1e3e4] rounded-lg shadow-xs">
+            <button
+              onClick={() => setActiveTab('schemes')}
+              className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${
+                activeTab === 'schemes'
+                  ? 'bg-[#00236f] text-white'
+                  : 'text-[#444651] hover:text-[#191c1d]'
+              }`}
+            >
+              Available Schemes ({schemes.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('applications')}
+              className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${
+                activeTab === 'applications'
+                  ? 'bg-[#00236f] text-white'
+                  : 'text-[#444651] hover:text-[#191c1d]'
+              }`}
+            >
+              {isAdmin ? 'Adjudication Queue' : 'Track Applications'} ({applications.length})
+            </button>
+          </div>
         </div>
       </div>
 
@@ -127,6 +184,32 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
         <div className="p-3.5 bg-[#86f2e4]/30 border border-[#86f2e4] text-[#006a61] rounded-xl text-xs font-bold flex items-center gap-2">
           <span className="material-symbols-outlined text-[18px]">check_circle</span>
           <span>{applySuccessMsg}</span>
+        </div>
+      )}
+
+      {/* Admin Executive Summary Banner on Applications Tab */}
+      {isAdmin && activeTab === 'applications' && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
+            <span className="text-[10px] uppercase font-bold text-[#757682]">Total Applications</span>
+            <h4 className="text-2xl font-black text-[#191c1d] mt-1">{applications.length}</h4>
+            <p className="text-[11px] text-[#757682] mt-0.5">Across all departments</p>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
+            <span className="text-[10px] uppercase font-bold text-[#b45309]">Pending Adjudication</span>
+            <h4 className="text-2xl font-black text-[#b45309] mt-1">{pendingCount}</h4>
+            <p className="text-[11px] text-[#757682] mt-0.5">Requires committee review</p>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
+            <span className="text-[10px] uppercase font-bold text-[#006a61]">Approved Grants</span>
+            <h4 className="text-2xl font-black text-[#006a61] mt-1">{approvedCount}</h4>
+            <p className="text-[11px] text-[#757682] mt-0.5">Fee waivers credited</p>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
+            <span className="text-[10px] uppercase font-bold text-[#00236f]">Total Disbursed Aid</span>
+            <h4 className="text-2xl font-black text-[#00236f] mt-1">₹ {totalDisbursed.toLocaleString('en-IN')}</h4>
+            <p className="text-[11px] text-[#757682] mt-0.5">Approved allocations</p>
+          </div>
         </div>
       )}
 
@@ -163,12 +246,19 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                   </span>
                 </div>
 
-                <button
-                  onClick={() => setSelectedScheme(scheme)}
-                  className="px-4 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-colors shadow-xs cursor-pointer"
-                >
-                  Apply Now
-                </button>
+                {isAdmin ? (
+                  <span className="px-3 py-1.5 bg-[#86f2e4]/30 text-[#006a61] rounded-lg text-xs font-bold flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[15px]">verified</span>
+                    <span>Active Scheme</span>
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => setSelectedScheme(scheme)}
+                    className="px-4 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-colors shadow-xs cursor-pointer"
+                  >
+                    Apply Now
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -391,6 +481,110 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                 Approve Grant
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Admin Create Scheme Modal */}
+      {isAdmin && isCreatingScheme && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-[#e1e3e4] space-y-4 animate-scaleUp">
+            <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
+              <div>
+                <h3 className="text-lg font-bold text-[#191c1d]">Create Scholarship Scheme</h3>
+                <p className="text-xs text-[#757682]">Define new institutional financial aid or grant endowment</p>
+              </div>
+              <button onClick={() => setIsCreatingScheme(false)} className="text-[#757682] hover:text-[#191c1d]">
+                <span className="material-symbols-outlined text-[22px]">close</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateScheme} className="space-y-3.5 text-xs">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-[#191c1d] mb-1">Scheme Title *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newSchemeTitle}
+                    onChange={e => setNewSchemeTitle(e.target.value)}
+                    placeholder="e.g. Dean's Academic Merit Fellowship"
+                    className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-[#191c1d] mb-1">Scheme Code</label>
+                  <input
+                    type="text"
+                    value={newSchemeCode}
+                    onChange={e => setNewSchemeCode(e.target.value)}
+                    placeholder="e.g. DEAN-MERIT-2025"
+                    className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-[#191c1d] mb-1">Award Amount (INR) *</label>
+                  <input
+                    type="number"
+                    required
+                    value={newSchemeAmount}
+                    onChange={e => setNewSchemeAmount(e.target.value)}
+                    className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-bold text-[#006a61]"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-[#191c1d] mb-1">Application Deadline *</label>
+                  <input
+                    type="date"
+                    required
+                    value={newSchemeDeadline}
+                    onChange={e => setNewSchemeDeadline(e.target.value)}
+                    className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#191c1d] mb-1">Eligibility Criteria</label>
+                <input
+                  type="text"
+                  value={newSchemeCriteria}
+                  onChange={e => setNewSchemeCriteria(e.target.value)}
+                  placeholder="e.g. Minimum 8.5 CGPA with no active backlogs"
+                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#191c1d] mb-1">Description</label>
+                <textarea
+                  rows={2}
+                  value={newSchemeDesc}
+                  onChange={e => setNewSchemeDesc(e.target.value)}
+                  placeholder="Details regarding endowment committee and criteria..."
+                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
+                />
+              </div>
+
+              <div className="pt-3 flex justify-end gap-2 border-t border-[#f3f4f5]">
+                <button
+                  type="button"
+                  onClick={() => setIsCreatingScheme(false)}
+                  className="px-4 py-2 border border-[#e1e3e4] rounded-lg font-semibold hover:bg-[#f8f9fa]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-[#00236f] text-white font-bold rounded-lg hover:bg-[#1e3a8a]"
+                >
+                  Publish Scheme
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

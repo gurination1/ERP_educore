@@ -79,7 +79,7 @@ export interface StudentFee {
   paid_amount: number;
   due_amount: number;
   due_date: string;
-  status: 'paid' | 'partial' | 'due' | 'overdue';
+  status: 'paid' | 'partial' | 'due' | 'overdue' | 'cancelled';
 }
 
 export interface Payment {
@@ -196,7 +196,7 @@ class DatabaseStore {
   public notices: Notice[] = [];
 
   public mode: 'mariadb' | 'sqlite' = 'sqlite';
-  private dbPath: string = path.join(process.cwd(), 'database', 'educore.sqlite');
+  private dbPath: string = process.env.DB_PATH || path.join(process.cwd(), 'database', 'educore.sqlite');
   private sqlDb: SqlJsDatabase | null = null;
   private mariaPool: mysql.Pool | null = null;
   private isInitialized: boolean = false;
@@ -208,48 +208,82 @@ class DatabaseStore {
   public async initialize(): Promise<void> {
     if (this.isInitialized) return;
 
-    // 1. Try MariaDB pool connection first
-    const host = process.env.DB_HOST || '127.0.0.1';
-    const port = parseInt(process.env.DB_PORT || '3306', 10);
-    const user = process.env.DB_USER || 'root';
-    const password = process.env.DB_PASSWORD || '';
-    const database = process.env.DB_NAME || 'educore_erp';
+    const seedPath = path.join(process.cwd(), 'database', 'educore-seed.sqlite');
 
-    try {
-      // First ensure database exists
-      const initConn = await mysql.createConnection({ host, port, user, password, connectTimeout: 3000 });
-      await initConn.query(`CREATE DATABASE IF NOT EXISTS \`${database}\``);
-      await initConn.end();
+    // 1. Try MariaDB/MySQL connection if DB_HOST / MYSQLHOST / MYSQL_URL / DATABASE_URL is configured
+    let host = process.env.DB_HOST || process.env.MYSQLHOST || '';
+    let port = parseInt(process.env.DB_PORT || process.env.MYSQLPORT || '3306', 10);
+    let user = process.env.DB_USER || process.env.MYSQLUSER || 'root';
+    let password = process.env.DB_PASSWORD || process.env.MYSQLPASSWORD || '';
+    let database = process.env.DB_NAME || process.env.MYSQLDATABASE || 'educore_erp';
 
-      const pool = mysql.createPool({
-        host,
-        port,
-        user,
-        password,
-        database,
-        connectTimeout: 3000,
-        waitForConnections: true,
-        connectionLimit: 10,
-      });
+    const rawUrl = process.env.MYSQL_URL || process.env.DATABASE_URL;
+    if (rawUrl && (rawUrl.startsWith('mysql://') || rawUrl.startsWith('mariadb://'))) {
+      try {
+        const u = new URL(rawUrl);
+        host = u.hostname;
+        port = parseInt(u.port || '3306', 10);
+        user = decodeURIComponent(u.username);
+        password = decodeURIComponent(u.password);
+        database = u.pathname.replace(/^\//, '') || database;
+      } catch (err: any) {
+        console.warn(`[DB] Failed to parse database URL: ${err.message}`);
+      }
+    }
 
-      const conn = await pool.getConnection();
-      await conn.ping();
-      conn.release();
+    if (host) {
+      try {
+        // First ensure database exists
+        const initConn = await mysql.createConnection({ host, port, user, password, connectTimeout: 5000 });
+        await initConn.query(`CREATE DATABASE IF NOT EXISTS \`${database}\``);
+        await initConn.end();
 
-      this.mariaPool = pool;
-      this.mode = 'mariadb';
-      console.log(`[DB] Connected successfully to MariaDB instance (${host}:${port}/${database}).`);
+        const pool = mysql.createPool({
+          host,
+          port,
+          user,
+          password,
+          database,
+          connectTimeout: 5000,
+          waitForConnections: true,
+          connectionLimit: 10,
+        });
 
-      // Create tables if not present and seed defaults
-      await this.createMariaDBTables();
-      await this.seedMariaDBDefaults();
+        const conn = await pool.getConnection();
+        await conn.ping();
+        conn.release();
 
-      this.isInitialized = true;
-      return;
-    } catch (err: any) {
-      console.warn(`[DB] MariaDB pool connection failed (${err.message}). Falling back to disk-persisted SQLite (sql.js).`);
-      this.mode = 'sqlite';
-      this.mariaPool = null;
+        this.mariaPool = pool;
+        this.mode = 'mariadb';
+        console.log(`[DB] Connected successfully to MariaDB/MySQL instance (${host}:${port}/${database}).`);
+
+        // Load seed data from educore-seed.sqlite if needed before seeding
+        if (fs.existsSync(seedPath)) {
+          try {
+            const SQL = await initSqlJs();
+            const seedBuffer = fs.readFileSync(seedPath);
+            const tempDb = new SQL.Database(seedBuffer);
+            const prevSqlDb = this.sqlDb;
+            this.sqlDb = tempDb;
+            this.loadFromSqlite();
+            this.sqlDb = prevSqlDb;
+            tempDb.close();
+          } catch (e: any) {
+            console.warn(`[DB] Could not load seed SQLite for MariaDB pre-population: ${e.message}`);
+          }
+        }
+
+        // Create tables if not present and seed defaults
+        await this.createMariaDBTables();
+        await this.seedMariaDBDefaults();
+
+        this.isInitialized = true;
+        return;
+      } catch (err: any) {
+        console.warn(`[DB] MariaDB/MySQL connection failed (${err.message}). Falling back to disk-persisted SQLite (sql.js).`);
+        this.mode = 'sqlite';
+        this.mariaPool = null;
+      }
     }
 
     // 2. SQLite Fallback via sql.js
@@ -260,11 +294,16 @@ class DatabaseStore {
         fs.mkdirSync(dbDir, { recursive: true });
       }
 
+      if (!fs.existsSync(this.dbPath) && fs.existsSync(seedPath)) {
+        console.log(`[DB] Copying pre-seeded database from ${seedPath} to ${this.dbPath}...`);
+        fs.copyFileSync(seedPath, this.dbPath);
+      }
+
       if (fs.existsSync(this.dbPath)) {
         const fileBuffer = fs.readFileSync(this.dbPath);
         this.sqlDb = new SQL.Database(fileBuffer);
         this.loadFromSqlite();
-        console.log(`[DB] Loaded persistent SQLite database from ${this.dbPath}.`);
+        console.log(`[DB] Loaded persistent SQLite database from ${this.dbPath} (${this.users.length} users, ${this.students.length} students).`);
       } else {
         this.sqlDb = new SQL.Database();
         this.createSqliteTables();

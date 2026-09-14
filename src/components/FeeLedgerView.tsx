@@ -13,40 +13,87 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
   onOpenPayModal,
   onOpenReceiptModal,
 }) => {
+  const isAdmin = !currentStudent;
+  const [studentList, setStudentList] = useState<any[]>([]);
+  const [selectedStudentId, setSelectedStudentId] = useState<string>(currentStudent?.id || 'stu-rec-001');
   const [ledgerData, setLedgerData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const studentId = currentStudent?.id || 'stu-rec-aryan';
+  useEffect(() => {
+    if (isAdmin) {
+      api.getStudents({ limit: 50 }).then(res => {
+        if (res.success && res.students && res.students.length > 0) {
+          setStudentList(res.students);
+          if (!currentStudent) {
+            setSelectedStudentId(res.students[0].id);
+          }
+        }
+      });
+    }
+  }, [isAdmin]);
+
+  const activeStudentId = currentStudent?.id || selectedStudentId;
 
   useEffect(() => {
+    if (!activeStudentId) return;
     setIsLoading(true);
-    api.getFeeLedger(studentId).then(res => {
+    api.getFeeLedger(activeStudentId).then(res => {
       if (res.success) {
         setLedgerData(res);
       }
       setIsLoading(false);
     });
-  }, [studentId]);
+  }, [activeStudentId]);
 
   return (
     <div id="fee-ledger-screen" className="p-8 max-w-7xl mx-auto space-y-6 animate-fadeIn">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-[#191c1d] tracking-tight">Institutional Fee Ledger</h2>
+          <h2 className="text-2xl font-bold text-[#191c1d] tracking-tight">
+            {isAdmin ? 'Institutional Fee Ledger & Audit' : 'Student Academic Fee Ledger'}
+          </h2>
           <p className="text-sm text-[#444651] mt-1">
-            Complete statement of semester tuition heads, scholarships, discounts, and payment history.
+            {isAdmin
+              ? 'Inspect student payment statements, tuition installments, and verified transaction receipts.'
+              : 'Complete statement of semester tuition heads, scholarships, discounts, and payment history.'}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => onOpenPayModal()}
-            className="px-5 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 shadow-xs cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-[18px]">credit_card</span>
-            <span>Make Fee Payment</span>
-          </button>
+          {isAdmin ? (
+            <>
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-bold text-[#757682] uppercase">Audit Account:</label>
+                <select
+                  value={selectedStudentId}
+                  onChange={e => setSelectedStudentId(e.target.value)}
+                  className="px-3 py-2 bg-white border border-[#e1e3e4] rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+                >
+                  {studentList.map(s => (
+                    <option key={s.id} value={s.id}>
+                      {s.student_id} — {s.first_name} {s.last_name} ({s.course?.code || 'Enrolled'})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                onClick={() => window.print()}
+                className="px-4 py-2 bg-white border border-[#e1e3e4] text-[#191c1d] rounded-lg text-xs font-bold hover:bg-[#f8f9fa] flex items-center gap-1.5 shadow-xs cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[16px]">print</span>
+                <span>Print Ledger</span>
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => onOpenPayModal()}
+              className="px-5 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 shadow-xs cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[18px]">credit_card</span>
+              <span>Make Fee Payment</span>
+            </button>
+          )}
         </div>
       </div>
 

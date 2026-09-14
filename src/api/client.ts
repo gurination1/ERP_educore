@@ -104,6 +104,8 @@ export const api = {
 
   // Scholarships
   getScholarshipSchemes: () => apiRequest('/api/scholarships/schemes'),
+  createScholarshipScheme: (schemeData: any) =>
+    apiRequest('/api/scholarships/schemes', { method: 'POST', body: JSON.stringify(schemeData) }),
   applyScholarship: (data: any) =>
     apiRequest('/api/scholarships/apply', { method: 'POST', body: JSON.stringify(data) }),
   getScholarshipApplications: (params: Record<string, any> = {}) => {
