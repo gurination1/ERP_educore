@@ -7,10 +7,10 @@ import { generateToken, authenticateToken, AuthRequest } from '../middleware/aut
 
 export const authRouter = Router();
 
-// Rate limiter for auth endpoints (generous for local dev)
+// Rate limiter for auth endpoints (generous for local dev & fleet testing)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
+  max: 10000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: 'Too many authentication attempts. Please try again later.' },
@@ -18,7 +18,8 @@ const authLimiter = rateLimit({
 
 // Zod schemas for auth inputs
 const loginSchema = z.object({
-  username: z.string({ required_error: 'Username / Email is required' }).min(1, 'Username / Email is required'),
+  username: z.string().optional(),
+  email: z.string().optional(),
   password: z.string({ required_error: 'Password is required' }).min(1, 'Password is required'),
   role: z.enum(['student', 'admin', 'staff']).optional(),
 });
@@ -36,10 +37,16 @@ authRouter.post('/login', authLimiter, async (req: Request, res: Response): Prom
     return;
   }
 
-  const { username, password, role } = parseResult.data;
+  const { username, email, password, role } = parseResult.data;
+  const loginIdentifier = (username || email || '').trim();
+
+  if (!loginIdentifier) {
+    res.status(400).json({ success: false, error: 'Username / Email is required' });
+    return;
+  }
 
   // Find user by username or email
-  const user = await db.findUserByUsernameOrEmail(username);
+  const user = await db.findUserByUsernameOrEmail(loginIdentifier);
 
   if (!user) {
     res.status(401).json({ success: false, error: 'No account found with this ID or Email.' });

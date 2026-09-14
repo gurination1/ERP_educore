@@ -164,7 +164,8 @@ Return ONLY a JSON object with this exact schema:
       console.error('[GeminiService] parseAdmission falling back to intelligent heuristic parser:', err.message);
 
       // Intelligent heuristic extraction from raw text
-      const nameMatch = rawText.match(/(?:Applicant|Candidate Name|Candidate|Name|Student Name)\s*[:\-]\s*([A-Za-z]+)\s+([A-Za-z]+)/i);
+      const nameMatch = rawText.match(/(?:My name is|Name is|Applicant Name|Candidate Name|Student Name)\s*[:\-]?\s*([A-Za-z]+)\s+([A-Za-z]+)/i) ||
+                        rawText.match(/(?:Applicant|Candidate|Student)\s*[:\-]\s*([A-Za-z]+)\s+([A-Za-z]+)/i);
       const emailMatch = rawText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
       const phoneMatch = rawText.match(/(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/);
       const dobMatch = rawText.match(/(\d{4}[-/.]\d{2}[-/.]\d{2})/);
@@ -306,7 +307,14 @@ Return ONLY a JSON object:
     try {
       const responseText = await callGemini(prompt, true);
       const cleanJson = responseText.replace(/```json\s*|\s*```/g, '').trim();
-      return JSON.parse(cleanJson);
+      const parsed = JSON.parse(cleanJson);
+      if (parsed.smsText && parsed.smsText.length > 160) {
+        parsed.smsText = parsed.smsText.substring(0, 157) + '...';
+      }
+      if (parsed.whatsappText && !parsed.whatsappText.includes('*')) {
+        parsed.whatsappText = `*EduCore University Fee Notice*\n${parsed.whatsappText}`;
+      }
+      return parsed;
     } catch (err: any) {
       console.error('[GeminiService] generateFeeNotice fallback:', err.message);
       return {
@@ -321,11 +329,38 @@ Return ONLY a JSON object:
   },
 
   /**
-   * AI Natural Language College ERP Assistant / Copilot
+   * AI Natural Language College ERP Assistant / Copilot (Role-Aware)
    */
   async copilotQuery(query: string, erpSnapshot: any): Promise<any> {
-    const prompt = `You are the EduCore AI Campus Intelligence Assistant for college administrators.
-Answer the question based on the live ERP snapshot below.
+    const isStudent = erpSnapshot.role === 'student';
+
+    const prompt = isStudent
+      ? `You are the EduCore AI Personal Student Advisor for college students.
+Assist the student with their personal academic journey, their fee payment status, upcoming dues, course attendance, and scholarship opportunities.
+DO NOT disclose any other students' confidential data or institutional financial totals.
+Address the student warmly as ${erpSnapshot.studentName || 'Student'}.
+
+Student Profile & Status:
+- Student Name: ${erpSnapshot.studentName}
+- Roll / ID: ${erpSnapshot.rollNo || 'Enrolled'}
+- Enrolled Program: ${erpSnapshot.courseName || 'Undergraduate Degree'} (Semester ${erpSnapshot.semester || 1})
+- Overall Attendance: ${erpSnapshot.attendancePercentage}% (Minimum 75% required for exam eligibility)
+- Total Academic Fees Payable: ₹${(erpSnapshot.totalFeesPayable || 0).toLocaleString('en-IN')}
+- Fees Paid to Date: ₹${(erpSnapshot.totalFeesPaid || 0).toLocaleString('en-IN')}
+- Outstanding Dues: ₹${(erpSnapshot.totalFeesDue || 0).toLocaleString('en-IN')} (Status: ${erpSnapshot.feeStatus || 'due'})
+- Active Scholarships: ${erpSnapshot.availableScholarships?.join(', ') || 'Merit and Need-based schemes available'}
+
+Student Inquired: "${query}"
+
+Return ONLY a JSON object:
+{
+  "answer": string (warm, encouraging, precise guidance in clean markdown),
+  "insights": string[] (2-3 bullet point tips for student success or pending deadlines),
+  "recommendedActions": string[] (1-2 next steps for student, e.g. "Pay pending fee of ₹45,000 via Fee Ledger", "Maintain attendance above 85%"),
+  "relevantMetric": string (e.g. "Attendance: ${erpSnapshot.attendancePercentage}%" or "Pending Fee: ₹${(erpSnapshot.totalFeesDue || 0).toLocaleString('en-IN')}")
+}`
+      : `You are the EduCore AI Campus Intelligence Assistant for college administrators, deans, and financial controllers.
+Answer the question based on the live institutional ERP snapshot below.
 
 ERP Snapshot:
 - Enrolled Students: ${erpSnapshot.totalStudents}
@@ -333,6 +368,7 @@ ERP Snapshot:
 - Outstanding Dues: ₹${(erpSnapshot.totalDue || 0).toLocaleString('en-IN')}
 - Active Courses: ${erpSnapshot.courses?.map((c: any) => `${c.code}: ${c.name}`).join(', ')}
 - Defaulters Count: ${erpSnapshot.defaulters?.length || 0}
+- Sample Defaulters: ${JSON.stringify(erpSnapshot.defaulters?.slice(0, 5) || [])}
 
 User Question: "${query}"
 
@@ -350,6 +386,24 @@ Return ONLY a JSON object:
       return JSON.parse(cleanJson);
     } catch (err: any) {
       console.error('[GeminiService] copilotQuery fallback:', err.message);
+      if (isStudent) {
+        return {
+          answer: `Hello ${erpSnapshot.studentName || 'Student'}! Here is your current academic and fee summary: You are enrolled in ${erpSnapshot.courseName || 'your degree program'} with an overall attendance of ${erpSnapshot.attendancePercentage}%. Your outstanding fee balance is ₹${(erpSnapshot.totalFeesDue || 0).toLocaleString('en-IN')}.`,
+          insights: [
+            `Current attendance: ${erpSnapshot.attendancePercentage}% (Above 75% exam eligibility requirement)`,
+            erpSnapshot.totalFeesDue > 0
+              ? `Pending fee due: ₹${(erpSnapshot.totalFeesDue || 0).toLocaleString('en-IN')} - Settle via Fee Ledger`
+              : 'All fees are cleared for the current semester',
+          ],
+          recommendedActions: [
+            erpSnapshot.totalFeesDue > 0 ? 'Click "Make Fee Payment" in Fee Ledger' : 'Check course syllabus in Academics',
+            'Explore Merit Scholarships in the Scholarships tab',
+          ],
+          relevantMetric: `Attendance: ${erpSnapshot.attendancePercentage}% • Due: ₹${(erpSnapshot.totalFeesDue || 0).toLocaleString('en-IN')}`,
+          isFallback: true,
+        };
+      }
+
       return {
         answer: `Based on current ERP records: There are ${erpSnapshot.totalStudents} enrolled students with ₹${(erpSnapshot.totalCollected || 0).toLocaleString('en-IN')} collected and ₹${(erpSnapshot.totalDue || 0).toLocaleString('en-IN')} in outstanding dues across active departments.`,
         insights: [

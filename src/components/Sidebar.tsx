@@ -63,12 +63,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: 'menu_book',
       badge: undefined,
     },
-    {
-      id: 'reports' as ActiveScreen,
-      label: 'Reports',
-      icon: 'analytics',
-      badge: undefined,
-    },
+    ...(isAdmin
+      ? [
+          {
+            id: 'reports' as ActiveScreen,
+            label: 'Reports',
+            icon: 'analytics',
+            badge: undefined,
+          },
+        ]
+      : []),
     {
       id: 'settings' as ActiveScreen,
       label: 'Settings',

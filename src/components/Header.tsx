@@ -8,6 +8,7 @@ interface HeaderProps {
   searchQuery: string;
   onSearchChange: (q: string) => void;
   onOpenCopilot?: () => void;
+  onLogout?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -16,6 +17,7 @@ export const Header: React.FC<HeaderProps> = ({
   searchQuery,
   onSearchChange,
   onOpenCopilot,
+  onLogout,
 }) => {
   return (
     <header
@@ -97,6 +99,20 @@ export const Header: React.FC<HeaderProps> = ({
             </p>
           </div>
         </div>
+
+        {/* Header Log Out Button */}
+        {onLogout && (
+          <button
+            id="header-logout-btn"
+            type="button"
+            onClick={onLogout}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-xs font-bold transition-all cursor-pointer ml-1"
+            title="Log Out of EduCore"
+          >
+            <span className="material-symbols-outlined text-[16px]">logout</span>
+            <span className="hidden sm:inline">Logout</span>
+          </button>
+        )}
       </div>
     </header>
   );

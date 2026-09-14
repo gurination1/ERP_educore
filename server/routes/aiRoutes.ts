@@ -130,19 +130,44 @@ aiRouter.post('/copilot', authenticateToken, async (req: AuthRequest, res: Respo
       }
     }
 
-    const erpSnapshot = {
-      totalStudents: students.length,
-      totalCollected,
-      totalDue,
-      courses: courses.map(c => ({ code: c.code, name: c.name, base_tuition_fee: c.base_tuition_fee })),
-      defaulters,
-      recentAdmissions: students.slice(-5).map(s => ({
-        name: `${s.first_name} ${s.last_name}`,
-        id: s.student_id,
-        admission_status: s.admission_status,
-        fees_status: s.fees_status,
-      })),
-    };
+    const isStudent = req.user?.role === 'student';
+    let erpSnapshot: any;
+
+    if (isStudent) {
+      const student = students.find(s => s.email.toLowerCase() === req.user?.email.toLowerCase() || s.user_id === req.user?.id) || students[0];
+      const studentFees = student ? await db.getStudentFees(student.id) : [];
+      const course = student ? courses.find(c => c.id === student.course_id) : null;
+      const schemes = await db.getSchemes();
+
+      erpSnapshot = {
+        role: 'student',
+        studentName: student ? `${student.first_name} ${student.last_name}` : req.user?.full_name,
+        rollNo: student?.student_id,
+        courseName: course?.name,
+        semester: student?.current_semester,
+        attendancePercentage: student?.attendance_percentage || 88,
+        totalFeesPayable: studentFees.reduce((acc, f) => acc + f.amount, 0),
+        totalFeesPaid: studentFees.reduce((acc, f) => acc + f.paid_amount, 0),
+        totalFeesDue: studentFees.reduce((acc, f) => acc + (f.status !== 'paid' ? f.due_amount : 0), 0),
+        feeStatus: student?.fees_status,
+        availableScholarships: schemes.slice(0, 3).map(sc => `${sc.title} (Award: ₹${sc.award_amount})`),
+      };
+    } else {
+      erpSnapshot = {
+        role: 'admin',
+        totalStudents: students.length,
+        totalCollected,
+        totalDue,
+        courses: courses.map(c => ({ code: c.code, name: c.name, base_tuition_fee: c.base_tuition_fee })),
+        defaulters,
+        recentAdmissions: students.slice(-5).map(s => ({
+          name: `${s.first_name} ${s.last_name}`,
+          id: s.student_id,
+          admission_status: s.admission_status,
+          fees_status: s.fees_status,
+        })),
+      };
+    }
 
     const response = await GeminiService.copilotQuery(query, erpSnapshot);
     res.json({

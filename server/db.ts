@@ -1132,6 +1132,31 @@ class DatabaseStore {
     return form;
   }
 
+  public async updateDynamicForm(id: string, updates: Partial<DynamicForm>): Promise<DynamicForm | null> {
+    if (this.mode === 'mariadb' && this.mariaPool) {
+      const keys = Object.keys(updates);
+      if (keys.length === 0) return this.getDynamicFormById(id);
+      const setClause = keys.map(k => `${k} = ?`).join(', ');
+      const values = keys.map(k => {
+        const val = (updates as any)[k];
+        if (k === 'is_published') return val ? 1 : 0;
+        if (k === 'schema_json') return JSON.stringify(val);
+        return val;
+      });
+      values.push(id);
+      await this.mariaPool.query(`UPDATE dynamic_forms SET ${setClause} WHERE id = ?`, values);
+      return this.getDynamicFormById(id);
+    }
+
+    const idx = this.dynamic_forms.findIndex(f => f.id === id || f.form_code === id);
+    if (idx !== -1) {
+      this.dynamic_forms[idx] = { ...this.dynamic_forms[idx], ...updates };
+      this.save();
+      return { ...this.dynamic_forms[idx] };
+    }
+    return null;
+  }
+
   public async getFormSubmissions(formId?: string, userId?: string): Promise<FormSubmission[]> {
     if (this.mode === 'mariadb' && this.mariaPool) {
       let sql = 'SELECT * FROM form_submissions WHERE 1=1';

@@ -62,13 +62,25 @@ admissionRouter.post(
       admissionYear,
     } = parseResult.data;
 
-    // Check if student already exists
+    // Check if student already exists (email or phone)
     const allStudents = await db.getStudents();
     const existing = allStudents.find(s => s.email.toLowerCase() === email.trim().toLowerCase());
     if (existing) {
       res.status(400).json({ success: false, error: 'An application with this email address already exists.' });
       return;
     }
+
+    const cleanPhone = phone.replace(/[\s+-]/g, '');
+    const existingPhone = allStudents.find(s => s.phone && s.phone.replace(/[\s+-]/g, '') === cleanPhone);
+    if (existingPhone) {
+      res.status(400).json({ success: false, error: 'An application with this phone number already exists.' });
+      return;
+    }
+
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+    const photoUrl = files?.photo?.[0] ? `/uploads/${files.photo[0].filename}` : undefined;
+    const transcriptUrl = files?.transcript?.[0] ? `/uploads/${files.transcript[0].filename}` : undefined;
+    const idProofUrl = files?.idProof?.[0] ? `/uploads/${files.idProof[0].filename}` : undefined;
 
     const generatedId = `STU-2025-${(allStudents.length + 1).toString().padStart(3, '0')}`;
     const courses = await db.getCourses();
@@ -122,6 +134,11 @@ admissionRouter.post(
       message: 'Student Admission application submitted successfully!',
       applicationNumber: generatedId,
       student: newStudent,
+      documents: {
+        photo: photoUrl || null,
+        transcript: transcriptUrl || null,
+        idProof: idProofUrl || null,
+      },
     });
   }
 );
@@ -162,7 +179,39 @@ admissionRouter.patch('/:id/status', authenticateToken, requireRole('admin'), as
     return;
   }
 
-  const updated = await db.updateStudent(student.id, { admission_status: status as any });
+  if (status === 'rejected') {
+    // Void/cancel any pending student fees so rejected applicant is never an active defaulter
+    const studentFees = await db.getStudentFees(student.id);
+    for (const sf of studentFees) {
+      if (sf.status !== 'paid') {
+        await db.updateStudentFee(sf.id, { due_amount: 0, status: 'cancelled' as any });
+      }
+    }
+    await db.updateStudent(student.id, { admission_status: 'rejected', fees_status: 'cancelled' as any });
+  } else if (status === 'approved') {
+    const studentFees = await db.getStudentFees(student.id);
+    if (studentFees.length === 0 || studentFees.every(sf => sf.status === 'cancelled')) {
+      const course = await db.getCourseById(student.course_id);
+      await db.createStudentFee({
+        id: `sf-${Date.now()}`,
+        student_id: student.id,
+        fee_head_id: 'fh-tuition',
+        session_id: student.session_id,
+        semester: student.current_semester || 1,
+        amount: course?.base_tuition_fee || 90000,
+        discount_amount: 0,
+        paid_amount: 0,
+        due_amount: course?.base_tuition_fee || 90000,
+        due_date: '2025-10-31',
+        status: 'due',
+      });
+    }
+    await db.updateStudent(student.id, { admission_status: 'approved', fees_status: 'due' });
+  } else {
+    await db.updateStudent(student.id, { admission_status: status as any });
+  }
+
+  const updated = await db.getStudentById(student.id);
 
   res.json({
     success: true,

@@ -20,6 +20,43 @@ feeRouter.get('/heads', authenticateToken, async (req: AuthRequest, res: Respons
   res.json({ success: true, feeHeads: heads });
 });
 
+// Admin: Assign Fee Head record to student (Multi-head fee management)
+feeRouter.post('/assign', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+  const { studentId, feeHeadId, amount, dueDate, semester } = req.body;
+  const allStudents = await db.getStudents();
+  const student = allStudents.find(s => s.id === studentId || s.student_id === studentId);
+  if (!student) {
+    res.status(404).json({ success: false, error: 'Student not found.' });
+    return;
+  }
+  const feeHead = (await db.getFeeHeads()).find(fh => fh.id === feeHeadId || fh.code === feeHeadId);
+  if (!feeHead) {
+    res.status(404).json({ success: false, error: 'Fee head not found.' });
+    return;
+  }
+  const numAmount = Number(amount);
+  if (isNaN(numAmount) || numAmount <= 0) {
+    res.status(400).json({ success: false, error: 'Amount must be a positive number.' });
+    return;
+  }
+  const newFeeRecord = {
+    id: `sf-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    student_id: student.id,
+    fee_head_id: feeHead.id,
+    session_id: student.session_id,
+    semester: semester || student.current_semester || 1,
+    amount: numAmount,
+    discount_amount: 0,
+    paid_amount: 0,
+    due_amount: numAmount,
+    due_date: dueDate || '2025-11-30',
+    status: 'due' as const,
+  };
+  await db.createStudentFee(newFeeRecord);
+  await db.updateStudent(student.id, { fees_status: 'due' });
+  res.status(201).json({ success: true, message: 'Fee record assigned successfully.', studentFee: newFeeRecord });
+});
+
 // Admin Dashboard KPI Summary
 feeRouter.get('/kpi', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
   const apps = await db.getScholarshipApplications();
@@ -75,17 +112,22 @@ feeRouter.get('/defaulters', authenticateToken, requireRole('admin', 'staff'), a
 
   const defaulters: any[] = [];
   for (const s of students) {
-    const overdueFee = allFees.find(f => f.student_id === s.id && (f.status === 'overdue' || f.status === 'due'));
-    if (overdueFee || s.fees_status === 'overdue') {
+    if (s.admission_status !== 'approved') continue;
+    const fees = allFees.filter(f => f.student_id === s.id && f.status !== 'cancelled');
+    const totalDue = fees.reduce((acc, f) => acc + (f.status !== 'paid' ? f.due_amount : 0), 0);
+    const hasPendingDue = fees.some(f => (f.status === 'overdue' || f.status === 'due' || f.status === 'partial') && f.due_amount > 0);
+    if ((hasPendingDue || s.fees_status === 'overdue' || s.fees_status === 'due') && totalDue > 0) {
       const crs = courses.find(c => c.id === s.course_id);
+      const isOverdue = fees.some(f => f.status === 'overdue') || s.fees_status === 'overdue';
+      const isPartial = fees.some(f => f.status === 'partial');
       defaulters.push({
         id: s.id,
         studentName: `${s.first_name} ${s.last_name}`,
         courseInfo: `${crs?.code || 'B.Tech'} • Sem ${s.current_semester}`,
-        dueAmount: overdueFee?.due_amount || 45000,
-        dueAmountFormatted: `₹ ${(overdueFee?.due_amount || 45000).toLocaleString('en-IN')}`,
-        status: (overdueFee?.status || s.fees_status).toUpperCase(),
-        badgeType: s.fees_status === 'overdue' ? 'error' : 'warning',
+        dueAmount: totalDue,
+        dueAmountFormatted: `₹ ${totalDue.toLocaleString('en-IN')}`,
+        status: isOverdue ? 'OVERDUE' : (isPartial ? 'PARTIAL' : 'DUE'),
+        badgeType: isOverdue ? 'error' : 'warning',
       });
     }
   }
@@ -126,9 +168,9 @@ feeRouter.get('/ledger/:studentId', authenticateToken, async (req: AuthRequest, 
 
   const payments = await db.getPayments(student.id);
 
-  const totalPayable = studentFees.reduce((acc, sf) => acc + sf.amount, 0);
+  const totalPayable = studentFees.reduce((acc, sf) => acc + Math.max(0, sf.amount - (sf.discount_amount || 0)), 0);
   const totalPaid = studentFees.reduce((acc, sf) => acc + sf.paid_amount, 0);
-  const totalDue = studentFees.reduce((acc, sf) => acc + (sf.status !== 'paid' ? sf.due_amount : 0), 0);
+  const totalDue = studentFees.reduce((acc, sf) => acc + (sf.status !== 'paid' && sf.status !== 'cancelled' ? sf.due_amount : 0), 0);
 
   res.json({
     success: true,
@@ -186,7 +228,8 @@ feeRouter.post('/collect', authenticateToken, async (req: AuthRequest, res: Resp
 
   if (feeRecord) {
     const newPaid = feeRecord.paid_amount + amount;
-    const newDue = Math.max(0, feeRecord.due_amount - amount);
+    const netPayable = Math.max(0, feeRecord.amount - (feeRecord.discount_amount || 0));
+    const newDue = Math.max(0, netPayable - newPaid);
     const newStatus = newDue === 0 ? 'paid' : 'partial';
     await db.updateStudentFee(feeRecord.id, {
       paid_amount: newPaid,
@@ -197,7 +240,7 @@ feeRouter.post('/collect', authenticateToken, async (req: AuthRequest, res: Resp
 
   // Update student overall fee status
   const updatedFees = await db.getStudentFees(student.id);
-  const remainingDue = updatedFees.reduce((acc, sf) => acc + (sf.status !== 'paid' ? sf.due_amount : 0), 0);
+  const remainingDue = updatedFees.reduce((acc, sf) => acc + (sf.status !== 'paid' && sf.status !== 'cancelled' ? sf.due_amount : 0), 0);
   const newStudentFeesStatus = remainingDue <= 0 ? 'paid' : 'due';
   await db.updateStudent(student.id, { fees_status: newStudentFeesStatus });
 
@@ -228,9 +271,13 @@ feeRouter.post('/collect', authenticateToken, async (req: AuthRequest, res: Resp
 });
 
 // Printable Receipt details (Scoped: students can only view their own receipts)
-feeRouter.get('/receipt/:receiptIdOrNo', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
-  const { receiptIdOrNo } = req.params;
+feeRouter.get('/receipt/:receiptIdOrNo(*)', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  const receiptIdOrNo = req.params.receiptIdOrNo || req.params[0] || (req.query.ref as string);
   let payment = await db.getPaymentByReceiptNo(receiptIdOrNo);
+  if (!payment) {
+    const allPayments = await db.getPayments();
+    payment = allPayments.find(p => p.id === receiptIdOrNo || p.receipt_no === receiptIdOrNo || p.transaction_reference === receiptIdOrNo) || null;
+  }
 
   if (!payment && req.user?.role === 'student') {
     const allStudents = await db.getStudents();
@@ -267,6 +314,7 @@ feeRouter.get('/receipt/:receiptIdOrNo', authenticateToken, async (req: AuthRequ
 
   res.json({
     success: true,
+    payment,
     receipt: {
       receiptNo: payment.receipt_no,
       transactionRef: payment.transaction_reference,

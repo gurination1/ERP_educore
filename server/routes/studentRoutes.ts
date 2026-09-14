@@ -103,10 +103,16 @@ studentRouter.get('/:id/dashboard', authenticateToken, async (req: AuthRequest, 
   const course = await db.getCourseById(student.course_id);
   const session = await db.getSessionById(student.session_id);
 
+  // Calculate attendance safely (0-class protection)
+  const totalClasses = student.total_classes || 0;
+  const attendedClasses = student.attended_classes || 0;
+  const attendancePercentage = totalClasses === 0 ? (student.attendance_percentage ?? 100) : Math.round((attendedClasses / totalClasses) * 100);
+  const isLowAttendance = totalClasses > 0 && attendancePercentage < 75;
+
   // Calculate pending fee due
   const studentFees = await db.getStudentFees(student.id);
-  const pendingDue = studentFees.reduce((acc, sf) => acc + (sf.status !== 'paid' ? sf.due_amount : 0), 0);
-  const nearestDueDate = studentFees.find(sf => sf.status !== 'paid')?.due_date || '15 Oct 2025';
+  const pendingDue = studentFees.reduce((acc, sf) => acc + (sf.status !== 'paid' && sf.status !== 'cancelled' ? sf.due_amount : 0), 0);
+  const nearestDueDate = studentFees.find(sf => sf.status !== 'paid' && sf.status !== 'cancelled')?.due_date || '15 Oct 2025';
 
   const allNotices = await db.getNotices();
   const notices = allNotices.slice(0, 3);
@@ -125,10 +131,11 @@ studentRouter.get('/:id/dashboard', authenticateToken, async (req: AuthRequest, 
       currency: 'INR',
     },
     attendance: {
-      percentage: student.attendance_percentage,
-      presentClasses: student.attended_classes,
-      absentClasses: student.total_classes - student.attended_classes,
-      totalClasses: student.total_classes,
+      percentage: attendancePercentage,
+      presentClasses: attendedClasses,
+      absentClasses: Math.max(0, totalClasses - attendedClasses),
+      totalClasses: totalClasses,
+      is_low_attendance: isLowAttendance,
     },
     recentNotices: notices,
   });
@@ -185,7 +192,7 @@ studentRouter.get('/:id', authenticateToken, async (req: AuthRequest, res: Respo
 // Send email reminders to students with dues/overdue (Admin only)
 studentRouter.post('/send-email-reminders', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
   const allStudents = await db.getStudents();
-  const overdueStudents = allStudents.filter(s => s.fees_status === 'overdue' || s.fees_status === 'due');
+  const overdueStudents = allStudents.filter(s => s.admission_status === 'approved' && (s.fees_status === 'overdue' || s.fees_status === 'due'));
   
   res.json({
     success: true,

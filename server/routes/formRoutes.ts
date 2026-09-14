@@ -39,9 +39,10 @@ formRouter.get('/:id', authenticateToken, async (req: AuthRequest, res: Response
 
 // Admin: Create new dynamic form schema
 formRouter.post('/', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
-  const { title, description, form_code, schema_json } = req.body;
+  const { title, description, form_code, schema_json, fields } = req.body;
+  const rawFields = schema_json || fields;
 
-  if (!title || !schema_json || !Array.isArray(schema_json) || schema_json.length === 0) {
+  if (!title || !rawFields || !Array.isArray(rawFields) || rawFields.length === 0) {
     res.status(400).json({
       success: false,
       error: 'Form title and a non-empty schema array of fields are required.',
@@ -49,12 +50,21 @@ formRouter.post('/', authenticateToken, requireRole('admin'), async (req: AuthRe
     return;
   }
 
+  const normalizedSchema = rawFields.map((f: any) => ({
+    name: f.name || f.id,
+    label: f.label || f.name || f.id,
+    type: f.type || 'text',
+    required: Boolean(f.required),
+    options: f.options || [],
+    placeholder: f.placeholder || '',
+  }));
+
   const newForm: DynamicForm = {
     id: `df-${Date.now()}`,
     form_code: form_code || `FORM-${Date.now().toString().slice(-4)}`,
     title,
     description: description || '',
-    schema_json,
+    schema_json: normalizedSchema,
     is_published: true,
     created_by: req.user?.id,
     created_at: new Date().toISOString(),
@@ -85,6 +95,20 @@ formRouter.post('/:id/submit', authenticateToken, async (req: AuthRequest, res: 
   const form = await db.getDynamicFormById(id) || (await db.getDynamicForms()).find(f => f.form_code === id);
   if (!form) {
     res.status(404).json({ success: false, error: 'Form not found.' });
+    return;
+  }
+
+  // Gate: form must be published
+  if (!form.is_published) {
+    res.status(403).json({ success: false, error: 'This form is currently closed and not accepting submissions.' });
+    return;
+  }
+
+  // Duplicate submission guard for student
+  const existingSubmissions = await db.getFormSubmissions(form.id);
+  const alreadySubmitted = existingSubmissions.find(s => s.user_id === req.user!.id);
+  if (alreadySubmitted) {
+    res.status(409).json({ success: false, error: 'You have already submitted this form. Duplicate submissions are not permitted.' });
     return;
   }
 
@@ -122,6 +146,19 @@ formRouter.post('/:id/submit', authenticateToken, async (req: AuthRequest, res: 
     submissionId: submission.id,
     submission,
   });
+});
+
+// Admin: Toggle publish status of dynamic form
+formRouter.patch('/:id/publish', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { is_published } = req.body;
+  const form = await db.getDynamicFormById(id) || (await db.getDynamicForms()).find(f => f.form_code === id);
+  if (!form) {
+    res.status(404).json({ success: false, error: 'Form not found.' });
+    return;
+  }
+  const updated = await db.updateDynamicForm(form.id, { is_published: Boolean(is_published) });
+  res.json({ success: true, message: `Form publication status updated to ${is_published}.`, form: updated });
 });
 
 // Admin: View submissions for a form

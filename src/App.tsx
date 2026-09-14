@@ -88,6 +88,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
           searchQuery={searchQuery}
           onSearchChange={onSearchChange}
           onOpenCopilot={() => setShowCopilot(true)}
+          onLogout={onLogout}
         />
         <main className="flex-1 pb-16">{children}</main>
       </div>
@@ -95,6 +96,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
       <AICopilotModal
         isOpen={showCopilot}
         onClose={() => setShowCopilot(false)}
+        currentUser={currentUser}
       />
     </div>
   );

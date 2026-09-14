@@ -39,7 +39,11 @@ scholarshipRouter.post('/schemes', authenticateToken, requireRole('admin'), (req
 
 // Student: Apply for scholarship (Authenticated, scoped)
 scholarshipRouter.post('/apply', authenticateToken, upload.single('document'), async (req: AuthRequest, res: Response): Promise<void> => {
-  const { schemeId, studentId, annualFamilyIncome, previousGpa, reasonForApplication } = req.body;
+  const schemeId = req.body.schemeId || req.body.scheme_id;
+  const studentId = req.body.studentId || req.body.student_id;
+  const annualFamilyIncome = req.body.annualFamilyIncome || req.body.annual_family_income || 0;
+  const previousGpa = req.body.previousGpa || req.body.previous_gpa || 8.0;
+  const reasonForApplication = req.body.reasonForApplication || req.body.reason_for_application || req.body.statementOfPurpose || req.body.statement_of_purpose;
 
   if (!schemeId || !reasonForApplication) {
     res.status(400).json({ success: false, error: 'Scheme ID and statement of purpose/reason are mandatory.' });
@@ -147,10 +151,38 @@ scholarshipRouter.patch('/applications/:id/review', authenticateToken, requireRo
 
   const updated = await db.updateScholarshipApplication(app.id, {
     status: status as any,
-    admin_remarks: remarks || app.admin_remarks,
+    admin_remarks: remarks !== undefined ? remarks : app.admin_remarks,
     reviewed_by: req.user?.id,
     reviewed_at: new Date().toISOString(),
   });
+
+  if (status === 'approved') {
+    const schemes = await db.getSchemes();
+    const scheme = schemes.find(s => s.id === app.scheme_id);
+    const awardAmount = scheme?.award_amount || 0;
+    if (awardAmount > 0) {
+      const studentFees = await db.getStudentFees(app.student_id);
+      const feeRecord = [...studentFees].reverse().find(sf => sf.fee_head_id === 'fh-tuition' && sf.status !== 'cancelled' && sf.due_amount > 0)
+        || [...studentFees].reverse().find(sf => sf.status !== 'cancelled' && sf.due_amount > 0)
+        || [...studentFees].reverse().find(sf => sf.fee_head_id === 'fh-tuition' && sf.status !== 'cancelled');
+      if (feeRecord) {
+        const newDiscount = (feeRecord.discount_amount || 0) + awardAmount;
+        const netPayable = Math.max(0, feeRecord.amount - newDiscount);
+        const newDue = Math.max(0, netPayable - feeRecord.paid_amount);
+        const newStatus = newDue === 0 ? 'paid' : (feeRecord.paid_amount > 0 ? 'partial' : 'due');
+        await db.updateStudentFee(feeRecord.id, {
+          discount_amount: newDiscount,
+          due_amount: newDue,
+          status: newStatus as any,
+        });
+      }
+      const updatedFees = await db.getStudentFees(app.student_id);
+      const totalRemainingDue = updatedFees.reduce((acc, sf) => acc + (sf.status !== 'paid' && sf.status !== 'cancelled' ? sf.due_amount : 0), 0);
+      if (totalRemainingDue <= 0) {
+        await db.updateStudent(app.student_id, { fees_status: 'paid' });
+      }
+    }
+  }
 
   res.json({
     success: true,

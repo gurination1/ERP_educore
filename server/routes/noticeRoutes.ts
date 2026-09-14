@@ -5,14 +5,20 @@ import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth.
 export const noticeRouter = Router();
 
 noticeRouter.get('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
-  const notices = await db.getNotices();
+  const rawNotices = await db.getNotices();
+  const notices = [...rawNotices].sort((a, b) => {
+    const pinA = a.is_pinned ? 1 : 0;
+    const pinB = b.is_pinned ? 1 : 0;
+    if (pinB !== pinA) return pinB - pinA;
+    return (b.notice_date || '').localeCompare(a.notice_date || '');
+  });
   res.json({ success: true, count: notices.length, notices });
 });
-
 noticeRouter.post('/', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { title, summary, content, category, is_pinned } = req.body;
+  const noticeSummary = summary || (content ? content.slice(0, 100) : null);
 
-  if (!title || !summary) {
+  if (!title || !noticeSummary) {
     res.status(400).json({ success: false, error: 'Notice title and summary are mandatory.' });
     return;
   }
@@ -20,8 +26,8 @@ noticeRouter.post('/', authenticateToken, requireRole('admin'), async (req: Auth
   const newNotice: Notice = {
     id: `not-${Date.now()}`,
     title,
-    summary,
-    content: content || summary,
+    summary: noticeSummary,
+    content: content || noticeSummary,
     notice_date: new Date().toISOString().slice(0, 10),
     category: category || 'Academic',
     is_pinned: !!is_pinned,
