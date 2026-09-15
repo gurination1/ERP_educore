@@ -41,17 +41,17 @@ feeRouter.post('/assign', authenticateToken, requireRole('admin'), async (req: A
   }
 
   // Strict Indian College ERP Rule: Mutual Exclusivity between Hostel and Transport
-  const isHostelHead = feeHead.id === 'fh-hostel' || feeHead.code === 'HOSTEL' || feeHead.code === 'HOSTEL_MESS';
-  const isTransportHead = feeHead.id === 'fh-transport' || feeHead.code === 'TRANSPORT';
+  const isHostelHead = feeHead.id.startsWith('fh-hostel') || feeHead.code.startsWith('HOSTEL');
+  const isTransportHead = feeHead.id.startsWith('fh-transport') || feeHead.code.startsWith('TRANSPORT');
 
   const existingFees = await db.getStudentFees(student.id);
-  const activeHostelFee = existingFees.find(f => (f.fee_head_id === 'fh-hostel' || f.fee_head_id === 'HOSTEL') && f.status !== 'cancelled');
-  const activeTransportFee = existingFees.find(f => (f.fee_head_id === 'fh-transport' || f.fee_head_id === 'TRANSPORT') && f.status !== 'cancelled');
+  const activeHostelFee = existingFees.find(f => (f.fee_head_id.startsWith('fh-hostel') || f.fee_head_id.startsWith('HOSTEL')) && f.status !== 'cancelled');
+  const activeTransportFee = existingFees.find(f => (f.fee_head_id.startsWith('fh-transport') || f.fee_head_id.startsWith('TRANSPORT')) && f.status !== 'cancelled');
 
   if (isHostelHead && (student.is_transport_user || activeTransportFee)) {
     res.status(400).json({
       success: false,
-      error: 'Mutual Exclusivity Violation: Student is registered as a Bus/Transport Commuter. A day scholar cannot be assigned Hostel & Mess Fees.',
+      error: 'Mutual Exclusivity Violation: Student is registered as a Day-Scholar / Bus Fleet Commuter. A day scholar cannot be assigned Hostel Room Rent, Mess Boarding, or Residential Utility Fees.',
     });
     return;
   }
@@ -59,7 +59,7 @@ feeRouter.post('/assign', authenticateToken, requireRole('admin'), async (req: A
   if (isTransportHead && (student.is_hosteller || activeHostelFee)) {
     res.status(400).json({
       success: false,
-      error: 'Mutual Exclusivity Violation: Student is registered as a Campus Hosteller. Campus residents cannot be assigned College Bus/Transport Fees.',
+      error: 'Mutual Exclusivity Violation: Student is registered as a Campus Hosteller living in college dorms. Campus residents cannot be assigned College Bus / Transit Fleet commuter fees.',
     });
     return;
   }

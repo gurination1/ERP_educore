@@ -33,6 +33,11 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({ onApplicat
     semester: '1',
     previousSchool: 'Delhi Public School, R.K. Puram',
     previousScore: '92.4%',
+    quota: 'punjab_85',
+    category: 'General',
+    residentialMode: 'self_commute', // 'self_commute' | 'hosteller' | 'bus_commuter'
+    hostelRoomNo: 'BH-1 (Allotment on arrival)',
+    transportRoute: 'Route 1 - Mohali Phase 7 Corridor',
     // Step 3: Files
     photoUploaded: true,
     transcriptUploaded: true,
@@ -106,6 +111,9 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({ onApplicat
     setIsSubmitting(true);
     setErrorMsg(null);
 
+    const isHosteller = formData.residentialMode === 'hosteller';
+    const isTransportUser = formData.residentialMode === 'bus_commuter';
+
     try {
       const res = await api.submitAdmission({
         firstName: formData.firstName,
@@ -118,7 +126,13 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({ onApplicat
         relationship: formData.relationship,
         guardianPhone: formData.guardianPhone,
         courseId: formData.courseId,
-        admissionYear: 2025,
+        admissionYear: new Date().getFullYear(),
+        quota: formData.quota,
+        category: formData.category,
+        isHosteller,
+        isTransportUser,
+        hostelRoomNo: isHosteller ? formData.hostelRoomNo : undefined,
+        transportRoute: isTransportUser ? formData.transportRoute : undefined,
       });
 
       if (res.success) {
@@ -611,7 +625,150 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({ onApplicat
               </div>
             </div>
 
-            {/* Step 2 Actions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-[#191c1d] uppercase tracking-wider mb-1.5">
+                  Admission Domicile Quota <span className="text-[#ba1a1a]">*</span>
+                </label>
+                <select
+                  value={formData.quota}
+                  onChange={e => handleChange('quota', e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30 font-medium"
+                >
+                  <option value="punjab_85">Punjab State Domicile (85% Quota)</option>
+                  <option value="other_state_15">All India / Other States (15% Quota)</option>
+                  <option value="management">Management / Discretionary Quota</option>
+                  <option value="sports">State Sports Merit Quota</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[#191c1d] uppercase tracking-wider mb-1.5">
+                  Social Category <span className="text-[#ba1a1a]">*</span>
+                </label>
+                <select
+                  value={formData.category}
+                  onChange={e => handleChange('category', e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30 font-medium"
+                >
+                  <option value="General">General / Open Merit</option>
+                  <option value="SC/ST">SC / ST (Post-Matric Scheme Eligible)</option>
+                  <option value="OBC">OBC / Other Backward Classes</option>
+                  <option value="EWS">Economically Weaker Section (EWS)</option>
+                  <option value="Sports">State Sports Quota</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Statutory Residential Choice (Mutually Exclusive) */}
+            <div className="p-4 bg-gray-50/80 rounded-xl border border-[#e1e3e4] space-y-3">
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#00236f]">
+                  Residential Accommodation & Daily Commute Choice
+                </h4>
+                <p className="text-[11px] text-[#757682] mt-0.5">
+                  <strong>Affiliation Rule:</strong> Campus hostel residents and college bus commuters are physically mutually exclusive. You cannot opt for both.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {/* 1. Day Scholar Self */}
+                <label
+                  className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                    formData.residentialMode === 'self_commute'
+                      ? 'border-[#00236f] bg-white ring-2 ring-[#00236f]/30 shadow-xs'
+                      : 'border-[#e1e3e4] bg-white/60 hover:bg-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="residentialMode"
+                      checked={formData.residentialMode === 'self_commute'}
+                      onChange={() => handleChange('residentialMode', 'self_commute')}
+                    />
+                    <span className="text-xs font-bold text-[#191c1d]">Day Scholar</span>
+                  </div>
+                  <p className="text-[11px] text-[#757682] mt-1 pl-5">
+                    Self-commute (Private vehicle / walking). Zero hostel or transport surcharge.
+                  </p>
+                </label>
+
+                {/* 2. Campus Hosteller */}
+                <label
+                  className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                    formData.residentialMode === 'hosteller'
+                      ? 'border-purple-600 bg-white ring-2 ring-purple-600/30 shadow-xs'
+                      : 'border-[#e1e3e4] bg-white/60 hover:bg-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="residentialMode"
+                      checked={formData.residentialMode === 'hosteller'}
+                      onChange={() => handleChange('residentialMode', 'hosteller')}
+                    />
+                    <span className="text-xs font-bold text-purple-900">Campus Hosteller</span>
+                  </div>
+                  <p className="text-[11px] text-[#757682] mt-1 pl-5">
+                    Campus dorms & 3-meal mess board. Disables bus fleet pass.
+                  </p>
+                </label>
+
+                {/* 3. Bus Commuter */}
+                <label
+                  className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                    formData.residentialMode === 'bus_commuter'
+                      ? 'border-emerald-600 bg-white ring-2 ring-emerald-600/30 shadow-xs'
+                      : 'border-[#e1e3e4] bg-white/60 hover:bg-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="residentialMode"
+                      checked={formData.residentialMode === 'bus_commuter'}
+                      onChange={() => handleChange('residentialMode', 'bus_commuter')}
+                    />
+                    <span className="text-xs font-bold text-emerald-900">Bus Fleet Commuter</span>
+                  </div>
+                  <p className="text-[11px] text-[#757682] mt-1 pl-5">
+                    College bus fleet service & RFID pass. Disables hostel allotment.
+                  </p>
+                </label>
+              </div>
+
+              {formData.residentialMode === 'hosteller' && (
+                <div className="pt-2">
+                  <label className="block text-[11px] font-bold text-purple-900 uppercase mb-1">
+                    Hostel Wing / Room Preference
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.hostelRoomNo}
+                    onChange={e => handleChange('hostelRoomNo', e.target.value)}
+                    placeholder="e.g. Boys Hostel 1 / Girls Hostel 2"
+                    className="w-full p-2 bg-white border border-purple-200 rounded-lg text-xs"
+                  />
+                </div>
+              )}
+
+              {formData.residentialMode === 'bus_commuter' && (
+                <div className="pt-2">
+                  <label className="block text-[11px] font-bold text-emerald-900 uppercase mb-1">
+                    College Transit Bus Route / Stop
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.transportRoute}
+                    onChange={e => handleChange('transportRoute', e.target.value)}
+                    placeholder="e.g. Route 3 (Mohali Phase 7 - Kharar Corridor)"
+                    className="w-full p-2 bg-white border border-emerald-200 rounded-lg text-xs"
+                  />
+                </div>
+              )}
+            </div>
             <div className="pt-6 border-t border-[#e1e3e4] flex items-center justify-between">
               <button
                 type="button"

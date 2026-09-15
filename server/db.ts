@@ -559,14 +559,29 @@ class DatabaseStore {
 
     // Always ensure canonical Indian college fee heads exist in MariaDB
     const canonicalFeeHeads: FeeHead[] = [
+      // 1. Core Academic & University Affiliation Direct Heads
       { id: 'fh-tuition', code: 'TUITION', title: 'Academic Tuition Fee', description: 'Semester academic tuition, classroom access, and lab instructions', is_recurring: true },
       { id: 'fh-univ-reg', code: 'UNIV_REG', title: 'University Direct Charges & Exam Fee', description: 'Affiliating University (PTU/GNDU/PUP) registration, examination and sports development fee', is_recurring: true },
-      { id: 'fh-hostel', code: 'HOSTEL_MESS', title: 'Hostel & Mess Boarding Fee', description: 'Campus residential accommodation, housekeeping, and 3-meal mess board (Campus residents only)', is_recurring: true },
-      { id: 'fh-transport', code: 'TRANSPORT', title: 'Bus Commuter / Transport Fee', description: 'Dedicated college fleet transit service across designated city routes (Day scholars only)', is_recurring: true },
       { id: 'fh-security', code: 'INST_SECURITY', title: 'Refundable Caution Security Deposit', description: 'One-time refundable institution and library security deposit', is_recurring: false },
       { id: 'fh-exam', code: 'EXAM', title: 'Examination & Assessment Fee', description: 'Semester terminal exams, grade transcript processing', is_recurring: true },
       { id: 'fh-lib', code: 'LIBRARY', title: 'Library & Resource Access Fee', description: 'Digital library, textbook reserve access, research journal database', is_recurring: true },
       { id: 'fh-sports', code: 'DEVELOPMENT', title: 'Campus Sports & Development Fee', description: 'Gymnasium, athletic sports ground, and club activities', is_recurring: false },
+
+      // 2. Hostel & Residential Heads (Campus Residents Only - Mutually exclusive with Transport)
+      { id: 'fh-hostel-room', code: 'HOSTEL_ROOM', title: 'Hostel Room Rent & Maintenance', description: 'Campus residential room allotment, fixtures, water, and housekeeping (Campus residents only)', is_recurring: true },
+      { id: 'fh-hostel-mess', code: 'HOSTEL_MESS', title: 'Hostel Mess Advance & Meal Boarding', description: 'Complete 3-meal boarding: daily breakfast, lunch, evening tea/snacks, and dinner', is_recurring: true },
+      { id: 'fh-hostel-util', code: 'HOSTEL_UTIL', title: 'Hostel Power Backup & Utilities', description: '24/7 generator power backup, water heater geyser, and common amenities', is_recurring: true },
+      { id: 'fh-hostel-security', code: 'HOSTEL_SECURITY', title: 'Hostel Caution Security Deposit', description: 'One-time refundable hostel fixture and room security deposit', is_recurring: false },
+      { id: 'fh-hostel', code: 'HOSTEL_COMPOSITE', title: 'Composite Hostel & Mess Fee', description: 'Consolidated semester residential accommodation and mess boarding fee', is_recurring: true },
+
+      // 3. Transport & Commuter Transit Heads (Day Scholars Only - Mutually exclusive with Hostel)
+      { id: 'fh-transport', code: 'TRANSPORT_FLEET', title: 'College Bus / Fleet Transit Fee', description: 'Dedicated college bus commuter transit service across designated city corridors (Day scholars only)', is_recurring: true },
+      { id: 'fh-transport-pass', code: 'TRANSPORT_PASS', title: 'Transport Smart Card & Bus Pass', description: 'RFID transit pass issuance, designated seat reservation, and GPS fleet tracking', is_recurring: true },
+
+      // 4. Miscellaneous, Training & Regulatory Heads
+      { id: 'fh-misc', code: 'MISC_STUDENT', title: 'Miscellaneous Campus & Student Welfare', description: 'Student ID RFID badge, cultural youth festival, annual sports fest, and club activities', is_recurring: true },
+      { id: 'fh-training', code: 'TRAINING_PLACEMENT', title: 'Industrial Training & Placement Prep', description: 'Industry technical bootcamps, soft-skills workshops, and campus placement drives', is_recurring: true },
+      { id: 'fh-late-fine', code: 'LATE_SURCHARGE', title: 'Late Fee & Delayed Clearance Penalty', description: 'Regulatory surcharge fine for delayed semester fee clearance or late registration', is_recurring: false },
     ];
     for (const fh of canonicalFeeHeads) {
       await this.mariaPool.query(
@@ -1877,14 +1892,29 @@ class DatabaseStore {
     ];
 
     this.fee_heads = [
+      // 1. Core Academic & University Affiliation Direct Heads
       { id: 'fh-tuition', code: 'TUITION', title: 'Academic Tuition Fee', description: 'Semester academic tuition, classroom access, and lab instructions', is_recurring: true },
       { id: 'fh-univ-reg', code: 'UNIV_REG', title: 'University Direct Charges & Exam Fee', description: 'Affiliating University (PTU/GNDU/PUP) registration, examination and sports development fee', is_recurring: true },
-      { id: 'fh-hostel', code: 'HOSTEL_MESS', title: 'Hostel & Mess Boarding Fee', description: 'Campus residential accommodation, housekeeping, and 3-meal mess board (Campus residents only)', is_recurring: true },
-      { id: 'fh-transport', code: 'TRANSPORT', title: 'Bus Commuter / Transport Fee', description: 'Dedicated college fleet transit service across designated city routes (Day scholars only)', is_recurring: true },
       { id: 'fh-security', code: 'INST_SECURITY', title: 'Refundable Caution Security Deposit', description: 'One-time refundable institution and library security deposit', is_recurring: false },
       { id: 'fh-exam', code: 'EXAM', title: 'Examination & Assessment Fee', description: 'Semester terminal exams, grade transcript processing', is_recurring: true },
       { id: 'fh-lib', code: 'LIBRARY', title: 'Library & Resource Access Fee', description: 'Digital library, textbook reserve access, research journal database', is_recurring: true },
       { id: 'fh-sports', code: 'DEVELOPMENT', title: 'Campus Sports & Development Fee', description: 'Gymnasium, athletic sports ground, and club activities', is_recurring: false },
+
+      // 2. Hostel & Residential Heads (Campus Residents Only - Mutually exclusive with Transport)
+      { id: 'fh-hostel-room', code: 'HOSTEL_ROOM', title: 'Hostel Room Rent & Maintenance', description: 'Campus residential room allotment, fixtures, water, and housekeeping (Campus residents only)', is_recurring: true },
+      { id: 'fh-hostel-mess', code: 'HOSTEL_MESS', title: 'Hostel Mess Advance & Meal Boarding', description: 'Complete 3-meal boarding: daily breakfast, lunch, evening tea/snacks, and dinner', is_recurring: true },
+      { id: 'fh-hostel-util', code: 'HOSTEL_UTIL', title: 'Hostel Power Backup & Utilities', description: '24/7 generator power backup, water heater geyser, and common amenities', is_recurring: true },
+      { id: 'fh-hostel-security', code: 'HOSTEL_SECURITY', title: 'Hostel Caution Security Deposit', description: 'One-time refundable hostel fixture and room security deposit', is_recurring: false },
+      { id: 'fh-hostel', code: 'HOSTEL_COMPOSITE', title: 'Composite Hostel & Mess Fee', description: 'Consolidated semester residential accommodation and mess boarding fee', is_recurring: true },
+
+      // 3. Transport & Commuter Transit Heads (Day Scholars Only - Mutually exclusive with Hostel)
+      { id: 'fh-transport', code: 'TRANSPORT_FLEET', title: 'College Bus / Fleet Transit Fee', description: 'Dedicated college bus commuter transit service across designated city corridors (Day scholars only)', is_recurring: true },
+      { id: 'fh-transport-pass', code: 'TRANSPORT_PASS', title: 'Transport Smart Card & Bus Pass', description: 'RFID transit pass issuance, designated seat reservation, and GPS fleet tracking', is_recurring: true },
+
+      // 4. Miscellaneous, Training & Regulatory Heads
+      { id: 'fh-misc', code: 'MISC_STUDENT', title: 'Miscellaneous Campus & Student Welfare', description: 'Student ID RFID badge, cultural youth festival, annual sports fest, and club activities', is_recurring: true },
+      { id: 'fh-training', code: 'TRAINING_PLACEMENT', title: 'Industrial Training & Placement Prep', description: 'Industry technical bootcamps, soft-skills workshops, and campus placement drives', is_recurring: true },
+      { id: 'fh-late-fine', code: 'LATE_SURCHARGE', title: 'Late Fee & Delayed Clearance Penalty', description: 'Regulatory surcharge fine for delayed semester fee clearance or late registration', is_recurring: false },
     ];
 
     this.student_fees = [

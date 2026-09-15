@@ -426,23 +426,89 @@ admissionRouter.post('/admin-admit', authenticateToken, requireRole('admin'), as
   });
   feeItems.push({ title: 'Refundable Caution Security Deposit', amount: 5000 });
 
+  // Miscellaneous Campus & Student Welfare Fund
+  await db.createStudentFee({
+    id: `sf-${Date.now()}-4`,
+    student_id: newStudent.id,
+    fee_head_id: 'fh-misc',
+    session_id: session.id,
+    semester: newStudent.current_semester,
+    amount: 2500,
+    discount_amount: 0,
+    paid_amount: 0,
+    due_amount: 2500,
+    due_date: '2025-10-31',
+    status: 'due',
+  });
+  feeItems.push({ title: 'Miscellaneous Campus & Student Welfare Fund', amount: 2500 });
+
   // Residential Fee: Hosteller vs Transport (Mutually Exclusive)
   if (data.isHosteller) {
+    // 1. Hostel Room Rent & Maintenance
     await db.createStudentFee({
-      id: `sf-${Date.now()}-4`,
+      id: `sf-${Date.now()}-5`,
       student_id: newStudent.id,
-      fee_head_id: 'fh-hostel',
+      fee_head_id: 'fh-hostel-room',
       session_id: session.id,
       semester: newStudent.current_semester,
-      amount: 38000,
+      amount: 20000,
       discount_amount: 0,
       paid_amount: 0,
-      due_amount: 38000,
+      due_amount: 20000,
       due_date: '2025-10-31',
       status: 'due',
     });
-    feeItems.push({ title: `Hostel & Mess Boarding Fee (${data.hostelRoomNo || 'Campus Resident'})`, amount: 38000 });
+    feeItems.push({ title: `Hostel Room Rent & Maintenance (${data.hostelRoomNo || 'Campus Resident'})`, amount: 20000 });
+
+    // 2. Hostel Mess Advance & Meal Boarding
+    await db.createStudentFee({
+      id: `sf-${Date.now()}-6`,
+      student_id: newStudent.id,
+      fee_head_id: 'fh-hostel-mess',
+      session_id: session.id,
+      semester: newStudent.current_semester,
+      amount: 18000,
+      discount_amount: 0,
+      paid_amount: 0,
+      due_amount: 18000,
+      due_date: '2025-10-31',
+      status: 'due',
+    });
+    feeItems.push({ title: 'Hostel Mess Advance & 3-Meal Daily Boarding', amount: 18000 });
+
+    // 3. Hostel Power Backup & Utilities
+    await db.createStudentFee({
+      id: `sf-${Date.now()}-7`,
+      student_id: newStudent.id,
+      fee_head_id: 'fh-hostel-util',
+      session_id: session.id,
+      semester: newStudent.current_semester,
+      amount: 4500,
+      discount_amount: 0,
+      paid_amount: 0,
+      due_amount: 4500,
+      due_date: '2025-10-31',
+      status: 'due',
+    });
+    feeItems.push({ title: 'Hostel 24/7 Power Backup & Utilities', amount: 4500 });
+
+    // 4. Refundable Hostel Caution Deposit
+    await db.createStudentFee({
+      id: `sf-${Date.now()}-8`,
+      student_id: newStudent.id,
+      fee_head_id: 'fh-hostel-security',
+      session_id: session.id,
+      semester: newStudent.current_semester,
+      amount: 3000,
+      discount_amount: 0,
+      paid_amount: 0,
+      due_amount: 3000,
+      due_date: '2025-10-31',
+      status: 'due',
+    });
+    feeItems.push({ title: 'Refundable Hostel Room & Furniture Security Deposit', amount: 3000 });
   } else if (data.isTransportUser) {
+    // 1. College Bus / Fleet Transit Fee
     await db.createStudentFee({
       id: `sf-${Date.now()}-5`,
       student_id: newStudent.id,
@@ -456,7 +522,23 @@ admissionRouter.post('/admin-admit', authenticateToken, requireRole('admin'), as
       due_date: '2025-10-31',
       status: 'due',
     });
-    feeItems.push({ title: `Bus Commuter Transit Fee (${data.transportRoute || 'Day Scholar'})`, amount: 14000 });
+    feeItems.push({ title: `College Bus / Fleet Transit Fee (${data.transportRoute || 'Day Scholar'})`, amount: 14000 });
+
+    // 2. Transport Smart Card & Bus Pass
+    await db.createStudentFee({
+      id: `sf-${Date.now()}-6`,
+      student_id: newStudent.id,
+      fee_head_id: 'fh-transport-pass',
+      session_id: session.id,
+      semester: newStudent.current_semester,
+      amount: 800,
+      discount_amount: 0,
+      paid_amount: 0,
+      due_amount: 800,
+      due_date: '2025-10-31',
+      status: 'due',
+    });
+    feeItems.push({ title: 'Transport Smart Card & Bus Pass Issuance', amount: 800 });
   }
 
   const totalInitialDue = feeItems.reduce((acc, f) => acc + f.amount, 0);
@@ -604,6 +686,104 @@ admissionRouter.patch('/:id/status', authenticateToken, requireRole('admin'), as
         discount_amount: 0,
         paid_amount: 0,
         due_amount: 5000,
+        due_date: '2025-10-31',
+        status: 'due',
+      });
+    }
+
+    if (!activeFees.some(sf => sf.fee_head_id === 'fh-misc')) {
+      await db.createStudentFee({
+        id: `sf-${Date.now()}-4`,
+        student_id: student.id,
+        fee_head_id: 'fh-misc',
+        session_id: student.session_id,
+        semester: student.current_semester || 1,
+        amount: 2500,
+        discount_amount: 0,
+        paid_amount: 0,
+        due_amount: 2500,
+        due_date: '2025-10-31',
+        status: 'due',
+      });
+    }
+
+    if (student.is_hosteller && !activeFees.some(sf => sf.fee_head_id.startsWith('fh-hostel'))) {
+      await db.createStudentFee({
+        id: `sf-${Date.now()}-5`,
+        student_id: student.id,
+        fee_head_id: 'fh-hostel-room',
+        session_id: student.session_id,
+        semester: student.current_semester || 1,
+        amount: 20000,
+        discount_amount: 0,
+        paid_amount: 0,
+        due_amount: 20000,
+        due_date: '2025-10-31',
+        status: 'due',
+      });
+      await db.createStudentFee({
+        id: `sf-${Date.now()}-6`,
+        student_id: student.id,
+        fee_head_id: 'fh-hostel-mess',
+        session_id: student.session_id,
+        semester: student.current_semester || 1,
+        amount: 18000,
+        discount_amount: 0,
+        paid_amount: 0,
+        due_amount: 18000,
+        due_date: '2025-10-31',
+        status: 'due',
+      });
+      await db.createStudentFee({
+        id: `sf-${Date.now()}-7`,
+        student_id: student.id,
+        fee_head_id: 'fh-hostel-util',
+        session_id: student.session_id,
+        semester: student.current_semester || 1,
+        amount: 4500,
+        discount_amount: 0,
+        paid_amount: 0,
+        due_amount: 4500,
+        due_date: '2025-10-31',
+        status: 'due',
+      });
+      await db.createStudentFee({
+        id: `sf-${Date.now()}-8`,
+        student_id: student.id,
+        fee_head_id: 'fh-hostel-security',
+        session_id: student.session_id,
+        semester: student.current_semester || 1,
+        amount: 3000,
+        discount_amount: 0,
+        paid_amount: 0,
+        due_amount: 3000,
+        due_date: '2025-10-31',
+        status: 'due',
+      });
+    } else if (student.is_transport_user && !activeFees.some(sf => sf.fee_head_id.startsWith('fh-transport'))) {
+      await db.createStudentFee({
+        id: `sf-${Date.now()}-5`,
+        student_id: student.id,
+        fee_head_id: 'fh-transport',
+        session_id: student.session_id,
+        semester: student.current_semester || 1,
+        amount: 14000,
+        discount_amount: 0,
+        paid_amount: 0,
+        due_amount: 14000,
+        due_date: '2025-10-31',
+        status: 'due',
+      });
+      await db.createStudentFee({
+        id: `sf-${Date.now()}-6`,
+        student_id: student.id,
+        fee_head_id: 'fh-transport-pass',
+        session_id: student.session_id,
+        semester: student.current_semester || 1,
+        amount: 800,
+        discount_amount: 0,
+        paid_amount: 0,
+        due_amount: 800,
         due_date: '2025-10-31',
         status: 'due',
       });
