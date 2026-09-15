@@ -19,6 +19,7 @@ import { ForgotPasswordModal } from './components/ForgotPasswordModal';
 import { EmailRemindersModal } from './components/EmailRemindersModal';
 import { StudentProfileModal } from './components/StudentProfileModal';
 import { AICopilotModal } from './components/AICopilotModal';
+import { GrievanceView } from './components/GrievanceView';
 
 interface LayoutProps {
   currentUser: User | null;
@@ -57,6 +58,8 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
         return 'reports';
       case '/settings':
         return 'settings';
+      case '/grievances':
+        return 'grievances';
       case '/dashboard':
       default:
         return currentUser?.role === 'admin' ? 'admin-dashboard' : 'student-dashboard';
@@ -562,6 +565,24 @@ function MainApp() {
                     </div>
                   </div>
                 </div>
+              </AuthenticatedLayout>
+            )
+          }
+        />
+
+        <Route
+          path="/grievances"
+          element={
+            !currentUser ? (
+              <Navigate to="/" replace />
+            ) : (
+              <AuthenticatedLayout
+                currentUser={currentUser}
+                onLogout={handleLogout}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              >
+                <GrievanceView currentUser={currentUser} />
               </AuthenticatedLayout>
             )
           }

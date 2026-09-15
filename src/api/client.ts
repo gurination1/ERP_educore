@@ -89,11 +89,16 @@ export const api = {
     apiRequest('/api/admissions/draft', { method: 'POST', body: JSON.stringify(data) }),
   submitAdmission: (data: any) =>
     apiRequest('/api/admissions/submit', { method: 'POST', body: JSON.stringify(data) }),
+  adminAdmitStudent: (data: any) =>
+    apiRequest('/api/admissions/admin-admit', { method: 'POST', body: JSON.stringify(data) }),
   getAdmissions: (status?: string) => apiRequest(`/api/admissions?status=${status || 'all'}`),
   updateAdmissionStatus: (id: string, status: string, remarks?: string) =>
     apiRequest(`/api/admissions/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status, remarks }) }),
 
   // Fees
+  getFeeHeads: () => apiRequest('/api/fees/heads'),
+  assignFeeHead: (data: { studentId: string; feeHeadId: string; amount: number; dueDate?: string; semester?: number }) =>
+    apiRequest('/api/fees/assign', { method: 'POST', body: JSON.stringify(data) }),
   getFeeKPIs: () => apiRequest('/api/fees/kpi'),
   getFeeTrend: () => apiRequest('/api/fees/trend'),
   getDefaulters: () => apiRequest('/api/fees/defaulters'),
@@ -137,6 +142,17 @@ export const api = {
     apiRequest('/api/ai/fee-notice', { method: 'POST', body: JSON.stringify({ studentId, urgency }) }),
   askCopilotAI: (query: string) =>
     apiRequest('/api/ai/copilot', { method: 'POST', body: JSON.stringify({ query }) }),
+
+  // UGC Grievance Redressal Cell
+  getGrievances: (params: Record<string, any> = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiRequest(`/api/grievances?${query}`);
+  },
+  getGrievanceById: (id: string) => apiRequest(`/api/grievances/${id}`),
+  submitGrievance: (data: { category: string; subject: string; description: string; priority?: string; studentId?: string }) =>
+    apiRequest('/api/grievances', { method: 'POST', body: JSON.stringify(data) }),
+  resolveGrievance: (id: string, status: string, adminRemarks: string) =>
+    apiRequest(`/api/grievances/${id}/resolve`, { method: 'PATCH', body: JSON.stringify({ status, adminRemarks }) }),
 
   // Health
   getHealth: () => apiRequest('/api/health'),

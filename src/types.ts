@@ -30,6 +30,15 @@ export interface StudentProfile {
   attendance_percentage: number;
   total_classes: number;
   attended_classes: number;
+  is_hosteller?: boolean;
+  is_transport_user?: boolean;
+  transport_route?: string;
+  hostel_room_no?: string;
+  category?: 'General' | 'SC/ST' | 'OBC' | 'EWS' | 'Sports';
+  quota?: 'punjab_85' | 'other_state_15' | 'management' | 'sports';
+  tenth_percentage?: number;
+  twelfth_percentage?: number;
+  board_name?: string;
   course?: {
     id: string;
     code: string;
@@ -138,6 +147,22 @@ export interface DynamicFormItem {
   created_at: string;
 }
 
+export interface GrievanceItem {
+  id: string;
+  tracking_code: string;
+  student_id: string;
+  student_name: string;
+  category: 'academic' | 'examination' | 'hostel' | 'transport' | 'fee_finance' | 'anti_ragging' | 'infrastructure' | 'general';
+  subject: string;
+  description: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  status: 'submitted' | 'under_investigation' | 'resolved' | 'dismissed';
+  admin_remarks?: string;
+  resolved_by?: string;
+  resolved_at?: string;
+  created_at: string;
+}
+
 export type ActiveScreen =
   | 'student-dashboard' // Screen 1 & 2
   | 'login'             // Screen 3 & 4
@@ -149,4 +174,5 @@ export type ActiveScreen =
   | 'form-builder'
   | 'academics'
   | 'reports'
-  | 'settings';
+  | 'settings'
+  | 'grievances';

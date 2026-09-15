@@ -15,6 +15,7 @@ import { formRouter } from './server/routes/formRoutes.ts';
 import { reportRouter } from './server/routes/reportRoutes.ts';
 import { noticeRouter } from './server/routes/noticeRoutes.ts';
 import { aiRouter } from './server/routes/aiRoutes.ts';
+import { grievanceRouter } from './server/routes/grievanceRoutes.ts';
 import { errorHandler } from './server/middleware/errorHandler.ts';
 
 dotenv.config();
@@ -62,6 +63,7 @@ async function startServer() {
   app.use('/api/reports', reportRouter);
   app.use('/api/notices', noticeRouter);
   app.use('/api/ai', aiRouter);
+  app.use('/api/grievances', grievanceRouter);
 
   // Centralized Error Handler for API
   app.use(errorHandler);

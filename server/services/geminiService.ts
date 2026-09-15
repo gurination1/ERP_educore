@@ -172,6 +172,10 @@ Return ONLY a JSON object with this exact schema:
       const scoreMatch = rawText.match(/(\d{2}(?:\.\d+)?)\s*%/);
       const guardianMatch = rawText.match(/(?:Father|Mother|Guardian)\s*[:\-]\s*([A-Za-z]+(?:\s+[A-Za-z]+)?)/i);
 
+      if (!nameMatch && !emailMatch && !phoneMatch) {
+        throw new Error('Could not detect valid candidate information in the provided input. Please enter an application containing student name, contact, or email.');
+      }
+
       let matchedCourse = availableCourses[0];
       for (const c of availableCourses) {
         if (rawText.toLowerCase().includes(c.code.toLowerCase()) || rawText.toLowerCase().includes(c.name.toLowerCase())) {
@@ -180,25 +184,25 @@ Return ONLY a JSON object with this exact schema:
         }
       }
 
-      const merit = scoreMatch ? parseFloat(scoreMatch[1]) : 92.5;
+      const merit = scoreMatch ? parseFloat(scoreMatch[1]) : 85.0;
 
       return {
-        firstName: nameMatch ? nameMatch[1] : 'Siddharth',
-        lastName: nameMatch ? nameMatch[2] : 'Malhotra',
-        email: emailMatch ? emailMatch[0] : 'applicant@example.com',
-        phone: phoneMatch ? phoneMatch[0] : '9819283746',
+        firstName: nameMatch ? nameMatch[1] : '',
+        lastName: nameMatch ? nameMatch[2] : '',
+        email: emailMatch ? emailMatch[0] : '',
+        phone: phoneMatch ? phoneMatch[0] : '',
         gender: rawText.toLowerCase().includes('female') ? 'female' : 'male',
-        dob: dobMatch ? dobMatch[1].replace(/\//g, '-') : '2005-09-22',
-        guardianName: guardianMatch ? guardianMatch[1] : 'Vikram Malhotra',
+        dob: dobMatch ? dobMatch[1].replace(/\//g, '-') : '2005-01-01',
+        guardianName: guardianMatch ? guardianMatch[1] : '',
         relationship: 'parent',
-        guardianPhone: phoneMatch ? phoneMatch[0] : '9819283700',
+        guardianPhone: phoneMatch ? phoneMatch[0] : '',
         courseId: matchedCourse?.id || 'crs-btech-cs',
         courseName: matchedCourse?.name || 'B.Tech Computer Science & Engineering',
         previousSchool: 'Higher Secondary School',
-        previousScore: scoreMatch ? `${scoreMatch[1]}%` : '95.2%',
+        previousScore: scoreMatch ? `${scoreMatch[1]}%` : `${merit}%`,
         meritScore: merit,
         recommendedQuota: merit >= 90 ? 'merit' : 'general',
-        aiSummary: `Candidate with ${merit}% academic qualification evaluated for ${matchedCourse?.name}.`,
+        aiSummary: `Application extracted for ${matchedCourse?.name}.`,
         isFallback: true,
       };
     }

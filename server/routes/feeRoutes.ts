@@ -39,6 +39,38 @@ feeRouter.post('/assign', authenticateToken, requireRole('admin'), async (req: A
     res.status(400).json({ success: false, error: 'Amount must be a positive number.' });
     return;
   }
+
+  // Strict Indian College ERP Rule: Mutual Exclusivity between Hostel and Transport
+  const isHostelHead = feeHead.id === 'fh-hostel' || feeHead.code === 'HOSTEL' || feeHead.code === 'HOSTEL_MESS';
+  const isTransportHead = feeHead.id === 'fh-transport' || feeHead.code === 'TRANSPORT';
+
+  const existingFees = await db.getStudentFees(student.id);
+  const activeHostelFee = existingFees.find(f => (f.fee_head_id === 'fh-hostel' || f.fee_head_id === 'HOSTEL') && f.status !== 'cancelled');
+  const activeTransportFee = existingFees.find(f => (f.fee_head_id === 'fh-transport' || f.fee_head_id === 'TRANSPORT') && f.status !== 'cancelled');
+
+  if (isHostelHead && (student.is_transport_user || activeTransportFee)) {
+    res.status(400).json({
+      success: false,
+      error: 'Mutual Exclusivity Violation: Student is registered as a Bus/Transport Commuter. A day scholar cannot be assigned Hostel & Mess Fees.',
+    });
+    return;
+  }
+
+  if (isTransportHead && (student.is_hosteller || activeHostelFee)) {
+    res.status(400).json({
+      success: false,
+      error: 'Mutual Exclusivity Violation: Student is registered as a Campus Hosteller. Campus residents cannot be assigned College Bus/Transport Fees.',
+    });
+    return;
+  }
+
+  // Update residential status flag if assigning hostel or transport
+  if (isHostelHead && !student.is_hosteller) {
+    await db.updateStudent(student.id, { is_hosteller: true, is_transport_user: false });
+  } else if (isTransportHead && !student.is_transport_user) {
+    await db.updateStudent(student.id, { is_transport_user: true, is_hosteller: false });
+  }
+
   const newFeeRecord = {
     id: `sf-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
     student_id: student.id,

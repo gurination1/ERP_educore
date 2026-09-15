@@ -53,10 +53,20 @@ export interface Student {
   current_semester: number;
   admission_year: number;
   admission_status: 'draft' | 'submitted' | 'pending' | 'approved' | 'rejected';
-  fees_status: 'paid' | 'due' | 'overdue';
+  fees_status: 'paid' | 'due' | 'overdue' | 'cancelled';
   attendance_percentage: number;
   total_classes: number;
   attended_classes: number;
+  // Indian & Punjab College Specific Academic & Residential Architecture
+  is_hosteller?: boolean;
+  is_transport_user?: boolean;
+  transport_route?: string;
+  hostel_room_no?: string;
+  category?: 'General' | 'SC/ST' | 'OBC' | 'EWS' | 'Sports';
+  quota?: 'punjab_85' | 'other_state_15' | 'management' | 'sports';
+  tenth_percentage?: number;
+  twelfth_percentage?: number;
+  board_name?: string;
   created_at: string;
 }
 
@@ -172,6 +182,22 @@ export interface DocumentRecord {
   created_at: string;
 }
 
+export interface Grievance {
+  id: string;
+  tracking_code: string; // e.g. GRV-2025-0104
+  student_id: string;
+  student_name: string;
+  category: 'academic' | 'examination' | 'hostel' | 'transport' | 'fee_finance' | 'anti_ragging' | 'infrastructure' | 'general';
+  subject: string;
+  description: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  status: 'submitted' | 'under_investigation' | 'resolved' | 'dismissed';
+  admin_remarks?: string;
+  resolved_by?: string;
+  resolved_at?: string;
+  created_at: string;
+}
+
 function formatSqlDateTime(dateOrIso?: string | null): string {
   if (!dateOrIso) return new Date().toISOString().replace('T', ' ').slice(0, 19);
   const d = new Date(dateOrIso);
@@ -194,6 +220,7 @@ class DatabaseStore {
   public form_submissions: FormSubmission[] = [];
   public documents: DocumentRecord[] = [];
   public notices: Notice[] = [];
+  public grievances: Grievance[] = [];
 
   public mode: 'mariadb' | 'sqlite' = 'sqlite';
   private dbPath: string = process.env.DB_PATH || path.join(process.cwd(), 'database', 'educore.sqlite');
@@ -489,6 +516,42 @@ class DatabaseStore {
         is_pinned TINYINT(1) DEFAULT 0
       );
     `);
+
+    await this.mariaPool.query(`
+      CREATE TABLE IF NOT EXISTS grievances (
+        id VARCHAR(64) PRIMARY KEY,
+        tracking_code VARCHAR(32) UNIQUE NOT NULL,
+        student_id VARCHAR(64) NOT NULL,
+        student_name VARCHAR(128) NOT NULL,
+        category VARCHAR(64) NOT NULL,
+        subject VARCHAR(255) NOT NULL,
+        description TEXT NOT NULL,
+        priority VARCHAR(32) NOT NULL,
+        status VARCHAR(32) NOT NULL,
+        admin_remarks TEXT,
+        resolved_by VARCHAR(64),
+        resolved_at VARCHAR(64),
+        created_at VARCHAR(64) NOT NULL
+      );
+    `);
+
+    // Ensure newly added student columns exist in live MariaDB
+    const safeAddColumn = async (table: string, colDef: string) => {
+      try {
+        await this.mariaPool!.query(`ALTER TABLE \`${table}\` ADD COLUMN ${colDef}`);
+      } catch (e: any) {
+        // Ignore duplicate column errors
+      }
+    };
+    await safeAddColumn('students', 'is_hosteller TINYINT(1) DEFAULT 0');
+    await safeAddColumn('students', 'is_transport_user TINYINT(1) DEFAULT 0');
+    await safeAddColumn('students', 'transport_route VARCHAR(128)');
+    await safeAddColumn('students', 'hostel_room_no VARCHAR(64)');
+    await safeAddColumn('students', 'category VARCHAR(32)');
+    await safeAddColumn('students', 'quota VARCHAR(32)');
+    await safeAddColumn('students', 'tenth_percentage DOUBLE');
+    await safeAddColumn('students', 'twelfth_percentage DOUBLE');
+    await safeAddColumn('students', 'board_name VARCHAR(64)');
   }
 
   private async seedMariaDBDefaults(): Promise<void> {
@@ -523,8 +586,14 @@ class DatabaseStore {
     }
     for (const fh of this.fee_heads) {
       await this.mariaPool.query(
-        'INSERT IGNORE INTO fee_heads (id, code, title, description, is_recurring) VALUES (?, ?, ?, ?, ?)',
+        'INSERT INTO fee_heads (id, code, title, description, is_recurring) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE code = VALUES(code), title = VALUES(title), description = VALUES(description), is_recurring = VALUES(is_recurring)',
         [fh.id, fh.code, fh.title, fh.description || null, fh.is_recurring ? 1 : 0]
+      );
+    }
+    for (const g of this.grievances) {
+      await this.mariaPool.query(
+        'INSERT IGNORE INTO grievances (id, tracking_code, student_id, student_name, category, subject, description, priority, status, admin_remarks, resolved_by, resolved_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [g.id, g.tracking_code, g.student_id, g.student_name, g.category, g.subject, g.description, g.priority, g.status, g.admin_remarks || null, g.resolved_by || null, g.resolved_at || null, formatSqlDateTime(g.created_at)]
       );
     }
     for (const sf of this.student_fees) {
@@ -585,7 +654,9 @@ class DatabaseStore {
         gender TEXT, dob TEXT, email TEXT UNIQUE, phone TEXT, guardian_name TEXT, guardian_relation TEXT,
         guardian_phone TEXT, course_id TEXT, session_id TEXT, current_semester INTEGER, admission_year INTEGER,
         admission_status TEXT, fees_status TEXT, attendance_percentage REAL, total_classes INTEGER,
-        attended_classes INTEGER, created_at TEXT
+        attended_classes INTEGER, is_hosteller INTEGER, is_transport_user INTEGER, transport_route TEXT,
+        hostel_room_no TEXT, category TEXT, quota TEXT, tenth_percentage REAL, twelfth_percentage REAL,
+        board_name TEXT, created_at TEXT
       );
       CREATE TABLE IF NOT EXISTS fee_heads (
         id TEXT PRIMARY KEY, code TEXT UNIQUE, title TEXT, description TEXT, is_recurring INTEGER
@@ -616,6 +687,11 @@ class DatabaseStore {
       );
       CREATE TABLE IF NOT EXISTS notices (
         id TEXT PRIMARY KEY, title TEXT, summary TEXT, content TEXT, notice_date TEXT, category TEXT, is_pinned INTEGER
+      );
+      CREATE TABLE IF NOT EXISTS grievances (
+        id TEXT PRIMARY KEY, tracking_code TEXT UNIQUE, student_id TEXT, student_name TEXT,
+        category TEXT, subject TEXT, description TEXT, priority TEXT, status TEXT,
+        admin_remarks TEXT, resolved_by TEXT, resolved_at TEXT, created_at TEXT
       );
     `);
   }
@@ -655,6 +731,11 @@ class DatabaseStore {
           response_json: typeof s.response_json === 'string' ? JSON.parse(s.response_json) : s.response_json,
         }));
         this.notices = readTable('notices').map(n => ({ ...n, is_pinned: Boolean(n.is_pinned) }));
+        try {
+          this.grievances = readTable('grievances');
+        } catch {
+          this.grievances = [];
+        }
       } else {
         this.createSqliteTables();
         this.saveToSqlite();
@@ -700,7 +781,8 @@ class DatabaseStore {
       clearAndInsert('students', this.students, [
         'id', 'user_id', 'student_id', 'first_name', 'last_name', 'gender', 'dob', 'email', 'phone',
         'guardian_name', 'guardian_relation', 'guardian_phone', 'course_id', 'session_id', 'current_semester',
-        'admission_year', 'admission_status', 'fees_status', 'attendance_percentage', 'total_classes', 'attended_classes', 'created_at',
+        'admission_year', 'admission_status', 'fees_status', 'attendance_percentage', 'total_classes', 'attended_classes',
+        'is_hosteller', 'is_transport_user', 'transport_route', 'hostel_room_no', 'category', 'quota', 'tenth_percentage', 'twelfth_percentage', 'board_name', 'created_at',
       ]);
       clearAndInsert('fee_heads', this.fee_heads, ['id', 'code', 'title', 'description', 'is_recurring']);
       clearAndInsert('student_fees', this.student_fees, ['id', 'student_id', 'fee_head_id', 'session_id', 'semester', 'amount', 'discount_amount', 'paid_amount', 'due_amount', 'due_date', 'status']);
@@ -710,6 +792,7 @@ class DatabaseStore {
       clearAndInsert('dynamic_forms', this.dynamic_forms, ['id', 'form_code', 'title', 'description', 'schema_json', 'is_published', 'created_by', 'created_at']);
       clearAndInsert('form_submissions', this.form_submissions, ['id', 'form_id', 'user_id', 'response_json', 'submitted_at']);
       clearAndInsert('notices', this.notices, ['id', 'title', 'summary', 'content', 'notice_date', 'category', 'is_pinned']);
+      clearAndInsert('grievances', this.grievances, ['id', 'tracking_code', 'student_id', 'student_name', 'category', 'subject', 'description', 'priority', 'status', 'admin_remarks', 'resolved_by', 'resolved_at', 'created_at']);
 
       this.sqlDb.run('COMMIT;');
 
@@ -839,7 +922,11 @@ class DatabaseStore {
         params.push(s, s, s, s);
       }
       const [rows]: any = await this.mariaPool.query(sql, params);
-      return rows.map((r: any) => ({ ...r }));
+      return rows.map((r: any) => ({
+        ...r,
+        is_hosteller: Boolean(r.is_hosteller),
+        is_transport_user: Boolean(r.is_transport_user),
+      }));
     }
 
     let result = [...this.students];
@@ -862,7 +949,13 @@ class DatabaseStore {
   public async getStudentById(id: string): Promise<Student | null> {
     if (this.mode === 'mariadb' && this.mariaPool) {
       const [rows]: any = await this.mariaPool.query('SELECT * FROM students WHERE id = ? OR student_id = ?', [id, id]);
-      if (rows && rows.length > 0) return { ...rows[0] };
+      if (rows && rows.length > 0) {
+        return {
+          ...rows[0],
+          is_hosteller: Boolean(rows[0].is_hosteller),
+          is_transport_user: Boolean(rows[0].is_transport_user),
+        };
+      }
       return null;
     }
     const student = this.students.find(s => s.id === id || s.student_id === id);
@@ -876,7 +969,13 @@ class DatabaseStore {
         'SELECT * FROM students WHERE user_id = ? OR LOWER(email) = ?',
         [userIdOrEmail, val]
       );
-      if (rows && rows.length > 0) return { ...rows[0] };
+      if (rows && rows.length > 0) {
+        return {
+          ...rows[0],
+          is_hosteller: Boolean(rows[0].is_hosteller),
+          is_transport_user: Boolean(rows[0].is_transport_user),
+        };
+      }
       return null;
     }
     const student = this.students.find(s => s.user_id === userIdOrEmail || s.email.toLowerCase() === val);
@@ -886,8 +985,40 @@ class DatabaseStore {
   public async createStudent(student: Student): Promise<Student> {
     if (this.mode === 'mariadb' && this.mariaPool) {
       await this.mariaPool.query(
-        `INSERT INTO students (id, user_id, student_id, first_name, last_name, gender, dob, email, phone, guardian_name, guardian_relation, guardian_phone, course_id, session_id, current_semester, admission_year, admission_status, fees_status, attendance_percentage, total_classes, attended_classes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [student.id, student.user_id || null, student.student_id, student.first_name, student.last_name, student.gender, student.dob, student.email, student.phone, student.guardian_name, student.guardian_relation, student.guardian_phone, student.course_id, student.session_id, student.current_semester, student.admission_year, student.admission_status, student.fees_status, student.attendance_percentage, student.total_classes, student.attended_classes, formatSqlDateTime(student.created_at)]
+        `INSERT INTO students (id, user_id, student_id, first_name, last_name, gender, dob, email, phone, guardian_name, guardian_relation, guardian_phone, course_id, session_id, current_semester, admission_year, admission_status, fees_status, attendance_percentage, total_classes, attended_classes, is_hosteller, is_transport_user, transport_route, hostel_room_no, category, quota, tenth_percentage, twelfth_percentage, board_name, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          student.id,
+          student.user_id || null,
+          student.student_id,
+          student.first_name,
+          student.last_name,
+          student.gender,
+          student.dob,
+          student.email,
+          student.phone,
+          student.guardian_name,
+          student.guardian_relation,
+          student.guardian_phone,
+          student.course_id,
+          student.session_id,
+          student.current_semester,
+          student.admission_year,
+          student.admission_status,
+          student.fees_status,
+          student.attendance_percentage,
+          student.total_classes,
+          student.attended_classes,
+          student.is_hosteller ? 1 : 0,
+          student.is_transport_user ? 1 : 0,
+          student.transport_route || null,
+          student.hostel_room_no || null,
+          student.category || 'General',
+          student.quota || 'punjab_85',
+          student.tenth_percentage ?? null,
+          student.twelfth_percentage ?? null,
+          student.board_name || null,
+          formatSqlDateTime(student.created_at),
+        ]
       );
       return student;
     }
@@ -1256,6 +1387,78 @@ class DatabaseStore {
     return notice;
   }
 
+  // --- GRIEVANCE REDRESSAL CELL (UGC Mandated) OPERATIONS ---
+  public async getGrievances(filters?: { student_id?: string; status?: string; category?: string }): Promise<Grievance[]> {
+    if (this.mode === 'mariadb' && this.mariaPool) {
+      let sql = 'SELECT * FROM grievances WHERE 1=1';
+      const params: any[] = [];
+      if (filters?.student_id) {
+        sql += ' AND student_id = ?';
+        params.push(filters.student_id);
+      }
+      if (filters?.status && filters.status !== 'all') {
+        sql += ' AND status = ?';
+        params.push(filters.status);
+      }
+      if (filters?.category && filters.category !== 'all') {
+        sql += ' AND category = ?';
+        params.push(filters.category);
+      }
+      sql += ' ORDER BY created_at DESC';
+      const [rows]: any = await this.mariaPool.query(sql, params);
+      return rows.map((r: any) => ({ ...r }));
+    }
+
+    let result = [...this.grievances];
+    if (filters?.student_id) result = result.filter(g => g.student_id === filters.student_id);
+    if (filters?.status && filters.status !== 'all') result = result.filter(g => g.status === filters.status);
+    if (filters?.category && filters.category !== 'all') result = result.filter(g => g.category === filters.category);
+    result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return result;
+  }
+
+  public async getGrievanceById(id: string): Promise<Grievance | null> {
+    if (this.mode === 'mariadb' && this.mariaPool) {
+      const [rows]: any = await this.mariaPool.query('SELECT * FROM grievances WHERE id = ? OR tracking_code = ?', [id, id]);
+      if (rows && rows.length > 0) return { ...rows[0] };
+      return null;
+    }
+    const g = this.grievances.find(item => item.id === id || item.tracking_code === id);
+    return g ? { ...g } : null;
+  }
+
+  public async createGrievance(grievance: Grievance): Promise<Grievance> {
+    if (this.mode === 'mariadb' && this.mariaPool) {
+      await this.mariaPool.query(
+        'INSERT INTO grievances (id, tracking_code, student_id, student_name, category, subject, description, priority, status, admin_remarks, resolved_by, resolved_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [grievance.id, grievance.tracking_code, grievance.student_id, grievance.student_name, grievance.category, grievance.subject, grievance.description, grievance.priority, grievance.status, grievance.admin_remarks || null, grievance.resolved_by || null, grievance.resolved_at || null, formatSqlDateTime(grievance.created_at)]
+      );
+      return grievance;
+    }
+    this.grievances.unshift(grievance);
+    this.save();
+    return grievance;
+  }
+
+  public async updateGrievance(id: string, updates: Partial<Grievance>): Promise<Grievance | null> {
+    if (this.mode === 'mariadb' && this.mariaPool) {
+      const keys = Object.keys(updates);
+      if (keys.length === 0) return this.getGrievanceById(id);
+      const setClause = keys.map(k => `${k} = ?`).join(', ');
+      const values = keys.map(k => (updates as any)[k]);
+      values.push(id, id);
+      await this.mariaPool.query(`UPDATE grievances SET ${setClause} WHERE id = ? OR tracking_code = ?`, values);
+      return this.getGrievanceById(id);
+    }
+    const idx = this.grievances.findIndex(g => g.id === id || g.tracking_code === id);
+    if (idx !== -1) {
+      this.grievances[idx] = { ...this.grievances[idx], ...updates };
+      this.save();
+      return { ...this.grievances[idx] };
+    }
+    return null;
+  }
+
   // --- IN-MEMORY DEFAULT SEEDING ---
   private seedDefaultsInMemory(): void {
     const adminHash = bcrypt.hashSync('admin123', 10);
@@ -1603,7 +1806,10 @@ class DatabaseStore {
 
     this.fee_heads = [
       { id: 'fh-tuition', code: 'TUITION', title: 'Academic Tuition Fee', description: 'Semester academic tuition, classroom access, and lab instructions', is_recurring: true },
-      { id: 'fh-hostel', code: 'HOSTEL', title: 'Hostel & Residence Fee', description: 'Campus accommodation, housekeeping, and facility maintenance', is_recurring: true },
+      { id: 'fh-univ-reg', code: 'UNIV_REG', title: 'University Direct Charges & Exam Fee', description: 'Affiliating University (PTU/GNDU/PUP) registration, examination and sports development fee', is_recurring: true },
+      { id: 'fh-hostel', code: 'HOSTEL_MESS', title: 'Hostel & Mess Boarding Fee', description: 'Campus residential accommodation, housekeeping, and 3-meal mess board (Campus residents only)', is_recurring: true },
+      { id: 'fh-transport', code: 'TRANSPORT', title: 'Bus Commuter / Transport Fee', description: 'Dedicated college fleet transit service across designated city routes (Day scholars only)', is_recurring: true },
+      { id: 'fh-security', code: 'INST_SECURITY', title: 'Refundable Caution Security Deposit', description: 'One-time refundable institution and library security deposit', is_recurring: false },
       { id: 'fh-exam', code: 'EXAM', title: 'Examination & Assessment Fee', description: 'Semester terminal exams, grade transcript processing', is_recurring: true },
       { id: 'fh-lib', code: 'LIBRARY', title: 'Library & Resource Access Fee', description: 'Digital library, textbook reserve access, research journal database', is_recurring: true },
       { id: 'fh-sports', code: 'DEVELOPMENT', title: 'Campus Sports & Development Fee', description: 'Gymnasium, athletic sports ground, and club activities', is_recurring: false },
@@ -1843,6 +2049,49 @@ class DatabaseStore {
         notice_date: '2025-09-20',
         category: 'Campus Life',
         is_pinned: false,
+      },
+    ];
+
+    this.grievances = [
+      {
+        id: 'grv-001',
+        tracking_code: 'GRV-2025-0101',
+        student_id: 'stu-rec-aryan',
+        student_name: 'Aryan Sharma',
+        category: 'hostel',
+        subject: 'Hot water geyser not functioning in Block B 2nd floor',
+        description: 'The geyser in the common bathroom on 2nd floor has been tripping the circuit breaker since yesterday evening. Kindly dispatch electrician.',
+        priority: 'medium',
+        status: 'under_investigation',
+        admin_remarks: 'Estate officer assigned ticket. Work order #402 issued.',
+        created_at: '2025-09-02 10:15:00',
+      },
+      {
+        id: 'grv-002',
+        tracking_code: 'GRV-2025-0102',
+        student_id: 'stu-rec-aryan',
+        student_name: 'Aryan Sharma',
+        category: 'examination',
+        subject: 'Subject code discrepancy on mid-term provisional admit card',
+        description: 'Admit card shows CS-401 instead of CS-402 for Advanced Algorithms. Need urgent correction prior to entry.',
+        priority: 'high',
+        status: 'resolved',
+        admin_remarks: 'Verified with COE database and corrected. Updated slip generated.',
+        resolved_by: 'usr-admin-01',
+        resolved_at: '2025-09-04 14:20:00',
+        created_at: '2025-09-03 09:30:00',
+      },
+      {
+        id: 'grv-003',
+        tracking_code: 'GRV-2025-0103',
+        student_id: 'stu-rec-priya',
+        student_name: 'Priya Patel',
+        category: 'transport',
+        subject: 'Bus Route #3 evening departure delayed by 40 minutes',
+        description: 'The Kharar route bus frequently departs after 5:45 PM instead of 5:10 PM due to driver attendance delays.',
+        priority: 'medium',
+        status: 'submitted',
+        created_at: '2025-09-10 16:30:00',
       },
     ];
   }

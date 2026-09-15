@@ -63,6 +63,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: 'menu_book',
       badge: undefined,
     },
+    {
+      id: 'grievances' as ActiveScreen,
+      label: 'Grievance Cell',
+      icon: 'report_problem',
+      badge: undefined,
+    },
     ...(isAdmin
       ? [
           {
