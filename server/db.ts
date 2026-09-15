@@ -584,13 +584,65 @@ class DatabaseStore {
         [st.id, st.user_id || null, st.student_id, st.first_name, st.last_name, st.gender, st.dob, st.email, st.phone, st.guardian_name, st.guardian_relation, st.guardian_phone, st.course_id, st.session_id, st.current_semester, st.admission_year, st.admission_status, st.fees_status, st.attendance_percentage, st.total_classes, st.attended_classes, formatSqlDateTime(st.created_at)]
       );
     }
-    for (const fh of this.fee_heads) {
+    const canonicalFeeHeads: FeeHead[] = [
+      { id: 'fh-tuition', code: 'TUITION', title: 'Academic Tuition Fee', description: 'Semester academic tuition, classroom access, and lab instructions', is_recurring: true },
+      { id: 'fh-univ-reg', code: 'UNIV_REG', title: 'University Direct Charges & Exam Fee', description: 'Affiliating University (PTU/GNDU/PUP) registration, examination and sports development fee', is_recurring: true },
+      { id: 'fh-hostel', code: 'HOSTEL_MESS', title: 'Hostel & Mess Boarding Fee', description: 'Campus residential accommodation, housekeeping, and 3-meal mess board (Campus residents only)', is_recurring: true },
+      { id: 'fh-transport', code: 'TRANSPORT', title: 'Bus Commuter / Transport Fee', description: 'Dedicated college fleet transit service across designated city routes (Day scholars only)', is_recurring: true },
+      { id: 'fh-security', code: 'INST_SECURITY', title: 'Refundable Caution Security Deposit', description: 'One-time refundable institution and library security deposit', is_recurring: false },
+      { id: 'fh-exam', code: 'EXAM', title: 'Examination & Assessment Fee', description: 'Semester terminal exams, grade transcript processing', is_recurring: true },
+      { id: 'fh-lib', code: 'LIBRARY', title: 'Library & Resource Access Fee', description: 'Digital library, textbook reserve access, research journal database', is_recurring: true },
+      { id: 'fh-sports', code: 'DEVELOPMENT', title: 'Campus Sports & Development Fee', description: 'Gymnasium, athletic sports ground, and club activities', is_recurring: false },
+    ];
+    for (const fh of canonicalFeeHeads) {
       await this.mariaPool.query(
         'INSERT INTO fee_heads (id, code, title, description, is_recurring) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE code = VALUES(code), title = VALUES(title), description = VALUES(description), is_recurring = VALUES(is_recurring)',
         [fh.id, fh.code, fh.title, fh.description || null, fh.is_recurring ? 1 : 0]
       );
     }
-    for (const g of this.grievances) {
+    const defaultGrievances: Grievance[] = [
+      {
+        id: 'grv-001',
+        tracking_code: 'GRV-2025-0101',
+        student_id: 'stu-rec-aryan',
+        student_name: 'Aryan Sharma',
+        category: 'hostel',
+        subject: 'Hot water geyser not functioning in Block B 2nd floor',
+        description: 'The geyser in the common bathroom on 2nd floor has been tripping the circuit breaker since yesterday evening. Kindly dispatch electrician.',
+        priority: 'medium',
+        status: 'under_investigation',
+        admin_remarks: 'Estate officer assigned ticket. Work order #402 issued.',
+        created_at: '2025-09-02 10:15:00',
+      },
+      {
+        id: 'grv-002',
+        tracking_code: 'GRV-2025-0102',
+        student_id: 'stu-rec-aryan',
+        student_name: 'Aryan Sharma',
+        category: 'examination',
+        subject: 'Subject code discrepancy on mid-term provisional admit card',
+        description: 'Admit card shows CS-401 instead of CS-402 for Advanced Algorithms. Need urgent correction prior to entry.',
+        priority: 'high',
+        status: 'resolved',
+        admin_remarks: 'Verified with COE database and corrected. Updated slip generated.',
+        resolved_by: 'usr-admin-01',
+        resolved_at: '2025-09-04 14:20:00',
+        created_at: '2025-09-03 09:30:00',
+      },
+      {
+        id: 'grv-003',
+        tracking_code: 'GRV-2025-0103',
+        student_id: 'stu-rec-priya',
+        student_name: 'Priya Patel',
+        category: 'transport',
+        subject: 'Bus Route #3 evening departure delayed by 40 minutes',
+        description: 'The Kharar route bus frequently departs after 5:45 PM instead of 5:10 PM due to driver attendance delays.',
+        priority: 'medium',
+        status: 'submitted',
+        created_at: '2025-09-10 16:30:00',
+      },
+    ];
+    for (const g of (this.grievances.length > 0 ? this.grievances : defaultGrievances)) {
       await this.mariaPool.query(
         'INSERT IGNORE INTO grievances (id, tracking_code, student_id, student_name, category, subject, description, priority, status, admin_remarks, resolved_by, resolved_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [g.id, g.tracking_code, g.student_id, g.student_name, g.category, g.subject, g.description, g.priority, g.status, g.admin_remarks || null, g.resolved_by || null, g.resolved_at || null, formatSqlDateTime(g.created_at)]
