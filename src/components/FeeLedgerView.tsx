@@ -34,7 +34,17 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
 
   const activeStudentId = currentStudent?.id || selectedStudentId;
 
-  useEffect(() => {
+  // Fee Head Assignment Modal State (Admin only)
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [feeHeads, setFeeHeads] = useState<any[]>([]);
+  const [selectedFeeHeadId, setSelectedFeeHeadId] = useState('');
+  const [assignAmount, setAssignAmount] = useState('');
+  const [assignDueDate, setAssignDueDate] = useState(new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]);
+  const [assignSemester, setAssignSemester] = useState(1);
+  const [assignSubmitting, setAssignSubmitting] = useState(false);
+  const [assignError, setAssignError] = useState<string | null>(null);
+
+  const fetchLedger = () => {
     if (!activeStudentId) return;
     setIsLoading(true);
     api.getFeeLedger(activeStudentId).then(res => {
@@ -43,7 +53,54 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
       }
       setIsLoading(false);
     });
+  };
+
+  useEffect(() => {
+    fetchLedger();
   }, [activeStudentId]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      api.getFeeHeads().then(res => {
+        if (res.success && res.feeHeads) {
+          setFeeHeads(res.feeHeads);
+          if (res.feeHeads.length > 0) {
+            setSelectedFeeHeadId(res.feeHeads[0].id);
+          }
+        }
+      });
+    }
+  }, [isAdmin]);
+
+  const handleAssignHead = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAssignError(null);
+    if (!selectedFeeHeadId || !assignAmount) {
+      setAssignError('Please select a fee head and enter an amount.');
+      return;
+    }
+    setAssignSubmitting(true);
+    try {
+      const res = await api.assignFeeHead({
+        studentId: activeStudentId,
+        feeHeadId: selectedFeeHeadId,
+        amount: parseFloat(assignAmount),
+        dueDate: assignDueDate,
+        semester: assignSemester,
+      });
+      if (res.success) {
+        setIsAssignModalOpen(false);
+        setAssignAmount('');
+        fetchLedger();
+      } else {
+        setAssignError(res.error || 'Failed to assign fee head.');
+      }
+    } catch (err: any) {
+      setAssignError(err.message || 'Error occurred while assigning fee head.');
+    } finally {
+      setAssignSubmitting(false);
+    }
+  };
 
   return (
     <div id="fee-ledger-screen" className="p-8 max-w-7xl mx-auto space-y-6 animate-fadeIn">
@@ -77,6 +134,13 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                   ))}
                 </select>
               </div>
+              <button
+                onClick={() => { setIsAssignModalOpen(true); setAssignError(null); }}
+                className="px-4 py-2 bg-[#00236f] text-white rounded-lg text-xs font-bold hover:bg-[#1e3a8a] flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+              >
+                <span className="material-symbols-outlined text-[16px]">add_circle</span>
+                <span>Assign Fee Head</span>
+              </button>
               <button
                 onClick={() => window.print()}
                 className="px-4 py-2 bg-white border border-[#e1e3e4] text-[#191c1d] rounded-lg text-xs font-bold hover:bg-[#f8f9fa] flex items-center gap-1.5 shadow-xs cursor-pointer"
@@ -295,6 +359,120 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
           </table>
         </div>
       </div>
+
+      {/* Assign Fee Head Modal */}
+      {isAssignModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-[#e1e3e4] overflow-hidden animate-scaleIn">
+            <div className="px-6 py-4 bg-[#00236f] text-white flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-base">Assign Statutory Fee Head</h3>
+                <p className="text-xs text-blue-200">
+                  Target: {ledgerData?.student?.name || 'Selected Student'} ({ledgerData?.student?.studentId})
+                </p>
+              </div>
+              <button
+                onClick={() => setIsAssignModalOpen(false)}
+                className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleAssignHead} className="p-6 space-y-4">
+              {assignError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 font-semibold flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[18px]">error</span>
+                  <span>{assignError}</span>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold text-[#444651] uppercase mb-1">Fee Head</label>
+                <select
+                  value={selectedFeeHeadId}
+                  onChange={e => setSelectedFeeHeadId(e.target.value)}
+                  className="w-full px-3 py-2 border border-[#e1e3e4] rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+                  required
+                >
+                  {feeHeads.map(fh => (
+                    <option key={fh.id} value={fh.id}>
+                      {fh.title} ({fh.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-[#444651] uppercase mb-1">Amount (₹)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="e.g. 5000"
+                    value={assignAmount}
+                    onChange={e => setAssignAmount(e.target.value)}
+                    className="w-full px-3 py-2 border border-[#e1e3e4] rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#444651] uppercase mb-1">Semester</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="12"
+                    value={assignSemester}
+                    onChange={e => setAssignSemester(parseInt(e.target.value) || 1)}
+                    className="w-full px-3 py-2 border border-[#e1e3e4] rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[#444651] uppercase mb-1">Due Date</label>
+                <input
+                  type="date"
+                  value={assignDueDate}
+                  onChange={e => setAssignDueDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-[#e1e3e4] rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+                  required
+                />
+              </div>
+
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-900 leading-relaxed">
+                <span className="font-bold">Affiliation Rule:</span> Campus accommodation (Hostel) and College Fleet (Transport) are strictly mutually exclusive. Violations will be rejected automatically.
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2 border-t border-[#e1e3e4]">
+                <button
+                  type="button"
+                  onClick={() => setIsAssignModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold text-[#444651] hover:bg-gray-100 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={assignSubmitting}
+                  className="px-5 py-2 text-xs font-bold text-white bg-[#00236f] hover:bg-[#1e3a8a] rounded-lg flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {assignSubmitting ? (
+                    <span>Assigning...</span>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                      <span>Confirm Assessment</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
