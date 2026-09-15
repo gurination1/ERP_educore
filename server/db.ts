@@ -569,7 +569,7 @@ class DatabaseStore {
 
       // 2. Hostel & Residential Heads (Campus Residents Only - Mutually exclusive with Transport)
       { id: 'fh-hostel-room', code: 'HOSTEL_ROOM', title: 'Hostel Room Rent & Maintenance', description: 'Campus residential room allotment, fixtures, water, and housekeeping (Campus residents only)', is_recurring: true },
-      { id: 'fh-hostel-mess', code: 'HOSTEL_MESS', title: 'Hostel Mess Advance & Meal Boarding', description: 'Complete 3-meal boarding: daily breakfast, lunch, evening tea/snacks, and dinner', is_recurring: true },
+      { id: 'fh-hostel-mess', code: 'HOSTEL_MEALS', title: 'Hostel Mess Advance & Meal Boarding', description: 'Complete 3-meal boarding: daily breakfast, lunch, evening tea/snacks, and dinner', is_recurring: true },
       { id: 'fh-hostel-util', code: 'HOSTEL_UTIL', title: 'Hostel Power Backup & Utilities', description: '24/7 generator power backup, water heater geyser, and common amenities', is_recurring: true },
       { id: 'fh-hostel-security', code: 'HOSTEL_SECURITY', title: 'Hostel Caution Security Deposit', description: 'One-time refundable hostel fixture and room security deposit', is_recurring: false },
       { id: 'fh-hostel', code: 'HOSTEL_COMPOSITE', title: 'Composite Hostel & Mess Fee', description: 'Consolidated semester residential accommodation and mess boarding fee', is_recurring: true },
@@ -1902,7 +1902,7 @@ class DatabaseStore {
 
       // 2. Hostel & Residential Heads (Campus Residents Only - Mutually exclusive with Transport)
       { id: 'fh-hostel-room', code: 'HOSTEL_ROOM', title: 'Hostel Room Rent & Maintenance', description: 'Campus residential room allotment, fixtures, water, and housekeeping (Campus residents only)', is_recurring: true },
-      { id: 'fh-hostel-mess', code: 'HOSTEL_MESS', title: 'Hostel Mess Advance & Meal Boarding', description: 'Complete 3-meal boarding: daily breakfast, lunch, evening tea/snacks, and dinner', is_recurring: true },
+      { id: 'fh-hostel-mess', code: 'HOSTEL_MEALS', title: 'Hostel Mess Advance & Meal Boarding', description: 'Complete 3-meal boarding: daily breakfast, lunch, evening tea/snacks, and dinner', is_recurring: true },
       { id: 'fh-hostel-util', code: 'HOSTEL_UTIL', title: 'Hostel Power Backup & Utilities', description: '24/7 generator power backup, water heater geyser, and common amenities', is_recurring: true },
       { id: 'fh-hostel-security', code: 'HOSTEL_SECURITY', title: 'Hostel Caution Security Deposit', description: 'One-time refundable hostel fixture and room security deposit', is_recurring: false },
       { id: 'fh-hostel', code: 'HOSTEL_COMPOSITE', title: 'Composite Hostel & Mess Fee', description: 'Consolidated semester residential accommodation and mess boarding fee', is_recurring: true },
