@@ -133,11 +133,17 @@ admissionRouter.post(
     }
 
     const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
-    const photoUrl = files?.photo?.[0] ? `/uploads/${files.photo[0].filename}` : undefined;
-    const transcriptUrl = files?.transcript?.[0] ? `/uploads/${files.transcript[0].filename}` : undefined;
-    const idProofUrl = files?.idProof?.[0] ? `/uploads/${files.idProof[0].filename}` : undefined;
+    const photoUrl = files?.photo?.[0] ? `/uploads/documents/${files.photo[0].filename}` : undefined;
+    const transcriptUrl = files?.transcript?.[0] ? `/uploads/documents/${files.transcript[0].filename}` : undefined;
+    const idProofUrl = files?.idProof?.[0] ? `/uploads/documents/${files.idProof[0].filename}` : undefined;
 
-    const generatedId = `STU-2025-${(allStudents.length + 1).toString().padStart(3, '0')}`;
+    const currentYear = new Date().getFullYear();
+    let idCounter = allStudents.length + 1;
+    let generatedId = `STU-${currentYear}-${idCounter.toString().padStart(3, '0')}`;
+    while (allStudents.some(s => s.student_id === generatedId)) {
+      idCounter++;
+      generatedId = `STU-${currentYear}-${idCounter.toString().padStart(3, '0')}`;
+    }
     const courses = await db.getCourses();
     const sessions = await db.getSessions();
     const course = courses.find(c => c.id === courseId || c.code === courseId) || courses[0];
@@ -308,9 +314,15 @@ admissionRouter.post('/admin-admit', authenticateToken, requireRole('admin'), as
   const course = courses.find(c => c.id === data.courseId || c.code === data.courseId) || courses[0];
   const session = sessions.find(s => s.id === data.sessionId || s.is_current) || sessions[0];
 
-  const generatedId = `STU-2025-${(allStudents.length + 1).toString().padStart(3, '0')}`;
+  const currentYear = new Date().getFullYear();
+  let idCounter = allStudents.length + 1;
+  let generatedId = `STU-${currentYear}-${idCounter.toString().padStart(3, '0')}`;
+  while (allStudents.some(s => s.student_id === generatedId)) {
+    idCounter++;
+    generatedId = `STU-${currentYear}-${idCounter.toString().padStart(3, '0')}`;
+  }
   const username = generatedId.toLowerCase().replace(/[^a-z0-9]/g, '');
-  const tempPassword = `Punjab@${new Date().getFullYear()}`;
+  const tempPassword = `Punjab@${currentYear}`;
   const passwordHash = bcrypt.hashSync(tempPassword, 10);
 
   // 1. Create Portal User Account

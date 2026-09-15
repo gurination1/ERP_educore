@@ -12,7 +12,7 @@ scholarshipRouter.get('/schemes', authenticateToken, async (req: AuthRequest, re
 });
 
 // Admin: Create scholarship scheme
-scholarshipRouter.post('/schemes', authenticateToken, requireRole('admin'), (req: AuthRequest, res: Response): void => {
+scholarshipRouter.post('/schemes', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { code, title, description, award_amount, eligibility_criteria, deadline } = req.body;
 
   if (!title || !award_amount || !deadline) {
@@ -31,8 +31,7 @@ scholarshipRouter.post('/schemes', authenticateToken, requireRole('admin'), (req
     is_active: true,
   };
 
-  db.schemes.push(newScheme);
-  db.save();
+  await db.createScheme(newScheme);
 
   res.status(201).json({ success: true, message: 'Scholarship scheme added successfully.', scheme: newScheme });
 });

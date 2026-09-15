@@ -59,10 +59,6 @@ export async function authenticateToken(req: AuthRequest, res: Response, next: N
       res.status(401).json({ success: false, error: 'User account not found or deactivated.' });
       return;
     }
-    if (userInDb.role === 'staff') {
-      res.status(403).json({ success: false, error: 'Staff accounts are not authorized to access this application.' });
-      return;
-    }
     req.user = {
       id: userInDb.id,
       username: userInDb.username,

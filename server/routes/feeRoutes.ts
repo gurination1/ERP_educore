@@ -276,26 +276,24 @@ feeRouter.post('/collect', authenticateToken, async (req: AuthRequest, res: Resp
   const newStudentFeesStatus = remainingDue <= 0 ? 'paid' : 'due';
   await db.updateStudent(student.id, { fees_status: newStudentFeesStatus });
 
-  const receiptNo = `REC-2025-${Math.floor(1000 + Math.random() * 9000)}`;
+  const receiptNo = `REC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
   const newPayment: Payment = {
     id: `pay-${Date.now()}`,
     receipt_no: receiptNo,
     student_id: student.id,
     student_fee_id: feeRecord?.id,
     amount_paid: amount,
-    payment_mode: paymentMode as any,
-    transaction_reference: `TXN/EDU/${Date.now().toString().slice(-8)}`,
-    payment_date: new Date().toISOString().replace('T', ' ').slice(0, 19),
+    payment_mode: paymentMode || 'net_banking',
+    transaction_reference: `TXN-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
+    payment_date: new Date().toISOString().replace('T', ' ').substring(0, 19),
     status: 'success',
-    notes: notes || 'Online Fee Payment via EduCore ERP Gateway',
-    collected_by: req.user?.id,
   };
 
   await db.createPayment(newPayment);
 
-  res.status(201).json({
+  res.json({
     success: true,
-    message: 'Fee payment processed and recorded successfully.',
+    message: 'Fee payment collected successfully.',
     receiptNo,
     payment: newPayment,
     remainingDue,
@@ -311,7 +309,8 @@ feeRouter.get('/receipt/:receiptIdOrNo(*)', authenticateToken, async (req: AuthR
     payment = allPayments.find(p => p.id === receiptIdOrNo || p.receipt_no === receiptIdOrNo || p.transaction_reference === receiptIdOrNo) || null;
   }
 
-  if (!payment && req.user?.role === 'student') {
+  // Allow 'latest' fallback for student, but return 404 for nonexistent explicit receipt tokens
+  if (!payment && req.user?.role === 'student' && (receiptIdOrNo === 'latest' || !receiptIdOrNo)) {
     const allStudents = await db.getStudents();
     const student = allStudents.find(s => matchStudentForUser(s, req.user));
     if (student) {

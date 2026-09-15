@@ -1266,6 +1266,18 @@ class DatabaseStore {
     return [...this.schemes];
   }
 
+  public async createScheme(scheme: Scheme): Promise<Scheme> {
+    if (this.mode === 'mariadb' && this.mariaPool) {
+      await this.mariaPool.query(
+        'INSERT INTO schemes (id, code, title, description, award_amount, eligibility_criteria, deadline, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [scheme.id, scheme.code, scheme.title, scheme.description, scheme.award_amount, scheme.eligibility_criteria, scheme.deadline, scheme.is_active ? 1 : 0]
+      );
+    }
+    this.schemes.push(scheme);
+    this.save();
+    return scheme;
+  }
+
   public async getScholarshipApplications(studentId?: string): Promise<ScholarshipApplication[]> {
     if (this.mode === 'mariadb' && this.mariaPool) {
       let sql = 'SELECT * FROM scholarship_applications';

