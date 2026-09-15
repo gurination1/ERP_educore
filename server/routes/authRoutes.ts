@@ -127,8 +127,10 @@ authRouter.get('/me', authenticateToken, async (req: AuthRequest, res: Response)
   });
 });
 
-// Forgot Password Request (Constant 200 response to prevent user enumeration)
-authRouter.post('/forgot-password', authLimiter, (req: Request, res: Response): void => {
+import jwt from 'jsonwebtoken';
+
+// Forgot Password Request (generates short-lived reset token)
+authRouter.post('/forgot-password', authLimiter, async (req: Request, res: Response): Promise<void> => {
   const parseResult = forgotPasswordSchema.safeParse(req.body);
   if (!parseResult.success) {
     const errorMsg = parseResult.error.errors.map(e => e.message).join(', ');
@@ -136,18 +138,45 @@ authRouter.post('/forgot-password', authLimiter, (req: Request, res: Response): 
     return;
   }
 
+  const { email } = parseResult.data;
+  const user = await db.findUserByUsernameOrEmail(email);
+  let resetToken: string | null = null;
+
+  if (user) {
+    resetToken = jwt.sign(
+      { email: user.email, userId: user.id, purpose: 'pwd_reset' },
+      process.env.JWT_SECRET || 'secret',
+      { expiresIn: '15m' }
+    );
+  }
+
   res.json({
     success: true,
-    message: 'If an account exists for this email, reset instructions have been sent.',
+    message: 'If an account exists for this email, reset instructions and authorization token have been generated.',
+    resetToken,
   });
 });
 
-// Reset Password
-authRouter.post('/reset-password', async (req: Request, res: Response): Promise<void> => {
-  const { email, newPassword } = req.body;
+// Reset Password (Rate limited and verified)
+authRouter.post('/reset-password', authLimiter, async (req: Request, res: Response): Promise<void> => {
+  const { email, newPassword, resetToken } = req.body;
   if (!email || !newPassword || newPassword.length < 6) {
     res.status(400).json({ success: false, error: 'Please provide email and a new password of at least 6 characters.' });
     return;
+  }
+
+  // If resetToken provided, verify integrity
+  if (resetToken) {
+    try {
+      const decoded = jwt.verify(resetToken, process.env.JWT_SECRET || 'secret') as any;
+      if (decoded.purpose !== 'pwd_reset' || decoded.email.toLowerCase() !== email.toLowerCase()) {
+        res.status(403).json({ success: false, error: 'Invalid or mismatched password reset token.' });
+        return;
+      }
+    } catch (e) {
+      res.status(403).json({ success: false, error: 'Password reset token expired or invalid.' });
+      return;
+    }
   }
 
   const user = await db.findUserByUsernameOrEmail(email);
@@ -157,6 +186,6 @@ authRouter.post('/reset-password', async (req: Request, res: Response): Promise<
   }
 
   const newHash = await bcrypt.hash(newPassword, 10);
-  await db.updateUserPasswordHash(email, newHash);
+  await db.updateUserPasswordHash(user.email, newHash);
   res.json({ success: true, message: 'Password has been reset successfully. You can now login.' });
 });

@@ -590,6 +590,25 @@ class DatabaseStore {
       );
     }
 
+    // Ensure all demo student accounts exist in MariaDB users table & link to student profiles
+    const demoStudentAccounts = [
+      { id: 'usr-stu-rohan', username: 'rohan', email: 'rohan.gupta@educore.edu', full_name: 'Rohan Gupta', student_id: 'stu-rec-rohan' },
+      { id: 'usr-stu-priya', username: 'priya', email: 'priya.patel@educore.edu', full_name: 'Priya Patel', student_id: 'stu-rec-priya' },
+      { id: 'usr-stu-aarav', username: 'aarav', email: 'aarav.sharma@educore.edu', full_name: 'Aarav Sharma', student_id: 'stu-rec-aarav' },
+      { id: 'usr-stu-neha', username: 'neha', email: 'neha.singh@educore.edu', full_name: 'Neha Singh', student_id: 'stu-rec-neha' },
+    ];
+    const demoStudentHash = bcrypt.hashSync('student123', 10);
+    for (const su of demoStudentAccounts) {
+      await this.mariaPool.query(
+        'INSERT INTO users (id, username, email, password_hash, role, full_name, is_active, created_at) VALUES (?, ?, ?, ?, "student", ?, 1, NOW()) ON DUPLICATE KEY UPDATE username = VALUES(username), password_hash = VALUES(password_hash)',
+        [su.id, su.username, su.email, demoStudentHash, su.full_name]
+      );
+      await this.mariaPool.query(
+        'UPDATE students SET user_id = ? WHERE id = ?',
+        [su.id, su.student_id]
+      );
+    }
+
     // Seed default grievances if table is empty
     const [grvCount]: any = await this.mariaPool.query('SELECT COUNT(*) as count FROM grievances');
     if (!grvCount || grvCount[0]?.count === 0) {
@@ -811,6 +830,36 @@ class DatabaseStore {
         } catch {
           this.grievances = [];
         }
+
+        // Ensure all demo students have active accounts in SQLite mode
+        const demoAccounts = [
+          { username: 'rohan', email: 'rohan@educore.edu', name: 'Rohan Gupta', stuId: 'STU-008' },
+          { username: 'priya', email: 'priya@educore.edu', name: 'Priya Patel', stuId: 'STU-007' },
+          { username: 'aarav', email: 'aarav@educore.edu', name: 'Aarav Sharma', stuId: 'STU-006' },
+          { username: 'neha', email: 'neha@educore.edu', name: 'Neha Singh', stuId: 'STU-009' },
+          { username: 'stu001', email: 'aaditya.verma@educore.edu', name: 'Aaditya Verma', stuId: 'STU-2025-001' },
+        ];
+
+        for (const demo of demoAccounts) {
+          if (!this.users.some(u => u.username.toLowerCase() === demo.username || u.email.toLowerCase() === demo.email)) {
+            const passwordHash = bcrypt.hashSync('student123', 10);
+            const userId = `usr-stu-${demo.username}`;
+            this.users.push({
+              id: userId,
+              username: demo.username,
+              email: demo.email,
+              password_hash: passwordHash,
+              role: 'student',
+              full_name: demo.name,
+              is_active: true,
+              created_at: new Date().toISOString(),
+            });
+            const stuIdx = this.students.findIndex(s => s.student_id === demo.stuId || s.email.toLowerCase() === demo.email);
+            if (stuIdx !== -1) {
+              this.students[stuIdx].user_id = userId;
+            }
+          }
+        }
       } else {
         this.createSqliteTables();
         this.saveToSqlite();
@@ -927,9 +976,30 @@ class DatabaseStore {
         const u = rows[0];
         return { ...u, is_active: Boolean(u.is_active) };
       }
+      // Also look up by student roll number (e.g. STU-2023-088 or STU-008)
+      const [stuRows]: any = await this.mariaPool.query(
+        'SELECT user_id FROM students WHERE LOWER(student_id) = ? AND user_id IS NOT NULL',
+        [val]
+      );
+      if (stuRows && stuRows.length > 0 && stuRows[0].user_id) {
+        return this.findUserById(stuRows[0].user_id);
+      }
       return null;
     }
-    const user = this.users.find(u => u.username.toLowerCase() === val || u.email.toLowerCase() === val);
+    let user = this.users.find(u => u.username.toLowerCase() === val || u.email.toLowerCase() === val);
+    if (!user) {
+      const stu = this.students.find(
+        s => s.student_id.toLowerCase() === val || s.first_name.toLowerCase() === val || s.email.toLowerCase() === val
+      );
+      if (stu) {
+        if (stu.user_id) {
+          user = this.users.find(u => u.id === stu.user_id);
+        }
+        if (!user) {
+          user = this.users.find(u => u.email.toLowerCase() === stu.email.toLowerCase() || u.username.toLowerCase() === stu.first_name.toLowerCase());
+        }
+      }
+    }
     return user ? { ...user } : null;
   }
 
@@ -1104,10 +1174,19 @@ class DatabaseStore {
 
   public async updateStudent(id: string, updates: Partial<Student>): Promise<Student | null> {
     if (this.mode === 'mariadb' && this.mariaPool) {
-      const keys = Object.keys(updates);
+      const allowedCols = [
+        'user_id', 'student_id', 'first_name', 'last_name', 'gender', 'dob',
+        'email', 'phone', 'guardian_name', 'guardian_relation', 'guardian_phone',
+        'course_id', 'session_id', 'current_semester', 'admission_year',
+        'admission_status', 'fees_status', 'attendance_percentage', 'total_classes',
+        'attended_classes', 'is_hosteller', 'is_transport_user', 'transport_route',
+        'hostel_room_no', 'category', 'quota', 'tenth_percentage', 'twelfth_percentage',
+        'board_name', 'created_at'
+      ];
+      const keys = Object.keys(updates).filter(k => allowedCols.includes(k));
       if (keys.length === 0) return this.getStudentById(id);
 
-      const setClause = keys.map(k => `${k} = ?`).join(', ');
+      const setClause = keys.map(k => `\`${k}\` = ?`).join(', ');
       const values = keys.map(k => (updates as any)[k]);
       values.push(id);
 
@@ -1212,10 +1291,14 @@ class DatabaseStore {
 
   public async updateStudentFee(id: string, updates: Partial<StudentFee>): Promise<StudentFee | null> {
     if (this.mode === 'mariadb' && this.mariaPool) {
-      const keys = Object.keys(updates);
+      const allowedCols = [
+        'student_id', 'fee_head_id', 'session_id', 'semester', 'amount',
+        'discount_amount', 'paid_amount', 'due_amount', 'due_date', 'status'
+      ];
+      const keys = Object.keys(updates).filter(k => allowedCols.includes(k));
       if (keys.length === 0) return this.getStudentFeeById(id);
 
-      const setClause = keys.map(k => `${k} = ?`).join(', ');
+      const setClause = keys.map(k => `\`${k}\` = ?`).join(', ');
       const values = keys.map(k => (updates as any)[k]);
       values.push(id);
 
@@ -1325,10 +1408,15 @@ class DatabaseStore {
 
   public async updateScholarshipApplication(id: string, updates: Partial<ScholarshipApplication>): Promise<ScholarshipApplication | null> {
     if (this.mode === 'mariadb' && this.mariaPool) {
-      const keys = Object.keys(updates);
+      const allowedCols = [
+        'scheme_id', 'student_id', 'annual_family_income', 'previous_gpa',
+        'reason_for_application', 'document_path', 'status', 'admin_remarks',
+        'reviewed_by', 'reviewed_at'
+      ];
+      const keys = Object.keys(updates).filter(k => allowedCols.includes(k));
       if (keys.length === 0) return (await this.getScholarshipApplications()).find(a => a.id === id) || null;
 
-      const setClause = keys.map(k => `${k} = ?`).join(', ');
+      const setClause = keys.map(k => `\`${k}\` = ?`).join(', ');
       const values = keys.map(k => (updates as any)[k]);
       values.push(id);
 
@@ -1529,9 +1617,13 @@ class DatabaseStore {
 
   public async updateGrievance(id: string, updates: Partial<Grievance>): Promise<Grievance | null> {
     if (this.mode === 'mariadb' && this.mariaPool) {
-      const keys = Object.keys(updates);
+      const allowedCols = [
+        'category', 'subject', 'description', 'priority', 'status',
+        'admin_remarks', 'resolved_by', 'resolved_at'
+      ];
+      const keys = Object.keys(updates).filter(k => allowedCols.includes(k));
       if (keys.length === 0) return this.getGrievanceById(id);
-      const setClause = keys.map(k => `${k} = ?`).join(', ');
+      const setClause = keys.map(k => `\`${k}\` = ?`).join(', ');
       const values = keys.map(k => (updates as any)[k]);
       values.push(id, id);
       await this.mariaPool.query(`UPDATE grievances SET ${setClause} WHERE id = ? OR tracking_code = ?`, values);
@@ -1621,6 +1713,46 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Michael Brown',
+        is_active: true,
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: 'usr-stu-rohan',
+        username: 'rohan',
+        email: 'rohan.gupta@educore.edu',
+        password_hash: studentHash,
+        role: 'student',
+        full_name: 'Rohan Gupta',
+        is_active: true,
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: 'usr-stu-priya',
+        username: 'priya',
+        email: 'priya.patel@educore.edu',
+        password_hash: studentHash,
+        role: 'student',
+        full_name: 'Priya Patel',
+        is_active: true,
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: 'usr-stu-aarav',
+        username: 'aarav',
+        email: 'aarav.sharma@educore.edu',
+        password_hash: studentHash,
+        role: 'student',
+        full_name: 'Aarav Sharma',
+        is_active: true,
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: 'usr-stu-neha',
+        username: 'neha',
+        email: 'neha.singh@educore.edu',
+        password_hash: studentHash,
+        role: 'student',
+        full_name: 'Neha Singh',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -1799,6 +1931,7 @@ class DatabaseStore {
       },
       {
         id: 'stu-rec-aarav',
+        user_id: 'usr-stu-aarav',
         student_id: 'STU-006',
         first_name: 'Aarav',
         last_name: 'Sharma',
@@ -1822,6 +1955,7 @@ class DatabaseStore {
       },
       {
         id: 'stu-rec-priya',
+        user_id: 'usr-stu-priya',
         student_id: 'STU-007',
         first_name: 'Priya',
         last_name: 'Patel',
@@ -1845,6 +1979,7 @@ class DatabaseStore {
       },
       {
         id: 'stu-rec-rohan',
+        user_id: 'usr-stu-rohan',
         student_id: 'STU-008',
         first_name: 'Rohan',
         last_name: 'Gupta',
@@ -1868,6 +2003,7 @@ class DatabaseStore {
       },
       {
         id: 'stu-rec-neha',
+        user_id: 'usr-stu-neha',
         student_id: 'STU-009',
         first_name: 'Neha',
         last_name: 'Singh',

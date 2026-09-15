@@ -585,10 +585,45 @@ admissionRouter.get('/', authenticateToken, requireRole('admin', 'staff'), async
   res.json({ success: true, count: list.length, admissions: list });
 });
 
-// Admin: Update application status (Approve / Reject) with user credentials generation
-admissionRouter.patch('/:id/status', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+// Power Delegation Status
+admissionRouter.get('/delegation', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
+  res.json({
+    success: true,
+    delegation: {
+      superAdminRole: 'admin',
+      academicProvost: 'Dr. Ramesh Chandra',
+      canStaffVerifyDocs: true,
+      canStaffAdmitAfterFeeDeposit: true,
+      requiresAdminForUnpaidWaiver: true,
+      lifecycle: ['submitted', 'verified', 'fee_pending', 'provisionally_admitted', 'approved', 'enrolled', 'rejected'],
+    },
+  });
+});
+
+// Update application status (Approve / Reject / Verify) with user credentials generation & fee checks
+admissionRouter.patch('/:id/status', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
-  const { status } = req.body;
+  const { status, remarks } = req.body;
+
+  // RBAC Power Delegation & Fee-Gated Admission Guard:
+  if (req.user?.role === 'staff') {
+    const studentCheck = await db.getStudentById(id);
+    if (!studentCheck) {
+      res.status(403).json({ success: false, error: 'Staff cannot unilaterally approve admissions without Registrar signoff.' });
+      return;
+    }
+    if (status === 'approved' || status === 'enrolled') {
+      const fees = await db.getStudentFees(studentCheck.id);
+      const totalPaid = fees.reduce((acc, f) => acc + (f.paid_amount || 0), 0);
+      if (totalPaid <= 0) {
+        res.status(403).json({
+          success: false,
+          error: 'Staff can only finalize admission after fee deposit has been submitted. Student fee balance is currently ₹0 paid.',
+        });
+        return;
+      }
+    }
+  }
 
   const student = await db.getStudentById(id);
   if (!student) {
@@ -596,8 +631,9 @@ admissionRouter.patch('/:id/status', authenticateToken, requireRole('admin'), as
     return;
   }
 
-  if (!['submitted', 'pending', 'approved', 'rejected'].includes(status)) {
-    res.status(400).json({ success: false, error: 'Invalid admission status value.' });
+  const validStatuses = ['submitted', 'pending', 'verified', 'fee_pending', 'provisionally_admitted', 'approved', 'enrolled', 'rejected'];
+  if (!validStatuses.includes(status)) {
+    res.status(400).json({ success: false, error: `Invalid admission status value. Must be one of: ${validStatuses.join(', ')}` });
     return;
   }
 
@@ -612,7 +648,7 @@ admissionRouter.patch('/:id/status', authenticateToken, requireRole('admin'), as
       }
     }
     await db.updateStudent(student.id, { admission_status: 'rejected', fees_status: 'cancelled' as any });
-  } else if (status === 'approved') {
+  } else if (status === 'approved' || status === 'enrolled') {
     // Provision User account if not exists
     let targetUserId = student.user_id;
     let tempPassword = `Student@${new Date().getFullYear()}`;

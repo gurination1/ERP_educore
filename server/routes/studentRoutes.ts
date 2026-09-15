@@ -190,7 +190,7 @@ studentRouter.get('/:id', authenticateToken, async (req: AuthRequest, res: Respo
 });
 
 // Send email reminders to students with dues/overdue (Admin only)
-studentRouter.post('/send-email-reminders', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+studentRouter.post('/send-email-reminders', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
   const allStudents = await db.getStudents();
   const overdueStudents = allStudents.filter(s => s.admission_status === 'approved' && (s.fees_status === 'overdue' || s.fees_status === 'due'));
   

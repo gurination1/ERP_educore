@@ -296,15 +296,15 @@ feeRouter.post('/collect', authenticateToken, async (req: AuthRequest, res: Resp
   const newStudentFeesStatus = remainingDue <= 0 ? 'paid' : 'due';
   await db.updateStudent(student.id, { fees_status: newStudentFeesStatus });
 
-  const receiptNo = `REC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const receiptNo = `REC-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}-${Math.floor(1000 + Math.random() * 9000)}`;
   const newPayment: Payment = {
-    id: `pay-${Date.now()}`,
+    id: `pay-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
     receipt_no: receiptNo,
     student_id: student.id,
     student_fee_id: feeRecord?.id,
     amount_paid: amount,
     payment_mode: paymentMode || 'net_banking',
-    transaction_reference: `TXN-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
+    transaction_reference: `TXN-${Date.now()}-${Math.floor(100000 + Math.random() * 900000)}`,
     payment_date: new Date().toISOString().replace('T', ' ').substring(0, 19),
     status: 'success',
   };

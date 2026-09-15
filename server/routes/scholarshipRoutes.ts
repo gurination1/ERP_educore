@@ -167,13 +167,35 @@ scholarshipRouter.patch('/applications/:id/review', authenticateToken, requireRo
       if (feeRecord) {
         const newDiscount = (feeRecord.discount_amount || 0) + awardAmount;
         const netPayable = Math.max(0, feeRecord.amount - newDiscount);
-        const newDue = Math.max(0, netPayable - feeRecord.paid_amount);
-        const newStatus = newDue === 0 ? 'paid' : (feeRecord.paid_amount > 0 ? 'partial' : 'due');
-        await db.updateStudentFee(feeRecord.id, {
-          discount_amount: newDiscount,
-          due_amount: newDue,
-          status: newStatus as any,
-        });
+        if (feeRecord.paid_amount > netPayable) {
+          // Post-Payment Concession: Issue institutional credit note / refund memo
+          const refundCredit = feeRecord.paid_amount - netPayable;
+          await db.createPayment({
+            id: `pay-cred-${Date.now()}`,
+            receipt_no: `CN-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`,
+            student_id: app.student_id,
+            student_fee_id: feeRecord.id,
+            amount_paid: -refundCredit,
+            payment_mode: 'net_banking',
+            transaction_reference: `CREDIT-MEMO-${Date.now()}`,
+            payment_date: new Date().toISOString().replace('T', ' ').substring(0, 19),
+            status: 'success',
+          });
+          await db.updateStudentFee(feeRecord.id, {
+            paid_amount: netPayable,
+            discount_amount: newDiscount,
+            due_amount: 0,
+            status: 'paid',
+          });
+        } else {
+          const newDue = Math.max(0, netPayable - feeRecord.paid_amount);
+          const newStatus = newDue === 0 ? 'paid' : (feeRecord.paid_amount > 0 ? 'partial' : 'due');
+          await db.updateStudentFee(feeRecord.id, {
+            discount_amount: newDiscount,
+            due_amount: newDue,
+            status: newStatus as any,
+          });
+        }
       }
       const updatedFees = await db.getStudentFees(app.student_id);
       const totalRemainingDue = updatedFees.reduce((acc, sf) => acc + (sf.status !== 'paid' && sf.status !== 'cancelled' ? sf.due_amount : 0), 0);
@@ -246,13 +268,34 @@ scholarshipRouter.post('/award', authenticateToken, requireRole('admin'), async 
   if (feeRecord) {
     const newDiscount = (feeRecord.discount_amount || 0) + awardAmount;
     const netPayable = Math.max(0, feeRecord.amount - newDiscount);
-    const newDue = Math.max(0, netPayable - feeRecord.paid_amount);
-    const newStatus = newDue === 0 ? 'paid' : (feeRecord.paid_amount > 0 ? 'partial' : 'due');
-    await db.updateStudentFee(feeRecord.id, {
-      discount_amount: newDiscount,
-      due_amount: newDue,
-      status: newStatus as any,
-    });
+    if (feeRecord.paid_amount > netPayable) {
+      const refundCredit = feeRecord.paid_amount - netPayable;
+      await db.createPayment({
+        id: `pay-cred-${Date.now()}`,
+        receipt_no: `CN-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`,
+        student_id: student.id,
+        student_fee_id: feeRecord.id,
+        amount_paid: -refundCredit,
+        payment_mode: 'net_banking',
+        transaction_reference: `CREDIT-MEMO-${Date.now()}`,
+        payment_date: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        status: 'success',
+      });
+      await db.updateStudentFee(feeRecord.id, {
+        paid_amount: netPayable,
+        discount_amount: newDiscount,
+        due_amount: 0,
+        status: 'paid',
+      });
+    } else {
+      const newDue = Math.max(0, netPayable - feeRecord.paid_amount);
+      const newStatus = newDue === 0 ? 'paid' : (feeRecord.paid_amount > 0 ? 'partial' : 'due');
+      await db.updateStudentFee(feeRecord.id, {
+        discount_amount: newDiscount,
+        due_amount: newDue,
+        status: newStatus as any,
+      });
+    }
   }
 
   // 3. Re-evaluate overall student fee status

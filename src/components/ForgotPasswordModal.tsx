@@ -8,6 +8,7 @@ interface ForgotPasswordModalProps {
 export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClose }) => {
   const [email, setEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [resetToken, setResetToken] = useState<string | null>(null);
   const [step, setStep] = useState<'request' | 'reset'>('request');
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -21,6 +22,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClos
       const res = await api.forgotPassword(email);
       if (res.success) {
         setMessage(res.message);
+        if (res.resetToken) setResetToken(res.resetToken);
         setStep('reset');
       } else {
         setError(res.error || 'Failed to send reset link.');
@@ -37,7 +39,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClos
     setIsLoading(true);
     setError(null);
     try {
-      const res = await api.resetPassword({ email, newPassword });
+      const res = await api.resetPassword({ email, newPassword, resetToken: resetToken || undefined });
       if (res.success) {
         setMessage('Password updated successfully! You can now login with your new credentials.');
         setTimeout(() => onClose(), 2500);

@@ -14,7 +14,7 @@ noticeRouter.get('/', authenticateToken, async (req: AuthRequest, res: Response)
   });
   res.json({ success: true, count: notices.length, notices });
 });
-noticeRouter.post('/', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+noticeRouter.post('/', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { title, summary, content, category, is_pinned } = req.body;
   const noticeSummary = summary || (content ? content.slice(0, 100) : null);
 

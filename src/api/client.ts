@@ -72,7 +72,7 @@ export const api = {
   getMe: () => apiRequest('/api/auth/me'),
   forgotPassword: (email: string) =>
     apiRequest('/api/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
-  resetPassword: (payload: { email: string; newPassword: string }) =>
+  resetPassword: (payload: { email: string; newPassword: string; resetToken?: string }) =>
     apiRequest('/api/auth/reset-password', { method: 'POST', body: JSON.stringify(payload) }),
 
   // Students & Dashboard

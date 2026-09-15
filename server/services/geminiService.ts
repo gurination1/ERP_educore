@@ -43,7 +43,7 @@ async function callGemini(prompt: string, jsonMode = false): Promise<string> {
   };
 
   const postData = JSON.stringify(payload);
-  const models = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-flash-latest'];
+  const models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
 
   let lastError: any = null;
   const maxAttempts = Math.min(keys.length * 2, 6);
@@ -176,11 +176,27 @@ Return ONLY a JSON object with this exact schema:
         throw new Error('Could not detect valid candidate information in the provided input. Please enter an application containing student name, contact, or email.');
       }
 
-      let matchedCourse = availableCourses[0];
+      const lower = rawText.toLowerCase();
+      let matchedCourse: any = null;
+
       for (const c of availableCourses) {
-        if (rawText.toLowerCase().includes(c.code.toLowerCase()) || rawText.toLowerCase().includes(c.name.toLowerCase())) {
+        if (lower.includes(c.code.toLowerCase()) || lower.includes(c.name.toLowerCase())) {
           matchedCourse = c;
           break;
+        }
+      }
+
+      if (!matchedCourse) {
+        if (lower.includes('mba') || lower.includes('management') || lower.includes('finance') || lower.includes('b.com')) {
+          matchedCourse = availableCourses.find(c => c.id.includes('mba') || c.code.toLowerCase().includes('mba')) || availableCourses[0];
+        } else if (lower.includes('mech') || lower.includes('mechanical')) {
+          matchedCourse = availableCourses.find(c => c.id.includes('me') || c.code.toLowerCase().includes('me')) || availableCourses[0];
+        } else if (lower.includes('physics') || lower.includes('bsc') || lower.includes('b.sc')) {
+          matchedCourse = availableCourses.find(c => c.id.includes('phy') || c.code.toLowerCase().includes('phy')) || availableCourses[0];
+        } else if (lower.includes('computer') || lower.includes('cs') || lower.includes('btech') || lower.includes('b.tech') || lower.includes('software')) {
+          matchedCourse = availableCourses.find(c => c.id.includes('cs') || c.code.toLowerCase().includes('cs')) || availableCourses[0];
+        } else {
+          matchedCourse = availableCourses[0];
         }
       }
 
