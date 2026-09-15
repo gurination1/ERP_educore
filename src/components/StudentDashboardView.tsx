@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { api } from '../api/client';
 import { StudentProfile, ActiveScreen, NoticeItem } from '../types';
 
 interface StudentDashboardViewProps {
@@ -6,7 +7,7 @@ interface StudentDashboardViewProps {
   notices: NoticeItem[];
   onNavigate: (screen: ActiveScreen) => void;
   onOpenPayModal: () => void;
-  onOpenReceiptModal: () => void;
+  onOpenReceiptModal: (receiptNo?: string) => void;
 }
 
 export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
@@ -16,6 +17,18 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
   onOpenPayModal,
   onOpenReceiptModal,
 }) => {
+  const [ledgerData, setLedgerData] = useState<any>(null);
+
+  useEffect(() => {
+    if (student?.id || student?.student_id) {
+      api.getFeeLedger(student.id || student.student_id).then(res => {
+        if (res.success) {
+          setLedgerData(res);
+        }
+      });
+    }
+  }, [student]);
+
   const studentName = student
     ? `${student.first_name} ${student.last_name}`
     : 'Aryan Sharma';
@@ -29,6 +42,12 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
   const attendedClasses = student?.attended_classes || 85;
   const totalClasses = student?.total_classes || 100;
   const absentClasses = totalClasses - attendedClasses;
+
+  const totalDue = ledgerData ? ledgerData.summary.totalDue : 0;
+  const totalDiscount = ledgerData ? (ledgerData.ledger || []).reduce((acc: number, f: any) => acc + (f.discount_amount || 0), 0) : 0;
+  const isFullyPaid = ledgerData ? totalDue <= 0 : student?.fees_status === 'paid';
+  const nextDueDate = ledgerData?.ledger?.find((f: any) => f.due_amount > 0)?.due_date || '15 Oct 2025';
+  const latestReceipt = ledgerData?.payments?.[0]?.receipt_no;
 
   return (
     <div id="student-dashboard-screen" className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
@@ -106,37 +125,73 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
               <span className="text-xs font-bold uppercase tracking-wider text-[#757682]">
                 Pending Fee Due
               </span>
-              <span className="px-2.5 py-0.5 bg-[#ffdad6] text-[#ba1a1a] rounded-full text-xs font-bold flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#ba1a1a]"></span>
-                Payment Pending
+              <span
+                className={`px-2.5 py-0.5 rounded-full text-xs font-bold flex items-center gap-1 ${
+                  isFullyPaid
+                    ? 'bg-[#86f2e4]/30 text-[#006a61]'
+                    : 'bg-[#ffdad6] text-[#ba1a1a]'
+                }`}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    isFullyPaid ? 'bg-[#006a61]' : 'bg-[#ba1a1a]'
+                  }`}
+                ></span>
+                {isFullyPaid ? 'Zero Dues • Fully Paid' : 'Payment Pending'}
               </span>
             </div>
 
             <div className="mt-4 flex items-baseline gap-2">
-              <span className="text-4xl font-extrabold text-[#191c1d] tracking-tight">
-                ₹ 45,000
+              <span
+                className={`text-4xl font-extrabold tracking-tight ${
+                  isFullyPaid ? 'text-[#006a61]' : 'text-[#191c1d]'
+                }`}
+              >
+                ₹ {totalDue.toLocaleString('en-IN')}
               </span>
-              <span className="text-xs text-[#757682]">/ Semester 4 Tuition & Assessment</span>
+              <span className="text-xs text-[#757682]">
+                / Semester {student?.current_semester || 4}{' '}
+                {isFullyPaid ? 'All Heads Settled' : 'Tuition & Statutory Assessment'}
+              </span>
             </div>
 
-            <div className="mt-2 flex items-center gap-2 text-xs text-[#444651]">
+            {totalDiscount > 0 && (
+              <div className="mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#86f2e4]/20 border border-[#86f2e4]/60 rounded-md text-xs text-[#006a61] font-bold">
+                <span className="material-symbols-outlined text-[15px]">workspace_premium</span>
+                <span>Scholarship Aid Applied: -₹ {totalDiscount.toLocaleString('en-IN')}</span>
+              </div>
+            )}
+
+            <div className="mt-2.5 flex items-center gap-2 text-xs text-[#444651]">
               <span className="material-symbols-outlined text-[16px] text-[#757682]">
                 calendar_today
               </span>
-              <span>Next Due Date: </span>
-              <strong className="text-[#191c1d]">15 Oct 2025</strong>
+              <span>Due Schedule: </span>
+              <strong className="text-[#191c1d]">
+                {isFullyPaid ? 'Current semester dues cleared in full' : nextDueDate}
+              </strong>
             </div>
           </div>
 
           <div className="mt-6 pt-4 border-t border-[#f3f4f5] flex items-center gap-3">
-            <button
-              id="student-pay-now-btn"
-              onClick={onOpenPayModal}
-              className="flex-1 px-5 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[18px]">credit_card</span>
-              <span>Pay Now</span>
-            </button>
+            {!isFullyPaid ? (
+              <button
+                id="student-pay-now-btn"
+                onClick={onOpenPayModal}
+                className="flex-1 px-5 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[18px]">credit_card</span>
+                <span>Pay Outstanding Due</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => onOpenReceiptModal(latestReceipt)}
+                className="flex-1 px-5 py-2.5 bg-[#006a61] hover:bg-[#005a52] text-white rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[18px]">receipt</span>
+                <span>Download Clearance Receipt</span>
+              </button>
+            )}
             <button
               id="student-view-ledger-btn"
               onClick={() => onNavigate('fee-ledger')}
@@ -182,7 +237,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
 
               <button
                 id="quick-link-receipt"
-                onClick={onOpenReceiptModal}
+                onClick={() => onOpenReceiptModal(latestReceipt)}
                 className="w-full flex items-center justify-between p-3 rounded-lg bg-[#f8f9fa] hover:bg-[#dce1ff]/40 text-left transition-colors border border-[#edeeef]"
               >
                 <div className="flex items-center gap-3">

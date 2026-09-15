@@ -291,8 +291,8 @@ function MainApp() {
                       setTargetPayFeeId(undefined);
                       setIsPayModalOpen(true);
                     }}
-                    onOpenReceiptModal={() => {
-                      setActiveReceiptNo('REC-2024-0088');
+                    onOpenReceiptModal={receiptNo => {
+                      setActiveReceiptNo(receiptNo || 'REC-2024-0088');
                       setIsReceiptOpen(true);
                     }}
                   />

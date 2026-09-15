@@ -119,6 +119,8 @@ export const api = {
   },
   reviewScholarship: (id: string, status: string, remarks?: string) =>
     apiRequest(`/api/scholarships/applications/${id}/review`, { method: 'PATCH', body: JSON.stringify({ status, remarks }) }),
+  awardScholarship: (data: { studentId: string; schemeId: string; amount?: number; remarks?: string }) =>
+    apiRequest('/api/scholarships/award', { method: 'POST', body: JSON.stringify(data) }),
 
   // Dynamic Forms
   getForms: () => apiRequest('/api/forms'),

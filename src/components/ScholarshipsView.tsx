@@ -34,20 +34,83 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
   const [adminRemarks, setAdminRemarks] = useState('');
   const [isReviewing, setIsReviewing] = useState(false);
 
+  // Admin Direct Award state
+  const [isAwardModalOpen, setIsAwardModalOpen] = useState(false);
+  const [studentList, setStudentList] = useState<any[]>([]);
+  const [awardStudentId, setAwardStudentId] = useState('');
+  const [awardSchemeId, setAwardSchemeId] = useState('');
+  const [awardAmount, setAwardAmount] = useState('');
+  const [awardRemarks, setAwardRemarks] = useState('');
+  const [isAwarding, setIsAwarding] = useState(false);
+  const [awardSuccessMsg, setAwardSuccessMsg] = useState<string | null>(null);
+  const [awardErrorMsg, setAwardErrorMsg] = useState<string | null>(null);
+
   const loadData = async () => {
     const resSchemes = await api.getScholarshipSchemes();
     if (resSchemes.success && resSchemes.schemes) {
       setSchemes(resSchemes.schemes);
+      if (!awardSchemeId && resSchemes.schemes.length > 0) {
+        setAwardSchemeId(resSchemes.schemes[0].id);
+        setAwardAmount(resSchemes.schemes[0].award_amount.toString());
+      }
     }
     const resApps = await api.getScholarshipApplications();
     if (resApps.success && resApps.applications) {
       setApplications(resApps.applications);
     }
+    if (isAdmin) {
+      const resStudents = await api.getStudents({ limit: 100 });
+      if (resStudents.success && resStudents.students) {
+        setStudentList(resStudents.students);
+        if (!awardStudentId && resStudents.students.length > 0) {
+          setAwardStudentId(resStudents.students[0].id);
+        }
+      }
+    }
   };
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [isAdmin]);
+
+  const openAwardModalForScheme = (scheme: ScholarshipScheme) => {
+    setAwardSchemeId(scheme.id);
+    setAwardAmount(scheme.award_amount.toString());
+    setAwardRemarks(`Merit concession granted under ${scheme.title}`);
+    setAwardErrorMsg(null);
+    setIsAwardModalOpen(true);
+  };
+
+  const handleAwardSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!awardStudentId || !awardSchemeId || !awardAmount) {
+      setAwardErrorMsg('Please choose both student and scheme, and specify the award amount.');
+      return;
+    }
+    setIsAwarding(true);
+    setAwardErrorMsg(null);
+    try {
+      const res = await api.awardScholarship({
+        studentId: awardStudentId,
+        schemeId: awardSchemeId,
+        amount: parseFloat(awardAmount),
+        remarks: awardRemarks,
+      });
+      if (res.success) {
+        setAwardSuccessMsg(res.message || 'Scholarship successfully awarded and disbursed to fee ledger!');
+        setIsAwardModalOpen(false);
+        setAwardRemarks('');
+        loadData();
+        setTimeout(() => setAwardSuccessMsg(null), 5000);
+      } else {
+        setAwardErrorMsg(res.error || 'Failed to award scholarship.');
+      }
+    } catch (err: any) {
+      setAwardErrorMsg(err.message || 'Error occurred while awarding scholarship.');
+    } finally {
+      setIsAwarding(false);
+    }
+  };
 
   const handleApplySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,13 +208,25 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
 
         <div className="flex items-center gap-3">
           {isAdmin && (
-            <button
-              onClick={() => setIsCreatingScheme(true)}
-              className="px-4 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[16px]">add</span>
-              <span>Create Scheme</span>
-            </button>
+            <>
+              <button
+                onClick={() => {
+                  setAwardErrorMsg(null);
+                  setIsAwardModalOpen(true);
+                }}
+                className="px-4 py-2 bg-[#006a61] hover:bg-[#005a52] text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[16px]">workspace_premium</span>
+                <span>Award Scholarship</span>
+              </button>
+              <button
+                onClick={() => setIsCreatingScheme(true)}
+                className="px-4 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[16px]">add</span>
+                <span>Create Scheme</span>
+              </button>
+            </>
           )}
 
           {/* Tab Switcher */}
@@ -179,6 +254,13 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
           </div>
         </div>
       </div>
+
+      {awardSuccessMsg && (
+        <div className="p-3.5 bg-[#86f2e4]/30 border border-[#86f2e4] text-[#006a61] rounded-xl text-xs font-bold flex items-center gap-2 animate-fadeIn">
+          <span className="material-symbols-outlined text-[18px]">verified</span>
+          <span>{awardSuccessMsg}</span>
+        </div>
+      )}
 
       {applySuccessMsg && (
         <div className="p-3.5 bg-[#86f2e4]/30 border border-[#86f2e4] text-[#006a61] rounded-xl text-xs font-bold flex items-center gap-2">
@@ -247,10 +329,19 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                 </div>
 
                 {isAdmin ? (
-                  <span className="px-3 py-1.5 bg-[#86f2e4]/30 text-[#006a61] rounded-lg text-xs font-bold flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[15px]">verified</span>
-                    <span>Active Scheme</span>
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-1 bg-[#86f2e4]/30 text-[#006a61] rounded-lg text-[11px] font-bold hidden sm:flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">verified</span>
+                      <span>Active</span>
+                    </span>
+                    <button
+                      onClick={() => openAwardModalForScheme(scheme)}
+                      className="px-3.5 py-1.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[15px]">workspace_premium</span>
+                      <span>Award</span>
+                    </button>
+                  </div>
                 ) : (
                   <button
                     onClick={() => setSelectedScheme(scheme)}
@@ -582,6 +673,137 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                   className="px-5 py-2 bg-[#00236f] text-white font-bold rounded-lg hover:bg-[#1e3a8a]"
                 >
                   Publish Scheme
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Admin Direct Award Modal */}
+      {isAdmin && isAwardModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-[#e1e3e4] space-y-4 animate-scaleUp">
+            <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
+              <div>
+                <h3 className="text-lg font-bold text-[#191c1d] flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[#006a61]">workspace_premium</span>
+                  <span>Award Institutional Scholarship</span>
+                </h3>
+                <p className="text-xs text-[#757682]">Directly grant and disburse scholarship concession into student ledger</p>
+              </div>
+              <button onClick={() => setIsAwardModalOpen(false)} className="text-[#757682] hover:text-[#191c1d]">
+                <span className="material-symbols-outlined text-[22px]">close</span>
+              </button>
+            </div>
+
+            {awardErrorMsg && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 font-semibold flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px]">error</span>
+                <span>{awardErrorMsg}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleAwardSubmit} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block font-bold text-[#191c1d] mb-1">Target Student *</label>
+                <select
+                  required
+                  value={awardStudentId}
+                  onChange={e => setAwardStudentId(e.target.value)}
+                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+                >
+                  <option value="">Select Enrolled Student</option>
+                  {studentList.map(s => (
+                    <option key={s.id} value={s.id}>
+                      {s.student_id} — {s.first_name} {s.last_name} ({s.course?.code || 'Enrolled'})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#191c1d] mb-1">Scholarship / Endowment Scheme *</label>
+                <select
+                  required
+                  value={awardSchemeId}
+                  onChange={e => {
+                    setAwardSchemeId(e.target.value);
+                    const found = schemes.find(s => s.id === e.target.value);
+                    if (found) {
+                      setAwardAmount(found.award_amount.toString());
+                      if (!awardRemarks) {
+                        setAwardRemarks(`Merit concession granted under ${found.title}`);
+                      }
+                    }
+                  }}
+                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+                >
+                  <option value="">Select Scheme</option>
+                  {schemes.map(sch => (
+                    <option key={sch.id} value={sch.id}>
+                      {sch.title} (₹ {sch.award_amount.toLocaleString('en-IN')})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#191c1d] mb-1">Award Concession Amount (INR) *</label>
+                <input
+                  type="number"
+                  min="100"
+                  required
+                  value={awardAmount}
+                  onChange={e => setAwardAmount(e.target.value)}
+                  placeholder="e.g. 45000"
+                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-bold text-[#006a61] focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+                >
+                </input>
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#191c1d] mb-1">Committee Remarks / Justification</label>
+                <textarea
+                  rows={2}
+                  value={awardRemarks}
+                  onChange={e => setAwardRemarks(e.target.value)}
+                  placeholder="e.g. Approved by Academic Senate for 100% tuition waiver under Punjab State Merit Scheme."
+                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+                />
+              </div>
+
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-[11px] text-[#00236f] space-y-1">
+                <span className="font-bold block flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[14px]">sync</span>
+                  <span>Instant Ledger Disbursal:</span>
+                </span>
+                <p>
+                  Upon submission, this grant directly discounts the student's tuition fee head (<code className="bg-white px-1 py-0.5 rounded font-mono text-[10px]">fh-tuition</code>), immediately adjusts outstanding dues, and reflects on both the student and admin portals.
+                </p>
+              </div>
+
+              <div className="pt-3 flex justify-end gap-2 border-t border-[#f3f4f5]">
+                <button
+                  type="button"
+                  onClick={() => setIsAwardModalOpen(false)}
+                  className="px-4 py-2 border border-[#e1e3e4] rounded-lg font-semibold hover:bg-[#f8f9fa]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isAwarding}
+                  className="px-5 py-2 bg-[#006a61] hover:bg-[#005a52] text-white font-bold rounded-lg shadow-xs flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {isAwarding ? (
+                    <span>Disbursing Aid...</span>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-[16px]">verified</span>
+                      <span>Award & Disburse to Ledger</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>

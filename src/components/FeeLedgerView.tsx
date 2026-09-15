@@ -163,30 +163,40 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
 
       {/* Summary KPI Banner */}
       {ledgerData && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white p-5 rounded-xl border border-[#e1e3e4] shadow-xs">
             <span className="text-xs font-bold uppercase tracking-wider text-[#757682]">
-              Total Academic Fees
+              Gross Assessed Fees
             </span>
             <h3 className="text-2xl font-extrabold text-[#191c1d] mt-1">
-              ₹ {ledgerData.summary.totalPayable.toLocaleString('en-IN')}
+              ₹ {(ledgerData.summary.totalGross || ledgerData.summary.totalPayable).toLocaleString('en-IN')}
             </h3>
-            <p className="text-xs text-[#757682] mt-0.5">Assessed across all semesters</p>
+            <p className="text-xs text-[#757682] mt-0.5">Assessed statutory heads</p>
+          </div>
+
+          <div className="bg-white p-5 rounded-xl border border-[#e1e3e4] shadow-xs">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#006a61]">
+              Scholarships & Aid
+            </span>
+            <h3 className="text-2xl font-extrabold text-[#006a61] mt-1">
+              ₹ {((ledgerData.ledger || []).reduce((acc: number, f: any) => acc + (f.discount_amount || 0), 0)).toLocaleString('en-IN')}
+            </h3>
+            <p className="text-xs text-[#006a61] font-semibold mt-0.5">Approved fee concessions</p>
           </div>
 
           <div className="bg-white p-5 rounded-xl border border-[#e1e3e4] shadow-xs">
             <span className="text-xs font-bold uppercase tracking-wider text-[#757682]">
               Total Paid to Date
             </span>
-            <h3 className="text-2xl font-extrabold text-[#006a61] mt-1">
+            <h3 className="text-2xl font-extrabold text-[#00236f] mt-1">
               ₹ {ledgerData.summary.totalPaid.toLocaleString('en-IN')}
             </h3>
-            <p className="text-xs text-[#006a61] font-semibold mt-0.5">Verified receipts issued</p>
+            <p className="text-xs text-[#757682] font-semibold mt-0.5">Verified receipts issued</p>
           </div>
 
           <div className="bg-white p-5 rounded-xl border border-[#e1e3e4] shadow-xs">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#757682]">
-              Outstanding Due Balance
+            <span className="text-xs font-bold uppercase tracking-wider text-[#ba1a1a]">
+              Net Outstanding Due
             </span>
             <h3 className="text-2xl font-extrabold text-[#ba1a1a] mt-1">
               ₹ {ledgerData.summary.totalDue.toLocaleString('en-IN')}
@@ -202,11 +212,11 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
           <div>
             <h3 className="text-base font-bold text-[#191c1d]">Fee Heads & Assessment Breakdown</h3>
             <p className="text-xs text-[#757682] mt-0.5">
-              Itemized semester billing schedule
+              Itemized semester billing schedule with applied scholarships & mutual exclusivity audit
             </p>
           </div>
           <span className="px-2.5 py-1 bg-[#dce1ff] text-[#00236f] rounded text-xs font-bold">
-            Semester 4 (Active)
+            Semester {ledgerData?.student?.semester || 1} (Active)
           </span>
         </div>
 
@@ -217,8 +227,9 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                 <th className="py-3 px-4">Fee Head</th>
                 <th className="py-3 px-4">Session / Sem</th>
                 <th className="py-3 px-4">Gross Amount</th>
+                <th className="py-3 px-4">Scholarship / Aid</th>
                 <th className="py-3 px-4">Paid</th>
-                <th className="py-3 px-4">Due Amount</th>
+                <th className="py-3 px-4">Net Due</th>
                 <th className="py-3 px-4">Due Date</th>
                 <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4 text-right">Action</th>
@@ -227,13 +238,13 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
             <tbody className="divide-y divide-[#f3f4f5]">
               {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="py-6 text-center text-[#757682]">
+                  <td colSpan={9} className="py-6 text-center text-[#757682]">
                     Loading fee ledger entries...
                   </td>
                 </tr>
               ) : ledgerData?.ledger?.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-6 text-center text-[#757682]">
+                  <td colSpan={9} className="py-6 text-center text-[#757682]">
                     No fee records currently logged.
                   </td>
                 </tr>
@@ -248,6 +259,16 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                     </td>
                     <td className="py-3.5 px-4 font-semibold text-[#191c1d]">
                       ₹ {item.amount.toLocaleString('en-IN')}
+                    </td>
+                    <td className="py-3.5 px-4">
+                      {item.discount_amount > 0 ? (
+                        <span className="px-2 py-0.5 bg-[#86f2e4]/30 text-[#006a61] rounded text-[11px] font-bold inline-flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[13px]">workspace_premium</span>
+                          <span>-₹ {item.discount_amount.toLocaleString('en-IN')}</span>
+                        </span>
+                      ) : (
+                        <span className="text-[#757682] font-mono">—</span>
+                      )}
                     </td>
                     <td className="py-3.5 px-4 text-[#006a61] font-semibold">
                       ₹ {item.paid_amount.toLocaleString('en-IN')}

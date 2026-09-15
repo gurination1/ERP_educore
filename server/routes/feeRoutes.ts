@@ -44,14 +44,15 @@ feeRouter.post('/assign', authenticateToken, requireRole('admin'), async (req: A
   const isHostelHead = feeHead.id.startsWith('fh-hostel') || feeHead.code.startsWith('HOSTEL');
   const isTransportHead = feeHead.id.startsWith('fh-transport') || feeHead.code.startsWith('TRANSPORT');
 
+  const targetSemester = semester || student.current_semester || 1;
   const existingFees = await db.getStudentFees(student.id);
-  const activeHostelFee = existingFees.find(f => (f.fee_head_id.startsWith('fh-hostel') || f.fee_head_id.startsWith('HOSTEL')) && f.status !== 'cancelled');
-  const activeTransportFee = existingFees.find(f => (f.fee_head_id.startsWith('fh-transport') || f.fee_head_id.startsWith('TRANSPORT')) && f.status !== 'cancelled');
+  const activeHostelFee = existingFees.find(f => f.semester === targetSemester && (f.fee_head_id.startsWith('fh-hostel') || f.fee_head_id.startsWith('HOSTEL')) && f.status !== 'cancelled');
+  const activeTransportFee = existingFees.find(f => f.semester === targetSemester && (f.fee_head_id.startsWith('fh-transport') || f.fee_head_id.startsWith('TRANSPORT')) && f.status !== 'cancelled');
 
   if (isHostelHead && (student.is_transport_user || activeTransportFee)) {
     res.status(400).json({
       success: false,
-      error: 'Mutual Exclusivity Violation: Student is registered as a Day-Scholar / Bus Fleet Commuter. A day scholar cannot be assigned Hostel Room Rent, Mess Boarding, or Residential Utility Fees.',
+      error: 'Mutual Exclusivity Violation: Student is registered as a Day-Scholar / Bus Fleet Commuter for this semester. A day scholar cannot be assigned Hostel Room Rent, Mess Boarding, or Residential Utility Fees.',
     });
     return;
   }
@@ -59,7 +60,7 @@ feeRouter.post('/assign', authenticateToken, requireRole('admin'), async (req: A
   if (isTransportHead && (student.is_hosteller || activeHostelFee)) {
     res.status(400).json({
       success: false,
-      error: 'Mutual Exclusivity Violation: Student is registered as a Campus Hosteller living in college dorms. Campus residents cannot be assigned College Bus / Transit Fleet commuter fees.',
+      error: 'Mutual Exclusivity Violation: Student is registered as a Campus Hosteller living in college dorms for this semester. Campus residents cannot be assigned College Bus / Transit Fleet commuter fees.',
     });
     return;
   }
@@ -200,6 +201,8 @@ feeRouter.get('/ledger/:studentId', authenticateToken, async (req: AuthRequest, 
 
   const payments = await db.getPayments(student.id);
 
+  const totalGross = studentFees.reduce((acc, sf) => acc + sf.amount, 0);
+  const totalDiscount = studentFees.reduce((acc, sf) => acc + (sf.discount_amount || 0), 0);
   const totalPayable = studentFees.reduce((acc, sf) => acc + Math.max(0, sf.amount - (sf.discount_amount || 0)), 0);
   const totalPaid = studentFees.reduce((acc, sf) => acc + sf.paid_amount, 0);
   const totalDue = studentFees.reduce((acc, sf) => acc + (sf.status !== 'paid' && sf.status !== 'cancelled' ? sf.due_amount : 0), 0);
@@ -216,6 +219,8 @@ feeRouter.get('/ledger/:studentId', authenticateToken, async (req: AuthRequest, 
       session: session?.name,
     },
     summary: {
+      totalGross,
+      totalDiscount,
       totalPayable,
       totalPaid,
       totalDue,
@@ -254,13 +259,10 @@ feeRouter.post('/collect', authenticateToken, async (req: AuthRequest, res: Resp
 
   const studentFees = await db.getStudentFees(student.id);
   let feeRecord = studentFeeId ? studentFees.find(sf => sf.id === studentFeeId) : undefined;
-  if (!feeRecord) {
-    feeRecord = studentFees.find(sf => sf.status !== 'paid');
-  }
 
   if (feeRecord) {
-    const newPaid = feeRecord.paid_amount + amount;
     const netPayable = Math.max(0, feeRecord.amount - (feeRecord.discount_amount || 0));
+    const newPaid = feeRecord.paid_amount + amount;
     const newDue = Math.max(0, netPayable - newPaid);
     const newStatus = newDue === 0 ? 'paid' : 'partial';
     await db.updateStudentFee(feeRecord.id, {
@@ -268,6 +270,24 @@ feeRouter.post('/collect', authenticateToken, async (req: AuthRequest, res: Resp
       due_amount: newDue,
       status: newStatus,
     });
+  } else {
+    // Bulk waterfall allocation: cascade payments across all unpaid fee records
+    let remainingPayment = amount;
+    const unpaidFees = studentFees.filter(sf => sf.status !== 'paid' && sf.status !== 'cancelled' && sf.due_amount > 0);
+    for (const sf of unpaidFees) {
+      if (remainingPayment <= 0) break;
+      const allocate = Math.min(remainingPayment, sf.due_amount);
+      const newPaid = sf.paid_amount + allocate;
+      const netPayable = Math.max(0, sf.amount - (sf.discount_amount || 0));
+      const newDue = Math.max(0, netPayable - newPaid);
+      const newStatus = newDue === 0 ? 'paid' : 'partial';
+      await db.updateStudentFee(sf.id, {
+        paid_amount: newPaid,
+        due_amount: newDue,
+        status: newStatus,
+      });
+      remainingPayment -= allocate;
+    }
   }
 
   // Update student overall fee status

@@ -189,3 +189,85 @@ scholarshipRouter.patch('/applications/:id/review', authenticateToken, requireRo
     application: updated || app,
   });
 });
+
+// Admin: Directly Award Scholarship to Student & Disburse to Fee Ledger
+scholarshipRouter.post('/award', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+  const { studentId, schemeId, amount, remarks } = req.body;
+
+  if (!studentId || !schemeId) {
+    res.status(400).json({ success: false, error: 'Student ID and Scholarship Scheme ID are required.' });
+    return;
+  }
+
+  const allStudents = await db.getStudents();
+  const student = allStudents.find(s => s.id === studentId || s.student_id === studentId);
+  if (!student) {
+    res.status(404).json({ success: false, error: 'Student record not found.' });
+    return;
+  }
+
+  const schemes = await db.getSchemes();
+  const scheme = schemes.find(s => s.id === schemeId || s.code === schemeId);
+  if (!scheme) {
+    res.status(404).json({ success: false, error: 'Scholarship scheme not found.' });
+    return;
+  }
+
+  const awardAmount = amount !== undefined && !isNaN(Number(amount)) ? Number(amount) : scheme.award_amount;
+  if (awardAmount <= 0) {
+    res.status(400).json({ success: false, error: 'Award amount must be greater than zero.' });
+    return;
+  }
+
+  // 1. Create approved application record
+  const application: ScholarshipApplication = {
+    id: `appl-${Date.now()}`,
+    scheme_id: scheme.id,
+    student_id: student.id,
+    annual_family_income: 250000,
+    previous_gpa: 9.0,
+    reason_for_application: remarks || `Direct institutional award under ${scheme.title}`,
+    document_path: '/uploads/documents/scholarship_direct_award.pdf',
+    status: 'approved',
+    admin_remarks: remarks || `Directly awarded by Academic & Finance Committee under ${scheme.title}`,
+    reviewed_by: req.user?.id,
+    reviewed_at: new Date().toISOString(),
+    created_at: new Date().toISOString(),
+  };
+
+  await db.createScholarshipApplication(application);
+
+  // 2. Immediately disburse discount to student fee ledger
+  const studentFees = await db.getStudentFees(student.id);
+  const feeRecord = [...studentFees].reverse().find(sf => sf.fee_head_id === 'fh-tuition' && sf.status !== 'cancelled' && sf.due_amount > 0)
+    || [...studentFees].reverse().find(sf => sf.status !== 'cancelled' && sf.due_amount > 0)
+    || [...studentFees].reverse().find(sf => sf.fee_head_id === 'fh-tuition' && sf.status !== 'cancelled');
+
+  if (feeRecord) {
+    const newDiscount = (feeRecord.discount_amount || 0) + awardAmount;
+    const netPayable = Math.max(0, feeRecord.amount - newDiscount);
+    const newDue = Math.max(0, netPayable - feeRecord.paid_amount);
+    const newStatus = newDue === 0 ? 'paid' : (feeRecord.paid_amount > 0 ? 'partial' : 'due');
+    await db.updateStudentFee(feeRecord.id, {
+      discount_amount: newDiscount,
+      due_amount: newDue,
+      status: newStatus as any,
+    });
+  }
+
+  // 3. Re-evaluate overall student fee status
+  const updatedFees = await db.getStudentFees(student.id);
+  const totalRemainingDue = updatedFees.reduce((acc, sf) => acc + (sf.status !== 'paid' && sf.status !== 'cancelled' ? sf.due_amount : 0), 0);
+  if (totalRemainingDue <= 0) {
+    await db.updateStudent(student.id, { fees_status: 'paid' });
+  }
+
+  res.status(201).json({
+    success: true,
+    message: `Scholarship of ₹${awardAmount.toLocaleString('en-IN')} successfully awarded to ${student.first_name} ${student.last_name} and disbursed to Fee Ledger.`,
+    application,
+    student,
+    awardedAmount: awardAmount,
+    remainingDue: totalRemainingDue,
+  });
+});
