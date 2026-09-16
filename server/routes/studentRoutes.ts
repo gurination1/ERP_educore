@@ -202,3 +202,95 @@ studentRouter.post('/send-email-reminders', authenticateToken, requireRole('admi
     recipientCount: overdueStudents.length,
   });
 });
+
+// MRSPTU Examination Admit Card / Roll No Slip (Scoped & Gated by Fees + Attendance)
+studentRouter.get('/:id/admit-card', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const allStudents = await db.getStudents();
+
+  let student: Student | undefined;
+  if (req.user?.role === 'student') {
+    student = allStudents.find(s => matchStudentForUser(s, req.user));
+    if (!student) {
+      res.status(404).json({ success: false, error: 'Student record not found for your account.' });
+      return;
+    }
+    if (id !== 'me' && id !== student.id && id !== student.student_id && id !== student.user_id) {
+      res.status(403).json({ success: false, error: 'Access denied. You can only view your own Admit Card.' });
+      return;
+    }
+  } else {
+    student = allStudents.find(s => s.id === id || s.student_id === id || s.user_id === id || s.email.toLowerCase() === id.toLowerCase());
+  }
+
+  if (!student) {
+    res.status(404).json({ success: false, error: 'Student not found.' });
+    return;
+  }
+
+  const course = await db.getCourseById(student.course_id);
+  const session = await db.getSessionById(student.session_id);
+  const studentFees = await db.getStudentFees(student.id);
+
+  // 1. Check Financial Dues Clearance (No-Dues requirement)
+  const activeFees = studentFees.filter(sf => sf.status !== 'cancelled');
+  const totalOutstandingDue = Math.round(activeFees.reduce((acc, sf) => acc + (sf.status !== 'paid' ? sf.due_amount : 0), 0) * 100) / 100;
+  const isFeeCleared = totalOutstandingDue <= 0.01;
+
+  // 2. Check MRSPTU Attendance Ordinance (75% Minimum Mandatory Cutoff)
+  const attendancePercentage = student.total_classes === 0 ? (student.attendance_percentage ?? 100) : Math.round((student.attended_classes / student.total_classes) * 100);
+  const isAttendanceEligible = attendancePercentage >= 75;
+
+  const isEligible = isFeeCleared && isAttendanceEligible;
+  const status: 'RELEASED' | 'WITHHELD' = isEligible ? 'RELEASED' : 'WITHHELD';
+  const holdReasons: string[] = [];
+
+  if (!isFeeCleared) {
+    holdReasons.push(`Accounts Branch Hold: Outstanding fee balance of ₹${totalOutstandingDue.toLocaleString('en-IN')} pending clearance.`);
+  }
+  if (!isAttendanceEligible) {
+    holdReasons.push(`MRSPTU Attendance Detention (Ordinance 7.4): Attendance is ${attendancePercentage}%, below mandatory 75% minimum cutoff. Submit condonation approved by Dean / HOD.`);
+  }
+
+  const semester = student.current_semester || 1;
+  const subjectPapers = [
+    { paperCode: `${course?.code || 'CS'}-${semester}01`, subjectTitle: 'Applied Advanced Mathematics & Numerical Computing', examDate: '2025-12-24', timing: '09:30 AM - 12:30 PM (Morning Session)', centerCode: '108 (BFGI Main Campus)' },
+    { paperCode: `${course?.code || 'CS'}-${semester}02`, subjectTitle: 'Data Structures & Algorithmic Analysis', examDate: '2025-12-27', timing: '09:30 AM - 12:30 PM (Morning Session)', centerCode: '108 (BFGI Main Campus)' },
+    { paperCode: `${course?.code || 'CS'}-${semester}03`, subjectTitle: 'Object Oriented Programming & System Architecture', examDate: '2025-12-30', timing: '09:30 AM - 12:30 PM (Morning Session)', centerCode: '108 (BFGI Main Campus)' },
+    { paperCode: `${course?.code || 'CS'}-${semester}04`, subjectTitle: 'Database Management & Cloud Distributed Systems', examDate: '2026-01-03', timing: '09:30 AM - 12:30 PM (Morning Session)', centerCode: '108 (BFGI Main Campus)' },
+    { paperCode: `${course?.code || 'CS'}-${semester}05`, subjectTitle: 'Universal Human Values, Professional Ethics & Constitution', examDate: '2026-01-06', timing: '09:30 AM - 12:30 PM (Morning Session)', centerCode: '108 (BFGI Main Campus)' },
+    { paperCode: `${course?.code || 'CS'}-${semester}06`, subjectTitle: 'Practical Lab 1 - System Implementation & Viva Voce', examDate: '2026-01-08', timing: '01:30 PM - 04:30 PM (Evening Session)', centerCode: '108 (BFGI Main Campus)' },
+  ];
+
+  res.json({
+    success: true,
+    isEligible,
+    status,
+    holdReasons,
+    totalOutstandingDue,
+    attendancePercentage,
+    admitCard: {
+      university: 'Maharaja Ranjit Singh Punjab Technical University, Bathinda',
+      accreditation: 'A State University Established by Govt. of Punjab vide Act No. 5 of 2015',
+      affiliatedInstitute: 'Baba Farid College of Engineering & Technology (BFGI), Bathinda',
+      instituteCode: 'College Code: 108',
+      examSession: 'Dec / Jan Session 2025-26',
+      rollNo: `MRSPTU-${student.student_id.replace(/[^0-9]/g, '') || '23010488'}`,
+      regNo: `REG-${session?.name || '2025'}-${student.id.slice(-6)}`,
+      candidateName: `${student.first_name} ${student.last_name}`,
+      fatherName: student.guardian_name || 'Guardian',
+      courseName: `${course?.name || 'B.Tech Computer Science & Engineering'} (${course?.code || 'B.Tech'})`,
+      semester: `Semester ${semester} (Regular Examination)`,
+      examCenter: 'Center No. 108: Exam Center A, BFGI Campus, Muktsar Road, Bathinda - 151001',
+      papers: subjectPapers,
+      verificationBarcode: `MRSPTU-VERIFY-${student.student_id}-${Date.now().toString().slice(-4)}`,
+      authorizedSignatory: 'Dr. Gurpreet Singh (Controller of Examinations, MRSPTU)',
+      instructions: [
+        'Candidate must present this original MRSPTU Admit Card along with college RFID Identity Card at the examination entrance.',
+        'Strictly prohibited: Smart watches, cellular mobile phones, programmable calculators, and unauthorized printed materials.',
+        'Report to designated examination hall at least 30 minutes prior to paper commencement.',
+        'No candidate shall be allowed entry after 15 minutes of question paper distribution.',
+      ],
+    },
+  });
+});

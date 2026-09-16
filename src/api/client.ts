@@ -166,4 +166,7 @@ export const api = {
 
   // Health
   getHealth: () => apiRequest('/api/health'),
+
+  // MRSPTU Examination Admit Card
+  getAdmitCard: (id: string = 'me') => apiRequest(`/api/students/${id}/admit-card`),
 };

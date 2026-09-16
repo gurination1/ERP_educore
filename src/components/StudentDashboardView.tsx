@@ -8,6 +8,7 @@ interface StudentDashboardViewProps {
   onNavigate: (screen: ActiveScreen) => void;
   onOpenPayModal: () => void;
   onOpenReceiptModal: (receiptNo?: string) => void;
+  onOpenAdmitCardModal?: () => void;
 }
 
 export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
@@ -16,6 +17,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
   onNavigate,
   onOpenPayModal,
   onOpenReceiptModal,
+  onOpenAdmitCardModal,
 }) => {
   const [ledgerData, setLedgerData] = useState<any>(null);
 
@@ -175,6 +177,61 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                 {isFullyPaid ? 'Current semester dues cleared in full' : nextDueDate}
               </strong>
             </div>
+
+            {/* MRSPTU Examination Admit Card Gate Banner */}
+            {isFullyPaid && !isDetained ? (
+              <div className="mt-3.5 p-3 bg-[#86f2e4]/20 border border-[#86f2e4] rounded-xl flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="material-symbols-outlined text-[#006a61] text-[20px]">assignment_turned_in</span>
+                  <div>
+                    <h4 className="text-xs font-bold text-[#006a61]">MRSPTU Exam Hall Ticket Released</h4>
+                    <p className="text-[10px] text-[#444651]">Dec / Jan Session • No-Dues & Attendance Cleared</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={onOpenAdmitCardModal}
+                  className="px-3 py-1.5 bg-[#006a61] hover:bg-[#005a52] text-white rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer shadow-xs shrink-0"
+                >
+                  <span className="material-symbols-outlined text-[15px]">badge</span>
+                  <span>View Roll Slip</span>
+                </button>
+              </div>
+            ) : !isFullyPaid ? (
+              <div className="mt-3.5 p-3 bg-[#ffdad6]/40 border border-[#ffdad6] rounded-xl flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="material-symbols-outlined text-[#ba1a1a] text-[20px]">block</span>
+                  <div>
+                    <h4 className="text-xs font-bold text-[#ba1a1a]">MRSPTU Exam Admit Card Withheld</h4>
+                    <p className="text-[10px] text-[#444651]">Accounts hold: ₹{totalDue.toLocaleString('en-IN')} pending balance</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={onOpenAdmitCardModal}
+                  className="px-2.5 py-1 bg-white hover:bg-[#fff8f7] text-[#ba1a1a] border border-[#ba1a1a] rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer shrink-0"
+                >
+                  <span>Hold Reason</span>
+                </button>
+              </div>
+            ) : (
+              <div className="mt-3.5 p-3 bg-[#ffdad6]/40 border border-[#ffdad6] rounded-xl flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="material-symbols-outlined text-[#ba1a1a] text-[20px]">warning</span>
+                  <div>
+                    <h4 className="text-xs font-bold text-[#ba1a1a]">Admit Card Withheld (Attendance &lt; 75%)</h4>
+                    <p className="text-[10px] text-[#444651]">MRSPTU Ordinance 7.4 Detention ({attendancePct}%). Submit HOD condonation.</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={onOpenAdmitCardModal}
+                  className="px-2.5 py-1 bg-white hover:bg-[#fff8f7] text-[#ba1a1a] border border-[#ba1a1a] rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer shrink-0"
+                >
+                  <span>Detention Details</span>
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="mt-6 pt-4 border-t border-[#f3f4f5] flex items-center gap-3">
@@ -220,6 +277,29 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
           <div>
             <h3 className="text-base font-bold text-[#191c1d] mb-4">Quick Links</h3>
             <div className="space-y-2.5">
+              <button
+                id="quick-link-admit-card"
+                onClick={onOpenAdmitCardModal}
+                className="w-full flex items-center justify-between p-3 rounded-lg bg-[#f8f9fa] hover:bg-[#dce1ff]/40 text-left transition-colors border border-[#edeeef]"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-8 h-8 rounded-md flex items-center justify-center ${
+                    isFullyPaid && !isDetained ? 'bg-[#86f2e4]/30 text-[#006a61]' : 'bg-[#ffdad6] text-[#ba1a1a]'
+                  }`}>
+                    <span className="material-symbols-outlined text-[18px]">badge</span>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-[#191c1d]">MRSPTU Exam Admit Card</p>
+                    <p className="text-[10px] text-[#757682]">
+                      {isFullyPaid && !isDetained ? 'Cleared & Released' : 'Clearance Required'}
+                    </p>
+                  </div>
+                </div>
+                <span className="material-symbols-outlined text-[16px] text-[#757682]">
+                  arrow_forward
+                </span>
+              </button>
+
               <button
                 id="quick-link-scholarship"
                 onClick={() => onNavigate('scholarships')}

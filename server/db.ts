@@ -2052,6 +2052,7 @@ class DatabaseStore {
       { id: 'fh-misc', code: 'MISC_STUDENT', title: 'Miscellaneous Campus & Student Welfare', description: 'Student ID RFID badge, cultural youth festival, annual sports fest, and club activities', is_recurring: true },
       { id: 'fh-training', code: 'TRAINING_PLACEMENT', title: 'Industrial Training & Placement Prep', description: 'Industry technical bootcamps, soft-skills workshops, and campus placement drives', is_recurring: true },
       { id: 'fh-late-fine', code: 'LATE_SURCHARGE', title: 'Late Fee & Delayed Clearance Penalty', description: 'Regulatory surcharge fine for delayed semester fee clearance or late registration', is_recurring: false },
+      { id: 'fh-reappear', code: 'REAPPEAR_EXAM', title: 'MRSPTU Re-appear / Backlog Exam Fee', description: 'Affiliating university examination fee for semester backlog papers (₹1,000 per paper)', is_recurring: false },
     ];
 
     this.student_fees = [
@@ -2196,6 +2197,26 @@ class DatabaseStore {
         award_amount: 35000,
         eligibility_criteria: 'Family income certificate issued by revenue authority.',
         deadline: '2025-10-31',
+        is_active: true,
+      },
+      {
+        id: 'sch-pms-punjab',
+        code: 'PMS-PUNJAB',
+        title: 'Punjab Post-Matric Scholarship (Dr. Ambedkar Portal)',
+        description: 'Punjab State Govt 100% Tuition Fee & Development Fund waiver for SC/ST students with family income under ₹2.50 Lakh/year.',
+        award_amount: 60000,
+        eligibility_criteria: 'Punjab Domicile, SC/ST Category, Annual Income < ₹2,50,000.',
+        deadline: '2025-12-31',
+        is_active: true,
+      },
+      {
+        id: 'sch-cmss-punjab',
+        code: 'CMSS-PUNJAB',
+        title: 'Chief Minister Scholarship Scheme (CMSS Punjab)',
+        description: 'State government merit grant for meritorious Punjab students in government & affiliated technical institutions (60% to 100% tuition waiver).',
+        award_amount: 45000,
+        eligibility_criteria: 'Punjab Domicile, minimum 80% marks in qualifying examination.',
+        deadline: '2025-11-15',
         is_active: true,
       },
       {

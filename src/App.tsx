@@ -20,6 +20,7 @@ import { EmailRemindersModal } from './components/EmailRemindersModal';
 import { StudentProfileModal } from './components/StudentProfileModal';
 import { AICopilotModal } from './components/AICopilotModal';
 import { GrievanceView } from './components/GrievanceView';
+import { MRSPTUAdmitCardModal } from './components/MRSPTUAdmitCardModal';
 
 interface LayoutProps {
   currentUser: User | null;
@@ -134,6 +135,7 @@ function MainApp() {
   const [targetPayStudent, setTargetPayStudent] = useState<any | null>(null);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [isEmailRemindersOpen, setIsEmailRemindersOpen] = useState(false);
+  const [isAdmitCardOpen, setIsAdmitCardOpen] = useState(false);
   const [viewingStudent, setViewingStudent] = useState<StudentProfile | null>(null);
 
   // Check auth state on load
@@ -297,6 +299,7 @@ function MainApp() {
                       setActiveReceiptNo(receiptNo || 'REC-2024-0088');
                       setIsReceiptOpen(true);
                     }}
+                    onOpenAdmitCardModal={() => setIsAdmitCardOpen(true)}
                   />
                 )}
               </AuthenticatedLayout>
@@ -628,6 +631,19 @@ function MainApp() {
 
       {isEmailRemindersOpen && (
         <EmailRemindersModal onClose={() => setIsEmailRemindersOpen(false)} />
+      )}
+
+      {isAdmitCardOpen && (
+        <MRSPTUAdmitCardModal
+          studentId={currentStudent?.id || 'me'}
+          onClose={() => setIsAdmitCardOpen(false)}
+          onOpenPayModal={() => {
+            setIsAdmitCardOpen(false);
+            setTargetPayStudent(currentStudent);
+            setTargetPayFeeId(undefined);
+            setIsPayModalOpen(true);
+          }}
+        />
       )}
 
       {viewingStudent && (
