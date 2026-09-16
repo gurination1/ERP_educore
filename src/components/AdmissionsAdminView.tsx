@@ -13,11 +13,27 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
   onSelectStudent,
 }) => {
   const [admissions, setAdmissions] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'all' | 'submitted' | 'approved' | 'rejected'>('submitted');
+  const [activeTab, setActiveTab] = useState<'submitted' | 'verified' | 'approved' | 'rejected' | 'all'>('submitted');
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showManualIntake, setShowManualIntake] = useState(false);
+
+  // Scrutiny & Rejection Modal States
+  const [scrutinyApplicant, setScrutinyApplicant] = useState<any | null>(null);
+  const [rejectionApplicant, setRejectionApplicant] = useState<any | null>(null);
+  const [scrutinyForm, setScrutinyForm] = useState({
+    marksheet10th: true,
+    marksheet12th: true,
+    domicileVerified: true,
+    categoryVerified: true,
+    remarks: '',
+  });
+  const [rejectionForm, setRejectionForm] = useState({
+    reason: 'Academic Eligibility Not Met (Below 10+2 Cutoff)',
+    remarks: '',
+  });
 
   // Direct Indian College Admission Intake Modal
   const [isDirectAdmitOpen, setIsDirectAdmitOpen] = useState(false);
@@ -69,22 +85,69 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
     loadAdmissions();
   }, []);
 
-  const handleStatusUpdate = async (id: string, status: 'approved' | 'rejected') => {
+  const handleStatusUpdate = async (id: string, status: string, remarks?: string) => {
     setActionLoadingId(id);
+    setErrorMessage(null);
     try {
-      const res = await api.updateAdmissionStatus(id, status);
+      const res = await api.updateAdmissionStatus(id, status, remarks);
       if (res.success) {
-        setStatusMessage(`Application has been marked as '${status.toUpperCase()}'.`);
-        setTimeout(() => setStatusMessage(null), 4000);
-        loadAdmissions();
+        setStatusMessage(res.message || `Application status updated to '${status.toUpperCase()}'.`);
+        setTimeout(() => setStatusMessage(null), 4500);
+        await loadAdmissions();
         if (status === 'approved' && res.credentialsSlip) {
           setCredentialsSlip(res.credentialsSlip);
         }
+        return true;
+      } else {
+        setErrorMessage(res.error || 'Failed to update application status.');
+        return false;
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setErrorMessage(err.message || 'Network error occurred while updating status.');
+      return false;
     } finally {
       setActionLoadingId(null);
+    }
+  };
+
+  const openScrutinyModal = (adm: any) => {
+    setScrutinyApplicant(adm);
+    const quotaName = adm.quota === 'punjab_85' ? 'Punjab Domicile (85%)' : (adm.quota === 'other_state_15' ? 'All India (15%)' : 'Management');
+    const board = adm.board_name || 'PSEB / CBSE';
+    const tenth = adm.tenth_percentage || 85;
+    const twelfth = adm.twelfth_percentage || 82;
+    setScrutinyForm({
+      marksheet10th: true,
+      marksheet12th: true,
+      domicileVerified: true,
+      categoryVerified: Boolean(adm.category && adm.category !== 'General'),
+      remarks: `Class 10 (${tenth}%) & 12 (${twelfth}%) marksheets verified against ${board} records. ${quotaName} quota validated. Recommended for admission.`,
+    });
+  };
+
+  const handleConfirmScrutiny = async () => {
+    if (!scrutinyApplicant) return;
+    const ok = await handleStatusUpdate(scrutinyApplicant.id, 'verified', scrutinyForm.remarks);
+    if (ok) {
+      setScrutinyApplicant(null);
+    }
+  };
+
+  const openRejectionModal = (adm: any) => {
+    setRejectionApplicant(adm);
+    setRejectionForm({
+      reason: 'Academic Eligibility Not Met (Below 10+2 Cutoff)',
+      remarks: 'Candidate does not satisfy minimum qualifying cutoff prescribed for the course.',
+    });
+  };
+
+  const handleConfirmRejection = async () => {
+    if (!rejectionApplicant) return;
+    const fullRemarks = `${rejectionForm.reason}: ${rejectionForm.remarks}`;
+    const ok = await handleStatusUpdate(rejectionApplicant.id, 'rejected', fullRemarks);
+    if (ok) {
+      setRejectionApplicant(null);
     }
   };
 
@@ -158,12 +221,17 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
 
   const filteredAdmissions = admissions.filter(a => {
     if (activeTab === 'all') return true;
+    if (activeTab === 'submitted') return a.admission_status === 'submitted' || a.admission_status === 'pending';
+    if (activeTab === 'verified') return a.admission_status === 'verified' || a.admission_status === 'fee_pending' || a.admission_status === 'provisionally_admitted';
+    if (activeTab === 'approved') return a.admission_status === 'approved' || a.admission_status === 'enrolled';
+    if (activeTab === 'rejected') return a.admission_status === 'rejected';
     return a.admission_status === activeTab;
   });
 
   const totalCount = admissions.length;
   const submittedCount = admissions.filter(a => a.admission_status === 'submitted' || a.admission_status === 'pending').length;
-  const approvedCount = admissions.filter(a => a.admission_status === 'approved').length;
+  const verifiedCount = admissions.filter(a => a.admission_status === 'verified' || a.admission_status === 'fee_pending' || a.admission_status === 'provisionally_admitted').length;
+  const approvedCount = admissions.filter(a => a.admission_status === 'approved' || a.admission_status === 'enrolled').length;
   const rejectedCount = admissions.filter(a => a.admission_status === 'rejected').length;
 
   if (showManualIntake) {
@@ -238,25 +306,45 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
         </div>
       )}
 
+      {errorMessage && (
+        <div className="p-3.5 bg-[#ffdad6]/50 border border-[#ba1a1a]/30 text-[#ba1a1a] rounded-xl text-xs font-bold flex items-center justify-between gap-2 animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px]">error</span>
+            <span>{errorMessage}</span>
+          </div>
+          <button
+            onClick={() => setErrorMessage(null)}
+            className="text-[#ba1a1a] hover:opacity-75 cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[16px]">close</span>
+          </button>
+        </div>
+      )}
+
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-3.5">
         <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
           <span className="text-[10px] uppercase font-bold text-[#757682]">Total Applications</span>
           <h4 className="text-2xl font-black text-[#191c1d] mt-1">{totalCount}</h4>
-          <p className="text-[11px] text-[#757682] mt-0.5">Academic Session 2025-26</p>
+          <p className="text-[11px] text-[#757682] mt-0.5">Session 2025-26</p>
         </div>
         <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
-          <span className="text-[10px] uppercase font-bold text-[#b45309]">Pending Verification</span>
+          <span className="text-[10px] uppercase font-bold text-[#b45309]">Pending Scrutiny</span>
           <h4 className="text-2xl font-black text-[#b45309] mt-1">{submittedCount}</h4>
-          <p className="text-[11px] text-[#757682] mt-0.5">Awaiting committee review</p>
+          <p className="text-[11px] text-[#757682] mt-0.5">Awaiting verification</p>
         </div>
         <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
-          <span className="text-[10px] uppercase font-bold text-[#006a61]">Approved Enrollments</span>
+          <span className="text-[10px] uppercase font-bold text-[#0369a1]">Scrutiny Verified</span>
+          <h4 className="text-2xl font-black text-[#0369a1] mt-1">{verifiedCount}</h4>
+          <p className="text-[11px] text-[#757682] mt-0.5">Eligibility sanctioned</p>
+        </div>
+        <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
+          <span className="text-[10px] uppercase font-bold text-[#006a61]">Approved / Enrolled</span>
           <h4 className="text-2xl font-black text-[#006a61] mt-1">{approvedCount}</h4>
-          <p className="text-[11px] text-[#757682] mt-0.5">Accounts & Ledgers active</p>
+          <p className="text-[11px] text-[#757682] mt-0.5">Accounts & ledgers active</p>
         </div>
         <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
-          <span className="text-[10px] uppercase font-bold text-[#ba1a1a]">Rejected Applications</span>
+          <span className="text-[10px] uppercase font-bold text-[#ba1a1a]">Rejected</span>
           <h4 className="text-2xl font-black text-[#ba1a1a] mt-1">{rejectedCount}</h4>
           <p className="text-[11px] text-[#757682] mt-0.5">Eligibility unverified</p>
         </div>
@@ -265,7 +353,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
       {/* Tab Filter Bar */}
       <div className="flex items-center justify-between border-b border-[#e1e3e4] pb-3">
         <div className="flex items-center gap-2">
-          {(['submitted', 'approved', 'rejected', 'all'] as const).map(tab => (
+          {(['submitted', 'verified', 'approved', 'rejected', 'all'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -275,11 +363,19 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                   : 'bg-white text-[#444651] border border-[#e1e3e4] hover:bg-[#f8f9fa]'
               }`}
             >
-              {tab === 'submitted' ? 'Pending Verification' : tab} (
+              {tab === 'submitted'
+                ? 'Pending Scrutiny'
+                : tab === 'verified'
+                ? 'Scrutiny Verified'
+                : tab === 'approved'
+                ? 'Enrolled'
+                : tab} (
               {tab === 'all'
                 ? totalCount
                 : tab === 'submitted'
                 ? submittedCount
+                : tab === 'verified'
+                ? verifiedCount
                 : tab === 'approved'
                 ? approvedCount
                 : rejectedCount}
@@ -356,38 +452,83 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                       <td className="py-3.5 px-4">
                         <span
                           className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                            isApproved
+                            adm.admission_status === 'approved' || adm.admission_status === 'enrolled'
                               ? 'bg-[#86f2e4]/40 text-[#006a61]'
-                              : isRejected
+                              : adm.admission_status === 'rejected'
                               ? 'bg-[#ffdad6] text-[#ba1a1a]'
+                              : adm.admission_status === 'verified' || adm.admission_status === 'fee_pending'
+                              ? 'bg-[#e0f2fe] text-[#0369a1] border border-[#bae6fd]'
                               : 'bg-[#fef3c7] text-[#b45309]'
                           }`}
                         >
-                          {adm.admission_status}
+                          {adm.admission_status === 'submitted' ? 'Pending Review' : adm.admission_status}
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-right">
-                        {isSubmitted ? (
+                        {adm.admission_status === 'submitted' || adm.admission_status === 'pending' ? (
                           <div className="flex items-center justify-end gap-2">
                             <button
                               disabled={actionLoadingId === adm.id}
-                              onClick={() => handleStatusUpdate(adm.id, 'approved')}
-                              className="px-3 py-1 bg-[#006a61] hover:bg-[#004f48] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                              onClick={() => openScrutinyModal(adm)}
+                              className="px-2.5 py-1 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                              title="Verify marksheets, domicile quota, and eligibility"
                             >
-                              <span className="material-symbols-outlined text-[14px]">check</span>
-                              <span>Admit & Provision User</span>
+                              <span className="material-symbols-outlined text-[13px]">fact_check</span>
+                              <span>Verify Documents</span>
                             </button>
+                            {currentUser?.role === 'admin' && (
+                              <button
+                                disabled={actionLoadingId === adm.id}
+                                onClick={() => handleStatusUpdate(adm.id, 'approved', 'Direct Provost Admission Sanction')}
+                                className="px-2.5 py-1 bg-[#006a61] hover:bg-[#004f48] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                                title="Admit directly and provision student credentials"
+                              >
+                                <span className="material-symbols-outlined text-[13px]">check</span>
+                                <span>Admit & Provision</span>
+                              </button>
+                            )}
                             <button
                               disabled={actionLoadingId === adm.id}
-                              onClick={() => handleStatusUpdate(adm.id, 'rejected')}
-                              className="px-2.5 py-1 border border-[#ba1a1a] text-[#ba1a1a] hover:bg-[#ffdad6]/40 rounded-md text-[11px] font-bold transition-all cursor-pointer disabled:opacity-50"
+                              onClick={() => openRejectionModal(adm)}
+                              className="px-2 py-1 border border-[#ba1a1a] text-[#ba1a1a] hover:bg-[#ffdad6]/40 rounded-md text-[11px] font-bold transition-all cursor-pointer disabled:opacity-50"
                             >
                               Reject
                             </button>
                           </div>
+                        ) : adm.admission_status === 'verified' || adm.admission_status === 'fee_pending' || adm.admission_status === 'provisionally_admitted' ? (
+                          <div className="flex items-center justify-end gap-2">
+                            {currentUser?.role === 'admin' ? (
+                              <button
+                                disabled={actionLoadingId === adm.id}
+                                onClick={() => handleStatusUpdate(adm.id, 'approved', 'Admitted post Scrutiny Verification')}
+                                className="px-3 py-1 bg-[#006a61] hover:bg-[#004f48] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                              >
+                                <span className="material-symbols-outlined text-[13px]">how_to_reg</span>
+                                <span>Admit & Provision</span>
+                              </button>
+                            ) : (
+                              <span className="text-[10px] font-bold text-[#0369a1] bg-[#e0f2fe] px-2 py-0.5 rounded border border-[#bae6fd] inline-flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[12px]">verified</span>
+                                <span>Awaiting Provost Sanction</span>
+                              </span>
+                            )}
+                            <button
+                              disabled={actionLoadingId === adm.id}
+                              onClick={() => openRejectionModal(adm)}
+                              className="px-2 py-1 border border-[#ba1a1a] text-[#ba1a1a] hover:bg-[#ffdad6]/40 rounded-md text-[11px] font-bold transition-all cursor-pointer disabled:opacity-50"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        ) : adm.admission_status === 'approved' || adm.admission_status === 'enrolled' ? (
+                          <span className="text-[11px] font-bold text-[#006a61] inline-flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                            <span>Enrolled & Active</span>
+                          </span>
                         ) : (
-                          <span className="text-[11px] font-semibold text-[#757682]">
-                            {isApproved ? 'Enrolled & Verified' : 'Application Voided'}
+                          <span className="text-[11px] font-bold text-[#ba1a1a] inline-flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[14px]">cancel</span>
+                            <span>Application Rejected</span>
                           </span>
                         )}
                       </td>
@@ -888,6 +1029,225 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                   className="px-5 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg font-bold shadow-xs cursor-pointer"
                 >
                   Dismiss / Done
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Faculty Scrutiny Committee Verification */}
+      {scrutinyApplicant && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-xl w-full flex flex-col shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-4 border-b border-[#e1e3e4] bg-linear-to-r from-[#00236f] to-[#1e3a8a] text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-amber-300 text-[22px]">fact_check</span>
+                <div>
+                  <h3 className="font-bold text-sm">Faculty Scrutiny Committee Verification</h3>
+                  <p className="text-[11px] text-blue-100">Document inspection & statutory quota validation</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setScrutinyApplicant(null)}
+                className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4 text-xs">
+              <div className="grid grid-cols-2 gap-3 p-3.5 bg-[#f8f9fa] rounded-xl border border-[#e1e3e4]">
+                <div>
+                  <span className="text-[#757682] block text-[11px]">Applicant Name:</span>
+                  <strong className="text-[#191c1d] text-sm">{scrutinyApplicant.first_name} {scrutinyApplicant.last_name}</strong>
+                  <span className="text-[10px] text-[#757682] block font-mono mt-0.5">{scrutinyApplicant.student_id}</span>
+                </div>
+                <div>
+                  <span className="text-[#757682] block text-[11px]">Applied Course:</span>
+                  <strong className="text-[#00236f] text-sm">{scrutinyApplicant.course?.name || scrutinyApplicant.course_id}</strong>
+                  <span className="text-[10px] text-[#757682] block mt-0.5">
+                    {scrutinyApplicant.quota === 'punjab_85' ? 'Punjab 85% Quota' : (scrutinyApplicant.quota === 'other_state_15' ? 'All India 15%' : 'Management Quota')}
+                  </span>
+                </div>
+              </div>
+
+              {/* Academic Cutoff Matrix */}
+              <div className="border border-[#e1e3e4] rounded-xl p-3.5 space-y-2 bg-[#fdfdfd]">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-[#191c1d] text-[11px] uppercase tracking-wider">Academic Marksheet Audit</span>
+                  <span className="px-2 py-0.5 bg-[#86f2e4]/30 text-[#006a61] font-bold text-[10px] rounded-full">
+                    Cutoff Met (≥50%)
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 pt-1 text-center">
+                  <div className="p-2 bg-[#f3f4f5] rounded-lg">
+                    <span className="text-[10px] text-[#757682] block">10th Board</span>
+                    <strong className="text-[#191c1d] text-sm">{scrutinyApplicant.tenth_percentage || 85}%</strong>
+                  </div>
+                  <div className="p-2 bg-[#f3f4f5] rounded-lg">
+                    <span className="text-[10px] text-[#757682] block">10+2 / Inter</span>
+                    <strong className="text-[#00236f] text-sm">{scrutinyApplicant.twelfth_percentage || 82}%</strong>
+                  </div>
+                  <div className="p-2 bg-[#f3f4f5] rounded-lg">
+                    <span className="text-[10px] text-[#757682] block">Affiliating Board</span>
+                    <strong className="text-[#191c1d] text-xs truncate block" title={scrutinyApplicant.board_name}>
+                      {scrutinyApplicant.board_name ? scrutinyApplicant.board_name.split(' ')[0] : 'PSEB'}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Scrutiny Checklist */}
+              <div className="space-y-2 pt-1">
+                <span className="font-bold text-[#191c1d] block">Document Verification Checklist:</span>
+                <div className="space-y-1.5 border border-[#e1e3e4] rounded-xl p-3 bg-[#f8f9fa]">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={scrutinyForm.marksheet10th}
+                      onChange={e => setScrutinyForm({ ...scrutinyForm, marksheet10th: e.target.checked })}
+                      className="rounded text-[#00236f] focus:ring-[#00236f]"
+                    />
+                    <span className="text-[#444651]">Class 10th Marksheet & Proof of Age / DOB</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={scrutinyForm.marksheet12th}
+                      onChange={e => setScrutinyForm({ ...scrutinyForm, marksheet12th: e.target.checked })}
+                      className="rounded text-[#00236f] focus:ring-[#00236f]"
+                    />
+                    <span className="text-[#444651]">10+2 Marksheet & Science/Commerce stream eligibility</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={scrutinyForm.domicileVerified}
+                      onChange={e => setScrutinyForm({ ...scrutinyForm, domicileVerified: e.target.checked })}
+                      className="rounded text-[#00236f] focus:ring-[#00236f]"
+                    />
+                    <span className="text-[#444651]">Punjab Domicile / State Residence Certificate (for 85% quota)</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={scrutinyForm.categoryVerified}
+                      onChange={e => setScrutinyForm({ ...scrutinyForm, categoryVerified: e.target.checked })}
+                      className="rounded text-[#00236f] focus:ring-[#00236f]"
+                    />
+                    <span className="text-[#444651]">Category / Caste / EWS Sub-quota Certificate (if applicable)</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Committee Remarks */}
+              <div className="space-y-1">
+                <label className="font-bold text-[#191c1d] block">Committee Remarks for Scrutiny Log:</label>
+                <textarea
+                  rows={2}
+                  value={scrutinyForm.remarks}
+                  onChange={e => setScrutinyForm({ ...scrutinyForm, remarks: e.target.value })}
+                  className="w-full bg-[#f3f4f5] border border-[#e1e3e4] rounded-lg p-2 text-xs text-[#191c1d] focus:bg-white outline-none"
+                  placeholder="Official committee endorsement notes..."
+                />
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#f3f4f5]">
+                <button
+                  type="button"
+                  onClick={() => setScrutinyApplicant(null)}
+                  className="px-4 py-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg font-bold text-[#444651] cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={actionLoadingId === scrutinyApplicant.id}
+                  onClick={handleConfirmScrutiny}
+                  className="px-5 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg font-bold shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  <span className="material-symbols-outlined text-[16px]">verified</span>
+                  <span>Confirm Scrutiny & Mark Verified</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Rejection Confirmation with Reason */}
+      {rejectionApplicant && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-lg w-full flex flex-col shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#ba1a1a] text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-white text-[22px]">cancel</span>
+                <div>
+                  <h3 className="font-bold text-sm">Reject Admission Application</h3>
+                  <p className="text-[11px] text-red-100">Official Committee Disqualification Notice</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setRejectionApplicant(null)}
+                className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4 text-xs">
+              <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl text-red-900 space-y-1">
+                <div className="font-bold">Applicant: {rejectionApplicant.first_name} {rejectionApplicant.last_name} ({rejectionApplicant.student_id})</div>
+                <p className="text-[11px] text-red-700">
+                  Rejecting this applicant will void any provisional fee heads and remove them from active enrollment rosters.
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="font-bold text-[#191c1d] block">Primary Rejection Ground:</label>
+                <select
+                  value={rejectionForm.reason}
+                  onChange={e => setRejectionForm({ ...rejectionForm, reason: e.target.value })}
+                  className="w-full bg-[#f3f4f5] border border-[#e1e3e4] rounded-lg p-2 text-xs font-semibold text-[#191c1d] outline-none"
+                >
+                  <option value="Academic Eligibility Not Met (Below 10+2 Cutoff)">Academic Eligibility Not Met (Below 10+2 Cutoff)</option>
+                  <option value="Missing or Invalid Domicile Certificate">Missing or Invalid Domicile Certificate (Punjab 85% quota)</option>
+                  <option value="Discrepancy in Caste / Category Documentation">Discrepancy in Caste / Category Documentation</option>
+                  <option value="Duplicate Application on Portal">Duplicate Application on Portal</option>
+                  <option value="Candidate Withdrew Admission Request">Candidate Withdrew Admission Request</option>
+                  <option value="Other Institutional Non-Compliance">Other Institutional Non-Compliance</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-[#191c1d] block">Detailed Committee Justification:</label>
+                <textarea
+                  rows={3}
+                  value={rejectionForm.remarks}
+                  onChange={e => setRejectionForm({ ...rejectionForm, remarks: e.target.value })}
+                  className="w-full bg-[#f3f4f5] border border-[#e1e3e4] rounded-lg p-2 text-xs text-[#191c1d] focus:bg-white outline-none"
+                  placeholder="Record formal remarks for the university audit registry..."
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#f3f4f5]">
+                <button
+                  type="button"
+                  onClick={() => setRejectionApplicant(null)}
+                  className="px-4 py-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg font-bold text-[#444651] cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={actionLoadingId === rejectionApplicant.id}
+                  onClick={handleConfirmRejection}
+                  className="px-5 py-2 bg-[#ba1a1a] hover:bg-[#991b1b] text-white rounded-lg font-bold shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  <span className="material-symbols-outlined text-[16px]">cancel</span>
+                  <span>Confirm Disqualification</span>
                 </button>
               </div>
             </div>

@@ -60,7 +60,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
   // Load live students from DB
   useEffect(() => {
     loadStudents();
-  }, []);
+  }, [selectedCourse]);
 
   // When slot or date or course changes, restore registered entries or reset to P
   useEffect(() => {
@@ -80,7 +80,12 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
   const loadStudents = async () => {
     setIsLoading(true);
     try {
-      const res = await api.getStudents({ limit: 50 });
+      const courseFilter = selectedCourse.startsWith('CS') ? 'B.Tech CS' : selectedCourse;
+      const semesterFilter = 4;
+      let res = await api.getStudents({ course: courseFilter, semester: semesterFilter, limit: 100 });
+      if (!res.success || !res.students || res.students.length === 0) {
+        res = await api.getStudents({ course: courseFilter, limit: 100 });
+      }
       if (res.success && res.students) {
         const mapped: StudentAttendanceEntry[] = res.students.map((s: any, idx: number) => {
           const attended = s.attended_classes ?? 0;

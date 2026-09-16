@@ -52,7 +52,8 @@ export interface Student {
   session_id: string;
   current_semester: number;
   admission_year: number;
-  admission_status: 'draft' | 'submitted' | 'pending' | 'approved' | 'rejected';
+  admission_status: 'draft' | 'submitted' | 'pending' | 'verified' | 'fee_pending' | 'provisionally_admitted' | 'approved' | 'enrolled' | 'rejected';
+  admission_remarks?: string;
   fees_status: 'paid' | 'due' | 'overdue' | 'cancelled';
   attendance_percentage: number;
   total_classes: number;
@@ -332,6 +333,7 @@ class DatabaseStore {
       if (fs.existsSync(this.dbPath)) {
         const fileBuffer = fs.readFileSync(this.dbPath);
         this.sqlDb = new SQL.Database(fileBuffer);
+        this.createSqliteTables();
         this.loadFromSqlite();
         console.log(`[DB] Loaded persistent SQLite database from ${this.dbPath} (${this.users.length} users, ${this.students.length} students).`);
       } else {
@@ -558,6 +560,7 @@ class DatabaseStore {
     await safeAddColumn('students', 'condonation_granted TINYINT(1) DEFAULT 0');
     await safeAddColumn('students', 'condonation_order_no VARCHAR(64)');
     await safeAddColumn('students', 'condonation_remarks VARCHAR(255)');
+    await safeAddColumn('students', 'admission_remarks TEXT');
   }
 
   private async seedMariaDBDefaults(): Promise<void> {
@@ -857,6 +860,20 @@ class DatabaseStore {
         admin_remarks TEXT, resolved_by TEXT, resolved_at TEXT, created_at TEXT
       );
     `);
+
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN is_hosteller INTEGER DEFAULT 0;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN is_transport_user INTEGER DEFAULT 0;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN transport_route TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN hostel_room_no TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN category TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN quota TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN tenth_percentage REAL;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN twelfth_percentage REAL;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN board_name TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN condonation_granted INTEGER DEFAULT 0;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN condonation_order_no TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN condonation_remarks TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN admission_remarks TEXT;'); } catch {}
   }
 
   private loadFromSqlite(): void {
@@ -975,7 +992,7 @@ class DatabaseStore {
         'id', 'user_id', 'student_id', 'first_name', 'last_name', 'gender', 'dob', 'email', 'phone',
         'guardian_name', 'guardian_relation', 'guardian_phone', 'course_id', 'session_id', 'current_semester',
         'admission_year', 'admission_status', 'fees_status', 'attendance_percentage', 'total_classes', 'attended_classes',
-        'is_hosteller', 'is_transport_user', 'transport_route', 'hostel_room_no', 'category', 'quota', 'tenth_percentage', 'twelfth_percentage', 'board_name', 'created_at',
+        'is_hosteller', 'is_transport_user', 'transport_route', 'hostel_room_no', 'category', 'quota', 'tenth_percentage', 'twelfth_percentage', 'board_name', 'condonation_granted', 'condonation_order_no', 'condonation_remarks', 'admission_remarks', 'created_at',
       ]);
       clearAndInsert('fee_heads', this.fee_heads, ['id', 'code', 'title', 'description', 'is_recurring']);
       clearAndInsert('student_fees', this.student_fees, ['id', 'student_id', 'fee_head_id', 'session_id', 'semester', 'amount', 'discount_amount', 'paid_amount', 'due_amount', 'due_date', 'status']);
@@ -993,6 +1010,7 @@ class DatabaseStore {
       const buffer = Buffer.from(binaryArray);
       fs.writeFileSync(this.dbPath, buffer);
     } catch (err: any) {
+      try { this.sqlDb.run('ROLLBACK;'); } catch {}
       console.error('[DB] Failed to save SQLite state:', err);
     }
   }
@@ -1254,7 +1272,7 @@ class DatabaseStore {
         'admission_status', 'fees_status', 'attendance_percentage', 'total_classes',
         'attended_classes', 'is_hosteller', 'is_transport_user', 'transport_route',
         'hostel_room_no', 'category', 'quota', 'tenth_percentage', 'twelfth_percentage',
-        'board_name', 'condonation_granted', 'condonation_order_no', 'condonation_remarks', 'created_at'
+        'board_name', 'condonation_granted', 'condonation_order_no', 'condonation_remarks', 'admission_remarks', 'created_at'
       ];
       const keys = Object.keys(updates).filter(k => allowedCols.includes(k));
       if (keys.length === 0) return this.getStudentById(id);

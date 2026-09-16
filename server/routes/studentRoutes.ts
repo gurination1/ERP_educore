@@ -29,7 +29,7 @@ export function isStudentOwner(student: Student, identifier: string): boolean {
 
 // Master list of students (Admin/Staff only)
 studentRouter.get('/', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
-  const { search, course, admission_year, fees_status, page = '1', limit = '10', sort_by = 'student_id', sort_dir = 'asc' } = req.query;
+  const { search, course, admission_year, fees_status, semester, page = '1', limit = '10', sort_by = 'student_id', sort_dir = 'asc' } = req.query;
 
   const rawStudents = await db.getStudents();
   const courses = await db.getCourses();
@@ -55,6 +55,14 @@ studentRouter.get('/', authenticateToken, requireRole('admin', 'staff'), async (
   // Filter by course
   if (course && typeof course === 'string' && course !== 'All Courses') {
     list = list.filter(s => s.course?.name === course || s.course?.code === course || s.course_id === course);
+  }
+
+  // Filter by semester
+  if (semester && typeof semester === 'string' && semester !== 'All Semesters') {
+    const sem = parseInt(semester, 10);
+    if (!isNaN(sem)) {
+      list = list.filter(s => s.current_semester === sem);
+    }
   }
 
   // Filter by admission year

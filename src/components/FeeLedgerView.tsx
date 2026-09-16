@@ -443,12 +443,18 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       {item.status !== 'paid' ? (
-                        <button
-                          onClick={() => onOpenPayModal(item.id, activeStudentObj || currentStudent)}
-                          className="px-3 py-1 bg-[#00236f] text-white rounded text-xs font-bold hover:bg-[#1e3a8a] transition-colors cursor-pointer"
-                        >
-                          Pay
-                        </button>
+                        isStaff ? (
+                          <span className="text-[11px] font-semibold text-[#757682] italic">
+                            Advisory Audit
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => onOpenPayModal(item.id, activeStudentObj || currentStudent)}
+                            className="px-3 py-1 bg-[#00236f] text-white rounded text-xs font-bold hover:bg-[#1e3a8a] transition-colors cursor-pointer"
+                          >
+                            Pay
+                          </button>
+                        )
                       ) : (
                         <button
                           onClick={() => onOpenReceiptModal()}

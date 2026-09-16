@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
-import { db, Payment } from '../db.ts';
+import { db, Payment, Student } from '../db.ts';
 import { authenticateToken, requireRole, AuthRequest, matchStudentForUser } from '../middleware/auth.ts';
 
 export const feeRouter = Router();
@@ -216,6 +216,7 @@ feeRouter.get('/defaulters', authenticateToken, requireRole('admin', 'staff'), a
 feeRouter.get('/ledger/:studentId', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   const { studentId } = req.params;
   const allStudents = await db.getStudents();
+  let student: Student | undefined;
   // Fee ownership scoping for student role
   if (req.user?.role === 'student') {
     const myStudent = allStudents.find(s => matchStudentForUser(s, req.user));
@@ -374,7 +375,7 @@ feeRouter.post('/collect', authenticateToken, async (req: AuthRequest, res: Resp
       if (alloc.amount > targetFee.due_amount + 0.05) {
         res.status(400).json({
           success: false,
-          error: `Allocated amount ₹${alloc.amount} exceeds outstanding due ₹${targetFee.due_amount} for fee head [${targetFee.fee_head?.title || targetFee.fee_head_id}].`,
+          error: `Allocated amount ₹${alloc.amount} exceeds outstanding due ₹${targetFee.due_amount} for fee head [${(targetFee as any).fee_head?.title || targetFee.fee_head_id}].`,
         });
         return;
       }
@@ -461,7 +462,7 @@ feeRouter.post('/collect', authenticateToken, async (req: AuthRequest, res: Resp
   // Update student overall fee status
   const updatedFees = await db.getStudentFees(student.id);
   const remainingDue = Math.round(updatedFees.reduce((acc, sf) => acc + (sf.status !== 'paid' && sf.status !== 'cancelled' ? sf.due_amount : 0), 0) * 100) / 100;
-  const newStudentFeesStatus = remainingDue <= 0.01 ? 'paid' : (updatedFees.some(sf => sf.paid_amount > 0) ? 'partial' : 'due');
+  const newStudentFeesStatus: 'paid' | 'due' = remainingDue <= 0.01 ? 'paid' : 'due';
   await db.updateStudent(student.id, { fees_status: newStudentFeesStatus });
 
   const primaryFeeId = studentFeeId || (feeAllocations && feeAllocations.length === 1 ? feeAllocations[0].studentFeeId : undefined) || (selectedFeeHeadIds && selectedFeeHeadIds.length === 1 ? selectedFeeHeadIds[0] : undefined);

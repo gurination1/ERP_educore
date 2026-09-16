@@ -67,6 +67,19 @@ scholarshipRouter.post('/apply', authenticateToken, upload.single('document'), a
     return;
   }
 
+  // Institutional Rule: Prevent duplicate active applications under same scheme
+  const existingApps = await db.getScholarshipApplications();
+  const duplicateActive = existingApps.find(
+    a => a.student_id === student!.id && a.scheme_id === scheme.id && a.status !== 'rejected'
+  );
+  if (duplicateActive) {
+    res.status(409).json({
+      success: false,
+      error: `An active scholarship application for ${scheme.title} is already on record (Status: ${duplicateActive.status.toUpperCase()}). Duplicate submissions are prohibited under institutional financial aid governance.`,
+    });
+    return;
+  }
+
   const docPath = req.file ? `/uploads/documents/${req.file.filename}` : '/uploads/documents/sample_income_cert.pdf';
 
   const application: ScholarshipApplication = {

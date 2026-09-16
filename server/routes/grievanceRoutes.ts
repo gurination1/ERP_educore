@@ -111,6 +111,19 @@ grievanceRouter.post('/', authenticateToken, async (req: AuthRequest, res: Respo
     return;
   }
 
+  // UGC SGRC Rule: Prevent duplicate active unresolved tickets for identical subject
+  const existingGrievances = await db.getGrievances({ student_id: targetStudentId });
+  const duplicateActive = existingGrievances.find(
+    g => g.subject.trim().toLowerCase() === subject.trim().toLowerCase() && g.status !== 'resolved'
+  );
+  if (duplicateActive) {
+    res.status(409).json({
+      success: false,
+      error: `An active grievance ticket with subject "${subject}" is already lodged and under committee review (Tracking: ${duplicateActive.tracking_code}). Duplicate submissions are rejected.`,
+    });
+    return;
+  }
+
   const trackingCode = `GRV-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
   const newGrievance: Grievance = {

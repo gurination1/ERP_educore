@@ -647,7 +647,11 @@ admissionRouter.patch('/:id/status', authenticateToken, requireRole('admin', 'st
         await db.updateStudentFee(sf.id, { due_amount: 0, status: 'cancelled' as any });
       }
     }
-    await db.updateStudent(student.id, { admission_status: 'rejected', fees_status: 'cancelled' as any });
+    await db.updateStudent(student.id, {
+      admission_status: 'rejected',
+      fees_status: 'cancelled' as any,
+      admission_remarks: remarks || 'Application rejected by admissions committee',
+    });
   } else if (status === 'approved' || status === 'enrolled') {
     // Provision User account if not exists
     let targetUserId = student.user_id;
@@ -829,6 +833,7 @@ admissionRouter.patch('/:id/status', authenticateToken, requireRole('admin', 'st
       user_id: targetUserId,
       admission_status: 'approved',
       fees_status: 'due',
+      admission_remarks: remarks || 'Formally admitted and portal credentials generated',
     });
 
     credentialsSlip = {
@@ -839,8 +844,16 @@ admissionRouter.patch('/:id/status', authenticateToken, requireRole('admin', 'st
       email: student.email,
       course: course?.name,
     };
+  } else if (status === 'verified') {
+    await db.updateStudent(student.id, {
+      admission_status: 'verified',
+      admission_remarks: remarks || 'Academic credentials & domicile eligibility verified by Faculty Scrutiny Committee',
+    });
   } else {
-    await db.updateStudent(student.id, { admission_status: status as any });
+    await db.updateStudent(student.id, {
+      admission_status: status as any,
+      ...(remarks ? { admission_remarks: remarks } : {}),
+    });
   }
 
   const updated = await db.getStudentById(student.id);
