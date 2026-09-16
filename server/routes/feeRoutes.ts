@@ -11,6 +11,11 @@ const collectFeeSchema = z.object({
   amount: z.union([z.number(), z.string()]).transform(val => Number(val)).refine(val => !isNaN(val) && val > 0, 'Amount must be a positive number greater than 0'),
   paymentMode: z.enum(['online_upi', 'net_banking', 'credit_card', 'debit_card', 'cash', 'cheque']).optional().default('online_upi'),
   studentFeeId: z.string().optional(),
+  selectedFeeHeadIds: z.array(z.string()).optional(),
+  feeAllocations: z.array(z.object({
+    studentFeeId: z.string(),
+    amount: z.number().min(0)
+  })).optional(),
   notes: z.string().optional(),
 });
 
@@ -240,7 +245,7 @@ feeRouter.post('/collect', authenticateToken, async (req: AuthRequest, res: Resp
     return;
   }
 
-  const { studentId, amount, paymentMode, studentFeeId, notes } = parseResult.data;
+  const { studentId, amount, paymentMode, studentFeeId, selectedFeeHeadIds, feeAllocations, notes } = parseResult.data;
   const allStudents = await db.getStudents();
   const student = allStudents.find(s => s.id === studentId || s.student_id === studentId || s.user_id === studentId || s.email.toLowerCase() === studentId.toLowerCase());
 
@@ -258,20 +263,63 @@ feeRouter.post('/collect', authenticateToken, async (req: AuthRequest, res: Resp
   }
 
   const studentFees = await db.getStudentFees(student.id);
-  let feeRecord = studentFeeId ? studentFees.find(sf => sf.id === studentFeeId) : undefined;
 
-  if (feeRecord) {
-    const netPayable = Math.max(0, feeRecord.amount - (feeRecord.discount_amount || 0));
-    const newPaid = feeRecord.paid_amount + amount;
-    const newDue = Math.max(0, netPayable - newPaid);
-    const newStatus = newDue === 0 ? 'paid' : 'partial';
-    await db.updateStudentFee(feeRecord.id, {
-      paid_amount: newPaid,
-      due_amount: newDue,
-      status: newStatus,
-    });
+  if (feeAllocations && feeAllocations.length > 0) {
+    // 1. Direct itemized targeted allocation: Each fee record receives its exact designated amount
+    for (const alloc of feeAllocations) {
+      if (alloc.amount <= 0) continue;
+      const targetFee = studentFees.find(sf => sf.id === alloc.studentFeeId || sf.fee_head_id === alloc.studentFeeId);
+      if (targetFee) {
+        const netPayable = Math.max(0, targetFee.amount - (targetFee.discount_amount || 0));
+        const newPaid = targetFee.paid_amount + alloc.amount;
+        const newDue = Math.max(0, netPayable - newPaid);
+        const newStatus = newDue === 0 ? 'paid' : (newPaid > 0 ? 'partial' : 'due');
+        await db.updateStudentFee(targetFee.id, {
+          paid_amount: newPaid,
+          due_amount: newDue,
+          status: newStatus,
+        });
+      }
+    }
+  } else if (studentFeeId) {
+    // 2. Single fee record targeted allocation (e.g. user clicked pay on specific row)
+    const feeRecord = studentFees.find(sf => sf.id === studentFeeId || sf.fee_head_id === studentFeeId);
+    if (feeRecord) {
+      const netPayable = Math.max(0, feeRecord.amount - (feeRecord.discount_amount || 0));
+      const newPaid = feeRecord.paid_amount + amount;
+      const newDue = Math.max(0, netPayable - newPaid);
+      const newStatus = newDue === 0 ? 'paid' : (newPaid > 0 ? 'partial' : 'due');
+      await db.updateStudentFee(feeRecord.id, {
+        paid_amount: newPaid,
+        due_amount: newDue,
+        status: newStatus,
+      });
+    }
+  } else if (selectedFeeHeadIds && selectedFeeHeadIds.length > 0) {
+    // 3. Filtered waterfall allocation: Distribute ONLY among chosen fee heads (e.g. only Hostel or only Transport)
+    let remainingPayment = amount;
+    const targetFees = studentFees.filter(sf => 
+      sf.status !== 'paid' && 
+      sf.status !== 'cancelled' && 
+      sf.due_amount > 0 &&
+      (selectedFeeHeadIds.includes(sf.id) || selectedFeeHeadIds.includes(sf.fee_head_id))
+    );
+    for (const sf of targetFees) {
+      if (remainingPayment <= 0) break;
+      const allocate = Math.min(remainingPayment, sf.due_amount);
+      const newPaid = sf.paid_amount + allocate;
+      const netPayable = Math.max(0, sf.amount - (sf.discount_amount || 0));
+      const newDue = Math.max(0, netPayable - newPaid);
+      const newStatus = newDue === 0 ? 'paid' : (newPaid > 0 ? 'partial' : 'due');
+      await db.updateStudentFee(sf.id, {
+        paid_amount: newPaid,
+        due_amount: newDue,
+        status: newStatus,
+      });
+      remainingPayment -= allocate;
+    }
   } else {
-    // Bulk waterfall allocation: cascade payments across all unpaid fee records
+    // 4. Bulk waterfall allocation: cascade payments across all unpaid fee records
     let remainingPayment = amount;
     const unpaidFees = studentFees.filter(sf => sf.status !== 'paid' && sf.status !== 'cancelled' && sf.due_amount > 0);
     for (const sf of unpaidFees) {
@@ -280,7 +328,7 @@ feeRouter.post('/collect', authenticateToken, async (req: AuthRequest, res: Resp
       const newPaid = sf.paid_amount + allocate;
       const netPayable = Math.max(0, sf.amount - (sf.discount_amount || 0));
       const newDue = Math.max(0, netPayable - newPaid);
-      const newStatus = newDue === 0 ? 'paid' : 'partial';
+      const newStatus = newDue === 0 ? 'paid' : (newPaid > 0 ? 'partial' : 'due');
       await db.updateStudentFee(sf.id, {
         paid_amount: newPaid,
         due_amount: newDue,
@@ -296,12 +344,14 @@ feeRouter.post('/collect', authenticateToken, async (req: AuthRequest, res: Resp
   const newStudentFeesStatus = remainingDue <= 0 ? 'paid' : 'due';
   await db.updateStudent(student.id, { fees_status: newStudentFeesStatus });
 
+  const primaryFeeId = studentFeeId || (feeAllocations && feeAllocations.length === 1 ? feeAllocations[0].studentFeeId : undefined) || (selectedFeeHeadIds && selectedFeeHeadIds.length === 1 ? selectedFeeHeadIds[0] : undefined);
+
   const receiptNo = `REC-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}-${Math.floor(1000 + Math.random() * 9000)}`;
   const newPayment: Payment = {
     id: `pay-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
     receipt_no: receiptNo,
     student_id: student.id,
-    student_fee_id: feeRecord?.id,
+    student_fee_id: primaryFeeId,
     amount_paid: amount,
     payment_mode: paymentMode || 'net_banking',
     transaction_reference: `TXN-${Date.now()}-${Math.floor(100000 + Math.random() * 900000)}`,

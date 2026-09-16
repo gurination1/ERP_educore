@@ -103,7 +103,15 @@ export const api = {
   getFeeTrend: () => apiRequest('/api/fees/trend'),
   getDefaulters: () => apiRequest('/api/fees/defaulters'),
   getFeeLedger: (studentId: string) => apiRequest(`/api/fees/ledger/${studentId}`),
-  payFee: (paymentData: { studentId: string; amount: number; paymentMode?: string; studentFeeId?: string; notes?: string }) =>
+  payFee: (paymentData: {
+    studentId: string;
+    amount: number;
+    paymentMode?: string;
+    studentFeeId?: string;
+    selectedFeeHeadIds?: string[];
+    feeAllocations?: { studentFeeId: string; amount: number }[];
+    notes?: string;
+  }) =>
     apiRequest('/api/fees/collect', { method: 'POST', body: JSON.stringify(paymentData) }),
   getReceipt: (receiptIdOrNo: string) => apiRequest(`/api/fees/receipt/${receiptIdOrNo}`),
 

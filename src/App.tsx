@@ -131,6 +131,7 @@ function MainApp() {
   const [activeReceiptNo, setActiveReceiptNo] = useState<string | undefined>(undefined);
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
   const [targetPayFeeId, setTargetPayFeeId] = useState<string | undefined>(undefined);
+  const [targetPayStudent, setTargetPayStudent] = useState<any | null>(null);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [isEmailRemindersOpen, setIsEmailRemindersOpen] = useState(false);
   const [viewingStudent, setViewingStudent] = useState<StudentProfile | null>(null);
@@ -289,6 +290,7 @@ function MainApp() {
                     onNavigate={handleScreenNavigate}
                     onOpenPayModal={() => {
                       setTargetPayFeeId(undefined);
+                      setTargetPayStudent(currentStudent);
                       setIsPayModalOpen(true);
                     }}
                     onOpenReceiptModal={receiptNo => {
@@ -316,8 +318,9 @@ function MainApp() {
               >
                 <FeeLedgerView
                   currentStudent={currentStudent}
-                  onOpenPayModal={feeId => {
+                  onOpenPayModal={(feeId, studentObj) => {
                     setTargetPayFeeId(feeId);
+                    setTargetPayStudent(studentObj || currentStudent);
                     setIsPayModalOpen(true);
                   }}
                   onOpenReceiptModal={receiptNo => {
@@ -602,11 +605,17 @@ function MainApp() {
 
       {isPayModalOpen && (
         <PayNowModal
-          student={currentStudent}
+          student={targetPayStudent || currentStudent}
           feeId={targetPayFeeId}
-          onClose={() => setIsPayModalOpen(false)}
+          onClose={() => {
+            setIsPayModalOpen(false);
+            setTargetPayStudent(null);
+            setTargetPayFeeId(undefined);
+          }}
           onPaymentSuccess={receiptNo => {
             setIsPayModalOpen(false);
+            setTargetPayStudent(null);
+            setTargetPayFeeId(undefined);
             setActiveReceiptNo(receiptNo);
             setIsReceiptOpen(true);
           }}
@@ -626,6 +635,8 @@ function MainApp() {
           student={viewingStudent}
           onClose={() => setViewingStudent(null)}
           onPayFee={() => {
+            setTargetPayStudent(viewingStudent);
+            setTargetPayFeeId(undefined);
             setViewingStudent(null);
             setIsPayModalOpen(true);
           }}

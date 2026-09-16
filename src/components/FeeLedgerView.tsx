@@ -4,7 +4,7 @@ import { StudentProfile } from '../types';
 
 interface FeeLedgerViewProps {
   currentStudent: StudentProfile | null;
-  onOpenPayModal: (feeId?: string) => void;
+  onOpenPayModal: (feeId?: string, studentObj?: any) => void;
   onOpenReceiptModal: (receiptNo?: string) => void;
 }
 
@@ -15,13 +15,15 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
 }) => {
   const isAdmin = !currentStudent;
   const [studentList, setStudentList] = useState<any[]>([]);
-  const [selectedStudentId, setSelectedStudentId] = useState<string>(currentStudent?.id || 'stu-rec-001');
+  const [selectedStudentId, setSelectedStudentId] = useState<string>(currentStudent?.id || 'stu-rec-aryan');
+  const [studentSearch, setStudentSearch] = useState('');
+  const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
   const [ledgerData, setLedgerData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (isAdmin) {
-      api.getStudents({ limit: 50 }).then(res => {
+      api.getStudents({ limit: 100 }).then(res => {
         if (res.success && res.students && res.students.length > 0) {
           setStudentList(res.students);
           if (!currentStudent) {
@@ -102,6 +104,19 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
     }
   };
 
+  const activeStudentObj = studentList.find(s => s.id === activeStudentId) || ledgerData?.student || currentStudent;
+
+  const filteredStudents = studentList.filter(s => {
+    if (!studentSearch.trim()) return true;
+    const q = studentSearch.toLowerCase();
+    return (
+      (s.student_id && s.student_id.toLowerCase().includes(q)) ||
+      (`${s.first_name} ${s.last_name}`).toLowerCase().includes(q) ||
+      (s.email && s.email.toLowerCase().includes(q)) ||
+      (s.course?.code && s.course.code.toLowerCase().includes(q))
+    );
+  });
+
   return (
     <div id="fee-ledger-screen" className="p-8 max-w-7xl mx-auto space-y-6 animate-fadeIn">
       {/* Header */}
@@ -112,31 +127,24 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
           </h2>
           <p className="text-sm text-[#444651] mt-1">
             {isAdmin
-              ? 'Inspect student payment statements, tuition installments, and verified transaction receipts.'
+              ? 'Inspect student payment statements, itemized fee heads, and verified transaction receipts.'
               : 'Complete statement of semester tuition heads, scholarships, discounts, and payment history.'}
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           {isAdmin ? (
             <>
-              <div className="flex items-center gap-2">
-                <label className="text-xs font-bold text-[#757682] uppercase">Audit Account:</label>
-                <select
-                  value={selectedStudentId}
-                  onChange={e => setSelectedStudentId(e.target.value)}
-                  className="px-3 py-2 bg-white border border-[#e1e3e4] rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
-                >
-                  {studentList.map(s => (
-                    <option key={s.id} value={s.id}>
-                      {s.student_id} — {s.first_name} {s.last_name} ({s.course?.code || 'Enrolled'})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <button
+                onClick={() => onOpenPayModal(undefined, activeStudentObj)}
+                className="px-4 py-2 bg-[#00236f] text-white rounded-lg text-xs font-bold hover:bg-[#1e3a8a] flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+              >
+                <span className="material-symbols-outlined text-[16px]">point_of_sale</span>
+                <span>Collect Student Fee</span>
+              </button>
               <button
                 onClick={() => { setIsAssignModalOpen(true); setAssignError(null); }}
-                className="px-4 py-2 bg-[#00236f] text-white rounded-lg text-xs font-bold hover:bg-[#1e3a8a] flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                className="px-4 py-2 bg-white border border-[#e1e3e4] text-[#191c1d] rounded-lg text-xs font-bold hover:bg-[#f8f9fa] flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
               >
                 <span className="material-symbols-outlined text-[16px]">add_circle</span>
                 <span>Assign Fee Head</span>
@@ -151,7 +159,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
             </>
           ) : (
             <button
-              onClick={() => onOpenPayModal()}
+              onClick={() => onOpenPayModal(undefined, currentStudent)}
               className="px-5 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 shadow-xs cursor-pointer"
             >
               <span className="material-symbols-outlined text-[18px]">credit_card</span>
@@ -160,6 +168,119 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
           )}
         </div>
       </div>
+
+      {/* Admin Quick Search & Audit Bar */}
+      {isAdmin && (
+        <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="relative flex-1">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#757682] text-[18px]">
+                search
+              </span>
+              <input
+                type="text"
+                placeholder="Search student by UID / Roll No (STU-008), Name (Rohan), Department, or Email..."
+                value={studentSearch}
+                onChange={e => {
+                  setStudentSearch(e.target.value);
+                  setIsSearchDropdownOpen(true);
+                }}
+                onFocus={() => setIsSearchDropdownOpen(true)}
+                className="w-full pl-9 pr-4 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-semibold text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+              />
+
+              {/* Autocomplete Results Dropdown */}
+              {isSearchDropdownOpen && filteredStudents.length > 0 && (
+                <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-[#e1e3e4] rounded-xl shadow-xl max-h-64 overflow-y-auto z-40 divide-y divide-[#f3f4f5]">
+                  {filteredStudents.map(s => (
+                    <div
+                      key={s.id}
+                      onClick={() => {
+                        setSelectedStudentId(s.id);
+                        setStudentSearch(`${s.first_name} ${s.last_name} (${s.student_id})`);
+                        setIsSearchDropdownOpen(false);
+                      }}
+                      className="p-3 hover:bg-[#f0f4ff] cursor-pointer flex items-center justify-between transition-colors text-xs"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-[#00236f] text-white flex items-center justify-center font-bold text-xs">
+                          {s.first_name?.[0]}{s.last_name?.[0]}
+                        </div>
+                        <div>
+                          <p className="font-bold text-[#191c1d]">
+                            {s.first_name} {s.last_name} <span className="font-mono text-[#00236f] font-normal">({s.student_id})</span>
+                          </p>
+                          <p className="text-[11px] text-[#757682]">
+                            {s.course?.name || s.course?.code || 'B.Tech'} • Sem {s.current_semester || 1} • {s.email}
+                          </p>
+                        </div>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        s.fees_status === 'paid' ? 'bg-[#86f2e4]/30 text-[#006a61]' : 'bg-[#fef3c7] text-[#b45309]'
+                      }`}>
+                        {s.fees_status || 'due'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Currently Audited Student Badge */}
+            {activeStudentObj && (
+              <div className="flex items-center gap-2 bg-[#f0f4ff] border border-[#dce1ff] px-3 py-1.5 rounded-lg shrink-0 text-xs">
+                <span className="material-symbols-outlined text-[#00236f] text-[18px]">verified_user</span>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-[#757682] block">Auditing Account</span>
+                  <span className="font-bold text-[#00236f]">
+                    {activeStudentObj.name || `${activeStudentObj.first_name} ${activeStudentObj.last_name}`} ({activeStudentObj.studentId || activeStudentObj.student_id})
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Quick Demo Student Selector Chips */}
+          <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-[#f3f4f5]">
+            <span className="text-[10px] font-bold text-[#757682] uppercase tracking-wider mr-1">
+              Quick Audit:
+            </span>
+            {[
+              { label: 'Aryan (CSE)', id: 'stu-rec-aryan', uid: 'STU-2023-088' },
+              { label: 'Rohan (Phys)', id: 'stu-008', uid: 'STU-008' },
+              { label: 'Priya (MBA)', id: 'stu-007', uid: 'STU-007' },
+              { label: 'Aarav (CS)', id: 'stu-006', uid: 'STU-006' },
+              { label: 'Neha (ME)', id: 'stu-009', uid: 'STU-009' },
+              { label: 'Aaditya (CS)', id: 'stu-001', uid: 'STU-2025-001' },
+            ].map(demo => {
+              const matched = studentList.find(s => s.student_id === demo.uid || s.id === demo.id);
+              const isActive = (matched && matched.id === activeStudentId) || (ledgerData?.student?.studentId === demo.uid);
+              return (
+                <button
+                  key={demo.uid}
+                  type="button"
+                  onClick={() => {
+                    if (matched) {
+                      setSelectedStudentId(matched.id);
+                      setStudentSearch(`${matched.first_name} ${matched.last_name} (${matched.student_id})`);
+                      setIsSearchDropdownOpen(false);
+                    } else {
+                      setSelectedStudentId(demo.id);
+                    }
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-[#00236f] text-white shadow-xs'
+                      : 'bg-[#f8f9fa] hover:bg-[#e1e3e4] text-[#444651] border border-[#e1e3e4]'
+                  }`}
+                >
+                  {demo.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Summary KPI Banner */}
       {ledgerData && (
@@ -293,7 +414,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                     <td className="py-3.5 px-4 text-right">
                       {item.status !== 'paid' ? (
                         <button
-                          onClick={() => onOpenPayModal(item.id)}
+                          onClick={() => onOpenPayModal(item.id, activeStudentObj || currentStudent)}
                           className="px-3 py-1 bg-[#00236f] text-white rounded text-xs font-bold hover:bg-[#1e3a8a] transition-colors cursor-pointer"
                         >
                           Pay
