@@ -21,6 +21,9 @@ import { StudentProfileModal } from './components/StudentProfileModal';
 import { AICopilotModal } from './components/AICopilotModal';
 import { GrievanceView } from './components/GrievanceView';
 import { MRSPTUAdmitCardModal } from './components/MRSPTUAdmitCardModal';
+import { StaffDashboardView } from './components/StaffDashboardView';
+import { AcademicsView } from './components/AcademicsView';
+import { ReportsView } from './components/ReportsView';
 
 interface LayoutProps {
   currentUser: User | null;
@@ -63,14 +66,18 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
         return 'grievances';
       case '/dashboard':
       default:
-        return (currentUser?.role === 'admin' || currentUser?.role === 'staff') ? 'admin-dashboard' : 'student-dashboard';
+        return currentUser?.role === 'admin'
+          ? 'admin-dashboard'
+          : currentUser?.role === 'staff'
+          ? 'staff-dashboard'
+          : 'student-dashboard';
     }
   };
 
   const handleNavigate = (screen: ActiveScreen) => {
     if (screen === 'fee-ledger') {
       navigate('/fees');
-    } else if (screen === 'student-dashboard' || screen === 'admin-dashboard') {
+    } else if (screen === 'student-dashboard' || screen === 'admin-dashboard' || screen === 'staff-dashboard') {
       navigate('/dashboard');
     } else {
       navigate(`/${screen}`);
@@ -211,7 +218,7 @@ function MainApp() {
   const handleScreenNavigate = (target: string) => {
     if (target === 'fee-ledger' || target === 'fees') {
       navigate('/fees');
-    } else if (target === 'student-dashboard' || target === 'admin-dashboard' || target === 'dashboard') {
+    } else if (target === 'student-dashboard' || target === 'admin-dashboard' || target === 'staff-dashboard' || target === 'dashboard') {
       navigate('/dashboard');
     } else {
       navigate(`/${target}`);
@@ -280,10 +287,15 @@ function MainApp() {
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
               >
-                {(currentUser.role === 'admin' || currentUser.role === 'staff') ? (
+                {currentUser.role === 'admin' ? (
                   <AdminDashboardView
                     onNavigate={handleScreenNavigate}
                     onOpenEmailReminders={() => setIsEmailRemindersOpen(true)}
+                  />
+                ) : currentUser.role === 'staff' ? (
+                  <StaffDashboardView
+                    currentUser={currentUser}
+                    onNavigate={handleScreenNavigate}
                   />
                 ) : (
                   <StudentDashboardView
@@ -435,34 +447,7 @@ function MainApp() {
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
               >
-                <div className="p-8 max-w-6xl mx-auto space-y-6 animate-fadeIn">
-                  <h2 className="text-2xl font-bold text-[#191c1d]">Academics & Course Curriculum</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="p-6 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
-                      <span className="text-xs font-bold uppercase text-[#00236f] bg-[#dce1ff] px-2 py-0.5 rounded">
-                        Computer Science & Engineering
-                      </span>
-                      <h3 className="text-lg font-bold text-[#191c1d] mt-3">CS-401: Distributed Cloud Architecture</h3>
-                      <p className="text-xs text-[#757682] mt-1">Instructor: Prof. K. Venkatesh • 4 Credits</p>
-                      <div className="mt-4 pt-3 border-t border-[#f3f4f5] flex items-center justify-between text-xs">
-                        <span className="font-semibold text-[#006a61]">Attendance: 88%</span>
-                        <button className="text-[#00236f] font-bold hover:underline cursor-pointer">Download Syllabus</button>
-                      </div>
-                    </div>
-
-                    <div className="p-6 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
-                      <span className="text-xs font-bold uppercase text-[#00236f] bg-[#dce1ff] px-2 py-0.5 rounded">
-                        Computer Science & Engineering
-                      </span>
-                      <h3 className="text-lg font-bold text-[#191c1d] mt-3">CS-402: Advanced Relational DBMS & MariaDB</h3>
-                      <p className="text-xs text-[#757682] mt-1">Instructor: Dr. Ramesh Chandra • 4 Credits</p>
-                      <div className="mt-4 pt-3 border-t border-[#f3f4f5] flex items-center justify-between text-xs">
-                        <span className="font-semibold text-[#006a61]">Attendance: 92%</span>
-                        <button className="text-[#00236f] font-bold hover:underline cursor-pointer">Download Syllabus</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <AcademicsView currentUser={currentUser} />
               </AuthenticatedLayout>
             )
           }
@@ -480,48 +465,7 @@ function MainApp() {
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
               >
-                <div className="p-8 max-w-6xl mx-auto space-y-6 animate-fadeIn">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-2xl font-bold text-[#191c1d]">Institutional Analytical Reports</h2>
-                      <p className="text-sm text-[#444651] mt-1">Financial reconciliation and enrollment audits</p>
-                    </div>
-                    {(currentUser.role === 'admin' || currentUser.role === 'staff') && (
-                      <a
-                        href="/api/reports/export-students-csv"
-                        download
-                        className="px-4 py-2 bg-[#00236f] text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs hover:bg-[#1e3a8a] transition-colors"
-                      >
-                        <span className="material-symbols-outlined text-[16px]">download</span>
-                        <span>Export Master Data (CSV)</span>
-                      </a>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
-                      <h4 className="text-sm font-bold text-[#191c1d]">Semester Fee Audit 2025-26</h4>
-                      <p className="text-xs text-[#757682] mt-1">Total ₹ 2.4 Cr collected, ₹ 18 L overdue</p>
-                      <span className="inline-block mt-4 text-xs font-bold text-[#00236f]">
-                        Active Financial Ledger
-                      </span>
-                    </div>
-                    <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
-                      <h4 className="text-sm font-bold text-[#191c1d]">Department Enrollment Roster</h4>
-                      <p className="text-xs text-[#757682] mt-1">1,432 active student registrations</p>
-                      <span className="inline-block mt-4 text-xs font-bold text-[#00236f]">
-                        MariaDB Seeded Roster
-                      </span>
-                    </div>
-                    <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
-                      <h4 className="text-sm font-bold text-[#191c1d]">Scholarship Grant Allocation</h4>
-                      <p className="text-xs text-[#757682] mt-1">₹ 14.5 Lakhs disbursed across 35 scholars</p>
-                      <span className="inline-block mt-4 text-xs font-bold text-[#00236f]">
-                        Active Merit Grants
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                <ReportsView currentUser={currentUser} />
               </AuthenticatedLayout>
             )
           }

@@ -37,8 +37,8 @@ formRouter.get('/:id', authenticateToken, async (req: AuthRequest, res: Response
   });
 });
 
-// Admin: Create new dynamic form schema
-formRouter.post('/', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+// Admin / Staff: Create new dynamic form schema
+formRouter.post('/', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { title, description, form_code, schema_json, fields } = req.body;
   const rawFields = schema_json || fields;
 
@@ -148,8 +148,8 @@ formRouter.post('/:id/submit', authenticateToken, async (req: AuthRequest, res: 
   });
 });
 
-// Admin: Toggle publish status of dynamic form
-formRouter.patch('/:id/publish', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+// Admin / Staff: Toggle publish status of dynamic form
+formRouter.patch('/:id/publish', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   const { is_published } = req.body;
   const form = await db.getDynamicFormById(id) || (await db.getDynamicForms()).find(f => f.form_code === id);
@@ -161,8 +161,8 @@ formRouter.patch('/:id/publish', authenticateToken, requireRole('admin'), async 
   res.json({ success: true, message: `Form publication status updated to ${is_published}.`, form: updated });
 });
 
-// Admin: View submissions for a form
-formRouter.get('/:id/submissions', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+// Admin / Staff: View submissions for a form
+formRouter.get('/:id/submissions', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   const form = await db.getDynamicFormById(id) || (await db.getDynamicForms()).find(f => f.form_code === id);
 

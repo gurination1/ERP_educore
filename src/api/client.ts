@@ -82,6 +82,10 @@ export const api = {
   },
   getStudentDashboard: (studentId: string) => apiRequest(`/api/students/${studentId}/dashboard`),
   getStudentProfile: (studentId: string) => apiRequest(`/api/students/${studentId}`),
+  updateStudentAttendance: (studentId: string, data: { attendedClasses?: number; totalClasses?: number; attendancePercentage?: number }) =>
+    apiRequest(`/api/students/${studentId}/attendance`, { method: 'PATCH', body: JSON.stringify(data) }),
+  condoneAttendance: (studentId: string, data: { orderNo?: string; reason?: string }) =>
+    apiRequest(`/api/students/${studentId}/condone-attendance`, { method: 'POST', body: JSON.stringify(data) }),
   sendEmailReminders: () => apiRequest('/api/students/send-email-reminders', { method: 'POST' }),
 
   // Admissions
@@ -169,4 +173,7 @@ export const api = {
 
   // MRSPTU Examination Admit Card
   getAdmitCard: (id: string = 'me') => apiRequest(`/api/students/${id}/admit-card`),
+
+  // Analytical Reports
+  getAdmissionsByCourseReport: () => apiRequest('/api/reports/admissions-by-course'),
 };

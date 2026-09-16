@@ -168,6 +168,7 @@ export type ActiveScreen =
   | 'login'             // Screen 3 & 4
   | 'admissions'        // Screen 5 & 6
   | 'admin-dashboard'   // Screen 7 & 8
+  | 'staff-dashboard'   // Dedicated Faculty / Academic Staff Portal
   | 'manage-students'   // Screen 9 & 10
   | 'fee-ledger'
   | 'scholarships'

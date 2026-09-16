@@ -18,10 +18,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const navItems = [
     {
-      id: isStaffOrAdmin ? ('admin-dashboard' as ActiveScreen) : ('student-dashboard' as ActiveScreen),
-      label: 'Dashboard',
-      icon: 'dashboard',
-      badge: undefined,
+      id: currentUser?.role === 'admin'
+        ? ('admin-dashboard' as ActiveScreen)
+        : currentUser?.role === 'staff'
+        ? ('staff-dashboard' as ActiveScreen)
+        : ('student-dashboard' as ActiveScreen),
+      label: currentUser?.role === 'admin' ? 'Provost / Admin' : currentUser?.role === 'staff' ? 'Faculty Console' : 'Dashboard',
+      icon: currentUser?.role === 'staff' ? 'co_present' : 'dashboard',
+      badge: currentUser?.role === 'staff' ? 'Active' : undefined,
     },
     {
       id: 'fee-ledger' as ActiveScreen,

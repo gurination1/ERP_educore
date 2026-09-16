@@ -44,7 +44,12 @@ export function generateToken(user: User): string {
 
 export async function authenticateToken(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+  let token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+
+  // Support query token for direct browser file downloads (e.g., CSV export)
+  if (!token && req.query && typeof req.query.token === 'string') {
+    token = req.query.token;
+  }
 
   if (!token) {
     res.status(401).json({ success: false, error: 'Authentication required. Please provide a valid Bearer token.' });

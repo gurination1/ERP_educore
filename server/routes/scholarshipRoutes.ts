@@ -11,8 +11,8 @@ scholarshipRouter.get('/schemes', authenticateToken, async (req: AuthRequest, re
   res.json({ success: true, count: schemes.length, schemes });
 });
 
-// Admin: Create scholarship scheme
-scholarshipRouter.post('/schemes', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+// Admin / Staff: Create scholarship scheme
+scholarshipRouter.post('/schemes', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { code, title, description, award_amount, eligibility_criteria, deadline } = req.body;
 
   if (!title || !award_amount || !deadline) {
@@ -131,8 +131,8 @@ scholarshipRouter.get('/applications', authenticateToken, async (req: AuthReques
   res.json({ success: true, count: list.length, applications: list });
 });
 
-// Admin Review (Approve / Reject + remarks)
-scholarshipRouter.patch('/applications/:id/review', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+// Admin / Staff Review (Approve / Reject + remarks)
+scholarshipRouter.patch('/applications/:id/review', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   const { status, remarks } = req.body;
 
