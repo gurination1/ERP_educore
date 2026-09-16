@@ -63,7 +63,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
         return 'grievances';
       case '/dashboard':
       default:
-        return currentUser?.role === 'admin' ? 'admin-dashboard' : 'student-dashboard';
+        return (currentUser?.role === 'admin' || currentUser?.role === 'staff') ? 'admin-dashboard' : 'student-dashboard';
     }
   };
 
@@ -201,7 +201,7 @@ function MainApp() {
   };
 
   const handleLogout = () => {
-    const wasAdmin = currentUser?.role === 'admin';
+    const wasAdmin = currentUser?.role === 'admin' || currentUser?.role === 'staff';
     removeStoredToken();
     setCurrentUser(null);
     setCurrentStudent(null);
@@ -280,7 +280,7 @@ function MainApp() {
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
               >
-                {currentUser.role === 'admin' ? (
+                {(currentUser.role === 'admin' || currentUser.role === 'staff') ? (
                   <AdminDashboardView
                     onNavigate={handleScreenNavigate}
                     onOpenEmailReminders={() => setIsEmailRemindersOpen(true)}
@@ -348,7 +348,7 @@ function MainApp() {
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
               >
-                {currentUser.role === 'admin' ? (
+                {(currentUser.role === 'admin' || currentUser.role === 'staff') ? (
                   <AdmissionsAdminView
                     onSelectStudent={student => setViewingStudent(student)}
                   />
@@ -369,7 +369,7 @@ function MainApp() {
           element={
             !currentUser ? (
               <Navigate to="/admin" replace />
-            ) : currentUser.role !== 'admin' ? (
+            ) : (currentUser.role !== 'admin' && currentUser.role !== 'staff') ? (
               <Navigate to="/dashboard" replace />
             ) : (
               <AuthenticatedLayout
@@ -486,7 +486,7 @@ function MainApp() {
                       <h2 className="text-2xl font-bold text-[#191c1d]">Institutional Analytical Reports</h2>
                       <p className="text-sm text-[#444651] mt-1">Financial reconciliation and enrollment audits</p>
                     </div>
-                    {currentUser.role === 'admin' && (
+                    {(currentUser.role === 'admin' || currentUser.role === 'staff') && (
                       <a
                         href="/api/reports/export-students-csv"
                         download

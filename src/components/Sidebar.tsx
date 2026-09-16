@@ -14,11 +14,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   currentUser,
   onLogout,
 }) => {
-  const isAdmin = currentUser?.role === 'admin';
+  const isStaffOrAdmin = currentUser?.role === 'admin' || currentUser?.role === 'staff';
 
   const navItems = [
     {
-      id: isAdmin ? ('admin-dashboard' as ActiveScreen) : ('student-dashboard' as ActiveScreen),
+      id: isStaffOrAdmin ? ('admin-dashboard' as ActiveScreen) : ('student-dashboard' as ActiveScreen),
       label: 'Dashboard',
       icon: 'dashboard',
       badge: undefined,
@@ -31,11 +31,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'admissions' as ActiveScreen,
-      label: 'Admissions',
+      label: isStaffOrAdmin ? 'Admissions Queue' : 'Admissions',
       icon: 'edit_document',
       badge: 'New',
     },
-    ...(isAdmin
+    ...(isStaffOrAdmin
       ? [
           {
             id: 'manage-students' as ActiveScreen,
@@ -53,7 +53,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'form-builder' as ActiveScreen,
-      label: isAdmin ? 'Form Builder' : 'Dynamic Forms',
+      label: isStaffOrAdmin ? 'Form Builder' : 'Dynamic Forms',
       icon: 'dynamic_form',
       badge: undefined,
     },
@@ -69,7 +69,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: 'report_problem',
       badge: undefined,
     },
-    ...(isAdmin
+    ...(isStaffOrAdmin
       ? [
           {
             id: 'reports' as ActiveScreen,

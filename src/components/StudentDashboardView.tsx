@@ -20,37 +20,50 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
   onOpenAdmitCardModal,
 }) => {
   const [ledgerData, setLedgerData] = useState<any>(null);
+  const [isLedgerLoading, setIsLedgerLoading] = useState(true);
 
   useEffect(() => {
     if (student?.id || student?.student_id) {
-      api.getFeeLedger(student.id || student.student_id).then(res => {
-        if (res.success) {
-          setLedgerData(res);
-        }
-      });
+      setIsLedgerLoading(true);
+      api.getFeeLedger(student.id || student.student_id)
+        .then(res => {
+          if (res.success) {
+            setLedgerData(res);
+          }
+        })
+        .finally(() => {
+          setIsLedgerLoading(false);
+        });
     }
   }, [student]);
 
-  const studentName = student
-    ? `${student.first_name} ${student.last_name}`
-    : 'Aryan Sharma';
-  const courseCode = student?.course?.code || 'B.Tech';
-  const semesterOrdinal = `${student?.current_semester || 4}th`;
-  const sessionName = student?.session?.name || '2025-26';
+  if (!student) {
+    return (
+      <div className="p-12 max-w-7xl mx-auto flex flex-col items-center justify-center min-h-[50vh] space-y-4 animate-fadeIn">
+        <div className="w-10 h-10 border-4 border-[#00236f] border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-sm font-semibold text-[#757682]">Loading student profile...</p>
+      </div>
+    );
+  }
+
+  const studentName = `${student.first_name} ${student.last_name}`;
+  const courseCode = student.course?.code || 'B.Tech';
+  const semesterOrdinal = `${student.current_semester || 1}th`;
+  const sessionName = student.session?.name || '2025-26';
   const avatarUrl =
     'https://lh3.googleusercontent.com/aida-public/AB6AXuCeiC80XBMv76j7_mmqCTcV9ZoMVZPfV_CdXd_33ne25_LIcAK_aNzQB6o4mvRXLqi6oREzmz295hMjEcQKFSotWGv1NikCOM_tIPmBQDzFiaMO8yJKSdfRUTIfZSoUkGyEjTIjKF5D8DMp3A9swq7gKNz8yzp0zkvchBkPPxFbIrY_ZA6tW5oSONcFtKCHTd3RgKK6vRjOMjtXmy5qOVJVowbvGGivEwYdD84ExfwTGl3sAzLegZ9N';
 
-  const attendancePct = student?.attendance_percentage ?? 85;
-  const attendedClasses = student?.attended_classes ?? (student?.total_classes ? 0 : 85);
-  const totalClasses = student?.total_classes ?? 100;
+  const attendancePct = student.attendance_percentage ?? 100;
+  const attendedClasses = student.attended_classes ?? 0;
+  const totalClasses = student.total_classes ?? 0;
   const absentClasses = Math.max(0, totalClasses - attendedClasses);
 
   const isDetained = attendancePct < 65;
   const isCondonationNeeded = attendancePct >= 65 && attendancePct < 75;
 
-  const totalDue = ledgerData ? ledgerData.summary.totalDue : 0;
+  const totalDue = ledgerData ? ledgerData.summary.totalDue : (student.fees_status === 'paid' ? 0 : 0);
   const totalDiscount = ledgerData ? (ledgerData.ledger || []).reduce((acc: number, f: any) => acc + (f.discount_amount || 0), 0) : 0;
-  const isFullyPaid = ledgerData ? totalDue <= 0 : student?.fees_status === 'paid';
+  const isFullyPaid = ledgerData ? totalDue <= 0 : (student.fees_status === 'paid');
   const unpaidItems = ledgerData?.ledger?.filter((f: any) => f.due_amount > 0 && f.status !== 'cancelled') || [];
   const nextDueDate = unpaidItems.sort((a: any, b: any) => a.due_date?.localeCompare(b.due_date))[0]?.due_date || (isFullyPaid ? 'All dues cleared in full' : 'Assessment pending');
   const latestReceipt = ledgerData?.payments?.[0]?.receipt_no;
@@ -197,7 +210,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                   <span>View Roll Slip</span>
                 </button>
               </div>
-            ) : !isFullyPaid ? (
+            ) : totalDue > 0 ? (
               <div className="mt-3.5 p-3 bg-[#ffdad6]/40 border border-[#ffdad6] rounded-xl flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
                   <span className="material-symbols-outlined text-[#ba1a1a] text-[20px]">block</span>
@@ -214,7 +227,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                   <span>Hold Reason</span>
                 </button>
               </div>
-            ) : (
+            ) : isDetained ? (
               <div className="mt-3.5 p-3 bg-[#ffdad6]/40 border border-[#ffdad6] rounded-xl flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
                   <span className="material-symbols-outlined text-[#ba1a1a] text-[20px]">warning</span>
@@ -231,18 +244,18 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                   <span>Detention Details</span>
                 </button>
               </div>
-            )}
+            ) : null}
           </div>
 
           <div className="mt-6 pt-4 border-t border-[#f3f4f5] flex items-center gap-3">
-            {!isFullyPaid ? (
+            {totalDue > 0 ? (
               <button
                 id="student-pay-now-btn"
                 onClick={onOpenPayModal}
                 className="flex-1 px-5 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[18px]">credit_card</span>
-                <span>Pay Outstanding Due</span>
+                <span>Pay Outstanding Due (₹{totalDue.toLocaleString('en-IN')})</span>
               </button>
             ) : (
               <button
@@ -291,7 +304,13 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                   <div>
                     <p className="text-xs font-bold text-[#191c1d]">MRSPTU Exam Admit Card</p>
                     <p className="text-[10px] text-[#757682]">
-                      {isFullyPaid && !isDetained ? 'Cleared & Released' : 'Clearance Required'}
+                      {isFullyPaid && !isDetained
+                        ? 'Cleared & Released'
+                        : totalDue > 0
+                        ? `Accounts Hold (₹${totalDue.toLocaleString('en-IN')} Due)`
+                        : isDetained
+                        ? 'Detained (Attendance < 75%)'
+                        : 'Clearance Required'}
                     </p>
                   </div>
                 </div>
