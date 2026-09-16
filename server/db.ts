@@ -67,6 +67,9 @@ export interface Student {
   tenth_percentage?: number;
   twelfth_percentage?: number;
   board_name?: string;
+  condonation_granted?: boolean;
+  condonation_order_no?: string;
+  condonation_remarks?: string;
   created_at: string;
 }
 
@@ -552,6 +555,9 @@ class DatabaseStore {
     await safeAddColumn('students', 'tenth_percentage DOUBLE');
     await safeAddColumn('students', 'twelfth_percentage DOUBLE');
     await safeAddColumn('students', 'board_name VARCHAR(64)');
+    await safeAddColumn('students', 'condonation_granted TINYINT(1) DEFAULT 0');
+    await safeAddColumn('students', 'condonation_order_no VARCHAR(64)');
+    await safeAddColumn('students', 'condonation_remarks VARCHAR(255)');
   }
 
   private async seedMariaDBDefaults(): Promise<void> {
@@ -582,11 +588,74 @@ class DatabaseStore {
       { id: 'fh-misc', code: 'MISC_STUDENT', title: 'Miscellaneous Campus & Student Welfare', description: 'Student ID RFID badge, cultural youth festival, annual sports fest, and club activities', is_recurring: true },
       { id: 'fh-training', code: 'TRAINING_PLACEMENT', title: 'Industrial Training & Placement Prep', description: 'Industry technical bootcamps, soft-skills workshops, and campus placement drives', is_recurring: true },
       { id: 'fh-late-fine', code: 'LATE_SURCHARGE', title: 'Late Fee & Delayed Clearance Penalty', description: 'Regulatory surcharge fine for delayed semester fee clearance or late registration', is_recurring: false },
+      { id: 'fh-reappear', code: 'REAPPEAR_EXAM', title: 'MRSPTU Re-appear / Backlog Exam Fee', description: 'Affiliating university examination fee for semester backlog papers (₹1,000 per paper)', is_recurring: false },
+      { id: 'fh-lib-fine', code: 'LIB_FINE', title: 'Library Overdue Book Fine', description: 'Institutional overdue penalty for late return of reserved library textbooks', is_recurring: false },
+      { id: 'fh-breakage', code: 'LAB_BREAKAGE', title: 'Laboratory Equipment & Breakage Fine', description: 'Assessment for laboratory apparatus, glasswares, or computing hardware damage', is_recurring: false },
     ];
     for (const fh of canonicalFeeHeads) {
       await this.mariaPool.query(
         'INSERT INTO fee_heads (id, code, title, description, is_recurring) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE code = VALUES(code), title = VALUES(title), description = VALUES(description), is_recurring = VALUES(is_recurring)',
         [fh.id, fh.code, fh.title, fh.description || null, fh.is_recurring ? 1 : 0]
+      );
+    }
+
+    // Always ensure canonical scholarship schemes exist in MariaDB
+    const canonicalSchemes: Scheme[] = [
+      {
+        id: 'sch-merit-01',
+        code: 'MERIT-2025',
+        title: 'State Merit & Academic Excellence Scholarship',
+        description: 'Prestigious institutional merit grant awarded to high-performing students who secured 8.5+ CGPA in prior semester.',
+        award_amount: 50000,
+        eligibility_criteria: 'Minimum 8.5 CGPA and no pending backlogs.',
+        deadline: '2025-11-30',
+        is_active: true,
+      },
+      {
+        id: 'sch-need-02',
+        code: 'NEED-2025',
+        title: 'Need-Based Fee Concession Grant',
+        description: 'Financial assistance grant for students with annual family income under INR 3,00,000.',
+        award_amount: 35000,
+        eligibility_criteria: 'Family income certificate issued by revenue authority.',
+        deadline: '2025-10-31',
+        is_active: true,
+      },
+      {
+        id: 'sch-stem-03',
+        code: 'WOMEN-STEM',
+        title: 'Women in STEM Leadership Fellowship',
+        description: 'Special endowment to encourage female scholars enrolled in Engineering & Technology branches.',
+        award_amount: 40000,
+        eligibility_criteria: 'Female students enrolled in B.Tech courses with CGPA 7.5+.',
+        deadline: '2025-12-15',
+        is_active: true,
+      },
+      {
+        id: 'sch-pms-punjab',
+        code: 'PMS-PUNJAB',
+        title: 'Post-Matric Scholarship for SC/ST (Dr. Ambedkar Portal, Govt of Punjab)',
+        description: 'Flagship Punjab Government 100% Tuition Fee waiver for SC/ST students with family income under ₹2.5 Lakh per annum.',
+        award_amount: 90000,
+        eligibility_criteria: 'SC/ST category candidates domicile of Punjab with family annual income <= ₹2,50,000 via Dr. Ambedkar Scholarship Portal.',
+        deadline: '2025-11-30',
+        is_active: true,
+      },
+      {
+        id: 'sch-cmss-punjab',
+        code: 'CMSS-PUNJAB',
+        title: 'Chief Minister Scholarship Scheme (CMSS Punjab)',
+        description: 'Merit-based tuition discount granted by Govt of Punjab for students securing >= 80% marks in 10+2 / qualifying exam.',
+        award_amount: 45000,
+        eligibility_criteria: 'Punjab domicile candidate with >= 80% marks in 10+2 CBSE/PSEB board exam.',
+        deadline: '2025-10-31',
+        is_active: true,
+      },
+    ];
+    for (const sch of canonicalSchemes) {
+      await this.mariaPool.query(
+        'INSERT INTO schemes (id, code, title, description, award_amount, eligibility_criteria, deadline, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE code = VALUES(code), title = VALUES(title), description = VALUES(description), award_amount = VALUES(award_amount), eligibility_criteria = VALUES(eligibility_criteria), deadline = VALUES(deadline), is_active = VALUES(is_active)',
+        [sch.id, sch.code, sch.title, sch.description, sch.award_amount, sch.eligibility_criteria, sch.deadline, sch.is_active ? 1 : 0]
       );
     }
 
@@ -1072,6 +1141,7 @@ class DatabaseStore {
         ...r,
         is_hosteller: Boolean(r.is_hosteller),
         is_transport_user: Boolean(r.is_transport_user),
+        condonation_granted: Boolean(r.condonation_granted),
       }));
     }
 
@@ -1100,6 +1170,7 @@ class DatabaseStore {
           ...rows[0],
           is_hosteller: Boolean(rows[0].is_hosteller),
           is_transport_user: Boolean(rows[0].is_transport_user),
+          condonation_granted: Boolean(rows[0].condonation_granted),
         };
       }
       return null;
@@ -1120,6 +1191,7 @@ class DatabaseStore {
           ...rows[0],
           is_hosteller: Boolean(rows[0].is_hosteller),
           is_transport_user: Boolean(rows[0].is_transport_user),
+          condonation_granted: Boolean(rows[0].condonation_granted),
         };
       }
       return null;
@@ -1182,7 +1254,7 @@ class DatabaseStore {
         'admission_status', 'fees_status', 'attendance_percentage', 'total_classes',
         'attended_classes', 'is_hosteller', 'is_transport_user', 'transport_route',
         'hostel_room_no', 'category', 'quota', 'tenth_percentage', 'twelfth_percentage',
-        'board_name', 'created_at'
+        'board_name', 'condonation_granted', 'condonation_order_no', 'condonation_remarks', 'created_at'
       ];
       const keys = Object.keys(updates).filter(k => allowedCols.includes(k));
       if (keys.length === 0) return this.getStudentById(id);

@@ -63,13 +63,13 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptNo, onClose }
               <span className="material-symbols-outlined text-[28px]">school</span>
             </div>
             <h2 className="text-lg font-black tracking-tight text-[#00236f] uppercase">
-              EduCore Institute of Higher Learning
+              {receiptData?.institutionName || 'Baba Farid College of Engineering & Technology (BFGI)'}
             </h2>
             <p className="text-[11px] text-[#757682] mt-0.5">
-              Knowledge City Campus, Institutional Area, Sector 62 • Approved by AICTE & UGC
+              {receiptData?.campusAddress || 'Muktsar Road, Deon, Bathinda, Punjab 151001 • Affiliated to MRSPTU Bathinda • AICTE Approved'}
             </p>
             <span className="inline-block mt-2 px-3 py-0.5 bg-[#dce1ff] text-[#00236f] rounded-full text-[10px] font-extrabold uppercase tracking-wider">
-              Official Electronic Fee Receipt
+              Official Electronic Fee Receipt (MRSPTU Affiliated)
             </span>
           </div>
 

@@ -527,9 +527,9 @@ feeRouter.get('/receipt/:receiptIdOrNo(*)', authenticateToken, async (req: AuthR
       courseCode: course?.code,
       semester: student.current_semester,
       feeCategory: feeHead?.title || 'Academic Tuition & Semester Assessment',
-      institutionName: 'EduCore Institute of Higher Learning',
-      campusAddress: 'Knowledge City, Institutional Area, Sector 62',
-      authorizedSignatory: 'Finance & Accounts Division',
+      institutionName: 'Baba Farid College of Engineering & Technology (BFGI)',
+      campusAddress: 'Muktsar Road, Deon, Bathinda, Punjab 151001 (Affiliated to MRSPTU Bathinda)',
+      authorizedSignatory: 'Finance & Accounts Division, BFGI Bathinda',
       status: payment.status,
     },
   });

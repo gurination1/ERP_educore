@@ -237,9 +237,11 @@ studentRouter.get('/:id/admit-card', authenticateToken, async (req: AuthRequest,
   const totalOutstandingDue = Math.round(activeFees.reduce((acc, sf) => acc + (sf.status !== 'paid' ? sf.due_amount : 0), 0) * 100) / 100;
   const isFeeCleared = totalOutstandingDue <= 0.01;
 
-  // 2. Check MRSPTU Attendance Ordinance (75% Minimum Mandatory Cutoff)
+  // 2. Check MRSPTU Attendance Ordinance (75% Minimum Mandatory Cutoff with 10% Condonation Rule)
   const attendancePercentage = student.total_classes === 0 ? (student.attendance_percentage ?? 100) : Math.round((student.attended_classes / student.total_classes) * 100);
-  const isAttendanceEligible = attendancePercentage >= 75;
+  const isCondoned = Boolean(student.condonation_granted);
+  // MRSPTU Ordinance 7.4: Standard eligibility >= 75%. If condonation granted by Director/HOD on medical/sports grounds, covers 65% to 74.9%.
+  const isAttendanceEligible = attendancePercentage >= 75 || (isCondoned && attendancePercentage >= 65);
 
   const isEligible = isFeeCleared && isAttendanceEligible;
   const status: 'RELEASED' | 'WITHHELD' = isEligible ? 'RELEASED' : 'WITHHELD';
@@ -249,7 +251,11 @@ studentRouter.get('/:id/admit-card', authenticateToken, async (req: AuthRequest,
     holdReasons.push(`Accounts Branch Hold: Outstanding fee balance of ₹${totalOutstandingDue.toLocaleString('en-IN')} pending clearance.`);
   }
   if (!isAttendanceEligible) {
-    holdReasons.push(`MRSPTU Attendance Detention (Ordinance 7.4): Attendance is ${attendancePercentage}%, below mandatory 75% minimum cutoff. Submit condonation approved by Dean / HOD.`);
+    if (attendancePercentage < 65) {
+      holdReasons.push(`MRSPTU Attendance Strict Detention (Ordinance 7.4): Attendance is ${attendancePercentage}%, below condonable threshold (<65%). Mandatory course repetition required.`);
+    } else {
+      holdReasons.push(`MRSPTU Attendance Detention (Ordinance 7.4): Attendance is ${attendancePercentage}%, below mandatory 75% minimum cutoff. Submit condonation approved by Dean / HOD.`);
+    }
   }
 
   const semester = student.current_semester || 1;
@@ -269,6 +275,7 @@ studentRouter.get('/:id/admit-card', authenticateToken, async (req: AuthRequest,
     holdReasons,
     totalOutstandingDue,
     attendancePercentage,
+    condonationStatus: isCondoned ? `Condoned under Order #${student.condonation_order_no || 'ORD-COE-2025'}` : 'Standard Attendance Clearance',
     admitCard: {
       university: 'Maharaja Ranjit Singh Punjab Technical University, Bathinda',
       accreditation: 'A State University Established by Govt. of Punjab vide Act No. 5 of 2015',
@@ -285,6 +292,7 @@ studentRouter.get('/:id/admit-card', authenticateToken, async (req: AuthRequest,
       papers: subjectPapers,
       verificationBarcode: `MRSPTU-VERIFY-${student.student_id}-${Date.now().toString().slice(-4)}`,
       authorizedSignatory: 'Dr. Gurpreet Singh (Controller of Examinations, MRSPTU)',
+      condonationOrder: isCondoned ? (student.condonation_order_no || 'ORD-COE-CONDONED') : null,
       instructions: [
         'Candidate must present this original MRSPTU Admit Card along with college RFID Identity Card at the examination entrance.',
         'Strictly prohibited: Smart watches, cellular mobile phones, programmable calculators, and unauthorized printed materials.',
@@ -292,5 +300,235 @@ studentRouter.get('/:id/admit-card', authenticateToken, async (req: AuthRequest,
         'No candidate shall be allowed entry after 15 minutes of question paper distribution.',
       ],
     },
+  });
+});
+
+// Update Student Attendance (Admin / Faculty)
+studentRouter.patch('/:id/attendance', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { attendedClasses, totalClasses, attendancePercentage } = req.body;
+
+  const allStudents = await db.getStudents();
+  const student = allStudents.find(s => s.id === id || s.student_id === id);
+  if (!student) {
+    res.status(404).json({ success: false, error: 'Student record not found.' });
+    return;
+  }
+
+  let newAttended = attendedClasses !== undefined ? Number(attendedClasses) : student.attended_classes;
+  let newTotal = totalClasses !== undefined ? Number(totalClasses) : student.total_classes;
+
+  if (newAttended < 0 || newTotal < 0) {
+    res.status(400).json({ success: false, error: 'Attended and total classes cannot be negative.' });
+    return;
+  }
+
+  if (newAttended > newTotal && newTotal > 0) {
+    res.status(400).json({ success: false, error: 'Attended classes cannot exceed total classes conducted.' });
+    return;
+  }
+
+  let newPct = attendancePercentage !== undefined
+    ? Number(attendancePercentage)
+    : (newTotal > 0 ? Math.round((newAttended / newTotal) * 100) : student.attendance_percentage);
+
+  newPct = Math.max(0, Math.min(100, newPct));
+
+  const updated = await db.updateStudent(student.id, {
+    attended_classes: newAttended,
+    total_classes: newTotal,
+    attendance_percentage: newPct,
+  });
+
+  res.json({
+    success: true,
+    message: `Attendance updated for ${student.first_name} ${student.last_name}: ${newPct}% (${newAttended}/${newTotal})`,
+    student: updated,
+  });
+});
+
+// Grant MRSPTU Attendance Condonation (Admin / Director / Registrar)
+studentRouter.post('/:id/condone-attendance', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { orderNo, reason } = req.body;
+
+  const allStudents = await db.getStudents();
+  const student = allStudents.find(s => s.id === id || s.student_id === id);
+  if (!student) {
+    res.status(404).json({ success: false, error: 'Student record not found.' });
+    return;
+  }
+
+  const currentPct = student.total_classes === 0 ? (student.attendance_percentage ?? 100) : Math.round((student.attended_classes / student.total_classes) * 100);
+
+  // MRSPTU Ordinance 7.4: Strict legal boundary - attendance below 65% CANNOT be condoned
+  if (currentPct < 65) {
+    res.status(400).json({
+      success: false,
+      error: `MRSPTU Ordinance 7.4 Prohibition: Student attendance is ${currentPct}%, which is below the statutory 65% minimum condonable threshold. Academic Council rules prohibit condonation under 65%. Student must repeat the course.`,
+    });
+    return;
+  }
+
+  const generatedOrder = orderNo || `MRSPTU-COND-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`;
+  const condonationReason = reason || 'Approved on medical / official university sports representation grounds.';
+
+  const updated = await db.updateStudent(student.id, {
+    condonation_granted: true,
+    condonation_order_no: generatedOrder,
+    condonation_remarks: condonationReason,
+  });
+
+  res.json({
+    success: true,
+    message: `Attendance condonation granted under MRSPTU Ordinance 7.4. Examination admit card hold lifted.`,
+    orderNo: generatedOrder,
+    student: updated,
+  });
+});
+
+// Switch Residential Status (Campus Hosteller vs Day Scholar Transport - Mutually Exclusive)
+studentRouter.post('/:id/change-residential-status', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { isHosteller, isTransportUser, hostelRoomNo, transportRoute } = req.body;
+
+  const allStudents = await db.getStudents();
+  let student: Student | undefined;
+  if (req.user?.role === 'student') {
+    student = allStudents.find(s => matchStudentForUser(s, req.user));
+    if (!student || (student.id !== id && student.student_id !== id)) {
+      res.status(403).json({ success: false, error: 'Access denied.' });
+      return;
+    }
+  } else {
+    student = allStudents.find(s => s.id === id || s.student_id === id);
+  }
+
+  if (!student) {
+    res.status(404).json({ success: false, error: 'Student record not found.' });
+    return;
+  }
+
+  // Strict Mutual Exclusivity
+  if (isHosteller && isTransportUser) {
+    res.status(400).json({
+      success: false,
+      error: 'Mutual Exclusivity Violation: A student cannot simultaneously reside in campus hostel and hold a daily bus transit pass.',
+    });
+    return;
+  }
+
+  const existingFees = await db.getStudentFees(student.id);
+
+  if (isHosteller) {
+    // 1. Cancel active unpaid transport fees
+    for (const sf of existingFees) {
+      if (sf.fee_head_id.startsWith('fh-transport') && sf.status !== 'paid') {
+        await db.updateStudentFee(sf.id, { due_amount: 0, status: 'cancelled' as any });
+      }
+    }
+
+    // 2. Assign hostel fee heads if not already existing
+    const hasHostel = existingFees.some(sf => sf.fee_head_id === 'fh-hostel-room' && sf.status !== 'cancelled');
+    if (!hasHostel) {
+      const sem = student.current_semester || 1;
+      await db.createStudentFee({
+        id: `sf-${Date.now()}-hr`,
+        student_id: student.id,
+        fee_head_id: 'fh-hostel-room',
+        session_id: student.session_id,
+        semester: sem,
+        amount: 20000,
+        discount_amount: 0,
+        paid_amount: 0,
+        due_amount: 20000,
+        due_date: '2025-11-30',
+        status: 'due',
+      });
+      await db.createStudentFee({
+        id: `sf-${Date.now()}-hm`,
+        student_id: student.id,
+        fee_head_id: 'fh-hostel-mess',
+        session_id: student.session_id,
+        semester: sem,
+        amount: 18000,
+        discount_amount: 0,
+        paid_amount: 0,
+        due_amount: 18000,
+        due_date: '2025-11-30',
+        status: 'due',
+      });
+    }
+
+    await db.updateStudent(student.id, {
+      is_hosteller: true,
+      is_transport_user: false,
+      hostel_room_no: hostelRoomNo || 'Block-B 204',
+      transport_route: undefined,
+      fees_status: 'due',
+    });
+  } else if (isTransportUser) {
+    // 1. Cancel active unpaid hostel fees
+    for (const sf of existingFees) {
+      if (sf.fee_head_id.startsWith('fh-hostel') && sf.status !== 'paid') {
+        await db.updateStudentFee(sf.id, { due_amount: 0, status: 'cancelled' as any });
+      }
+    }
+
+    // 2. Assign transport fee heads if not already existing
+    const hasTransport = existingFees.some(sf => sf.fee_head_id === 'fh-transport' && sf.status !== 'cancelled');
+    if (!hasTransport) {
+      const sem = student.current_semester || 1;
+      await db.createStudentFee({
+        id: `sf-${Date.now()}-tr`,
+        student_id: student.id,
+        fee_head_id: 'fh-transport',
+        session_id: student.session_id,
+        semester: sem,
+        amount: 14000,
+        discount_amount: 0,
+        paid_amount: 0,
+        due_amount: 14000,
+        due_date: '2025-11-30',
+        status: 'due',
+      });
+      await db.createStudentFee({
+        id: `sf-${Date.now()}-tp`,
+        student_id: student.id,
+        fee_head_id: 'fh-transport-pass',
+        session_id: student.session_id,
+        semester: sem,
+        amount: 800,
+        discount_amount: 0,
+        paid_amount: 0,
+        due_amount: 800,
+        due_date: '2025-11-30',
+        status: 'due',
+      });
+    }
+
+    await db.updateStudent(student.id, {
+      is_hosteller: false,
+      is_transport_user: true,
+      hostel_room_no: undefined,
+      transport_route: transportRoute || 'Route 4 (Bathinda City)',
+      fees_status: 'due',
+    });
+  } else {
+    // Day scholar self-commute
+    await db.updateStudent(student.id, {
+      is_hosteller: false,
+      is_transport_user: false,
+      hostel_room_no: undefined,
+      transport_route: undefined,
+    });
+  }
+
+  const updated = await db.getStudentById(student.id);
+
+  res.json({
+    success: true,
+    message: `Residential status updated successfully. Mutual exclusivity enforced and ledger adjusted.`,
+    student: updated,
   });
 });
