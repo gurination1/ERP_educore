@@ -177,7 +177,12 @@ feeRouter.get('/defaulters', authenticateToken, requireRole('admin', 'staff'), a
 feeRouter.get('/ledger/:studentId', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   const { studentId } = req.params;
   const allStudents = await db.getStudents();
-  const student = allStudents.find(s => s.id === studentId || s.student_id === studentId || s.user_id === studentId || s.email.toLowerCase() === studentId.toLowerCase());
+  let student: Student | undefined;
+  if (studentId === 'me') {
+    student = allStudents.find(s => matchStudentForUser(s, req.user));
+  } else {
+    student = allStudents.find(s => s.id === studentId || s.student_id === studentId || s.user_id === studentId || s.email.toLowerCase() === studentId.toLowerCase());
+  }
 
   if (!student) {
     res.status(404).json({ success: false, error: 'Student not found.' });
@@ -247,7 +252,12 @@ feeRouter.post('/collect', authenticateToken, async (req: AuthRequest, res: Resp
 
   const { studentId, amount, paymentMode, studentFeeId, selectedFeeHeadIds, feeAllocations, notes } = parseResult.data;
   const allStudents = await db.getStudents();
-  const student = allStudents.find(s => s.id === studentId || s.student_id === studentId || s.user_id === studentId || s.email.toLowerCase() === studentId.toLowerCase());
+  let student: Student | undefined;
+  if (studentId === 'me') {
+    student = allStudents.find(s => matchStudentForUser(s, req.user));
+  } else {
+    student = allStudents.find(s => s.id === studentId || s.student_id === studentId || s.user_id === studentId || s.email.toLowerCase() === studentId.toLowerCase());
+  }
 
   if (!student) {
     res.status(404).json({ success: false, error: 'Student record not found.' });
