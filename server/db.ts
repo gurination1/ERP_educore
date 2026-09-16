@@ -967,10 +967,11 @@ class DatabaseStore {
   // --- USER OPERATIONS ---
   public async findUserByUsernameOrEmail(input: string): Promise<User | null> {
     const val = input.trim().toLowerCase();
+    const effectiveVal = val === 'staff' ? 'staff01' : val;
     if (this.mode === 'mariadb' && this.mariaPool) {
       const [rows]: any = await this.mariaPool.query(
-        'SELECT * FROM users WHERE LOWER(username) = ? OR LOWER(email) = ?',
-        [val, val]
+        'SELECT * FROM users WHERE LOWER(username) = ? OR LOWER(email) = ? OR LOWER(username) = ?',
+        [val, val, effectiveVal]
       );
       if (rows && rows.length > 0) {
         const u = rows[0];
@@ -986,7 +987,7 @@ class DatabaseStore {
       }
       return null;
     }
-    let user = this.users.find(u => u.username.toLowerCase() === val || u.email.toLowerCase() === val);
+    let user = this.users.find(u => u.username.toLowerCase() === val || u.username.toLowerCase() === effectiveVal || u.email.toLowerCase() === val);
     if (!user) {
       const stu = this.students.find(
         s => s.student_id.toLowerCase() === val || s.first_name.toLowerCase() === val || s.email.toLowerCase() === val
