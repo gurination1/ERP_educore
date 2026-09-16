@@ -4,6 +4,29 @@ import { authenticateToken, requireRole, AuthRequest, matchStudentForUser } from
 
 export const studentRouter = Router();
 
+export function findStudentByIdentifier(students: Student[], identifier?: string): Student | undefined {
+  if (!identifier) return undefined;
+  const clean = identifier.trim().toLowerCase();
+  return students.find(
+    s =>
+      s.id.toLowerCase() === clean ||
+      s.student_id.toLowerCase() === clean ||
+      (s.user_id && s.user_id.toLowerCase() === clean) ||
+      s.email.toLowerCase() === clean
+  );
+}
+
+export function isStudentOwner(student: Student, identifier: string): boolean {
+  const clean = identifier.trim().toLowerCase();
+  return (
+    clean === 'me' ||
+    student.id.toLowerCase() === clean ||
+    student.student_id.toLowerCase() === clean ||
+    (student.user_id && student.user_id.toLowerCase() === clean) ||
+    student.email.toLowerCase() === clean
+  );
+}
+
 // Master list of students (Admin/Staff only)
 studentRouter.get('/', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { search, course, admission_year, fees_status, page = '1', limit = '10', sort_by = 'student_id', sort_dir = 'asc' } = req.query;
@@ -87,12 +110,12 @@ studentRouter.get('/:id/dashboard', authenticateToken, async (req: AuthRequest, 
       res.status(404).json({ success: false, error: 'Student record not found for your account.' });
       return;
     }
-    if (id !== 'me' && id !== student.id && id !== student.student_id && id !== student.user_id) {
+    if (!isStudentOwner(student, id)) {
       res.status(403).json({ success: false, error: 'Access denied. You can only view your own dashboard.' });
       return;
     }
   } else {
-    student = allStudents.find(s => s.id === id || s.student_id === id || s.user_id === id || s.email.toLowerCase() === id.toLowerCase());
+    student = findStudentByIdentifier(allStudents, id);
   }
 
   if (!student) {
@@ -156,12 +179,12 @@ studentRouter.get('/:id', authenticateToken, async (req: AuthRequest, res: Respo
       res.status(404).json({ success: false, error: 'Student record not found for your account.' });
       return;
     }
-    if (id !== 'me' && id !== student.id && id !== student.student_id && id !== student.user_id) {
+    if (!isStudentOwner(student, id)) {
       res.status(403).json({ success: false, error: 'Access denied. You can only view your own profile.' });
       return;
     }
   } else {
-    student = allStudents.find(s => s.id === id || s.student_id === id || s.user_id === id || s.email.toLowerCase() === id.toLowerCase());
+    student = findStudentByIdentifier(allStudents, id);
   }
 
   if (!student) {
@@ -215,12 +238,12 @@ studentRouter.get('/:id/admit-card', authenticateToken, async (req: AuthRequest,
       res.status(404).json({ success: false, error: 'Student record not found for your account.' });
       return;
     }
-    if (id !== 'me' && id !== student.id && id !== student.student_id && id !== student.user_id) {
+    if (!isStudentOwner(student, id)) {
       res.status(403).json({ success: false, error: 'Access denied. You can only view your own Admit Card.' });
       return;
     }
   } else {
-    student = allStudents.find(s => s.id === id || s.student_id === id || s.user_id === id || s.email.toLowerCase() === id.toLowerCase());
+    student = findStudentByIdentifier(allStudents, id);
   }
 
   if (!student) {
@@ -309,7 +332,7 @@ studentRouter.patch('/:id/attendance', authenticateToken, requireRole('admin', '
   const { attendedClasses, totalClasses, attendancePercentage } = req.body;
 
   const allStudents = await db.getStudents();
-  const student = allStudents.find(s => s.id === id || s.student_id === id);
+  const student = findStudentByIdentifier(allStudents, id);
   if (!student) {
     res.status(404).json({ success: false, error: 'Student record not found.' });
     return;
@@ -353,7 +376,7 @@ studentRouter.post('/:id/condone-attendance', authenticateToken, requireRole('ad
   const { orderNo, reason } = req.body;
 
   const allStudents = await db.getStudents();
-  const student = allStudents.find(s => s.id === id || s.student_id === id);
+  const student = findStudentByIdentifier(allStudents, id);
   if (!student) {
     res.status(404).json({ success: false, error: 'Student record not found.' });
     return;
@@ -396,12 +419,12 @@ studentRouter.post('/:id/change-residential-status', authenticateToken, async (r
   let student: Student | undefined;
   if (req.user?.role === 'student') {
     student = allStudents.find(s => matchStudentForUser(s, req.user));
-    if (!student || (student.id !== id && student.student_id !== id)) {
+    if (!student || !isStudentOwner(student, id)) {
       res.status(403).json({ success: false, error: 'Access denied.' });
       return;
     }
   } else {
-    student = allStudents.find(s => s.id === id || s.student_id === id);
+    student = findStudentByIdentifier(allStudents, id);
   }
 
   if (!student) {

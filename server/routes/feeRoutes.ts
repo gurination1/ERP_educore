@@ -216,24 +216,40 @@ feeRouter.get('/defaulters', authenticateToken, requireRole('admin', 'staff'), a
 feeRouter.get('/ledger/:studentId', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   const { studentId } = req.params;
   const allStudents = await db.getStudents();
-  let student: Student | undefined;
-  if (studentId === 'me') {
-    student = allStudents.find(s => matchStudentForUser(s, req.user));
+  // Fee ownership scoping for student role
+  if (req.user?.role === 'student') {
+    const myStudent = allStudents.find(s => matchStudentForUser(s, req.user));
+    if (!myStudent) {
+      res.status(404).json({ success: false, error: 'Student record not found for your account.' });
+      return;
+    }
+    const clean = studentId.trim().toLowerCase();
+    const isOwn =
+      clean === 'me' ||
+      myStudent.id.toLowerCase() === clean ||
+      myStudent.student_id.toLowerCase() === clean ||
+      (myStudent.user_id && myStudent.user_id.toLowerCase() === clean) ||
+      myStudent.email.toLowerCase() === clean;
+
+    if (!isOwn) {
+      res.status(403).json({ success: false, error: 'Access denied. Students can only view their own fee ledger.' });
+      return;
+    }
+    student = myStudent;
   } else {
-    student = allStudents.find(s => s.id === studentId || s.student_id === studentId || s.user_id === studentId || s.email.toLowerCase() === studentId.toLowerCase());
+    const clean = studentId.trim().toLowerCase();
+    student = allStudents.find(
+      s =>
+        s.id.toLowerCase() === clean ||
+        s.student_id.toLowerCase() === clean ||
+        (s.user_id && s.user_id.toLowerCase() === clean) ||
+        s.email.toLowerCase() === clean
+    );
   }
 
   if (!student) {
     res.status(404).json({ success: false, error: 'Student not found.' });
     return;
-  }
-
-  // Fee ownership scoping for student role
-  if (req.user?.role === 'student') {
-    if (!matchStudentForUser(student, req.user)) {
-      res.status(403).json({ success: false, error: 'Access denied. Students can only view their own fee ledger.' });
-      return;
-    }
   }
 
   const course = await db.getCourseById(student.course_id);
@@ -291,11 +307,18 @@ feeRouter.post('/collect', authenticateToken, async (req: AuthRequest, res: Resp
 
   const { studentId, amount, paymentMode, studentFeeId, selectedFeeHeadIds, feeAllocations, notes } = parseResult.data;
   const allStudents = await db.getStudents();
+  const cleanParam = studentId.trim().toLowerCase();
   let student: Student | undefined;
-  if (studentId === 'me') {
+  if (cleanParam === 'me') {
     student = allStudents.find(s => matchStudentForUser(s, req.user));
   } else {
-    student = allStudents.find(s => s.id === studentId || s.student_id === studentId || s.user_id === studentId || s.email.toLowerCase() === studentId.toLowerCase());
+    student = allStudents.find(
+      s =>
+        s.id.toLowerCase() === cleanParam ||
+        s.student_id.toLowerCase() === cleanParam ||
+        (s.user_id && s.user_id.toLowerCase() === cleanParam) ||
+        s.email.toLowerCase() === cleanParam
+    );
   }
 
   if (!student) {
