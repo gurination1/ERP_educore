@@ -1,5 +1,4 @@
-// Test Script for Staff / Faculty Portal, RBAC Separation, Reports CSV Export, and Academic Operations
-import fetch from 'node-fetch';
+// Native global fetch used in Node 22+
 
 const BASE_URL = process.env.BASE_URL || 'https://educore-erp-production.up.railway.app';
 
