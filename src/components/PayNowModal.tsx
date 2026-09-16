@@ -98,10 +98,20 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
   };
 
   // Update payment amount for a specific fee head (partial payment support)
-  const updateItemAmount = (id: string, val: number) => {
+  const updateItemAmount = (id: string, rawVal: string | number) => {
+    if (rawVal === '' || rawVal === 0) {
+      setFeeItems(prev =>
+        prev.map(item =>
+          item.id === id ? { ...item, enteredAmount: 0 } : item
+        )
+      );
+      return;
+    }
+    const num = Math.round(Number(rawVal) * 100) / 100;
+    if (isNaN(num)) return;
     setFeeItems(prev =>
       prev.map(item =>
-        item.id === id ? { ...item, enteredAmount: Math.max(0, Math.min(item.due_amount, val)) } : item
+        item.id === id ? { ...item, enteredAmount: Math.max(0, Math.min(item.due_amount, num)) } : item
       )
     );
   };
@@ -121,10 +131,12 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
     );
   };
 
-  // Calculate total selected amount dynamically
-  const totalAmount = feeItems
-    .filter(item => item.isSelected)
-    .reduce((sum, item) => sum + (Number(item.enteredAmount) || 0), 0);
+  // Calculate total selected amount dynamically with 2-decimal precision
+  const totalAmount = Math.round(
+    feeItems
+      .filter(item => item.isSelected)
+      .reduce((sum, item) => sum + (Number(item.enteredAmount) || 0), 0) * 100
+  ) / 100;
 
   const selectedCount = feeItems.filter(item => item.isSelected).length;
 
@@ -316,7 +328,7 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
                         min="1"
                         max={item.due_amount}
                         value={item.enteredAmount}
-                        onChange={e => updateItemAmount(item.id, parseFloat(e.target.value) || 0)}
+                        onChange={e => updateItemAmount(item.id, e.target.value)}
                         className="w-24 px-2 py-1 bg-white border border-[#00236f] rounded text-xs font-bold text-right text-[#00236f] focus:outline-none"
                       />
                     </div>

@@ -95,44 +95,83 @@ feeRouter.post('/assign', authenticateToken, requireRole('admin'), async (req: A
   res.status(201).json({ success: true, message: 'Fee record assigned successfully.', studentFee: newFeeRecord });
 });
 
+function formatIndianCurrency(amount: number): string {
+  if (amount >= 10000000) {
+    return `₹ ${(amount / 10000000).toFixed(2)} Cr`;
+  }
+  if (amount >= 100000) {
+    return `₹ ${(amount / 100000).toFixed(2)} L`;
+  }
+  return `₹ ${Math.round(amount).toLocaleString('en-IN')}`;
+}
+
 // Admin Dashboard KPI Summary
 feeRouter.get('/kpi', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
   const apps = await db.getScholarshipApplications();
-  const pendingApprovalsCount = apps.filter(a => a.status === 'under_review' || a.status === 'submitted').length + 11;
+  const pendingApprovalsCount = apps.filter(a => a.status === 'under_review' || a.status === 'submitted').length;
   const students = await db.getStudents();
-  const totalStudentsCount = Math.max(students.length, 1250);
+  const activeStudents = students.filter(s => s.admission_status === 'approved' || s.admission_status === 'enrolled');
 
   const allFees = await db.getStudentFees();
-  const totalCollected = allFees.reduce((acc, f) => acc + f.paid_amount, 0);
-  const totalDue = allFees.reduce((acc, f) => acc + f.due_amount, 0);
+  const activeFees = allFees.filter(f => f.status !== 'cancelled');
+  const totalCollected = activeFees.reduce((acc, f) => acc + f.paid_amount, 0);
+  const totalDue = activeFees.reduce((acc, f) => acc + (f.status !== 'paid' ? f.due_amount : 0), 0);
 
   res.json({
     success: true,
     kpi: {
-      totalCollectedFormatted: `₹ ${(totalCollected / 10000000).toFixed(1)} Cr`,
-      totalCollectedRaw: totalCollected || 24000000,
+      totalCollectedFormatted: formatIndianCurrency(totalCollected),
+      totalCollectedRaw: totalCollected,
       totalCollectedGrowth: '+12% vs last month',
-      pendingDuesFormatted: `₹ ${(totalDue / 100000).toFixed(0)} L`,
-      pendingDuesRaw: totalDue || 1800000,
-      pendingDuesAlert: 'Requires immediate action',
+      pendingDuesFormatted: formatIndianCurrency(totalDue),
+      pendingDuesRaw: totalDue,
+      pendingDuesAlert: totalDue > 0 ? 'Requires collection action' : 'Zero outstanding dues',
       pendingApprovals: pendingApprovalsCount,
-      pendingApprovalsLabel: 'Fee concessions & refunds',
-      totalStudents: totalStudentsCount,
-      totalStudentsLabel: 'Active enrollments',
+      pendingApprovalsLabel: 'Pending scholarship & concession applications',
+      totalStudents: activeStudents.length || students.length,
+      totalStudentsLabel: 'Enrolled students in campus',
     },
   });
 });
 
 // Monthly Fees Collected Trend for Chart
-feeRouter.get('/trend', authenticateToken, requireRole('admin', 'staff'), (req: AuthRequest, res: Response): void => {
-  const trendData = [
-    { month: 'Jan', label: 'Jan', amountLakhs: 30, percentage: 30, value: '₹ 30 Lakhs' },
-    { month: 'Feb', label: 'Feb', amountLakhs: 45, percentage: 45, value: '₹ 45 Lakhs' },
-    { month: 'Mar', label: 'Mar', amountLakhs: 80, percentage: 80, value: '₹ 80 Lakhs' },
-    { month: 'Apr', label: 'Apr', amountLakhs: 20, percentage: 20, value: '₹ 20 Lakhs' },
-    { month: 'May', label: 'May', amountLakhs: 35, percentage: 35, value: '₹ 35 Lakhs' },
-    { month: 'Jun', label: 'Jun', amountLakhs: 95, percentage: 95, value: '₹ 95 Lakhs', isHighest: true },
-  ];
+feeRouter.get('/trend', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
+  const allPayments = await db.getPayments();
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  
+  // Build rolling 6-month aggregate from real payments
+  const monthlyTotals: { [key: string]: number } = {};
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date();
+    d.setMonth(d.getMonth() - i);
+    const key = `${monthNames[d.getMonth()]}`;
+    monthlyTotals[key] = 0;
+  }
+
+  for (const pay of allPayments) {
+    if (pay.status === 'success' && pay.amount_paid > 0) {
+      const payDate = new Date(pay.payment_date);
+      const mName = monthNames[payDate.getMonth()];
+      if (monthlyTotals[mName] !== undefined) {
+        monthlyTotals[mName] += pay.amount_paid;
+      }
+    }
+  }
+
+  const entries = Object.entries(monthlyTotals);
+  const maxVal = Math.max(...entries.map(([, v]) => v), 1);
+  const trendData = entries.map(([month, amount]) => {
+    const amountLakhs = Math.round((amount / 100000) * 100) / 100;
+    const percentage = Math.min(100, Math.round((amount / maxVal) * 100));
+    return {
+      month,
+      label: month,
+      amountLakhs,
+      percentage: Math.max(10, percentage),
+      value: amount >= 100000 ? `₹ ${amountLakhs} L` : `₹ ${amount.toLocaleString('en-IN')}`,
+      isHighest: amount === maxVal && maxVal > 0,
+    };
+  });
 
   res.json({
     success: true,
@@ -273,85 +312,133 @@ feeRouter.post('/collect', authenticateToken, async (req: AuthRequest, res: Resp
   }
 
   const studentFees = await db.getStudentFees(student.id);
+  const activeFees = studentFees.filter(sf => sf.status !== 'cancelled');
+  const unpaidFees = activeFees.filter(sf => sf.status !== 'paid' && sf.due_amount > 0);
+  const totalOutstandingDue = Math.round(unpaidFees.reduce((acc, sf) => acc + sf.due_amount, 0) * 100) / 100;
+
+  if (totalOutstandingDue <= 0) {
+    res.status(400).json({ success: false, error: 'Student has zero outstanding dues. All fee heads are already settled in full.' });
+    return;
+  }
+
+  if (amount > totalOutstandingDue + 0.05) {
+    res.status(400).json({
+      success: false,
+      error: `Payment amount (₹${amount.toLocaleString('en-IN')}) exceeds total outstanding dues (₹${totalOutstandingDue.toLocaleString('en-IN')}). Overpayment is rejected by college auditing rules.`,
+    });
+    return;
+  }
 
   if (feeAllocations && feeAllocations.length > 0) {
+    const sumAlloc = Math.round(feeAllocations.reduce((acc, a) => acc + (a.amount || 0), 0) * 100) / 100;
+    if (Math.abs(sumAlloc - amount) > 0.05) {
+      res.status(400).json({
+        success: false,
+        error: `Total payment amount (₹${amount}) does not match the sum of itemized allocations (₹${sumAlloc}).`,
+      });
+      return;
+    }
+
+    for (const alloc of feeAllocations) {
+      const targetFee = activeFees.find(sf => sf.id === alloc.studentFeeId || sf.fee_head_id === alloc.studentFeeId);
+      if (!targetFee) {
+        res.status(400).json({
+          success: false,
+          error: `Designated fee head [${alloc.studentFeeId}] does not exist on this student's assessment.`,
+        });
+        return;
+      }
+      if (alloc.amount > targetFee.due_amount + 0.05) {
+        res.status(400).json({
+          success: false,
+          error: `Allocated amount ₹${alloc.amount} exceeds outstanding due ₹${targetFee.due_amount} for fee head [${targetFee.fee_head?.title || targetFee.fee_head_id}].`,
+        });
+        return;
+      }
+    }
+
     // 1. Direct itemized targeted allocation: Each fee record receives its exact designated amount
     for (const alloc of feeAllocations) {
       if (alloc.amount <= 0) continue;
-      const targetFee = studentFees.find(sf => sf.id === alloc.studentFeeId || sf.fee_head_id === alloc.studentFeeId);
-      if (targetFee) {
-        const netPayable = Math.max(0, targetFee.amount - (targetFee.discount_amount || 0));
-        const newPaid = targetFee.paid_amount + alloc.amount;
-        const newDue = Math.max(0, netPayable - newPaid);
-        const newStatus = newDue === 0 ? 'paid' : (newPaid > 0 ? 'partial' : 'due');
-        await db.updateStudentFee(targetFee.id, {
-          paid_amount: newPaid,
-          due_amount: newDue,
-          status: newStatus,
-        });
-      }
-    }
-  } else if (studentFeeId) {
-    // 2. Single fee record targeted allocation (e.g. user clicked pay on specific row)
-    const feeRecord = studentFees.find(sf => sf.id === studentFeeId || sf.fee_head_id === studentFeeId);
-    if (feeRecord) {
-      const netPayable = Math.max(0, feeRecord.amount - (feeRecord.discount_amount || 0));
-      const newPaid = feeRecord.paid_amount + amount;
-      const newDue = Math.max(0, netPayable - newPaid);
-      const newStatus = newDue === 0 ? 'paid' : (newPaid > 0 ? 'partial' : 'due');
-      await db.updateStudentFee(feeRecord.id, {
+      const targetFee = activeFees.find(sf => sf.id === alloc.studentFeeId || sf.fee_head_id === alloc.studentFeeId)!;
+      const netPayable = Math.max(0, targetFee.amount - (targetFee.discount_amount || 0));
+      const newPaid = Math.round((targetFee.paid_amount + alloc.amount) * 100) / 100;
+      const newDue = Math.max(0, Math.round((netPayable - newPaid) * 100) / 100);
+      const newStatus = newDue <= 0.01 ? 'paid' : (newPaid > 0 ? 'partial' : 'due');
+      await db.updateStudentFee(targetFee.id, {
         paid_amount: newPaid,
-        due_amount: newDue,
+        due_amount: newDue <= 0.01 ? 0 : newDue,
         status: newStatus,
       });
     }
+  } else if (studentFeeId) {
+    // 2. Single fee record targeted allocation (e.g. user clicked pay on specific row)
+    const feeRecord = activeFees.find(sf => sf.id === studentFeeId || sf.fee_head_id === studentFeeId);
+    if (!feeRecord) {
+      res.status(400).json({ success: false, error: `Fee head [${studentFeeId}] not found.` });
+      return;
+    }
+    if (amount > feeRecord.due_amount + 0.05) {
+      res.status(400).json({
+        success: false,
+        error: `Payment amount ₹${amount} exceeds outstanding due ₹${feeRecord.due_amount} for this fee head.`,
+      });
+      return;
+    }
+    const netPayable = Math.max(0, feeRecord.amount - (feeRecord.discount_amount || 0));
+    const newPaid = Math.round((feeRecord.paid_amount + amount) * 100) / 100;
+    const newDue = Math.max(0, Math.round((netPayable - newPaid) * 100) / 100);
+    const newStatus = newDue <= 0.01 ? 'paid' : (newPaid > 0 ? 'partial' : 'due');
+    await db.updateStudentFee(feeRecord.id, {
+      paid_amount: newPaid,
+      due_amount: newDue <= 0.01 ? 0 : newDue,
+      status: newStatus,
+    });
   } else if (selectedFeeHeadIds && selectedFeeHeadIds.length > 0) {
-    // 3. Filtered waterfall allocation: Distribute ONLY among chosen fee heads (e.g. only Hostel or only Transport)
+    // 3. Filtered waterfall allocation: Distribute ONLY among chosen fee heads
     let remainingPayment = amount;
-    const targetFees = studentFees.filter(sf => 
+    const targetFees = activeFees.filter(sf => 
       sf.status !== 'paid' && 
-      sf.status !== 'cancelled' && 
       sf.due_amount > 0 &&
       (selectedFeeHeadIds.includes(sf.id) || selectedFeeHeadIds.includes(sf.fee_head_id))
     );
     for (const sf of targetFees) {
       if (remainingPayment <= 0) break;
       const allocate = Math.min(remainingPayment, sf.due_amount);
-      const newPaid = sf.paid_amount + allocate;
+      const newPaid = Math.round((sf.paid_amount + allocate) * 100) / 100;
       const netPayable = Math.max(0, sf.amount - (sf.discount_amount || 0));
-      const newDue = Math.max(0, netPayable - newPaid);
-      const newStatus = newDue === 0 ? 'paid' : (newPaid > 0 ? 'partial' : 'due');
+      const newDue = Math.max(0, Math.round((netPayable - newPaid) * 100) / 100);
+      const newStatus = newDue <= 0.01 ? 'paid' : (newPaid > 0 ? 'partial' : 'due');
       await db.updateStudentFee(sf.id, {
         paid_amount: newPaid,
-        due_amount: newDue,
+        due_amount: newDue <= 0.01 ? 0 : newDue,
         status: newStatus,
       });
-      remainingPayment -= allocate;
+      remainingPayment = Math.round((remainingPayment - allocate) * 100) / 100;
     }
   } else {
     // 4. Bulk waterfall allocation: cascade payments across all unpaid fee records
     let remainingPayment = amount;
-    const unpaidFees = studentFees.filter(sf => sf.status !== 'paid' && sf.status !== 'cancelled' && sf.due_amount > 0);
     for (const sf of unpaidFees) {
       if (remainingPayment <= 0) break;
       const allocate = Math.min(remainingPayment, sf.due_amount);
-      const newPaid = sf.paid_amount + allocate;
+      const newPaid = Math.round((sf.paid_amount + allocate) * 100) / 100;
       const netPayable = Math.max(0, sf.amount - (sf.discount_amount || 0));
-      const newDue = Math.max(0, netPayable - newPaid);
-      const newStatus = newDue === 0 ? 'paid' : (newPaid > 0 ? 'partial' : 'due');
+      const newDue = Math.max(0, Math.round((netPayable - newPaid) * 100) / 100);
+      const newStatus = newDue <= 0.01 ? 'paid' : (newPaid > 0 ? 'partial' : 'due');
       await db.updateStudentFee(sf.id, {
         paid_amount: newPaid,
-        due_amount: newDue,
+        due_amount: newDue <= 0.01 ? 0 : newDue,
         status: newStatus,
       });
-      remainingPayment -= allocate;
+      remainingPayment = Math.round((remainingPayment - allocate) * 100) / 100;
     }
   }
 
   // Update student overall fee status
   const updatedFees = await db.getStudentFees(student.id);
-  const remainingDue = updatedFees.reduce((acc, sf) => acc + (sf.status !== 'paid' && sf.status !== 'cancelled' ? sf.due_amount : 0), 0);
-  const newStudentFeesStatus = remainingDue <= 0 ? 'paid' : 'due';
+  const remainingDue = Math.round(updatedFees.reduce((acc, sf) => acc + (sf.status !== 'paid' && sf.status !== 'cancelled' ? sf.due_amount : 0), 0) * 100) / 100;
+  const newStudentFeesStatus = remainingDue <= 0.01 ? 'paid' : (updatedFees.some(sf => sf.paid_amount > 0) ? 'partial' : 'due');
   await db.updateStudent(student.id, { fees_status: newStudentFeesStatus });
 
   const primaryFeeId = studentFeeId || (feeAllocations && feeAllocations.length === 1 ? feeAllocations[0].studentFeeId : undefined) || (selectedFeeHeadIds && selectedFeeHeadIds.length === 1 ? selectedFeeHeadIds[0] : undefined);

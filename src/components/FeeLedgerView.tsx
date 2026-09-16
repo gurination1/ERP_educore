@@ -316,13 +316,17 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
           </div>
 
           <div className="bg-white p-5 rounded-xl border border-[#e1e3e4] shadow-xs">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#ba1a1a]">
+            <span className={`text-xs font-bold uppercase tracking-wider ${ledgerData.summary.totalDue <= 0 ? 'text-[#006a61]' : 'text-[#ba1a1a]'}`}>
               Net Outstanding Due
             </span>
-            <h3 className="text-2xl font-extrabold text-[#ba1a1a] mt-1">
+            <h3 className={`text-2xl font-extrabold mt-1 ${ledgerData.summary.totalDue <= 0 ? 'text-[#006a61]' : 'text-[#ba1a1a]'}`}>
               ₹ {ledgerData.summary.totalDue.toLocaleString('en-IN')}
             </h3>
-            <p className="text-xs text-[#ba1a1a] font-semibold mt-0.5">Next Due: 15 Oct 2025</p>
+            <p className={`text-xs font-semibold mt-0.5 ${ledgerData.summary.totalDue <= 0 ? 'text-[#006a61]' : 'text-[#ba1a1a]'}`}>
+              {ledgerData.summary.totalDue <= 0
+                ? 'Dues Cleared • Zero Balance'
+                : `Next Due: ${(ledgerData.ledger || []).filter((f: any) => f.due_amount > 0).sort((a: any, b: any) => a.due_date?.localeCompare(b.due_date))[0]?.due_date || 'Due Immediately'}`}
+            </p>
           </div>
         </div>
       )}

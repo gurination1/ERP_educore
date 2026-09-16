@@ -165,7 +165,7 @@ scholarshipRouter.patch('/applications/:id/review', authenticateToken, requireRo
         || [...studentFees].reverse().find(sf => sf.status !== 'cancelled' && sf.due_amount > 0)
         || [...studentFees].reverse().find(sf => sf.fee_head_id === 'fh-tuition' && sf.status !== 'cancelled');
       if (feeRecord) {
-        const newDiscount = (feeRecord.discount_amount || 0) + awardAmount;
+        const newDiscount = Math.min(feeRecord.amount, (feeRecord.discount_amount || 0) + awardAmount);
         const netPayable = Math.max(0, feeRecord.amount - newDiscount);
         if (feeRecord.paid_amount > netPayable) {
           // Post-Payment Concession: Issue institutional credit note / refund memo
@@ -266,7 +266,7 @@ scholarshipRouter.post('/award', authenticateToken, requireRole('admin'), async 
     || [...studentFees].reverse().find(sf => sf.fee_head_id === 'fh-tuition' && sf.status !== 'cancelled');
 
   if (feeRecord) {
-    const newDiscount = (feeRecord.discount_amount || 0) + awardAmount;
+    const newDiscount = Math.min(feeRecord.amount, (feeRecord.discount_amount || 0) + awardAmount);
     const netPayable = Math.max(0, feeRecord.amount - newDiscount);
     if (feeRecord.paid_amount > netPayable) {
       const refundCredit = feeRecord.paid_amount - netPayable;

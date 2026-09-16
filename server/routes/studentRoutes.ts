@@ -111,8 +111,10 @@ studentRouter.get('/:id/dashboard', authenticateToken, async (req: AuthRequest, 
 
   // Calculate pending fee due
   const studentFees = await db.getStudentFees(student.id);
-  const pendingDue = studentFees.reduce((acc, sf) => acc + (sf.status !== 'paid' && sf.status !== 'cancelled' ? sf.due_amount : 0), 0);
-  const nearestDueDate = studentFees.find(sf => sf.status !== 'paid' && sf.status !== 'cancelled')?.due_date || '15 Oct 2025';
+  const pendingDue = Math.round(studentFees.reduce((acc, sf) => acc + (sf.status !== 'paid' && sf.status !== 'cancelled' ? sf.due_amount : 0), 0) * 100) / 100;
+  const unpaidFees = studentFees.filter(sf => sf.status !== 'paid' && sf.status !== 'cancelled' && sf.due_amount > 0);
+  const sortedDates = unpaidFees.map(sf => sf.due_date).filter(Boolean).sort();
+  const nearestDueDate = pendingDue <= 0 ? null : (sortedDates[0] || new Date(Date.now() + 15 * 86400000).toISOString().split('T')[0]);
 
   const allNotices = await db.getNotices();
   const notices = allNotices.slice(0, 3);

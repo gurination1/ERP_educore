@@ -38,15 +38,19 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
   const avatarUrl =
     'https://lh3.googleusercontent.com/aida-public/AB6AXuCeiC80XBMv76j7_mmqCTcV9ZoMVZPfV_CdXd_33ne25_LIcAK_aNzQB6o4mvRXLqi6oREzmz295hMjEcQKFSotWGv1NikCOM_tIPmBQDzFiaMO8yJKSdfRUTIfZSoUkGyEjTIjKF5D8DMp3A9swq7gKNz8yzp0zkvchBkPPxFbIrY_ZA6tW5oSONcFtKCHTd3RgKK6vRjOMjtXmy5qOVJVowbvGGivEwYdD84ExfwTGl3sAzLegZ9N';
 
-  const attendancePct = student?.attendance_percentage || 85;
-  const attendedClasses = student?.attended_classes || 85;
-  const totalClasses = student?.total_classes || 100;
-  const absentClasses = totalClasses - attendedClasses;
+  const attendancePct = student?.attendance_percentage ?? 85;
+  const attendedClasses = student?.attended_classes ?? (student?.total_classes ? 0 : 85);
+  const totalClasses = student?.total_classes ?? 100;
+  const absentClasses = Math.max(0, totalClasses - attendedClasses);
+
+  const isDetained = attendancePct < 65;
+  const isCondonationNeeded = attendancePct >= 65 && attendancePct < 75;
 
   const totalDue = ledgerData ? ledgerData.summary.totalDue : 0;
   const totalDiscount = ledgerData ? (ledgerData.ledger || []).reduce((acc: number, f: any) => acc + (f.discount_amount || 0), 0) : 0;
   const isFullyPaid = ledgerData ? totalDue <= 0 : student?.fees_status === 'paid';
-  const nextDueDate = ledgerData?.ledger?.find((f: any) => f.due_amount > 0)?.due_date || '15 Oct 2025';
+  const unpaidItems = ledgerData?.ledger?.filter((f: any) => f.due_amount > 0 && f.status !== 'cancelled') || [];
+  const nextDueDate = unpaidItems.sort((a: any, b: any) => a.due_date?.localeCompare(b.due_date))[0]?.due_date || (isFullyPaid ? 'All dues cleared in full' : 'Assessment pending');
   const latestReceipt = ledgerData?.payments?.[0]?.receipt_no;
 
   return (
@@ -312,7 +316,24 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
           className="bg-white rounded-xl p-6 border border-[#e1e3e4] shadow-xs flex flex-col justify-between"
         >
           <div>
-            <h3 className="text-base font-bold text-[#191c1d] mb-3">Attendance</h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-base font-bold text-[#191c1d]">Attendance</h3>
+              <span
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  isDetained
+                    ? 'bg-[#ffdad6] text-[#ba1a1a]'
+                    : isCondonationNeeded
+                    ? 'bg-[#fef3c7] text-[#b45309]'
+                    : 'bg-[#86f2e4]/30 text-[#006a61]'
+                }`}
+              >
+                {isDetained
+                  ? '⚠️ PTU Detained'
+                  : isCondonationNeeded
+                  ? '⚠️ Condonation Req.'
+                  : 'Exam Eligible'}
+              </span>
+            </div>
             <div className="flex flex-col items-center justify-center my-2">
               {/* Circular SVG Donut Gauge */}
               <div className="relative w-32 h-32">
@@ -327,7 +348,13 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                   />
                   {/* Progress ring */}
                   <path
-                    className="text-[#00236f]"
+                    className={
+                      isDetained
+                        ? 'text-[#ba1a1a]'
+                        : isCondonationNeeded
+                        ? 'text-[#b45309]'
+                        : 'text-[#006a61]'
+                    }
                     strokeDasharray={`${attendancePct}, 100`}
                     strokeWidth="3.8"
                     strokeLinecap="round"
@@ -337,8 +364,10 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-2xl font-bold text-[#191c1d]">{attendancePct}%</span>
-                  <span className="text-[9px] uppercase font-bold text-[#757682]">Overall</span>
+                  <span className={`text-2xl font-bold ${
+                    isDetained ? 'text-[#ba1a1a]' : isCondonationNeeded ? 'text-[#b45309]' : 'text-[#191c1d]'
+                  }`}>{attendancePct}%</span>
+                  <span className="text-[9px] uppercase font-bold text-[#757682]">University</span>
                 </div>
               </div>
             </div>
