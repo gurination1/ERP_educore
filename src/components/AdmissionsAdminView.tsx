@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
-import { StudentProfile } from '../types';
+import { StudentProfile, User } from '../types';
 import { AdmissionFormView } from './AdmissionFormView';
 
 interface AdmissionsAdminViewProps {
+  currentUser?: User | null;
   onSelectStudent?: (student: StudentProfile) => void;
 }
 
-export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = () => {
+export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
+  currentUser,
+  onSelectStudent,
+}) => {
   const [admissions, setAdmissions] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'all' | 'submitted' | 'approved' | 'rejected'>('submitted');
   const [isLoading, setIsLoading] = useState(true);
@@ -201,13 +205,15 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsDirectAdmitOpen(true)}
-            className="px-4 py-2 bg-[#006a61] hover:bg-[#004f48] text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-[16px]">verified_user</span>
-            <span>Direct College Admission</span>
-          </button>
+          {currentUser?.role === 'admin' && (
+            <button
+              onClick={() => setIsDirectAdmitOpen(true)}
+              className="px-4 py-2 bg-[#006a61] hover:bg-[#004f48] text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[16px]">verified_user</span>
+              <span>Direct College Admission</span>
+            </button>
+          )}
           <button
             onClick={() => setShowManualIntake(true)}
             className="px-4 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"

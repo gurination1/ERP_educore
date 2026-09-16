@@ -61,12 +61,13 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
   const isDetained = attendancePct < 65;
   const isCondonationNeeded = attendancePct >= 65 && attendancePct < 75;
 
-  const totalDue = ledgerData ? ledgerData.summary.totalDue : (student.fees_status === 'paid' ? 0 : 0);
+  const totalDue = ledgerData?.summary ? Math.round(ledgerData.summary.totalDue * 100) / 100 : (student.fees_status === 'paid' ? 0 : 0);
   const totalDiscount = ledgerData ? (ledgerData.ledger || []).reduce((acc: number, f: any) => acc + (f.discount_amount || 0), 0) : 0;
-  const isFullyPaid = ledgerData ? totalDue <= 0 : (student.fees_status === 'paid');
+  const isFullyPaid = ledgerData?.summary ? (totalDue <= 0.01) : (student.fees_status === 'paid');
   const unpaidItems = ledgerData?.ledger?.filter((f: any) => f.due_amount > 0 && f.status !== 'cancelled') || [];
   const nextDueDate = unpaidItems.sort((a: any, b: any) => a.due_date?.localeCompare(b.due_date))[0]?.due_date || (isFullyPaid ? 'All dues cleared in full' : 'Assessment pending');
-  const latestReceipt = ledgerData?.payments?.[0]?.receipt_no;
+  const latestReceipt = ledgerData?.payments?.[0]?.receipt_no || 'latest';
+  const [showAllNotices, setShowAllNotices] = useState(false);
 
   return (
     <div id="student-dashboard-screen" className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
@@ -144,20 +145,26 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
               <span className="text-xs font-bold uppercase tracking-wider text-[#757682]">
                 Pending Fee Due
               </span>
-              <span
-                className={`px-2.5 py-0.5 rounded-full text-xs font-bold flex items-center gap-1 ${
-                  isFullyPaid
-                    ? 'bg-[#86f2e4]/30 text-[#006a61]'
-                    : 'bg-[#ffdad6] text-[#ba1a1a]'
-                }`}
-              >
+              {isLedgerLoading ? (
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#f3f4f5] text-[#757682] animate-pulse">
+                  Verifying Ledger...
+                </span>
+              ) : (
                 <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    isFullyPaid ? 'bg-[#006a61]' : 'bg-[#ba1a1a]'
+                  className={`px-2.5 py-0.5 rounded-full text-xs font-bold flex items-center gap-1 ${
+                    isFullyPaid
+                      ? 'bg-[#86f2e4]/30 text-[#006a61]'
+                      : 'bg-[#ffdad6] text-[#ba1a1a]'
                   }`}
-                ></span>
-                {isFullyPaid ? 'Zero Dues • Fully Paid' : 'Payment Pending'}
-              </span>
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      isFullyPaid ? 'bg-[#006a61]' : 'bg-[#ba1a1a]'
+                    }`}
+                  ></span>
+                  {isFullyPaid ? 'Zero Dues • Fully Paid' : 'Payment Pending'}
+                </span>
+              )}
             </div>
 
             <div className="mt-4 flex items-baseline gap-2">
@@ -166,7 +173,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                   isFullyPaid ? 'text-[#006a61]' : 'text-[#191c1d]'
                 }`}
               >
-                ₹ {totalDue.toLocaleString('en-IN')}
+                {isLedgerLoading ? '₹ ...' : `₹ ${totalDue.toLocaleString('en-IN')}`}
               </span>
               <span className="text-xs text-[#757682]">
                 / Semester {student?.current_semester || 4}{' '}
@@ -187,12 +194,20 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
               </span>
               <span>Due Schedule: </span>
               <strong className="text-[#191c1d]">
-                {isFullyPaid ? 'Current semester dues cleared in full' : nextDueDate}
+                {isLedgerLoading ? 'Verifying status...' : isFullyPaid ? 'Current semester dues cleared in full' : nextDueDate}
               </strong>
             </div>
 
             {/* MRSPTU Examination Admit Card Gate Banner */}
-            {isFullyPaid && !isDetained ? (
+            {isLedgerLoading ? (
+              <div className="mt-3.5 p-3 bg-[#f8f9fa] border border-[#edeeef] rounded-xl flex items-center gap-3 animate-pulse">
+                <div className="w-5 h-5 rounded-full bg-[#e1e3e4]"></div>
+                <div className="space-y-1 flex-1">
+                  <div className="w-48 h-3 bg-[#e1e3e4] rounded"></div>
+                  <div className="w-32 h-2 bg-[#f3f4f5] rounded"></div>
+                </div>
+              </div>
+            ) : isFullyPaid && !isDetained ? (
               <div className="mt-3.5 p-3 bg-[#86f2e4]/20 border border-[#86f2e4] rounded-xl flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
                   <span className="material-symbols-outlined text-[#006a61] text-[20px]">assignment_turned_in</span>
@@ -387,24 +402,34 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-bold text-[#191c1d]">Recent Notices</h3>
-              <span className="text-xs font-semibold text-[#00236f] cursor-pointer hover:underline">
-                View All
-              </span>
+              {notices.length > 3 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllNotices(!showAllNotices)}
+                  className="text-xs font-semibold text-[#00236f] cursor-pointer hover:underline"
+                >
+                  {showAllNotices ? 'Show Less' : 'View All'}
+                </button>
+              )}
             </div>
 
             <div className="space-y-3">
-              {notices.slice(0, 3).map((notice, idx) => (
-                <div
-                  key={notice.id || idx}
-                  className="p-2.5 rounded-lg border-l-3 border-[#00236f] bg-[#f8f9fa] hover:bg-[#f3f4f5] transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold text-[#191c1d] line-clamp-1">{notice.title}</h4>
-                    <span className="text-[10px] text-[#757682]">{notice.notice_date}</span>
+              {notices.length === 0 ? (
+                <p className="text-xs text-[#757682] py-4 text-center">No active campus notices posted.</p>
+              ) : (
+                notices.slice(0, showAllNotices ? 20 : 3).map((notice, idx) => (
+                  <div
+                    key={notice.id || idx}
+                    className="p-2.5 rounded-lg border-l-3 border-[#00236f] bg-[#f8f9fa] hover:bg-[#f3f4f5] transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-bold text-[#191c1d] line-clamp-1">{notice.title}</h4>
+                      <span className="text-[10px] text-[#757682]">{notice.notice_date}</span>
+                    </div>
+                    <p className="text-[11px] text-[#444651] mt-1 line-clamp-2">{notice.summary}</p>
                   </div>
-                  <p className="text-[11px] text-[#444651] mt-1 line-clamp-2">{notice.summary}</p>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>

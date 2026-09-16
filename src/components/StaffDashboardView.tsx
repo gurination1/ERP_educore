@@ -39,7 +39,12 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
   const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Persistent register locks tracking (Course + Date + Slot)
-  const [lockedRegisters, setLockedRegisters] = useState<Record<string, { lockedAt: string; topic: string; summary: { present: number; absent: number; medical: number } }>>(() => {
+  const [lockedRegisters, setLockedRegisters] = useState<Record<string, {
+    lockedAt: string;
+    topic: string;
+    summary: { present: number; absent: number; medical: number };
+    entries?: Record<string, 'P' | 'A' | 'M'>;
+  }>>(() => {
     try {
       const stored = localStorage.getItem('educore_locked_registers');
       return stored ? JSON.parse(stored) : {};
@@ -56,6 +61,21 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
   useEffect(() => {
     loadStudents();
   }, []);
+
+  // When slot or date or course changes, restore registered entries or reset to P
+  useEffect(() => {
+    setIsEditingLocked(false);
+    if (lockedRecord?.entries) {
+      setStudents(prev =>
+        prev.map(s => ({
+          ...s,
+          status: lockedRecord.entries?.[s.id] || lockedRecord.entries?.[s.studentId] || 'P',
+        }))
+      );
+    } else {
+      setStudents(prev => prev.map(s => ({ ...s, status: 'P' })));
+    }
+  }, [currentSlotKey]);
 
   const loadStudents = async () => {
     setIsLoading(true);
@@ -118,13 +138,26 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
     setFeedbackMessage(null);
     try {
       const isSlotAlreadySubmitted = Boolean(lockedRecord);
+      const prevEntries = lockedRecord?.entries || {};
 
       const updates = students.map(student => {
         const isAttendedToday = student.status === 'P' || student.status === 'M';
-        const newTotal = isSlotAlreadySubmitted ? student.total : student.total + 1;
-        const newAttended = isSlotAlreadySubmitted
-          ? student.attended
-          : student.attended + (isAttendedToday ? 1 : 0);
+        let newTotal = student.total;
+        let newAttended = student.attended;
+
+        if (isSlotAlreadySubmitted) {
+          const prevStatus = prevEntries[student.id] || prevEntries[student.studentId] || 'P';
+          const wasAttended = prevStatus === 'P' || prevStatus === 'M';
+          if (wasAttended && !isAttendedToday) {
+            newAttended = Math.max(0, student.attended - 1);
+          } else if (!wasAttended && isAttendedToday) {
+            newAttended = Math.min(student.total, student.attended + 1);
+          }
+        } else {
+          newTotal = student.total + 1;
+          newAttended = student.attended + (isAttendedToday ? 1 : 0);
+        }
+
         const newPct = newTotal > 0 ? Math.round((newAttended / newTotal) * 100) : student.currentPct;
 
         return {
@@ -163,7 +196,13 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
           );
         }
 
-        // 2. Lock this slot persistently
+        // 2. Lock this slot persistently with student entries map
+        const entriesMap = students.reduce((acc, s) => {
+          acc[s.id] = s.status;
+          acc[s.studentId] = s.status;
+          return acc;
+        }, {} as Record<string, 'P' | 'A' | 'M'>);
+
         const lockInfo = {
           lockedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           topic: lectureTopic,
@@ -172,6 +211,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
             absent: absentCount,
             medical: medicalCount,
           },
+          entries: entriesMap,
         };
 
         setLockedRegisters(prev => {
@@ -601,9 +641,12 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                             <div className="inline-flex items-center gap-1 bg-[#f3f4f5] p-1 rounded-lg border border-[#e1e3e4]">
                               <button
                                 type="button"
+                                disabled={isLocked}
                                 onClick={() => handleStatusChange(student.id, 'P')}
-                                title="Mark Present"
-                                className={`w-7 h-7 rounded-md font-bold text-xs transition-all cursor-pointer ${
+                                title={isLocked ? "Register is locked. Click 'Unlock to Amend Register' to modify." : "Mark Present"}
+                                className={`w-7 h-7 rounded-md font-bold text-xs transition-all ${
+                                  isLocked ? 'cursor-not-allowed opacity-90' : 'cursor-pointer'
+                                } ${
                                   student.status === 'P'
                                     ? 'bg-[#006a61] text-white shadow-xs'
                                     : 'text-[#757682] hover:bg-white'
@@ -613,9 +656,12 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                               </button>
                               <button
                                 type="button"
+                                disabled={isLocked}
                                 onClick={() => handleStatusChange(student.id, 'A')}
-                                title="Mark Absent"
-                                className={`w-7 h-7 rounded-md font-bold text-xs transition-all cursor-pointer ${
+                                title={isLocked ? "Register is locked. Click 'Unlock to Amend Register' to modify." : "Mark Absent"}
+                                className={`w-7 h-7 rounded-md font-bold text-xs transition-all ${
+                                  isLocked ? 'cursor-not-allowed opacity-90' : 'cursor-pointer'
+                                } ${
                                   student.status === 'A'
                                     ? 'bg-[#ba1a1a] text-white shadow-xs'
                                     : 'text-[#757682] hover:bg-white'
@@ -625,9 +671,12 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                               </button>
                               <button
                                 type="button"
+                                disabled={isLocked}
                                 onClick={() => handleStatusChange(student.id, 'M')}
-                                title="Medical / On Duty Leave"
-                                className={`w-7 h-7 rounded-md font-bold text-xs transition-all cursor-pointer ${
+                                title={isLocked ? "Register is locked. Click 'Unlock to Amend Register' to modify." : "Medical / On Duty Leave"}
+                                className={`w-7 h-7 rounded-md font-bold text-xs transition-all ${
+                                  isLocked ? 'cursor-not-allowed opacity-90' : 'cursor-pointer'
+                                } ${
                                   student.status === 'M'
                                     ? 'bg-[#755b00] text-white shadow-xs'
                                     : 'text-[#757682] hover:bg-white'

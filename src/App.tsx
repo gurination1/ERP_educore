@@ -207,6 +207,22 @@ function MainApp() {
     }
   };
 
+  const refreshCurrentStudent = async () => {
+    const token = getStoredToken();
+    if (!token) return;
+    try {
+      const res = await api.getMe();
+      if (res.success && res.user) {
+        setCurrentUser(res.user);
+        if (res.student) {
+          setCurrentStudent(res.student);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to refresh current student:', err);
+    }
+  };
+
   const handleLogout = () => {
     const wasAdmin = currentUser?.role === 'admin' || currentUser?.role === 'staff';
     removeStoredToken();
@@ -363,6 +379,7 @@ function MainApp() {
               >
                 {(currentUser.role === 'admin' || currentUser.role === 'staff') ? (
                   <AdmissionsAdminView
+                    currentUser={currentUser}
                     onSelectStudent={student => setViewingStudent(student)}
                   />
                 ) : (
@@ -566,6 +583,7 @@ function MainApp() {
             setTargetPayFeeId(undefined);
             setActiveReceiptNo(receiptNo);
             setIsReceiptOpen(true);
+            refreshCurrentStudent();
           }}
         />
       )}
@@ -594,6 +612,8 @@ function MainApp() {
       {viewingStudent && (
         <StudentProfileModal
           student={viewingStudent}
+          currentUser={currentUser}
+          onStudentUpdated={refreshCurrentStudent}
           onClose={() => setViewingStudent(null)}
           onPayFee={() => {
             setTargetPayStudent(viewingStudent);

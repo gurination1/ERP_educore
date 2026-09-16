@@ -11,11 +11,17 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptNo, onClose }
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const target = receiptNo || 'REC-2024-0088';
+    const target = receiptNo || 'latest';
+    setIsLoading(true);
     api.getReceipt(target).then(res => {
-      if (res.success) {
+      if (res.success && res.receipt) {
         setReceiptData(res.receipt);
+      } else {
+        setReceiptData(null);
       }
+      setIsLoading(false);
+    }).catch(() => {
+      setReceiptData(null);
       setIsLoading(false);
     });
   }, [receiptNo]);
@@ -189,7 +195,15 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptNo, onClose }
                 </div>
               </div>
             </div>
-          ) : null}
+          ) : (
+            <div className="py-12 text-center space-y-3">
+              <span className="material-symbols-outlined text-[48px] text-[#757682]">receipt_long</span>
+              <h3 className="text-sm font-bold text-[#191c1d]">No Verified Fee Payment Receipt Found</h3>
+              <p className="text-xs text-[#757682] max-w-sm mx-auto">
+                No completed institutional fee payments are recorded on file for this account. Once a payment is confirmed, official digitally signed receipts will appear here automatically.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

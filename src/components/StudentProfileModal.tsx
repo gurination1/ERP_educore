@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
-import { StudentProfile } from '../types';
+import { StudentProfile, User } from '../types';
 
 interface StudentProfileModalProps {
   student: StudentProfile;
+  currentUser?: User | null;
+  onStudentUpdated?: () => void;
   onClose: () => void;
   onPayFee: (studentId: string) => void;
 }
 
 export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
   student,
+  currentUser,
+  onStudentUpdated,
   onClose,
   onPayFee,
 }) => {
   const [profileData, setProfileData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPromoting, setIsPromoting] = useState(false);
+  const [promoteMsg, setPromoteMsg] = useState<string | null>(null);
 
   useEffect(() => {
     api.getStudentProfile(student.id).then(res => {
@@ -26,6 +32,36 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
   }, [student.id]);
 
   const fullName = `${student.first_name} ${student.last_name}`;
+
+  const handlePromote = async () => {
+    const currentSem = profileData?.current_semester || student.current_semester;
+    if (currentSem >= 8) {
+      alert('Student is already in Semester 8 (final degree semester).');
+      return;
+    }
+    const confirmed = window.confirm(
+      `Are you sure you want to promote ${fullName} to Semester ${currentSem + 1}?\n\nThis will reset attendance tracking and assess new semester tuition fees.`
+    );
+    if (!confirmed) return;
+
+    setIsPromoting(true);
+    setPromoteMsg(null);
+    try {
+      const res = await api.promoteStudent(student.id);
+      if (res.success) {
+        setPromoteMsg(res.message);
+        const freshRes = await api.getStudentProfile(student.id);
+        if (freshRes.success) setProfileData(freshRes.student);
+        if (onStudentUpdated) onStudentUpdated();
+      } else {
+        alert(res.error || 'Failed to promote student.');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Error communicating with server.');
+    } finally {
+      setIsPromoting(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
@@ -154,22 +190,50 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
               </div>
             </div>
 
-            <div className="pt-3 flex justify-end gap-2">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 border border-[#e1e3e4] rounded-lg font-semibold hover:bg-[#f8f9fa]"
-              >
-                Close
-              </button>
-              <button
-                onClick={() => {
-                  onClose();
-                  onPayFee(student.id);
-                }}
-                className="px-5 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white font-bold rounded-lg"
-              >
-                Record Payment
-              </button>
+            {promoteMsg && (
+              <div className="p-3 bg-[#86f2e4]/20 border border-[#006a61] rounded-lg text-[#006a61] text-xs font-semibold flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px]">verified</span>
+                <span>{promoteMsg}</span>
+              </div>
+            )}
+
+            <div className="pt-3 flex items-center justify-between gap-2 border-t border-[#f3f4f5]">
+              <div>
+                {currentUser?.role === 'admin' && (
+                  <button
+                    type="button"
+                    onClick={handlePromote}
+                    disabled={isPromoting || (profileData?.current_semester || student.current_semester) >= 8}
+                    className="px-3.5 py-2 bg-[#006a61] hover:bg-[#004f48] text-white font-bold rounded-lg text-xs flex items-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-xs"
+                    title="Advance student to next academic term and assess statutory tuition"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">school</span>
+                    <span>
+                      {isPromoting
+                        ? 'Promoting...'
+                        : `Promote to Sem ${(profileData?.current_semester || student.current_semester) + 1}`}
+                    </span>
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={onClose}
+                  className="px-4 py-2 border border-[#e1e3e4] rounded-lg font-semibold hover:bg-[#f8f9fa] text-xs"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    onClose();
+                    onPayFee(student.id);
+                  }}
+                  className="px-5 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white font-bold rounded-lg text-xs"
+                >
+                  Record Payment
+                </button>
+              </div>
             </div>
           </div>
         )}

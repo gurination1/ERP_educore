@@ -638,3 +638,107 @@ studentRouter.post('/:id/change-residential-status', authenticateToken, async (r
     student: updated,
   });
 });
+
+// Student Semester Promotion (Admin only)
+studentRouter.post('/:id/promote', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const allStudents = await db.getStudents();
+  const student = findStudentByIdentifier(allStudents, id);
+  if (!student) {
+    res.status(404).json({ success: false, error: 'Student record not found.' });
+    return;
+  }
+
+  if (student.current_semester >= 8) {
+    res.status(400).json({
+      success: false,
+      error: `Student ${student.first_name} ${student.last_name} (${student.student_id}) has already completed Semester 8 (final degree term). Cannot advance further.`
+    });
+    return;
+  }
+
+  const newSemester = student.current_semester + 1;
+  const courses = await db.getCourses();
+  const studentCourse = courses.find(c => c.id === student.course_id || c.code === student.course_id);
+  const tuitionAmount = studentCourse?.base_tuition_fee || 45000;
+
+  // 1. Reset attendance for the new academic semester (MRSPTU Ordinance 7.4)
+  await db.updateStudent(student.id, {
+    current_semester: newSemester,
+    attended_classes: 0,
+    total_classes: 0,
+    attendance_percentage: 100,
+    fees_status: 'due',
+    condonation_granted: false,
+    condonation_order_no: undefined,
+    condonation_remarks: undefined,
+  });
+
+  // 2. Assess statutory tuition fee for new semester
+  const newFeeId = `sf-${Date.now()}-sem${newSemester}`;
+  await db.createStudentFee({
+    id: newFeeId,
+    student_id: student.id,
+    fee_head_id: 'fh-tuition',
+    session_id: student.session_id,
+    semester: newSemester,
+    amount: tuitionAmount,
+    discount_amount: 0,
+    paid_amount: 0,
+    due_amount: tuitionAmount,
+    due_date: new Date(Date.now() + 60 * 86400000).toISOString().split('T')[0],
+    status: 'due',
+  });
+
+  // 3. Assess residential/hostel fees if enrolled
+  if (student.is_hosteller) {
+    await db.createStudentFee({
+      id: `sf-${Date.now()}-sem${newSemester}-hostel`,
+      student_id: student.id,
+      fee_head_id: 'fh-hostel',
+      session_id: student.session_id,
+      semester: newSemester,
+      amount: 28000,
+      discount_amount: 0,
+      paid_amount: 0,
+      due_amount: 28000,
+      due_date: new Date(Date.now() + 60 * 86400000).toISOString().split('T')[0],
+      status: 'due',
+    });
+    await db.createStudentFee({
+      id: `sf-${Date.now()}-sem${newSemester}-mess`,
+      student_id: student.id,
+      fee_head_id: 'fh-mess',
+      session_id: student.session_id,
+      semester: newSemester,
+      amount: 18000,
+      discount_amount: 0,
+      paid_amount: 0,
+      due_amount: 18000,
+      due_date: new Date(Date.now() + 60 * 86400000).toISOString().split('T')[0],
+      status: 'due',
+    });
+  } else if (student.is_transport_user) {
+    await db.createStudentFee({
+      id: `sf-${Date.now()}-sem${newSemester}-trans`,
+      student_id: student.id,
+      fee_head_id: 'fh-transport',
+      session_id: student.session_id,
+      semester: newSemester,
+      amount: 14000,
+      discount_amount: 0,
+      paid_amount: 0,
+      due_amount: 14000,
+      due_date: new Date(Date.now() + 60 * 86400000).toISOString().split('T')[0],
+      status: 'due',
+    });
+  }
+
+  const updatedStudent = await db.getStudentById(student.id);
+
+  res.json({
+    success: true,
+    message: `Student ${student.first_name} ${student.last_name} (${student.student_id}) successfully promoted from Semester ${student.current_semester} to Semester ${newSemester}. Attendance reset to 100% and Semester ${newSemester} statutory fees assessed.`,
+    student: updatedStudent,
+  });
+});

@@ -304,44 +304,68 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
 
             {/* List */}
             <div className="space-y-3">
-              {defaulters.map(def => (
-                <div
-                  key={def.id}
-                  className="p-3 bg-[#f8f9fa] rounded-lg border border-[#edeeef] flex items-center justify-between hover:bg-[#f3f4f5] transition-colors"
-                >
-                  <div>
-                    <h4 className="text-xs font-bold text-[#191c1d]">{def.studentName}</h4>
-                    <p className="text-[11px] text-[#757682] mt-0.5">{def.courseInfo}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <span className="text-xs font-bold text-[#191c1d] block">
-                        {def.dueAmountFormatted}
-                      </span>
-                      <span
-                        className={`inline-block mt-0.5 px-2 py-0.5 rounded text-[9px] font-extrabold uppercase ${
-                          def.badgeType === 'error'
-                            ? 'bg-[#ffdad6] text-[#ba1a1a]'
-                            : 'bg-[#fef3c7] text-[#b45309]'
-                        }`}
-                      >
-                        {def.status}
-                      </span>
+              {defaulters
+                .filter(def => {
+                  if (selectedCourse !== 'All Courses' && !def.courseInfo.toLowerCase().includes(selectedCourse.toLowerCase())) {
+                    return false;
+                  }
+                  if (selectedSemester !== 'Current Semester') {
+                    const semNum = selectedSemester.replace('Semester ', 'Sem ');
+                    if (!def.courseInfo.includes(semNum)) return false;
+                  }
+                  return true;
+                })
+                .map(def => (
+                  <div
+                    key={def.id}
+                    className="p-3 bg-[#f8f9fa] rounded-lg border border-[#edeeef] flex items-center justify-between hover:bg-[#f3f4f5] transition-colors"
+                  >
+                    <div>
+                      <h4 className="text-xs font-bold text-[#191c1d]">{def.studentName}</h4>
+                      <p className="text-[11px] text-[#757682] mt-0.5">{def.courseInfo}</p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedDefaulter(def);
-                        setShowAINotice(true);
-                      }}
-                      className="p-1.5 bg-[#dce1ff] text-[#00236f] hover:bg-[#b6c4ff] rounded-lg transition-colors cursor-pointer"
-                      title="Generate AI Recovery Notice with Gemini"
-                    >
-                      <span className="material-symbols-outlined text-[16px]">auto_awesome</span>
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <span className="text-xs font-bold text-[#191c1d] block">
+                          {def.dueAmountFormatted}
+                        </span>
+                        <span
+                          className={`inline-block mt-0.5 px-2 py-0.5 rounded text-[9px] font-extrabold uppercase ${
+                            def.badgeType === 'error'
+                              ? 'bg-[#ffdad6] text-[#ba1a1a]'
+                              : 'bg-[#fef3c7] text-[#b45309]'
+                          }`}
+                        >
+                          {def.status}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedDefaulter(def);
+                          setShowAINotice(true);
+                        }}
+                        className="p-1.5 bg-[#dce1ff] text-[#00236f] hover:bg-[#b6c4ff] rounded-lg transition-colors cursor-pointer"
+                        title="Generate AI Recovery Notice with Gemini"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">auto_awesome</span>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+
+              {defaulters.filter(def => {
+                if (selectedCourse !== 'All Courses' && !def.courseInfo.toLowerCase().includes(selectedCourse.toLowerCase())) return false;
+                if (selectedSemester !== 'Current Semester') {
+                  const semNum = selectedSemester.replace('Semester ', 'Sem ');
+                  if (!def.courseInfo.includes(semNum)) return false;
+                }
+                return true;
+              }).length === 0 && (
+                <p className="text-xs text-[#757682] py-4 text-center">
+                  No fee defaulters for {selectedCourse} ({selectedSemester}).
+                </p>
+              )}
             </div>
           </div>
 

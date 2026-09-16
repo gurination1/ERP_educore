@@ -99,6 +99,8 @@ export const api = {
   }) => apiRequest('/api/students/attendance/bulk', { method: 'POST', body: JSON.stringify(data) }),
   condoneAttendance: (studentId: string, data: { orderNo?: string; reason?: string }) =>
     apiRequest(`/api/students/${studentId}/condone-attendance`, { method: 'POST', body: JSON.stringify(data) }),
+  promoteStudent: (studentId: string) =>
+    apiRequest(`/api/students/${studentId}/promote`, { method: 'POST' }),
   sendEmailReminders: () => apiRequest('/api/students/send-email-reminders', { method: 'POST' }),
 
   // Admissions

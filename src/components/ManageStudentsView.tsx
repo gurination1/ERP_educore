@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../api/client';
+import { api, getStoredToken } from '../api/client';
 import { StudentProfile } from '../types';
 
 interface ManageStudentsViewProps {
@@ -23,38 +23,43 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
   const [yearFilter, setYearFilter] = useState('All Years');
   const [statusFilter, setStatusFilter] = useState('All Statuses');
 
-  const fetchStudents = async () => {
+  // Load Initial Students
+  useEffect(() => {
     setIsLoading(true);
-    try {
-      const res = await api.getStudents({
-        search: searchQuery,
-        course: courseFilter,
-        admission_year: yearFilter,
-        fees_status: statusFilter,
-        page: currentPage,
-        limit: 5,
-      });
-
+    api.getStudents({ page: currentPage, limit: 5 }).then(res => {
       if (res.success && res.students) {
         setStudents(res.students);
-        setTotalCount(res.total || 97);
-        setTotalPages(res.totalPages || 20);
+        setTotalCount(res.total);
+        setTotalPages(res.totalPages);
       }
-    } catch (err) {
-      console.error(err);
-    } finally {
       setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchStudents();
+    });
   }, [currentPage]);
 
-  const handleApplyFilters = (e: React.FormEvent) => {
-    e.preventDefault();
+  // Handle Search & Filter Submission
+  const handleApplyFilters = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setIsLoading(true);
     setCurrentPage(1);
-    fetchStudents();
+
+    const queryParams: any = {
+      page: 1,
+      limit: 5,
+    };
+
+    if (searchQuery.trim()) queryParams.search = searchQuery.trim();
+    if (courseFilter !== 'All Courses') queryParams.course = courseFilter;
+    if (yearFilter !== 'All Years') queryParams.year = yearFilter;
+    if (statusFilter !== 'All Statuses') queryParams.feesStatus = statusFilter;
+
+    api.getStudents(queryParams).then(res => {
+      if (res.success && res.students) {
+        setStudents(res.students);
+        setTotalCount(res.total);
+        setTotalPages(res.totalPages);
+      }
+      setIsLoading(false);
+    });
   };
 
   const handleResetFilters = () => {
@@ -74,8 +79,34 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
     }, 50);
   };
 
-  const handleExportCsv = () => {
-    window.location.href = '/api/reports/export-students-csv';
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportCsv = async () => {
+    setIsExporting(true);
+    try {
+      const token = getStoredToken();
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const url = `/api/reports/export-students-csv?token=${encodeURIComponent(token || '')}`;
+      const res = await fetch(url, { headers });
+      if (!res.ok) throw new Error(`Export failed with status ${res.status}`);
+      const blob = await res.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `students_master_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (err: any) {
+      console.error(err);
+      alert('Failed to export students CSV: ' + err.message);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   // Avatar color helper
@@ -240,7 +271,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
               </div>
             </div>
             <div className="mt-3">
-              <h3 className="text-3xl font-extrabold text-[#191c1d] tracking-tight">1,432</h3>
+              <h3 className="text-3xl font-extrabold text-[#191c1d] tracking-tight">{totalCount.toLocaleString('en-IN')}</h3>
               <p className="text-xs font-semibold text-[#006a61] mt-1 flex items-center gap-1">
                 <span className="material-symbols-outlined text-[14px]">trending_up</span>
                 <span>+12% this semester</span>
@@ -351,51 +382,32 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
                 Previous
               </button>
 
-              <button
-                onClick={() => setCurrentPage(1)}
-                className={`w-7 h-7 rounded text-xs font-bold transition-colors cursor-pointer ${
-                  currentPage === 1
-                    ? 'bg-[#00236f] text-white'
-                    : 'border border-[#e1e3e4] bg-white text-[#191c1d] hover:bg-[#f3f4f5]'
-                }`}
-              >
-                1
-              </button>
-
-              <button
-                onClick={() => setCurrentPage(2)}
-                className={`w-7 h-7 rounded text-xs font-bold transition-colors cursor-pointer ${
-                  currentPage === 2
-                    ? 'bg-[#00236f] text-white'
-                    : 'border border-[#e1e3e4] bg-white text-[#191c1d] hover:bg-[#f3f4f5]'
-                }`}
-              >
-                2
-              </button>
-
-              <button
-                onClick={() => setCurrentPage(3)}
-                className={`w-7 h-7 rounded text-xs font-bold transition-colors cursor-pointer ${
-                  currentPage === 3
-                    ? 'bg-[#00236f] text-white'
-                    : 'border border-[#e1e3e4] bg-white text-[#191c1d] hover:bg-[#f3f4f5]'
-                }`}
-              >
-                3
-              </button>
-
-              <span className="px-1 text-[#757682]">...</span>
-
-              <button
-                onClick={() => setCurrentPage(20)}
-                className={`w-7 h-7 rounded text-xs font-bold transition-colors cursor-pointer ${
-                  currentPage === 20
-                    ? 'bg-[#00236f] text-white'
-                    : 'border border-[#e1e3e4] bg-white text-[#191c1d] hover:bg-[#f3f4f5]'
-                }`}
-              >
-                20
-              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                .reduce<(number | string)[]>((acc, p, idx, arr) => {
+                  if (idx > 0 && (p as number) - (arr[idx - 1] as number) > 1) {
+                    acc.push('...');
+                  }
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((p, idx) =>
+                  typeof p === 'string' ? (
+                    <span key={`ellipsis-${idx}`} className="px-1 text-[#757682]">...</span>
+                  ) : (
+                    <button
+                      key={p}
+                      onClick={() => setCurrentPage(p)}
+                      className={`w-7 h-7 rounded text-xs font-bold transition-colors cursor-pointer ${
+                        currentPage === p
+                          ? 'bg-[#00236f] text-white'
+                          : 'border border-[#e1e3e4] bg-white text-[#191c1d] hover:bg-[#f3f4f5]'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  )
+                )}
 
               <button
                 disabled={currentPage >= totalPages}
