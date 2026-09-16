@@ -332,6 +332,7 @@ function MainApp() {
                 onSearchChange={setSearchQuery}
               >
                 <FeeLedgerView
+                  currentUser={currentUser}
                   currentStudent={currentStudent}
                   onOpenPayModal={(feeId, studentObj) => {
                     setTargetPayFeeId(feeId);

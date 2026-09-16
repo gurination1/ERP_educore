@@ -84,6 +84,19 @@ export const api = {
   getStudentProfile: (studentId: string) => apiRequest(`/api/students/${studentId}`),
   updateStudentAttendance: (studentId: string, data: { attendedClasses?: number; totalClasses?: number; attendancePercentage?: number }) =>
     apiRequest(`/api/students/${studentId}/attendance`, { method: 'PATCH', body: JSON.stringify(data) }),
+  bulkUpdateAttendance: (data: {
+    courseCode?: string;
+    lectureDate?: string;
+    lectureSlot?: string;
+    topic?: string;
+    updates: Array<{
+      studentId: string;
+      status?: 'P' | 'A' | 'M';
+      attendedClasses?: number;
+      totalClasses?: number;
+      attendancePercentage?: number;
+    }>;
+  }) => apiRequest('/api/students/attendance/bulk', { method: 'POST', body: JSON.stringify(data) }),
   condoneAttendance: (studentId: string, data: { orderNo?: string; reason?: string }) =>
     apiRequest(`/api/students/${studentId}/condone-attendance`, { method: 'POST', body: JSON.stringify(data) }),
   sendEmailReminders: () => apiRequest('/api/students/send-email-reminders', { method: 'POST' }),

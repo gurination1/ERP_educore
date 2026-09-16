@@ -7,11 +7,13 @@ interface ScholarshipsViewProps {
 }
 
 export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser }) => {
-  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'staff';
+  const isActualAdmin = currentUser?.role === 'admin';
+  const isStaff = currentUser?.role === 'staff';
+  const isStaffOrAdmin = isActualAdmin || isStaff;
   const [schemes, setSchemes] = useState<ScholarshipScheme[]>([]);
   const [applications, setApplications] = useState<ScholarshipApp[]>([]);
   const [activeTab, setActiveTab] = useState<'schemes' | 'applications'>(
-    currentUser?.role === 'admin' || currentUser?.role === 'staff' ? 'applications' : 'schemes'
+    isStaffOrAdmin ? 'applications' : 'schemes'
   );
   const [selectedScheme, setSelectedScheme] = useState<ScholarshipScheme | null>(null);
 
@@ -60,7 +62,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
     if (resApps.success && resApps.applications) {
       setApplications(resApps.applications);
     }
-    if (isAdmin) {
+    if (isActualAdmin) {
       const resStudents = await api.getStudents({ limit: 100 });
       if (resStudents.success && resStudents.students) {
         setStudentList(resStudents.students);
@@ -73,7 +75,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
 
   useEffect(() => {
     loadData();
-  }, [isAdmin]);
+  }, [isStaffOrAdmin]);
 
   const openAwardModalForScheme = (scheme: ScholarshipScheme) => {
     setAwardSchemeId(scheme.id);
@@ -199,17 +201,17 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-[#191c1d] tracking-tight">
-            {isAdmin ? 'Scholarships & Financial Aid Governance' : 'Institutional Scholarships & Financial Schemes'}
+            {isStaffOrAdmin ? 'Scholarships & Financial Aid Governance' : 'Institutional Scholarships & Financial Schemes'}
           </h2>
           <p className="text-sm text-[#444651] mt-1">
-            {isAdmin
+            {isStaffOrAdmin
               ? 'Adjudicate student grant requests, manage endowment schemes, and allocate institutional fee concessions.'
               : 'Explore grant opportunities, submit fee concession requests, and track committee status.'}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          {isAdmin && (
+          {isActualAdmin && (
             <>
               <button
                 onClick={() => {
@@ -241,7 +243,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                   : 'text-[#444651] hover:text-[#191c1d]'
               }`}
             >
-              Available Schemes ({schemes.length})
+              Schemes & Grants
             </button>
             <button
               onClick={() => setActiveTab('applications')}
@@ -251,7 +253,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                   : 'text-[#444651] hover:text-[#191c1d]'
               }`}
             >
-              {isAdmin ? 'Adjudication Queue' : 'Track Applications'} ({applications.length})
+              {isStaffOrAdmin ? 'Adjudication Queue' : 'Track Applications'} ({applications.length})
             </button>
           </div>
         </div>
@@ -272,7 +274,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
       )}
 
       {/* Admin Executive Summary Banner on Applications Tab */}
-      {isAdmin && activeTab === 'applications' && (
+      {isStaffOrAdmin && activeTab === 'applications' && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
             <span className="text-[10px] uppercase font-bold text-[#757682]">Total Applications</span>
@@ -330,7 +332,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                   </span>
                 </div>
 
-                {isAdmin ? (
+                {isActualAdmin ? (
                   <div className="flex items-center gap-2">
                     <span className="px-2.5 py-1 bg-[#86f2e4]/30 text-[#006a61] rounded-lg text-[11px] font-bold hidden sm:flex items-center gap-1">
                       <span className="material-symbols-outlined text-[14px]">verified</span>
@@ -344,6 +346,11 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                       <span>Award</span>
                     </button>
                   </div>
+                ) : isStaff ? (
+                  <span className="px-3 py-1.5 bg-[#f3f4f5] text-[#535f70] rounded-lg text-xs font-semibold flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">school</span>
+                    <span>Faculty Advisory</span>
+                  </span>
                 ) : (
                   <button
                     onClick={() => setSelectedScheme(scheme)}
@@ -376,7 +383,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                   <th className="py-3 px-4">Family Income</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4">Committee Remarks</th>
-                  {isAdmin && <th className="py-3 px-4 text-right">Review</th>}
+                  {isStaffOrAdmin && <th className="py-3 px-4 text-right">Review</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#f3f4f5]">
@@ -406,7 +413,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                     <td className="py-3.5 px-4 text-[#757682] max-w-xs truncate">
                       {app.admin_remarks || 'Document under formal committee verification.'}
                     </td>
-                    {isAdmin && (
+                    {isStaffOrAdmin && (
                       <td className="py-3.5 px-4 text-right">
                         <button
                           onClick={() => {
@@ -579,7 +586,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
       )}
 
       {/* Admin Create Scheme Modal */}
-      {isAdmin && isCreatingScheme && (
+      {isActualAdmin && isCreatingScheme && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-[#e1e3e4] space-y-4 animate-scaleUp">
             <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
@@ -683,7 +690,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
       )}
 
       {/* Admin Direct Award Modal */}
-      {isAdmin && isAwardModalOpen && (
+      {isActualAdmin && isAwardModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-[#e1e3e4] space-y-4 animate-scaleUp">
             <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">

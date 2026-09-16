@@ -31,10 +31,26 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
   const [selectedCourse, setSelectedCourse] = useState('CS-401');
   const [lectureDate, setLectureDate] = useState(new Date().toISOString().slice(0, 10));
   const [lectureSlot, setLectureSlot] = useState('Period 2 • 10:00 AM - 11:00 AM (LT-204)');
+  const [lectureTopic, setLectureTopic] = useState('BGP Autonomous Systems & Inter-Domain Routing');
   const [students, setStudents] = useState<StudentAttendanceEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditingLocked, setIsEditingLocked] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Persistent register locks tracking (Course + Date + Slot)
+  const [lockedRegisters, setLockedRegisters] = useState<Record<string, { lockedAt: string; topic: string; summary: { present: number; absent: number; medical: number } }>>(() => {
+    try {
+      const stored = localStorage.getItem('educore_locked_registers');
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const currentSlotKey = `${selectedCourse}_${lectureDate}_${lectureSlot}`;
+  const lockedRecord = lockedRegisters[currentSlotKey];
+  const isLocked = Boolean(lockedRecord) && !isEditingLocked;
 
   // Load live students from DB
   useEffect(() => {
@@ -90,37 +106,93 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
   // Calculate projected attendance
   const getProjectedAttendance = (student: StudentAttendanceEntry) => {
     const isAttendedToday = student.status === 'P' || student.status === 'M';
-    const newTotal = student.total + 1;
-    const newAttended = student.attended + (isAttendedToday ? 1 : 0);
-    return Math.round((newAttended / newTotal) * 100);
+    const isSlotAlreadySubmitted = Boolean(lockedRecord);
+    const newTotal = isSlotAlreadySubmitted ? student.total : student.total + 1;
+    const newAttended = isSlotAlreadySubmitted ? student.attended : student.attended + (isAttendedToday ? 1 : 0);
+    return newTotal > 0 ? Math.round((newAttended / newTotal) * 100) : 100;
   };
 
-  // Submit Daily Lecture Attendance to live API
+  // Submit Daily Lecture Attendance in ONE atomic batch call
   const handleSubmitAttendance = async () => {
     setIsSubmitting(true);
     setFeedbackMessage(null);
     try {
-      let updateCount = 0;
-      for (const student of students) {
-        const isAttendedToday = student.status === 'P' || student.status === 'M';
-        const newTotal = student.total + 1;
-        const newAttended = student.attended + (isAttendedToday ? 1 : 0);
-        const newPct = Math.round((newAttended / newTotal) * 100);
+      const isSlotAlreadySubmitted = Boolean(lockedRecord);
 
-        await api.updateStudentAttendance(student.id, {
+      const updates = students.map(student => {
+        const isAttendedToday = student.status === 'P' || student.status === 'M';
+        const newTotal = isSlotAlreadySubmitted ? student.total : student.total + 1;
+        const newAttended = isSlotAlreadySubmitted
+          ? student.attended
+          : student.attended + (isAttendedToday ? 1 : 0);
+        const newPct = newTotal > 0 ? Math.round((newAttended / newTotal) * 100) : student.currentPct;
+
+        return {
+          studentId: student.id,
+          status: student.status,
           attendedClasses: newAttended,
           totalClasses: newTotal,
           attendancePercentage: newPct,
-        });
-        updateCount++;
-      }
-
-      setFeedbackMessage({
-        type: 'success',
-        text: `Official Attendance Register submitted successfully! ${updateCount} student records updated in institutional database for ${selectedCourse} (${lectureDate}).`,
+        };
       });
-      // Refresh students
-      await loadStudents();
+
+      const res = await api.bulkUpdateAttendance({
+        courseCode: selectedCourse,
+        lectureDate,
+        lectureSlot,
+        topic: lectureTopic,
+        updates,
+      });
+
+      if (res.success) {
+        // 1. Update students in-place: update counts, PRESERVE selected statuses without unmounting!
+        if (res.updatedStudents && res.updatedStudents.length > 0) {
+          setStudents(prev =>
+            prev.map(s => {
+              const match = res.updatedStudents.find((u: any) => u.id === s.id || u.studentId === s.studentId);
+              if (match) {
+                return {
+                  ...s,
+                  attended: match.attendedClasses,
+                  total: match.totalClasses,
+                  currentPct: match.attendancePercentage,
+                };
+              }
+              return s;
+            })
+          );
+        }
+
+        // 2. Lock this slot persistently
+        const lockInfo = {
+          lockedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          topic: lectureTopic,
+          summary: {
+            present: presentCount,
+            absent: absentCount,
+            medical: medicalCount,
+          },
+        };
+
+        setLockedRegisters(prev => {
+          const next = { ...prev, [currentSlotKey]: lockInfo };
+          try {
+            localStorage.setItem('educore_locked_registers', JSON.stringify(next));
+          } catch {}
+          return next;
+        });
+
+        setIsEditingLocked(false);
+        setFeedbackMessage({
+          type: 'success',
+          text: `Official Attendance Register locked & permanently recorded in institutional database! ${presentCount} Present, ${absentCount} Absent, ${medicalCount} On-Duty for ${selectedCourse} (${lectureSlot}).`,
+        });
+      } else {
+        setFeedbackMessage({
+          type: 'error',
+          text: res.error || 'Failed to submit lecture attendance.',
+        });
+      }
     } catch (err: any) {
       setFeedbackMessage({
         type: 'error',
@@ -358,26 +430,85 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                   <option value="Period 6 • 02:30 PM - 03:30 PM (LT-204)">Period 6 • 02:30 PM - 03:30 PM (LT-204)</option>
                 </select>
               </div>
+
+              {/* Lecture Topic */}
+              <div className="min-w-[240px]">
+                <label className="text-[11px] font-bold text-[#757682] uppercase tracking-wider block mb-1">
+                  Syllabus Topic Covered
+                </label>
+                <input
+                  type="text"
+                  value={lectureTopic}
+                  onChange={e => setLectureTopic(e.target.value)}
+                  placeholder="e.g. Unit 3: BGP Routing & Autonomous Systems"
+                  className="w-full bg-[#f3f4f5] border-none text-xs font-medium text-[#191c1d] rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-[#00236f] outline-none"
+                />
+              </div>
             </div>
 
-            {/* Quick Batch Marking Buttons */}
+            {/* Quick Batch Marking Buttons & Lock status */}
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => handleMarkAll('P')}
-                className="px-3 py-1.5 bg-[#86f2e4]/30 hover:bg-[#86f2e4]/50 text-[#006a61] rounded-lg text-xs font-bold transition-all cursor-pointer"
-              >
-                Mark All Present
-              </button>
-              <button
-                type="button"
-                onClick={() => handleMarkAll('A')}
-                className="px-3 py-1.5 bg-[#ffdad6] hover:bg-[#ffdad6]/80 text-[#ba1a1a] rounded-lg text-xs font-bold transition-all cursor-pointer"
-              >
-                Mark All Absent
-              </button>
+              {isLocked ? (
+                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#006a61] bg-[#86f2e4]/30 px-3 py-1.5 rounded-lg border border-[#86f2e4]">
+                  <span className="material-symbols-outlined text-[16px]">lock</span>
+                  <span>Register Locked ({lockedRecord?.lockedAt})</span>
+                </span>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => handleMarkAll('P')}
+                    className="px-3 py-1.5 bg-[#86f2e4]/30 hover:bg-[#86f2e4]/50 text-[#006a61] rounded-lg text-xs font-bold transition-all cursor-pointer"
+                  >
+                    Mark All Present
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleMarkAll('A')}
+                    className="px-3 py-1.5 bg-[#ffdad6] hover:bg-[#ffdad6]/80 text-[#ba1a1a] rounded-lg text-xs font-bold transition-all cursor-pointer"
+                  >
+                    Mark All Absent
+                  </button>
+                </>
+              )}
             </div>
           </div>
+
+          {/* Locked Register Persistent Notification */}
+          {lockedRecord && (
+            <div className="p-4 bg-[#86f2e4]/15 border border-[#86f2e4] text-[#006a61] rounded-xl text-xs font-semibold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+              <div className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-[22px] text-[#006a61]">verified_user</span>
+                <div>
+                  <strong className="block font-bold text-[#00236f] text-xs">
+                    Institutional Register Locked for {selectedCourse} ({lectureSlot})
+                  </strong>
+                  <span className="text-[#444651] text-[11px] block mt-0.5">
+                    Date: {lectureDate} • Recorded: {lockedRecord.lockedAt} • Topic: "{lockedRecord.topic || lectureTopic}" •{' '}
+                    <b className="text-[#006a61]">{lockedRecord.summary.present} Present</b>,{' '}
+                    <b className="text-[#ba1a1a]">{lockedRecord.summary.absent} Absent</b>,{' '}
+                    <b className="text-[#755b00]">{lockedRecord.summary.medical} On-Duty</b>.
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {isLocked ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingLocked(true)}
+                    className="px-3 py-1.5 bg-white border border-[#86f2e4] hover:bg-[#86f2e4]/20 text-[#006a61] rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-2xs flex items-center gap-1"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">lock_open</span>
+                    <span>Unlock Register to Edit</span>
+                  </button>
+                ) : (
+                  <span className="px-2.5 py-1 bg-[#fae29f] text-[#755b00] rounded text-[11px] font-bold">
+                    Edit Mode Active
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Real-Time Lecture Register Table */}
           <div className="bg-white rounded-xl border border-[#e1e3e4] shadow-xs overflow-hidden">
@@ -540,21 +671,47 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
             {/* Submission Action Bar */}
             <div className="p-5 bg-[#f8f9fa] border-t border-[#e1e3e4] flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="text-xs text-[#444651]">
-                <span>Tally for today's lecture: </span>
+                <span>Tally for this lecture slot: </span>
                 <strong className="text-[#006a61]">{presentCount} Present</strong>,{' '}
                 <strong className="text-[#ba1a1a]">{absentCount} Absent</strong>,{' '}
                 <strong className="text-[#755b00]">{medicalCount} Medical/Duty</strong>
+                {lockedRecord && (
+                  <span className="ml-2 text-[#006a61] font-semibold">
+                    • Status: Locked at {lockedRecord.lockedAt}
+                  </span>
+                )}
               </div>
 
-              <button
-                type="button"
-                onClick={handleSubmitAttendance}
-                disabled={isSubmitting}
-                className="px-6 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold shadow-xs transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
-              >
-                <span className="material-symbols-outlined text-[16px]">how_to_reg</span>
-                <span>{isSubmitting ? 'Recording Attendance...' : 'Submit Official Attendance Register'}</span>
-              </button>
+              <div className="flex items-center gap-3">
+                {isLocked ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingLocked(true)}
+                    className="px-5 py-2.5 bg-white border border-[#006a61] text-[#006a61] hover:bg-[#86f2e4]/20 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-2xs"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">lock_open</span>
+                    <span>Unlock to Amend Register</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSubmitAttendance}
+                    disabled={isSubmitting}
+                    className="px-6 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold shadow-xs transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">
+                      {isSubmitting ? 'hourglass_top' : 'how_to_reg'}
+                    </span>
+                    <span>
+                      {isSubmitting
+                        ? 'Recording in MariaDB...'
+                        : lockedRecord
+                        ? 'Save & Re-lock Amended Register'
+                        : 'Submit Official Attendance Register'}
+                    </span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

@@ -326,6 +326,89 @@ studentRouter.get('/:id/admit-card', authenticateToken, async (req: AuthRequest,
   });
 });
 
+// Bulk Update Attendance Register (Admin / Faculty)
+studentRouter.post('/attendance/bulk', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
+  const { courseCode, lectureDate, lectureSlot, topic, updates } = req.body;
+
+  if (!Array.isArray(updates) || updates.length === 0) {
+    res.status(400).json({ success: false, error: 'Request body must contain a non-empty array of student updates.' });
+    return;
+  }
+
+  const allStudents = await db.getStudents();
+  let presentCount = 0;
+  let absentCount = 0;
+  let medicalCount = 0;
+  const updatedRecords: any[] = [];
+
+  for (const item of updates) {
+    if (!item.studentId) continue;
+    const student = findStudentByIdentifier(allStudents, item.studentId);
+    if (!student) continue;
+
+    let newAttended = item.attendedClasses !== undefined ? Number(item.attendedClasses) : student.attended_classes;
+    let newTotal = item.totalClasses !== undefined ? Number(item.totalClasses) : student.total_classes;
+
+    if (newAttended < 0 || newTotal < 0) {
+      res.status(400).json({ success: false, error: `Invalid class numbers for student ${student.student_id}. Numbers cannot be negative.` });
+      return;
+    }
+
+    if (newAttended > newTotal && newTotal > 0) {
+      res.status(400).json({ success: false, error: `Attended classes (${newAttended}) cannot exceed total classes (${newTotal}) for student ${student.student_id}.` });
+      return;
+    }
+
+    let newPct = item.attendancePercentage !== undefined
+      ? Number(item.attendancePercentage)
+      : (newTotal > 0 ? Math.round((newAttended / newTotal) * 100) : student.attendance_percentage);
+
+    newPct = Math.max(0, Math.min(100, newPct));
+
+    const updated = await db.updateStudent(student.id, {
+      attended_classes: newAttended,
+      total_classes: newTotal,
+      attendance_percentage: newPct,
+    });
+
+    if (item.status === 'P') presentCount++;
+    else if (item.status === 'A') absentCount++;
+    else if (item.status === 'M') medicalCount++;
+
+    if (updated) {
+      updatedRecords.push({
+        id: updated.id,
+        studentId: updated.student_id,
+        name: `${updated.first_name} ${updated.last_name}`,
+        attendedClasses: updated.attended_classes,
+        totalClasses: updated.total_classes,
+        attendancePercentage: updated.attendance_percentage,
+        status: item.status || 'P',
+      });
+    }
+  }
+
+  const registerKey = `${courseCode || 'GEN'}_${lectureDate || new Date().toISOString().slice(0, 10)}_${lectureSlot || 'SLOT'}`;
+
+  res.json({
+    success: true,
+    message: `Official Attendance Register submitted & locked successfully for ${courseCode || 'course'} (${lectureSlot || 'session'}). Updated ${updatedRecords.length} records.`,
+    registerKey,
+    timestamp: new Date().toISOString(),
+    summary: {
+      courseCode: courseCode || 'CS-401',
+      lectureDate: lectureDate || new Date().toISOString().slice(0, 10),
+      lectureSlot: lectureSlot || 'Period 2',
+      topic: topic || 'Official Lecture Register',
+      totalStudents: updatedRecords.length,
+      presentCount,
+      absentCount,
+      medicalCount,
+    },
+    updatedStudents: updatedRecords,
+  });
+});
+
 // Update Student Attendance (Admin / Faculty)
 studentRouter.patch('/:id/attendance', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;

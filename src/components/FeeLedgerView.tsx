@@ -1,19 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
-import { StudentProfile } from '../types';
+import { StudentProfile, User } from '../types';
 
 interface FeeLedgerViewProps {
+  currentUser?: User | null;
   currentStudent: StudentProfile | null;
   onOpenPayModal: (feeId?: string, studentObj?: any) => void;
   onOpenReceiptModal: (receiptNo?: string) => void;
 }
 
 export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
+  currentUser,
   currentStudent,
   onOpenPayModal,
   onOpenReceiptModal,
 }) => {
-  const isAdmin = !currentStudent;
+  const isActualAdmin = currentUser ? currentUser.role === 'admin' : !currentStudent;
+  const isStaff = currentUser?.role === 'staff';
+  const isStudent = currentUser?.role === 'student' || (!isActualAdmin && !isStaff);
+  const canSearchStudents = isActualAdmin || isStaff;
+
   const [studentList, setStudentList] = useState<any[]>([]);
   const [selectedStudentId, setSelectedStudentId] = useState<string>(currentStudent?.id || 'stu-rec-aryan');
   const [studentSearch, setStudentSearch] = useState('');
@@ -22,7 +28,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (isAdmin) {
+    if (canSearchStudents) {
       api.getStudents({ limit: 100 }).then(res => {
         if (res.success && res.students && res.students.length > 0) {
           setStudentList(res.students);
@@ -32,7 +38,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
         }
       });
     }
-  }, [isAdmin]);
+  }, [canSearchStudents]);
 
   const activeStudentId = currentStudent?.id || selectedStudentId;
 
@@ -62,7 +68,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
   }, [activeStudentId]);
 
   useEffect(() => {
-    if (isAdmin) {
+    if (isActualAdmin) {
       api.getFeeHeads().then(res => {
         if (res.success && res.feeHeads) {
           setFeeHeads(res.feeHeads);
@@ -72,7 +78,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
         }
       });
     }
-  }, [isAdmin]);
+  }, [isActualAdmin]);
 
   const handleAssignHead = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,17 +129,23 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-[#191c1d] tracking-tight">
-            {isAdmin ? 'Institutional Fee Ledger & Audit' : 'Student Academic Fee Ledger'}
+            {isActualAdmin
+              ? 'Institutional Fee Ledger & Audit'
+              : isStaff
+              ? 'Faculty Advisor Student Fee Audit (Read-Only)'
+              : 'Student Academic Fee Ledger'}
           </h2>
           <p className="text-sm text-[#444651] mt-1">
-            {isAdmin
+            {isActualAdmin
               ? 'Inspect student payment statements, itemized fee heads, and verified transaction receipts.'
+              : isStaff
+              ? 'Review mentee semester dues, tuition clearance status, and receipt verification for academic advisory.'
               : 'Complete statement of semester tuition heads, scholarships, discounts, and payment history.'}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {isAdmin ? (
+          {isActualAdmin ? (
             <>
               <button
                 onClick={() => onOpenPayModal(undefined, activeStudentObj)}
@@ -157,6 +169,20 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                 <span>Print Ledger</span>
               </button>
             </>
+          ) : isStaff ? (
+            <>
+              <span className="px-3 py-1.5 bg-[#f3f4f5] text-[#535f70] text-xs font-semibold rounded-lg border border-[#e1e3e4] flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">shield_person</span>
+                <span>Faculty Advisory Mode</span>
+              </span>
+              <button
+                onClick={() => window.print()}
+                className="px-4 py-2 bg-white border border-[#e1e3e4] text-[#191c1d] rounded-lg text-xs font-bold hover:bg-[#f8f9fa] flex items-center gap-1.5 shadow-xs cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[16px]">print</span>
+                <span>Print Statement</span>
+              </button>
+            </>
           ) : (
             <button
               onClick={() => onOpenPayModal(undefined, currentStudent)}
@@ -169,8 +195,8 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
         </div>
       </div>
 
-      {/* Admin Quick Search & Audit Bar */}
-      {isAdmin && (
+      {/* Quick Search & Audit Bar (Admin & Faculty Mentors) */}
+      {canSearchStudents && (
         <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="relative flex-1">
@@ -506,8 +532,8 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
         </div>
       </div>
 
-      {/* Assign Fee Head Modal */}
-      {isAssignModalOpen && (
+      {/* Assign Fee Head Modal (Strictly Admin / Accounts Branch Only) */}
+      {isActualAdmin && isAssignModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-[#e1e3e4] overflow-hidden animate-scaleIn">
             <div className="px-6 py-4 bg-[#00236f] text-white flex items-center justify-between">
