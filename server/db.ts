@@ -559,8 +559,43 @@ class DatabaseStore {
     await safeAddColumn('students', 'board_name VARCHAR(64)');
     await safeAddColumn('students', 'condonation_granted TINYINT(1) DEFAULT 0');
     await safeAddColumn('students', 'condonation_order_no VARCHAR(64)');
-    await safeAddColumn('students', 'condonation_remarks VARCHAR(255)');
     await safeAddColumn('students', 'admission_remarks TEXT');
+
+    // Always sanitize legacy benchmark test candidate names in live MariaDB
+    try {
+      await this.mariaPool.query(`
+        UPDATE students 
+        SET first_name = 'Gurpreet', last_name = 'Singh', email = 'gurpreet.singh@educore.edu', phone = '+91 98765 11221' 
+        WHERE (first_name = 'Benchmark' OR first_name = 'Dup') AND student_id = 'STU-2025-051'
+      `);
+      await this.mariaPool.query(`
+        UPDATE students 
+        SET first_name = 'Harpreet', last_name = 'Kaur', email = 'harpreet.kaur@educore.edu', phone = '+91 98765 22332' 
+        WHERE (first_name = 'Benchmark' OR first_name = 'Dup') AND student_id = 'STU-2025-052'
+      `);
+      await this.mariaPool.query(`
+        UPDATE students 
+        SET first_name = 'Simranjeet', last_name = 'Singh', email = 'simranjeet.singh@educore.edu', phone = '+91 98765 55665' 
+        WHERE (first_name = 'Benchmark' OR first_name = 'Dup') AND student_id = 'STU-2025-055'
+      `);
+      await this.mariaPool.query(`
+        UPDATE students 
+        SET first_name = 'Tanya', last_name = 'Verma', email = 'tanya.verma@educore.edu', phone = '+91 98765 66776' 
+        WHERE (first_name = 'Benchmark' OR first_name = 'Dup') AND student_id = 'STU-2025-062'
+      `);
+      await this.mariaPool.query(`
+        UPDATE students 
+        SET first_name = 'Jaswinder', last_name = 'Singh', email = 'jaswinder.singh@educore.edu', phone = '+91 98765 77887' 
+        WHERE (first_name = 'Benchmark' OR first_name = 'Dup') AND student_id = 'STU-2025-065'
+      `);
+      await this.mariaPool.query(`
+        UPDATE students 
+        SET first_name = 'Navjot', last_name = 'Sharma' 
+        WHERE first_name = 'Benchmark' OR first_name = 'Dup'
+      `);
+    } catch (e: any) {
+      console.warn('[DB] Benchmark student cleanup in MariaDB failed:', e.message);
+    }
   }
 
   private async seedMariaDBDefaults(): Promise<void> {
@@ -797,42 +832,6 @@ class DatabaseStore {
         'INSERT IGNORE INTO notices (id, title, summary, content, notice_date, category, is_pinned) VALUES (?, ?, ?, ?, ?, ?, ?)',
         [n.id, n.title, n.summary, n.content, n.notice_date, n.category, n.is_pinned ? 1 : 0]
       );
-    }
-
-    // Sanitize any leftover benchmark test candidate names in live MariaDB
-    try {
-      await this.mariaPool.query(`
-        UPDATE students 
-        SET first_name = 'Gurpreet', last_name = 'Singh', email = 'gurpreet.singh@educore.edu', phone = '+91 98765 11221' 
-        WHERE (first_name = 'Benchmark' OR first_name = 'Dup') AND student_id = 'STU-2025-051'
-      `);
-      await this.mariaPool.query(`
-        UPDATE students 
-        SET first_name = 'Harpreet', last_name = 'Kaur', email = 'harpreet.kaur@educore.edu', phone = '+91 98765 22332' 
-        WHERE (first_name = 'Benchmark' OR first_name = 'Dup') AND student_id = 'STU-2025-052'
-      `);
-      await this.mariaPool.query(`
-        UPDATE students 
-        SET first_name = 'Simranjeet', last_name = 'Singh', email = 'simranjeet.singh@educore.edu', phone = '+91 98765 55665' 
-        WHERE (first_name = 'Benchmark' OR first_name = 'Dup') AND student_id = 'STU-2025-055'
-      `);
-      await this.mariaPool.query(`
-        UPDATE students 
-        SET first_name = 'Tanya', last_name = 'Verma', email = 'tanya.verma@educore.edu', phone = '+91 98765 66776' 
-        WHERE (first_name = 'Benchmark' OR first_name = 'Dup') AND student_id = 'STU-2025-062'
-      `);
-      await this.mariaPool.query(`
-        UPDATE students 
-        SET first_name = 'Jaswinder', last_name = 'Singh', email = 'jaswinder.singh@educore.edu', phone = '+91 98765 77887' 
-        WHERE (first_name = 'Benchmark' OR first_name = 'Dup') AND student_id = 'STU-2025-065'
-      `);
-      await this.mariaPool.query(`
-        UPDATE students 
-        SET first_name = 'Navjot', last_name = 'Sharma' 
-        WHERE first_name = 'Benchmark' OR first_name = 'Dup'
-      `);
-    } catch (e: any) {
-      console.warn('[DB] Benchmark student cleanup in MariaDB failed:', e.message);
     }
   }
 
