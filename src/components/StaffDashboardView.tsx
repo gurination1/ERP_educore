@@ -37,6 +37,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditingLocked, setIsEditingLocked] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [followupStats, setFollowupStats] = useState<{ overdue: number; due_today: number; total_prospects: number } | null>(null);
 
   // Persistent register locks tracking (Course + Date + Slot)
   const [lockedRegisters, setLockedRegisters] = useState<Record<string, {
@@ -60,6 +61,11 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
   // Load live students from DB
   useEffect(() => {
     loadStudents();
+    api.getFollowupRadar().then(res => {
+      if (res.success && res.stats) {
+        setFollowupStats(res.stats);
+      }
+    }).catch(() => {});
   }, [selectedCourse]);
 
   // When slot or date or course changes, restore registered entries or reset to P
@@ -323,7 +329,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
         </div>
 
         {/* Quick KPI stats */}
-        <div className="grid grid-cols-3 gap-3 w-full md:w-auto">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full md:w-auto">
           <div className="bg-[#f8f9fa] border border-[#edeeef] p-3 rounded-xl text-center min-w-[95px]">
             <span className="text-xl font-extrabold text-[#00236f] block leading-none">2</span>
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#757682] mt-1 block">
@@ -342,8 +348,42 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
               Proctor Mentees
             </span>
           </div>
+          <div
+            onClick={() => onNavigate('admissions')}
+            className="bg-[#f8f9fa] border border-[#edeeef] hover:border-[#00236f] p-3 rounded-xl text-center min-w-[95px] cursor-pointer transition-all shadow-2xs hover:bg-white"
+            title="Click to open Admissions Prospect CRM & Follow-Up Radar"
+          >
+            <span className={`text-xl font-extrabold block leading-none ${
+              (followupStats?.overdue || 0) > 0 ? 'text-[#ba1a1a] animate-pulse' : 'text-[#00236f]'
+            }`}>
+              {(followupStats?.overdue || 0) + (followupStats?.due_today || 0)}
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#757682] mt-1 block">
+              {(followupStats?.overdue || 0) > 0 ? 'Urgent Recalls' : 'Admissions CRM'}
+            </span>
+          </div>
         </div>
       </div>
+
+      {/* Admissions Recall Radar Alert Banner for Faculty & Counselors */}
+      {((followupStats?.overdue || 0) > 0 || (followupStats?.due_today || 0) > 0) && (
+        <div className="p-3.5 bg-amber-50/90 border border-amber-300 rounded-xl text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs animate-fadeIn">
+          <div className="flex items-center gap-2.5">
+            <span className="material-symbols-outlined text-amber-600 text-[22px] animate-bounce">radar</span>
+            <div>
+              <strong className="text-amber-900 font-bold">Admissions Recall Radar Alert:</strong>{' '}
+              <span className="text-amber-900/90">{followupStats?.overdue || 0} candidate callbacks overdue and {followupStats?.due_today || 0} scheduled today. Re-engage walk-in prospects within 24–48 hours to preserve intake conversion.</span>
+            </div>
+          </div>
+          <button
+            onClick={() => onNavigate('admissions')}
+            className="px-3.5 py-1.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg font-bold text-[11px] shrink-0 cursor-pointer shadow-xs flex items-center gap-1"
+          >
+            <span>Open Follow-Up CRM</span>
+            <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+          </button>
+        </div>
+      )}
 
       {/* Status Feedback Banner */}
       {feedbackMessage && (

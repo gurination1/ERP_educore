@@ -76,8 +76,10 @@ admissionRouter.post('/draft', (req: Request, res: Response): void => {
 admissionRouter.post('/progressive-intake', async (req: Request, res: Response): Promise<void> => {
   try {
     const {
-      id,
-      step = 1,
+      id: rawId,
+      studentId,
+      step,
+      intakeStep: rawIntakeStep,
       // Step 1: Basic Contact & Campus Visit Inquiry
       firstName,
       lastName,
@@ -123,7 +125,8 @@ admissionRouter.post('/progressive-intake', async (req: Request, res: Response):
       remarks,
     } = req.body;
 
-    const intakeStep = Number(step) || 1;
+    const id = rawId || studentId;
+    const intakeStep = Number(step || rawIntakeStep) || 1;
 
     // Validate required fields per step
     if (intakeStep === 1) {
@@ -181,6 +184,8 @@ admissionRouter.post('/progressive-intake', async (req: Request, res: Response):
           session_id: session.id,
           counseling_notes: counselingNotes !== undefined ? counselingNotes : targetStudent.counseling_notes,
           intake_step: Math.max(targetStudent.intake_step || 1, 1),
+          followup_priority: targetStudent.followup_priority || 'p1_high',
+          next_followup_date: targetStudent.next_followup_date || new Date(Date.now() + 86400000).toISOString().slice(0, 10),
         });
         res.json({
           success: true,
@@ -197,6 +202,8 @@ admissionRouter.post('/progressive-intake', async (req: Request, res: Response):
           idCounter++;
           generatedId = `INQ-${currentYear}-${idCounter.toString().padStart(3, '0')}`;
         }
+
+        const tomorrowStr = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
 
         const newInquiry: Student = {
           id: `stu-${Date.now()}`,
@@ -230,6 +237,9 @@ admissionRouter.post('/progressive-intake', async (req: Request, res: Response):
           category: category as any,
           quota: quota as any,
           intake_step: 1,
+          followup_status: 'pending',
+          followup_priority: 'p1_high',
+          next_followup_date: tomorrowStr,
           counseling_notes: counselingNotes || 'Walk-in campus visit recorded at Admissions & Counseling Cell.',
           created_at: new Date().toISOString(),
         };
@@ -265,6 +275,8 @@ admissionRouter.post('/progressive-intake', async (req: Request, res: Response):
         transport_route: transportRoute || targetStudent.transport_route,
         admission_status: targetStudent.admission_status === 'approved' ? 'approved' : 'registered',
         intake_step: Math.max(targetStudent.intake_step || 1, 2),
+        followup_priority: targetStudent.followup_priority === 'p1_high' ? 'p1_high' : 'p2_medium',
+        followup_status: targetStudent.followup_status === 'pending' ? 'callback_scheduled' : (targetStudent.followup_status || 'callback_scheduled'),
       });
 
       res.json({
@@ -417,6 +429,7 @@ admissionRouter.post('/progressive-intake', async (req: Request, res: Response):
         student_id: officialRollId,
         user_id: targetUserId,
         admission_status: 'approved',
+        followup_status: 'converted',
         fees_status: parsedTokenAmount > 0 ? 'paid' : 'due',
         aadhaar_no: cleanAadhaar,
         tenth_percentage: tenthPercentage ? Number(tenthPercentage) : targetStudent.tenth_percentage,
@@ -1209,6 +1222,7 @@ admissionRouter.patch('/:id/status', authenticateToken, requireRole('admin', 'st
     await db.updateStudent(student.id, {
       user_id: targetUserId,
       admission_status: 'approved',
+      followup_status: 'converted',
       fees_status: 'due',
       admission_remarks: remarks || 'Formally admitted and portal credentials generated',
     });
@@ -1241,4 +1255,231 @@ admissionRouter.patch('/:id/status', authenticateToken, requireRole('admin', 'st
     student: updated,
     credentialsSlip,
   });
+});
+
+// =========================================================================
+// PROSPECT CRM & FOLLOW-UP RADAR ENDPOINTS
+// =========================================================================
+
+// GET /api/admissions/followups - Radar KPI stats and interactive lead queue
+admissionRouter.get('/followups', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { counselor_id, priority, timeframe, search } = req.query;
+    const stats = await db.getFollowupRadarStats();
+    const students = await db.getStudents();
+    const courses = await db.getCourses();
+    const sessions = await db.getSessions();
+    const allFollowups = await db.getFollowups();
+
+    const today = new Date().toISOString().slice(0, 10);
+
+    // Filter prospects: Step 1/2 intake, inquiries, registered, pending scrutiny, or active followups
+    let prospects = students.filter(s =>
+      s.intake_step === 1 ||
+      s.intake_step === 2 ||
+      s.admission_status === 'inquiry' ||
+      s.admission_status === 'registered' ||
+      s.admission_status === 'submitted' ||
+      s.admission_status === 'pending' ||
+      (s.followup_status && s.followup_status !== 'converted')
+    );
+
+    if (search && typeof search === 'string') {
+      const q = search.toLowerCase();
+      prospects = prospects.filter(s =>
+        s.first_name.toLowerCase().includes(q) ||
+        s.last_name.toLowerCase().includes(q) ||
+        s.student_id.toLowerCase().includes(q) ||
+        s.phone.toLowerCase().includes(q) ||
+        s.email.toLowerCase().includes(q)
+      );
+    }
+
+    if (counselor_id && typeof counselor_id === 'string' && counselor_id !== 'all') {
+      prospects = prospects.filter(s => s.assigned_counselor_id === counselor_id);
+    }
+
+    if (priority && typeof priority === 'string' && priority !== 'all') {
+      prospects = prospects.filter(s => s.followup_priority === priority);
+    }
+
+    if (timeframe === 'overdue') {
+      prospects = prospects.filter(s => {
+        if (s.followup_status === 'converted' || s.followup_status === 'not_interested') return false;
+        return !s.next_followup_date || s.next_followup_date < today;
+      });
+    } else if (timeframe === 'today') {
+      prospects = prospects.filter(s => s.next_followup_date === today);
+    } else if (timeframe === 'upcoming') {
+      prospects = prospects.filter(s => s.next_followup_date && s.next_followup_date > today);
+    } else if (timeframe === 'p1_high') {
+      prospects = prospects.filter(s => s.followup_priority === 'p1_high');
+    }
+
+    const mappedProspects = prospects.map(p => {
+      const course = courses.find(c => c.id === p.course_id || c.code === p.course_id);
+      const session = sessions.find(s => s.id === p.session_id);
+      const studentFollowups = allFollowups.filter(f => f.student_id === p.id);
+      const latest = studentFollowups[0] || null;
+
+      const isOverdue = Boolean(
+        p.followup_status !== 'converted' &&
+        p.followup_status !== 'not_interested' &&
+        (!p.next_followup_date || p.next_followup_date < today)
+      );
+      const isDueToday = Boolean(
+        p.followup_status !== 'converted' &&
+        p.followup_status !== 'not_interested' &&
+        p.next_followup_date === today
+      );
+
+      let daysSinceContact: number | null = null;
+      if (p.last_followup_at) {
+        const lastMs = new Date(p.last_followup_at).getTime();
+        const diffDays = Math.floor((Date.now() - lastMs) / (1000 * 60 * 60 * 24));
+        daysSinceContact = Math.max(0, diffDays);
+      }
+
+      return {
+        student: {
+          ...p,
+          course: course ? { id: course.id, code: course.code, name: course.name, department: course.department, base_tuition_fee: course.base_tuition_fee } : undefined,
+          session: session ? { id: session.id, name: session.name } : undefined,
+        },
+        latest_followup: latest,
+        followup_count: studentFollowups.length,
+        is_overdue: isOverdue,
+        is_due_today: isDueToday,
+        days_since_contact: daysSinceContact,
+      };
+    });
+
+    mappedProspects.sort((a, b) => {
+      if (a.is_overdue && !b.is_overdue) return -1;
+      if (!a.is_overdue && b.is_overdue) return 1;
+      if (a.is_due_today && !b.is_due_today) return -1;
+      if (!a.is_due_today && b.is_due_today) return 1;
+      if (a.student.followup_priority === 'p1_high' && b.student.followup_priority !== 'p1_high') return -1;
+      if (a.student.followup_priority !== 'p1_high' && b.student.followup_priority === 'p1_high') return 1;
+      return new Date(b.student.created_at).getTime() - new Date(a.student.created_at).getTime();
+    });
+
+    res.json({
+      success: true,
+      stats,
+      prospects: mappedProspects,
+    });
+  } catch (err: any) {
+    console.error('[API] /followups error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/admissions/:id/followups - Log Call/Visit Interaction and Schedule Callback
+admissionRouter.post('/:id/followups', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const studentId = req.params.id;
+    const student = await db.getStudentById(studentId);
+    if (!student) {
+      res.status(404).json({ success: false, error: 'Student record not found.' });
+      return;
+    }
+
+    const {
+      interaction_type = 'call',
+      outcome = 'contacted',
+      notes = '',
+      next_followup_date,
+      priority,
+    } = req.body;
+
+    const counselorId = req.user?.id || 'usr-counselor-01';
+    const counselorName = req.user?.full_name || 'Counselor / Faculty Advisory';
+
+    const followup = await db.createFollowup({
+      id: `fup-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      student_id: student.id,
+      counselor_id: counselorId,
+      counselor_name: counselorName,
+      interaction_type,
+      outcome,
+      notes: notes.trim(),
+      next_followup_date: next_followup_date || undefined,
+      priority: priority || student.followup_priority || 'p1_high',
+      created_at: new Date().toISOString(),
+    });
+
+    const updatedStudent = await db.getStudentById(student.id);
+
+    res.status(201).json({
+      success: true,
+      message: `Follow-up interaction logged for ${student.first_name} ${student.last_name}. Next callback: ${next_followup_date || 'None scheduled'}.`,
+      followup,
+      student: updatedStudent,
+    });
+  } catch (err: any) {
+    console.error('[API] POST /:id/followups error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// GET /api/admissions/:id/followups - Audit Timeline of interactions for candidate
+admissionRouter.get('/:id/followups', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const studentId = req.params.id;
+    const followups = await db.getFollowups({ student_id: studentId });
+    res.json({
+      success: true,
+      followups,
+    });
+  } catch (err: any) {
+    console.error('[API] GET /:id/followups error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/admissions/:id/quick-ping - Internal SMS Recall Notice Dispatch
+admissionRouter.post('/:id/quick-ping', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const studentId = req.params.id;
+    const student = await db.getStudentById(studentId);
+    if (!student) {
+      res.status(404).json({ success: false, error: 'Student record not found.' });
+      return;
+    }
+
+    const counselorId = req.user?.id || 'usr-counselor-01';
+    const counselorName = req.user?.full_name || 'Counselor / Faculty Advisory';
+
+    const courses = await db.getCourses();
+    const course = courses.find(c => c.id === student.course_id);
+    const courseName = course?.name || 'Academic Degree Program';
+
+    const noticeText = `EduCore Admissions Notice: Hello ${student.first_name}, counselor ${counselorName} has scheduled your counseling callback for ${courseName} intake (2025-26). Admissions Desk: +91-172-500-EDUCORE.`;
+
+    const nextDay = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+    const followup = await db.createFollowup({
+      id: `fup-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      student_id: student.id,
+      counselor_id: counselorId,
+      counselor_name: counselorName,
+      interaction_type: 'sms',
+      outcome: 'callback_requested',
+      notes: `Automated SMS counseling recall notice logged for ${student.phone}. Callback queued for tomorrow.`,
+      next_followup_date: nextDay,
+      priority: student.followup_priority || 'p1_high',
+      created_at: new Date().toISOString(),
+    });
+
+    res.json({
+      success: true,
+      message: `Recall notice logged and queued for ${student.phone}.`,
+      notice_text: noticeText,
+      followup,
+    });
+  } catch (err: any) {
+    console.error('[API] POST /:id/quick-ping error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
 });

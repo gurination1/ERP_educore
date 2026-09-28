@@ -94,6 +94,26 @@ export interface Student {
   condonation_granted?: boolean;
   condonation_order_no?: string;
   condonation_remarks?: string;
+  // Follow-up CRM & Prospect Pipeline Architecture
+  followup_status?: 'pending' | 'contacted' | 'callback_scheduled' | 'visited' | 'interested' | 'not_interested' | 'converted';
+  followup_priority?: 'p1_high' | 'p2_medium' | 'p3_low';
+  next_followup_date?: string;
+  last_followup_at?: string;
+  assigned_counselor_id?: string;
+  assigned_counselor_name?: string;
+  created_at: string;
+}
+
+export interface AdmissionFollowup {
+  id: string;
+  student_id: string;
+  counselor_id: string;
+  counselor_name: string;
+  interaction_type: 'call' | 'campus_visit' | 'sms' | 'email' | 'in_person';
+  outcome: 'interested' | 'callback_requested' | 'parent_discussion' | 'fee_query' | 'visit_scheduled' | 'not_interested' | 'converted';
+  notes: string;
+  next_followup_date?: string;
+  priority?: 'p1_high' | 'p2_medium' | 'p3_low';
   created_at: string;
 }
 
@@ -248,6 +268,7 @@ class DatabaseStore {
   public documents: DocumentRecord[] = [];
   public notices: Notice[] = [];
   public grievances: Grievance[] = [];
+  public admission_followups: AdmissionFollowup[] = [];
 
   public mode: 'mariadb' | 'sqlite' = 'sqlite';
   private dbPath: string = process.env.DB_PATH || path.join(process.cwd(), 'database', 'educore.sqlite');
@@ -563,6 +584,21 @@ class DatabaseStore {
       );
     `);
 
+    await this.mariaPool.query(`
+      CREATE TABLE IF NOT EXISTS admission_followups (
+        id VARCHAR(64) PRIMARY KEY,
+        student_id VARCHAR(64) NOT NULL,
+        counselor_id VARCHAR(64) NOT NULL,
+        counselor_name VARCHAR(255) NOT NULL,
+        interaction_type VARCHAR(64) NOT NULL,
+        outcome VARCHAR(64) NOT NULL,
+        notes TEXT NOT NULL,
+        next_followup_date VARCHAR(64),
+        priority VARCHAR(32) DEFAULT 'p1_high',
+        created_at VARCHAR(64) NOT NULL
+      );
+    `);
+
     // Ensure newly added student columns exist in live MariaDB
     const safeAddColumn = async (table: string, colDef: string) => {
       try {
@@ -610,6 +646,14 @@ class DatabaseStore {
     await safeAddColumn('students', 'condonation_order_no VARCHAR(64)');
     await safeAddColumn('students', 'condonation_remarks TEXT');
     await safeAddColumn('students', 'admission_remarks TEXT');
+
+    // Follow-up CRM & Prospect Radar columns
+    await safeAddColumn('students', "followup_status VARCHAR(64) DEFAULT 'pending'");
+    await safeAddColumn('students', "followup_priority VARCHAR(32) DEFAULT 'p1_high'");
+    await safeAddColumn('students', 'next_followup_date VARCHAR(64)');
+    await safeAddColumn('students', 'last_followup_at VARCHAR(64)');
+    await safeAddColumn('students', 'assigned_counselor_id VARCHAR(64)');
+    await safeAddColumn('students', 'assigned_counselor_name VARCHAR(255)');
 
     // Always sanitize legacy benchmark test candidate names in live MariaDB
     try {
@@ -841,6 +885,43 @@ class DatabaseStore {
       }
     }
 
+    // Seed default admission follow-ups if table is empty
+    const [fupCount]: any = await this.mariaPool.query('SELECT COUNT(*) as count FROM admission_followups');
+    if (!fupCount || fupCount[0]?.count === 0) {
+      const today = new Date().toISOString().slice(0, 10);
+      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      const [inqRows]: any = await this.mariaPool.query(
+        "SELECT id, student_id, first_name, last_name FROM students WHERE intake_step IN (1, 2) OR admission_status IN ('inquiry', 'submitted', 'pending') LIMIT 2"
+      );
+
+      if (inqRows && inqRows.length > 0) {
+        const demoFollowups = [
+          {
+            id: 'fup-001',
+            student_id: inqRows[0].id,
+            counselor_id: 'usr-counselor-01',
+            counselor_name: 'Simran Kaur (Admissions Counselor)',
+            interaction_type: 'campus_visit' as const,
+            outcome: 'callback_requested' as const,
+            notes: 'Candidate visited campus with parents. Inquired about B.Tech CSE seat availability and Punjab merit scholarship. Requested callback today.',
+            next_followup_date: today,
+            priority: 'p1_high' as const,
+            created_at: `${yesterday} 11:30:00`,
+          },
+        ];
+        for (const f of demoFollowups) {
+          await this.mariaPool.query(
+            'INSERT IGNORE INTO admission_followups (id, student_id, counselor_id, counselor_name, interaction_type, outcome, notes, next_followup_date, priority, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [f.id, f.student_id, f.counselor_id, f.counselor_name, f.interaction_type, f.outcome, f.notes, f.next_followup_date, f.priority, formatSqlDateTime(f.created_at)]
+          );
+        }
+        await this.mariaPool.query(
+          "UPDATE students SET followup_status = 'callback_scheduled', followup_priority = 'p1_high', next_followup_date = ?, last_followup_at = NOW(), assigned_counselor_id = 'usr-counselor-01', assigned_counselor_name = 'Simran Kaur' WHERE id = ?",
+          [today, inqRows[0].id]
+        );
+      }
+    }
+
     const [rows]: any = await this.mariaPool.query('SELECT COUNT(*) as count FROM users');
     if (rows && rows[0] && rows[0].count > 0) return;
 
@@ -971,6 +1052,11 @@ class DatabaseStore {
         category TEXT, subject TEXT, description TEXT, priority TEXT, status TEXT,
         admin_remarks TEXT, resolved_by TEXT, resolved_at TEXT, created_at TEXT
       );
+      CREATE TABLE IF NOT EXISTS admission_followups (
+        id TEXT PRIMARY KEY, student_id TEXT, counselor_id TEXT, counselor_name TEXT,
+        interaction_type TEXT, outcome TEXT, notes TEXT, next_followup_date TEXT,
+        priority TEXT, created_at TEXT
+      );
     `);
 
     // Safe column additions for existing SQLite files
@@ -1011,6 +1097,12 @@ class DatabaseStore {
     try { this.sqlDb.run('ALTER TABLE students ADD COLUMN condonation_order_no TEXT;'); } catch {}
     try { this.sqlDb.run('ALTER TABLE students ADD COLUMN condonation_remarks TEXT;'); } catch {}
     try { this.sqlDb.run('ALTER TABLE students ADD COLUMN admission_remarks TEXT;'); } catch {}
+    try { this.sqlDb.run("ALTER TABLE students ADD COLUMN followup_status TEXT DEFAULT 'pending';"); } catch {}
+    try { this.sqlDb.run("ALTER TABLE students ADD COLUMN followup_priority TEXT DEFAULT 'p1_high';"); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN next_followup_date TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN last_followup_at TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN assigned_counselor_id TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN assigned_counselor_name TEXT;'); } catch {}
   }
 
   private loadFromSqlite(): void {
@@ -1052,6 +1144,11 @@ class DatabaseStore {
           this.grievances = readTable('grievances');
         } catch {
           this.grievances = [];
+        }
+        try {
+          this.admission_followups = readTable('admission_followups');
+        } catch {
+          this.admission_followups = [];
         }
 
         // Ensure all demo students have active accounts in SQLite mode
@@ -1160,7 +1257,8 @@ class DatabaseStore {
         'course_id', 'session_id', 'current_semester', 'admission_year', 'admission_status', 'fees_status', 'attendance_percentage', 'total_classes', 'attended_classes',
         'is_hosteller', 'is_transport_user', 'transport_route', 'hostel_room_no', 'category', 'quota', 'tenth_percentage', 'twelfth_percentage', 'tenth_roll_no', 'twelfth_roll_no', 'board_name', 'aadhaar_no',
         'tenth_doc_verified', 'twelfth_doc_verified', 'aadhaar_doc_verified', 'token_fee_receipt', 'token_fee_amount', 'token_fee_mode', 'token_fee_date', 'intake_step', 'counseling_notes', 'admitted_by',
-        'condonation_granted', 'condonation_order_no', 'condonation_remarks', 'admission_remarks', 'created_at',
+        'condonation_granted', 'condonation_order_no', 'condonation_remarks', 'admission_remarks',
+        'followup_status', 'followup_priority', 'next_followup_date', 'last_followup_at', 'assigned_counselor_id', 'assigned_counselor_name', 'created_at',
       ]);
       clearAndInsert('fee_heads', this.fee_heads, ['id', 'code', 'title', 'description', 'is_recurring']);
       clearAndInsert('student_fees', this.student_fees, ['id', 'student_id', 'fee_head_id', 'session_id', 'semester', 'amount', 'discount_amount', 'paid_amount', 'due_amount', 'due_date', 'status']);
@@ -1171,6 +1269,7 @@ class DatabaseStore {
       clearAndInsert('form_submissions', this.form_submissions, ['id', 'form_id', 'user_id', 'response_json', 'submitted_at']);
       clearAndInsert('notices', this.notices, ['id', 'title', 'summary', 'content', 'notice_date', 'category', 'is_pinned']);
       clearAndInsert('grievances', this.grievances, ['id', 'tracking_code', 'student_id', 'student_name', 'category', 'subject', 'description', 'priority', 'status', 'admin_remarks', 'resolved_by', 'resolved_at', 'created_at']);
+      clearAndInsert('admission_followups', this.admission_followups, ['id', 'student_id', 'counselor_id', 'counselor_name', 'interaction_type', 'outcome', 'notes', 'next_followup_date', 'priority', 'created_at']);
 
       this.sqlDb.run('COMMIT;');
 
@@ -1495,8 +1594,9 @@ class DatabaseStore {
           course_id, session_id, current_semester, admission_year, admission_status, fees_status, attendance_percentage, total_classes, attended_classes,
           is_hosteller, is_transport_user, transport_route, hostel_room_no, category, quota, tenth_percentage, twelfth_percentage,
           tenth_roll_no, twelfth_roll_no, board_name, aadhaar_no, tenth_doc_verified, twelfth_doc_verified, aadhaar_doc_verified,
-          token_fee_receipt, token_fee_amount, token_fee_mode, token_fee_date, intake_step, counseling_notes, admitted_by, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          token_fee_receipt, token_fee_amount, token_fee_mode, token_fee_date, intake_step, counseling_notes, admitted_by,
+          followup_status, followup_priority, next_followup_date, last_followup_at, assigned_counselor_id, assigned_counselor_name, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           student.id,
           student.user_id || null,
@@ -1548,10 +1648,25 @@ class DatabaseStore {
           student.intake_step ?? 1,
           student.counseling_notes || null,
           student.admitted_by || null,
+          student.followup_status || (student.intake_step === 1 ? 'pending' : (student.admission_status === 'approved' ? 'converted' : 'contacted')),
+          student.followup_priority || (student.intake_step === 1 ? 'p1_high' : (student.intake_step === 2 ? 'p2_medium' : 'p3_low')),
+          student.next_followup_date || (student.intake_step === 1 ? new Date(Date.now() + 86400000).toISOString().slice(0, 10) : null),
+          student.last_followup_at || null,
+          student.assigned_counselor_id || null,
+          student.assigned_counselor_name || null,
           formatSqlDateTime(student.created_at),
         ]
       );
       return student;
+    }
+    if (!student.followup_status) {
+      student.followup_status = student.intake_step === 1 ? 'pending' : (student.admission_status === 'approved' ? 'converted' : 'contacted');
+    }
+    if (!student.followup_priority) {
+      student.followup_priority = student.intake_step === 1 ? 'p1_high' : (student.intake_step === 2 ? 'p2_medium' : 'p3_low');
+    }
+    if (!student.next_followup_date && student.intake_step === 1) {
+      student.next_followup_date = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
     }
     this.students.push(student);
     this.save();
@@ -1572,7 +1687,8 @@ class DatabaseStore {
         'tenth_doc_verified', 'twelfth_doc_verified', 'aadhaar_doc_verified',
         'token_fee_receipt', 'token_fee_amount', 'token_fee_mode', 'token_fee_date',
         'intake_step', 'counseling_notes', 'admitted_by',
-        'condonation_granted', 'condonation_order_no', 'condonation_remarks', 'admission_remarks', 'created_at'
+        'condonation_granted', 'condonation_order_no', 'condonation_remarks', 'admission_remarks',
+        'followup_status', 'followup_priority', 'next_followup_date', 'last_followup_at', 'assigned_counselor_id', 'assigned_counselor_name', 'created_at'
       ];
       const keys = Object.keys(updates).filter(k => allowedCols.includes(k));
       if (keys.length === 0) return this.getStudentById(id);
@@ -2034,6 +2150,145 @@ class DatabaseStore {
     return null;
   }
 
+  // --- ADMISSION PROSPECT CRM & FOLLOW-UP OPERATIONS ---
+  public async getFollowups(filters?: { student_id?: string; counselor_id?: string }): Promise<AdmissionFollowup[]> {
+    if (this.mode === 'mariadb' && this.mariaPool) {
+      let sql = 'SELECT * FROM admission_followups WHERE 1=1';
+      const params: any[] = [];
+      if (filters?.student_id) {
+        sql += ' AND student_id = ?';
+        params.push(filters.student_id);
+      }
+      if (filters?.counselor_id) {
+        sql += ' AND counselor_id = ?';
+        params.push(filters.counselor_id);
+      }
+      sql += ' ORDER BY created_at DESC';
+      const [rows]: any = await this.mariaPool.query(sql, params);
+      return rows.map((r: any) => ({ ...r }));
+    }
+
+    let result = [...this.admission_followups];
+    if (filters?.student_id) result = result.filter(f => f.student_id === filters.student_id);
+    if (filters?.counselor_id) result = result.filter(f => f.counselor_id === filters.counselor_id);
+    result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return result;
+  }
+
+  public async createFollowup(followup: AdmissionFollowup): Promise<AdmissionFollowup> {
+    if (this.mode === 'mariadb' && this.mariaPool) {
+      await this.mariaPool.query(
+        'INSERT INTO admission_followups (id, student_id, counselor_id, counselor_name, interaction_type, outcome, notes, next_followup_date, priority, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [
+          followup.id,
+          followup.student_id,
+          followup.counselor_id,
+          followup.counselor_name,
+          followup.interaction_type,
+          followup.outcome,
+          followup.notes,
+          followup.next_followup_date || null,
+          followup.priority || 'p1_high',
+          formatSqlDateTime(followup.created_at),
+        ]
+      );
+    } else {
+      this.admission_followups.unshift(followup);
+    }
+
+    // Synchronize Student record with latest interaction state
+    const updates: Partial<Student> = {
+      last_followup_at: followup.created_at,
+      assigned_counselor_id: followup.counselor_id,
+      assigned_counselor_name: followup.counselor_name,
+    };
+    if (followup.next_followup_date) updates.next_followup_date = followup.next_followup_date;
+    if (followup.priority) updates.followup_priority = followup.priority;
+
+    if (followup.outcome === 'converted') {
+      updates.followup_status = 'converted';
+    } else if (followup.outcome === 'not_interested') {
+      updates.followup_status = 'not_interested';
+    } else if (followup.outcome === 'interested') {
+      updates.followup_status = 'interested';
+    } else if (followup.outcome === 'callback_requested' || followup.outcome === 'visit_scheduled') {
+      updates.followup_status = 'callback_scheduled';
+    } else {
+      updates.followup_status = 'contacted';
+    }
+
+    await this.updateStudent(followup.student_id, updates);
+    if (this.mode === 'sqlite') {
+      this.save();
+    }
+    return followup;
+  }
+
+  public async getFollowupRadarStats(): Promise<{
+    total_prospects: number;
+    overdue: number;
+    due_today: number;
+    upcoming: number;
+    p1_high_priority: number;
+    converted: number;
+  }> {
+    const today = new Date().toISOString().slice(0, 10);
+    const students = await this.getStudents();
+    const activeProspects = students.filter(s =>
+      s.intake_step === 1 ||
+      s.intake_step === 2 ||
+      s.admission_status === 'inquiry' ||
+      s.admission_status === 'registered' ||
+      s.admission_status === 'submitted' ||
+      s.admission_status === 'pending' ||
+      (s.followup_status && s.followup_status !== 'converted' && s.followup_status !== 'not_interested')
+    );
+
+    let overdue = 0;
+    let due_today = 0;
+    let upcoming = 0;
+    let p1_high_priority = 0;
+    let converted = 0;
+
+    for (const p of students) {
+      if (p.followup_status === 'converted' || p.admission_status === 'approved') {
+        converted++;
+      }
+      if (
+        p.intake_step === 1 ||
+        p.intake_step === 2 ||
+        p.admission_status === 'inquiry' ||
+        p.admission_status === 'registered' ||
+        p.admission_status === 'submitted' ||
+        p.admission_status === 'pending'
+      ) {
+        if (p.followup_priority === 'p1_high' || (!p.followup_priority && p.intake_step === 1)) {
+          p1_high_priority++;
+        }
+
+        const nextDate = p.next_followup_date;
+        if (p.followup_status !== 'converted' && p.followup_status !== 'not_interested') {
+          if (!nextDate || nextDate < today) {
+            overdue++;
+          } else if (nextDate === today) {
+            due_today++;
+          } else {
+            upcoming++;
+          }
+        }
+      }
+    }
+
+    return {
+      total_prospects: activeProspects.length,
+      overdue,
+      due_today,
+      upcoming,
+      p1_high_priority,
+      converted,
+    };
+  }
+
   // --- IN-MEMORY DEFAULT SEEDING ---
   private seedDefaultsInMemory(): void {
     const adminHash = bcrypt.hashSync('admin123', 10);
@@ -2466,6 +2721,65 @@ class DatabaseStore {
         attended_classes: 75,
         created_at: '2023-08-05T10:00:00Z',
       },
+      {
+        id: 'stu-rec-inq-001',
+        student_id: 'INQ-2025-001',
+        first_name: 'Gurinder',
+        last_name: 'Singh',
+        gender: 'male',
+        dob: '2006-03-15',
+        email: 'gurinder.singh@example.com',
+        phone: '9876500111',
+        guardian_name: 'Harpreet Singh',
+        guardian_relation: 'parent',
+        guardian_phone: '9876500110',
+        course_id: 'crs-btech-cs',
+        session_id: 'sess-2025-26',
+        current_semester: 1,
+        admission_year: 2025,
+        admission_status: 'inquiry',
+        fees_status: 'due',
+        attendance_percentage: 100,
+        total_classes: 0,
+        attended_classes: 0,
+        intake_step: 1,
+        followup_status: 'callback_scheduled',
+        followup_priority: 'p1_high',
+        next_followup_date: new Date().toISOString().slice(0, 10),
+        last_followup_at: new Date(Date.now() - 86400000).toISOString(),
+        assigned_counselor_id: 'usr-counselor-01',
+        assigned_counselor_name: 'Simran Kaur',
+        counseling_notes: 'Walk-in campus tour with parents from Ludhiana. Interested in B.Tech CSE AI/Data Science. Inquired about bus route and early bird scholarship.',
+        created_at: new Date(Date.now() - 86400000).toISOString(),
+      },
+      {
+        id: 'stu-rec-inq-002',
+        student_id: 'INQ-2025-002',
+        first_name: 'Navjot',
+        last_name: 'Kaur',
+        gender: 'female',
+        dob: '2005-08-20',
+        email: 'navjot.kaur@example.com',
+        phone: '9876500222',
+        guardian_name: 'Jaswant Singh',
+        guardian_relation: 'parent',
+        guardian_phone: '9876500220',
+        course_id: 'crs-btech-cs',
+        session_id: 'sess-2025-26',
+        current_semester: 1,
+        admission_year: 2025,
+        admission_status: 'inquiry',
+        fees_status: 'due',
+        attendance_percentage: 100,
+        total_classes: 0,
+        attended_classes: 0,
+        intake_step: 1,
+        followup_status: 'pending',
+        followup_priority: 'p1_high',
+        next_followup_date: new Date(Date.now() - 86400000).toISOString().slice(0, 10),
+        counseling_notes: 'Walk-in inquiry. Awaiting call back regarding fee installment options and girls hostel safety guidelines.',
+        created_at: new Date(Date.now() - 172800000).toISOString(),
+      },
     ];
 
     this.fee_heads = [
@@ -2792,6 +3106,24 @@ class DatabaseStore {
         priority: 'medium',
         status: 'submitted',
         created_at: '2025-09-10 16:30:00',
+      },
+    ];
+
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const yesterdayStr = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+
+    this.admission_followups = [
+      {
+        id: 'fup-mem-001',
+        student_id: 'stu-rec-inq-001',
+        counselor_id: 'usr-counselor-01',
+        counselor_name: 'Simran Kaur (Admissions Counselor)',
+        interaction_type: 'campus_visit',
+        outcome: 'callback_requested',
+        notes: 'Walk-in campus tour with parents from Ludhiana. Highly interested in B.Tech CSE. Father requested callback regarding bus timetable and scholarship discount.',
+        next_followup_date: todayStr,
+        priority: 'p1_high',
+        created_at: `${yesterdayStr} 11:30:00`,
       },
     ];
   }

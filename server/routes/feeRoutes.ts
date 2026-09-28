@@ -482,7 +482,7 @@ feeRouter.post('/collect', authenticateToken, async (req: AuthRequest, res: Resp
 
   await db.createPayment(newPayment);
 
-  res.json({
+  res.status(201).json({
     success: true,
     message: 'Fee payment collected successfully.',
     receiptNo,

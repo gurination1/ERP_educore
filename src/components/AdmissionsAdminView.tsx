@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
-import { StudentProfile, User } from '../types';
+import { StudentProfile, User, FollowupRadarStats, ProspectLeadItem, AdmissionFollowup } from '../types';
 import { AdmissionFormView } from './AdmissionFormView';
 
 interface AdmissionsAdminViewProps {
@@ -20,6 +20,29 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showManualIntake, setShowManualIntake] = useState(false);
   const [selectedCandidateForIntake, setSelectedCandidateForIntake] = useState<any | null>(null);
+
+  // Prospect CRM & Follow-Up Radar States
+  const [viewMode, setViewMode] = useState<'roster' | 'crm'>('roster');
+  const [followupStats, setFollowupStats] = useState<FollowupRadarStats | null>(null);
+  const [prospects, setProspects] = useState<ProspectLeadItem[]>([]);
+  const [crmLoading, setCrmLoading] = useState(false);
+  const [timeframeFilter, setTimeframeFilter] = useState<'all' | 'overdue' | 'today' | 'p1_high' | 'upcoming'>('all');
+  const [crmSearch, setCrmSearch] = useState('');
+
+  // Follow-up Modals
+  const [selectedLeadForFollowup, setSelectedLeadForFollowup] = useState<StudentProfile | null>(null);
+  const [followupForm, setFollowupForm] = useState({
+    interaction_type: 'call',
+    outcome: 'callback_requested',
+    next_followup_date: new Date(Date.now() + 86400000).toISOString().slice(0, 10),
+    priority: 'p1_high',
+    notes: '',
+  });
+  const [followupSubmitting, setFollowupSubmitting] = useState(false);
+
+  const [selectedLeadForHistory, setSelectedLeadForHistory] = useState<StudentProfile | null>(null);
+  const [historyList, setHistoryList] = useState<AdmissionFollowup[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   // Scrutiny & Rejection Modal States
   const [scrutinyApplicant, setScrutinyApplicant] = useState<any | null>(null);
@@ -71,20 +94,91 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
   const loadAdmissions = async () => {
     setIsLoading(true);
     try {
-      const res = await api.getAdmissions();
-      if (res.success && res.admissions) {
-        setAdmissions(res.admissions);
+      const [resAdm, resFup] = await Promise.all([
+        api.getAdmissions(),
+        api.getFollowupRadar({
+          timeframe: timeframeFilter !== 'all' ? timeframeFilter : undefined,
+          search: crmSearch || undefined,
+        }),
+      ]);
+      if (resAdm.success && resAdm.admissions) {
+        setAdmissions(resAdm.admissions);
+      }
+      if (resFup.success) {
+        setFollowupStats(resFup.stats);
+        setProspects(resFup.prospects || []);
       }
     } catch (err) {
       console.error(err);
     } finally {
       setIsLoading(false);
+      setCrmLoading(false);
+    }
+  };
+
+  const loadFollowupRadar = async () => {
+    setCrmLoading(true);
+    try {
+      const res = await api.getFollowupRadar({
+        timeframe: timeframeFilter !== 'all' ? timeframeFilter : undefined,
+        search: crmSearch || undefined,
+      });
+      if (res.success) {
+        setFollowupStats(res.stats);
+        setProspects(res.prospects || []);
+      }
+    } catch (err) {
+      console.error('Failed to load followup radar:', err);
+    } finally {
+      setCrmLoading(false);
     }
   };
 
   useEffect(() => {
     loadAdmissions();
   }, []);
+
+  useEffect(() => {
+    if (viewMode === 'crm') {
+      loadFollowupRadar();
+    }
+  }, [timeframeFilter, crmSearch, viewMode]);
+
+  const handleLogFollowup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedLeadForFollowup) return;
+    setFollowupSubmitting(true);
+    try {
+      const res = await api.logFollowup(selectedLeadForFollowup.id, followupForm);
+      if (res.success) {
+        setStatusMessage(res.message || 'Follow-up interaction recorded successfully.');
+        setTimeout(() => setStatusMessage(null), 4500);
+        setSelectedLeadForFollowup(null);
+        await Promise.all([loadFollowupRadar(), loadAdmissions()]);
+      } else {
+        setErrorMessage(res.error || 'Failed to log follow-up interaction.');
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Error occurred while logging interaction.');
+    } finally {
+      setFollowupSubmitting(false);
+    }
+  };
+
+  const openHistoryModal = async (lead: StudentProfile) => {
+    setSelectedLeadForHistory(lead);
+    setHistoryLoading(true);
+    try {
+      const res = await api.getStudentFollowups(lead.id);
+      if (res.success) {
+        setHistoryList(res.followups || []);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
 
   const handleStatusUpdate = async (id: string, status: string, remarks?: string) => {
     setActionLoadingId(id);
@@ -338,8 +432,424 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
         </div>
       )}
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+      {/* View Mode Switcher: Admissions Roster vs. Prospect CRM & Follow-Up Radar */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-[#f3f4f5] p-1.5 rounded-xl border border-[#e1e3e4]">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <button
+            onClick={() => setViewMode('roster')}
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              viewMode === 'roster'
+                ? 'bg-white text-[#00236f] shadow-xs'
+                : 'text-[#444651] hover:text-[#191c1d]'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[17px]">how_to_reg</span>
+            <span>Admissions Roster & Scrutiny</span>
+            <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-[#e1e3e4] text-[#444651]">
+              {admissions.length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => {
+              setViewMode('crm');
+              loadFollowupRadar();
+            }}
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              viewMode === 'crm'
+                ? 'bg-[#00236f] text-white shadow-xs'
+                : 'text-[#444651] hover:text-[#191c1d]'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[17px]">radar</span>
+            <span>Prospect CRM & Follow-Up Radar</span>
+            {(followupStats?.overdue || 0) + (followupStats?.due_today || 0) > 0 ? (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#ba1a1a] text-white animate-pulse">
+                {(followupStats?.overdue || 0) + (followupStats?.due_today || 0)} Urgent
+              </span>
+            ) : (
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#86f2e4] text-[#006a61]">
+                Active
+              </span>
+            )}
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2 px-2 text-[11px] text-[#757682]">
+          <span className="material-symbols-outlined text-[15px] text-[#006a61]">verified</span>
+          <span className="font-semibold">Punjab College Recall Engine (PTU Standard)</span>
+        </div>
+      </div>
+
+      {viewMode === 'crm' ? (
+        <div className="space-y-5 animate-fadeIn">
+          {/* Urgent Overdue & Today Recall Alert Banner */}
+          {((followupStats?.overdue || 0) > 0 || (followupStats?.due_today || 0) > 0) && (
+            <div className="p-4 bg-amber-50/90 border border-amber-300 rounded-xl text-amber-950 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xs">
+              <div className="flex items-start gap-3">
+                <span className="material-symbols-outlined text-amber-600 text-[26px] mt-0.5 animate-bounce">
+                  alarm_on
+                </span>
+                <div>
+                  <div className="font-bold text-xs uppercase tracking-wide text-amber-900 flex items-center gap-2">
+                    <span>Admissions Recall & Follow-Up Radar Alert</span>
+                    <span className="px-2 py-0.5 bg-red-600 text-white rounded-full text-[10px] font-black">
+                      Action Required
+                    </span>
+                  </div>
+                  <p className="text-xs text-amber-900/90 mt-0.5">
+                    <strong>{followupStats?.overdue || 0} callbacks are overdue</strong> and <strong>{followupStats?.due_today || 0} are scheduled for today</strong>. Prospective students who completed Step 1 (Campus Visit Inquiry) must be re-engaged within 24–48 hours to retain interest and answer parent queries regarding scholarships & hostel amenities.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => setTimeframeFilter('overdue')}
+                  className="px-3.5 py-1.5 bg-[#ba1a1a] hover:bg-[#991b1b] text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1"
+                >
+                  <span className="material-symbols-outlined text-[15px]">warning</span>
+                  <span>View Overdue ({followupStats?.overdue || 0})</span>
+                </button>
+                <button
+                  onClick={() => setTimeframeFilter('today')}
+                  className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1"
+                >
+                  <span className="material-symbols-outlined text-[15px]">today</span>
+                  <span>Due Today ({followupStats?.due_today || 0})</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* CRM Radar KPI Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+            <div
+              onClick={() => setTimeframeFilter(timeframeFilter === 'overdue' ? 'all' : 'overdue')}
+              className={`p-4 rounded-xl border transition-all cursor-pointer shadow-xs ${
+                timeframeFilter === 'overdue'
+                  ? 'bg-red-50 border-red-400 ring-2 ring-red-400'
+                  : 'bg-white border-[#e1e3e4] hover:border-red-300'
+              }`}
+            >
+              <div className="flex items-center justify-between text-[#ba1a1a]">
+                <span className="text-[10px] uppercase font-bold tracking-wider">Overdue Callbacks</span>
+                <span className="material-symbols-outlined text-[18px]">timer_off</span>
+              </div>
+              <h4 className="text-3xl font-black text-[#ba1a1a] mt-1.5">
+                {followupStats?.overdue ?? 0}
+              </h4>
+              <p className="text-[10px] text-[#757682] mt-0.5">Missed contact SLA (&gt;24 hrs)</p>
+            </div>
+
+            <div
+              onClick={() => setTimeframeFilter(timeframeFilter === 'today' ? 'all' : 'today')}
+              className={`p-4 rounded-xl border transition-all cursor-pointer shadow-xs ${
+                timeframeFilter === 'today'
+                  ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-400'
+                  : 'bg-white border-[#e1e3e4] hover:border-amber-300'
+              }`}
+            >
+              <div className="flex items-center justify-between text-amber-700">
+                <span className="text-[10px] uppercase font-bold tracking-wider">Scheduled Today</span>
+                <span className="material-symbols-outlined text-[18px]">notifications_active</span>
+              </div>
+              <h4 className="text-3xl font-black text-amber-700 mt-1.5">
+                {followupStats?.due_today ?? 0}
+              </h4>
+              <p className="text-[10px] text-[#757682] mt-0.5">Today's planned recall queue</p>
+            </div>
+
+            <div
+              onClick={() => setTimeframeFilter(timeframeFilter === 'p1_high' ? 'all' : 'p1_high')}
+              className={`p-4 rounded-xl border transition-all cursor-pointer shadow-xs ${
+                timeframeFilter === 'p1_high'
+                  ? 'bg-blue-50 border-blue-400 ring-2 ring-blue-400'
+                  : 'bg-white border-[#e1e3e4] hover:border-blue-300'
+              }`}
+            >
+              <div className="flex items-center justify-between text-[#00236f]">
+                <span className="text-[10px] uppercase font-bold tracking-wider">P1 Walk-Ins (Hot Leads)</span>
+                <span className="material-symbols-outlined text-[18px]">local_fire_department</span>
+              </div>
+              <h4 className="text-3xl font-black text-[#00236f] mt-1.5">
+                {followupStats?.p1_high_priority ?? 0}
+              </h4>
+              <p className="text-[10px] text-[#757682] mt-0.5">Step 1 Campus Visit prospects</p>
+            </div>
+
+            <div
+              className="p-4 rounded-xl border bg-white border-[#e1e3e4] shadow-xs"
+            >
+              <div className="flex items-center justify-between text-[#006a61]">
+                <span className="text-[10px] uppercase font-bold tracking-wider">Admitted Converted</span>
+                <span className="material-symbols-outlined text-[18px]">verified</span>
+              </div>
+              <h4 className="text-3xl font-black text-[#006a61] mt-1.5">
+                {followupStats?.converted ?? 0}
+              </h4>
+              <p className="text-[10px] text-[#757682] mt-0.5">Converted to approved enrollments</p>
+            </div>
+          </div>
+
+          {/* CRM Filter & Search Bar */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-[#e1e3e4] shadow-xs">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {[
+                { id: 'all', label: 'All Prospects' },
+                { id: 'overdue', label: 'Overdue Calls', count: followupStats?.overdue },
+                { id: 'today', label: 'Due Today', count: followupStats?.due_today },
+                { id: 'p1_high', label: 'P1 High (Walk-ins)', count: followupStats?.p1_high_priority },
+                { id: 'upcoming', label: 'Upcoming Recalls', count: followupStats?.upcoming },
+              ].map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => setTimeframeFilter(f.id as any)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    timeframeFilter === f.id
+                      ? 'bg-[#00236f] text-white shadow-xs'
+                      : 'bg-[#f3f4f5] text-[#444651] hover:bg-[#e1e3e4]'
+                  }`}
+                >
+                  <span>{f.label}</span>
+                  {f.count !== undefined && (
+                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                      timeframeFilter === f.id ? 'bg-white/20 text-white' : 'bg-white text-[#757682]'
+                    }`}>
+                      {f.count}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="relative w-full md:w-64">
+                <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[#757682] text-[18px]">
+                  search
+                </span>
+                <input
+                  type="text"
+                  placeholder="Search prospect, phone, roll..."
+                  value={crmSearch}
+                  onChange={e => setCrmSearch(e.target.value)}
+                  className="w-full pl-8 pr-3 py-1.5 bg-[#f3f4f5] border border-transparent rounded-lg text-xs text-[#191c1d] focus:bg-white focus:border-[#00236f] outline-none transition-all"
+                />
+              </div>
+              <button
+                onClick={loadFollowupRadar}
+                className="p-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg text-[#444651] cursor-pointer"
+                title="Refresh Lead Queue"
+              >
+                <span className="material-symbols-outlined text-[16px]">refresh</span>
+              </button>
+            </div>
+          </div>
+
+          {/* CRM Leads Queue Table */}
+          <div className="bg-white rounded-xl border border-[#e1e3e4] shadow-xs overflow-hidden">
+            {crmLoading ? (
+              <div className="p-12 text-center text-xs text-[#757682] flex flex-col items-center gap-2">
+                <span className="material-symbols-outlined text-[28px] animate-spin text-[#00236f]">progress_activity</span>
+                <span>Scanning prospect pipeline & recall radar...</span>
+              </div>
+            ) : prospects.length === 0 ? (
+              <div className="p-12 text-center text-xs text-[#757682] space-y-1">
+                <span className="material-symbols-outlined text-[36px] text-gray-400 block mb-1">done_all</span>
+                <p className="font-bold text-sm text-[#191c1d]">No prospects match filter '{timeframeFilter}'.</p>
+                <p className="text-[11px]">All follow-ups are up to date, or search returned 0 candidate matches.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-[#f8f9fa] border-b border-[#e1e3e4] text-[11px] font-bold text-[#757682] uppercase tracking-wider">
+                      <th className="py-3 px-4">Prospect Candidate</th>
+                      <th className="py-3 px-4">Course & Stage</th>
+                      <th className="py-3 px-4">Priority / Urgency</th>
+                      <th className="py-3 px-4">Scheduled Callback</th>
+                      <th className="py-3 px-4">Last Interaction & Notes</th>
+                      <th className="py-3 px-4">Counselor</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#f3f4f5]">
+                    {prospects.map(({ student, latest_followup, followup_count, is_overdue, is_due_today, days_since_contact }) => {
+                      const isP1 = student.followup_priority === 'p1_high' || student.intake_step === 1;
+                      const nextDate = student.next_followup_date;
+
+                      return (
+                        <tr
+                          key={student.id}
+                          className={`hover:bg-[#f8f9fa] transition-colors ${
+                            is_overdue ? 'bg-red-50/30' : is_due_today ? 'bg-amber-50/30' : ''
+                          }`}
+                        >
+                          <td className="py-3.5 px-4 font-bold text-[#191c1d]">
+                            <div className="flex items-center gap-1.5">
+                              <span>{student.first_name} {student.last_name}</span>
+                              {student.intake_step === 1 && (
+                                <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                  Walk-In
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[10px] text-[#757682] font-normal flex items-center gap-1 mt-0.5">
+                              <a href={`tel:${student.phone}`} className="hover:text-[#00236f] hover:underline flex items-center gap-0.5">
+                                <span className="material-symbols-outlined text-[12px]">phone</span>
+                                <span>{student.phone}</span>
+                              </a>
+                              <span>•</span>
+                              <span>{student.city || student.district || 'Punjab'}</span>
+                            </div>
+                            <div className="font-mono text-[10px] text-[#00236f] font-normal mt-0.5">
+                              {student.student_id}
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4 text-[#444651]">
+                            <div className="font-semibold text-[#191c1d]">
+                              {student.course?.name || student.course_id}
+                            </div>
+                            <div className="text-[10px] text-[#757682] mt-0.5">
+                              {student.intake_step === 1 ? 'Step 1: Campus Visit Inquiry' : student.intake_step === 2 ? 'Step 2: Profile & Quota Registered' : 'Step 3: Documents Pending'}
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4">
+                            {isP1 ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300">
+                                <span className="material-symbols-outlined text-[13px] text-rose-600">local_fire_department</span>
+                                <span>P1 High (Hot Lead)</span>
+                              </span>
+                            ) : student.followup_priority === 'p2_medium' ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                <span className="material-symbols-outlined text-[13px] text-amber-600">flag</span>
+                                <span>P2 Medium</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-700">
+                                <span>P3 Standard</span>
+                              </span>
+                            )}
+                          </td>
+
+                          <td className="py-3.5 px-4">
+                            {is_overdue ? (
+                              <div className="flex flex-col">
+                                <span className="inline-flex items-center gap-1 font-bold text-[#ba1a1a] text-[11px]">
+                                  <span className="material-symbols-outlined text-[14px]">warning</span>
+                                  <span>Overdue: {nextDate || 'No Date'}</span>
+                                </span>
+                                <span className="text-[10px] text-[#ba1a1a]/80">Immediate callback needed</span>
+                              </div>
+                            ) : is_due_today ? (
+                              <div className="flex flex-col">
+                                <span className="inline-flex items-center gap-1 font-bold text-amber-700 text-[11px]">
+                                  <span className="material-symbols-outlined text-[14px]">alarm</span>
+                                  <span>Due Today: {nextDate}</span>
+                                </span>
+                                <span className="text-[10px] text-amber-600">Scheduled for today</span>
+                              </div>
+                            ) : nextDate ? (
+                              <div className="flex flex-col text-[#444651]">
+                                <span className="font-semibold">{nextDate}</span>
+                                <span className="text-[10px] text-[#757682]">Upcoming recall</span>
+                              </div>
+                            ) : (
+                              <span className="text-[11px] text-[#757682] italic">None scheduled</span>
+                            )}
+                          </td>
+
+                          <td className="py-3.5 px-4 text-[#444651] max-w-xs">
+                            {latest_followup ? (
+                              <div>
+                                <div className="font-medium text-[#191c1d] flex items-center gap-1">
+                                  <span className="material-symbols-outlined text-[13px] text-[#00236f]">
+                                    {latest_followup.interaction_type === 'call' ? 'call' : latest_followup.interaction_type === 'sms' ? 'sms' : 'apartment'}
+                                  </span>
+                                  <span className="capitalize">{latest_followup.outcome.replace(/_/g, ' ')}</span>
+                                  <span className="text-[10px] text-[#757682]">({days_since_contact ?? 0}d ago)</span>
+                                </div>
+                                <p className="text-[10px] text-[#757682] truncate mt-0.5" title={latest_followup.notes}>
+                                  {latest_followup.notes}
+                                </p>
+                              </div>
+                            ) : student.counseling_notes ? (
+                              <div>
+                                <span className="text-[10px] text-[#757682] font-semibold">Inquiry Notes:</span>
+                                <p className="text-[10px] text-[#444651] truncate" title={student.counseling_notes}>
+                                  {student.counseling_notes}
+                                </p>
+                              </div>
+                            ) : (
+                              <span className="text-[11px] text-[#757682] italic">No prior contact logged</span>
+                            )}
+                          </td>
+
+                          <td className="py-3.5 px-4 text-[#444651]">
+                            <div className="text-[11px] font-medium text-[#191c1d]">
+                              {student.assigned_counselor_name || 'Counseling Cell'}
+                            </div>
+                            <div className="text-[10px] text-[#757682]">
+                              {followup_count} interaction{followup_count !== 1 ? 's' : ''}
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                              <button
+                                onClick={() => {
+                                  setSelectedLeadForFollowup(student);
+                                  setFollowupForm({
+                                    interaction_type: 'call',
+                                    outcome: 'callback_requested',
+                                    next_followup_date: new Date(Date.now() + 86400000).toISOString().slice(0, 10),
+                                    priority: student.followup_priority || 'p1_high',
+                                    notes: '',
+                                  });
+                                }}
+                                className="px-2.5 py-1 bg-[#006a61] hover:bg-[#004f48] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                                title="Log Phone Call, Campus Visit or Parent Counseling Outcome"
+                              >
+                                <span className="material-symbols-outlined text-[13px]">add_call</span>
+                                <span>Log Call</span>
+                              </button>
+
+                              <button
+                                onClick={() => openHistoryModal(student)}
+                                className="px-2.5 py-1 border border-[#e1e3e4] hover:bg-[#f8f9fa] text-[#444651] rounded-md text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer"
+                                title="Audit Trail & Interaction History"
+                              >
+                                <span className="material-symbols-outlined text-[13px]">history</span>
+                                <span>History</span>
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  setSelectedCandidateForIntake(student);
+                                  setShowManualIntake(true);
+                                }}
+                                className="px-2 py-1 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                                title="Resume Intake Wizard (Step 2 or 3)"
+                              >
+                                <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+                                <span>Intake</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {/* KPI Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         <div className="bg-white p-3.5 rounded-xl border border-[#e1e3e4] shadow-xs">
           <span className="text-[10px] uppercase font-bold text-[#757682] block">Total Intake</span>
           <h4 className="text-2xl font-black text-[#191c1d] mt-1">{totalCount}</h4>
@@ -609,6 +1119,8 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
           </div>
         )}
       </div>
+        </div>
+      )}
 
       {/* Modal: Direct Indian College Admission Intake */}
       {isDirectAdmitOpen && (
@@ -1319,6 +1831,202 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                   <span>Confirm Disqualification</span>
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Log Follow-Up Counseling Interaction */}
+      {selectedLeadForFollowup && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-lg w-full flex flex-col shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#00236f] text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-amber-300 text-[22px]">add_call</span>
+                <div>
+                  <h3 className="font-bold text-sm">Log Counseling Follow-Up Interaction</h3>
+                  <p className="text-[11px] text-blue-100">Candidate Recall Audit • Admissions Cell</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedLeadForFollowup(null)}
+                className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleLogFollowup} className="p-6 space-y-4 text-xs">
+              <div className="p-3 bg-[#f3f4f5] rounded-xl border border-[#e1e3e4]">
+                <div className="font-bold text-[#191c1d]">
+                  {selectedLeadForFollowup.first_name} {selectedLeadForFollowup.last_name} ({selectedLeadForFollowup.student_id})
+                </div>
+                <div className="text-[11px] text-[#757682] mt-0.5">
+                  Target: {selectedLeadForFollowup.course?.name || selectedLeadForFollowup.course_id} • Phone: {selectedLeadForFollowup.phone}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-[#191c1d] mb-1">Interaction Type *</label>
+                  <select
+                    value={followupForm.interaction_type}
+                    onChange={e => setFollowupForm({ ...followupForm, interaction_type: e.target.value })}
+                    className="w-full bg-[#f3f4f5] border border-[#e1e3e4] rounded-lg p-2 text-xs font-semibold text-[#191c1d] outline-none"
+                  >
+                    <option value="call">Phone Call (Inbound/Outbound)</option>
+                    <option value="campus_visit">Campus Visit / Walk-in</option>
+                    <option value="sms">SMS Notice / Reminder</option>
+                    <option value="email">Email Outreach</option>
+                    <option value="in_person">In-Person Meeting</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[#191c1d] mb-1">Call / Visit Outcome *</label>
+                  <select
+                    value={followupForm.outcome}
+                    onChange={e => setFollowupForm({ ...followupForm, outcome: e.target.value })}
+                    className="w-full bg-[#f3f4f5] border border-[#e1e3e4] rounded-lg p-2 text-xs font-semibold text-[#191c1d] outline-none"
+                  >
+                    <option value="callback_requested">Callback Requested (Family Discussion)</option>
+                    <option value="interested">Interested (Wants Seat Allocation)</option>
+                    <option value="parent_discussion">Parent Discussion / Counseling Needed</option>
+                    <option value="fee_query">Fee Installment / Scholarship Query</option>
+                    <option value="visit_scheduled">Campus Visit Scheduled</option>
+                    <option value="converted">Ready for Admission & Document Verification</option>
+                    <option value="not_interested">Not Interested (Opted Elsewhere)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-[#191c1d] mb-1">Next Follow-Up Date *</label>
+                  <input
+                    type="date"
+                    required
+                    value={followupForm.next_followup_date}
+                    onChange={e => setFollowupForm({ ...followupForm, next_followup_date: e.target.value })}
+                    className="w-full bg-[#f3f4f5] border border-[#e1e3e4] rounded-lg p-2 text-xs font-semibold text-[#191c1d] outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[#191c1d] mb-1">Lead Urgency Priority</label>
+                  <select
+                    value={followupForm.priority}
+                    onChange={e => setFollowupForm({ ...followupForm, priority: e.target.value })}
+                    className="w-full bg-[#f3f4f5] border border-[#e1e3e4] rounded-lg p-2 text-xs font-semibold text-[#191c1d] outline-none"
+                  >
+                    <option value="p1_high">P1 High (Hot Lead / Walk-in)</option>
+                    <option value="p2_medium">P2 Medium (Registered Profile)</option>
+                    <option value="p3_low">P3 Low (General Inquiry)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#191c1d] mb-1">Interaction Notes & Remarks *</label>
+                <textarea
+                  rows={3}
+                  required
+                  placeholder="Record summary: discussed merit scholarship cutoff, transport fee, hostel room availability, parent preferences..."
+                  value={followupForm.notes}
+                  onChange={e => setFollowupForm({ ...followupForm, notes: e.target.value })}
+                  className="w-full bg-[#f3f4f5] border border-[#e1e3e4] rounded-lg p-2 text-xs text-[#191c1d] focus:bg-white outline-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#f3f4f5]">
+                <button
+                  type="button"
+                  onClick={() => setSelectedLeadForFollowup(null)}
+                  className="px-4 py-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg font-bold text-[#444651] cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={followupSubmitting}
+                  className="px-5 py-2 bg-[#006a61] hover:bg-[#004f48] text-white rounded-lg font-bold shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  <span className="material-symbols-outlined text-[16px]">save</span>
+                  <span>{followupSubmitting ? 'Saving...' : 'Save Interaction & Schedule Callback'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Lead Interaction & Follow-Up Audit Timeline */}
+      {selectedLeadForHistory && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#00236f] text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-amber-300 text-[22px]">history</span>
+                <div>
+                  <h3 className="font-bold text-sm">Interaction Timeline & Audit Trail</h3>
+                  <p className="text-[11px] text-blue-100">{selectedLeadForHistory.first_name} {selectedLeadForHistory.last_name} ({selectedLeadForHistory.student_id})</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedLeadForHistory(null)}
+                className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-4 text-xs flex-1">
+              {historyLoading ? (
+                <div className="py-8 text-center text-xs text-[#757682]">Loading interaction timeline...</div>
+              ) : historyList.length === 0 ? (
+                <div className="py-8 text-center text-xs text-[#757682] space-y-1">
+                  <span className="material-symbols-outlined text-[32px] text-gray-400 block mb-1">contact_phone</span>
+                  <p className="font-bold text-sm text-[#191c1d]">No interaction logs yet.</p>
+                  <p className="text-[11px]">Use "Log Call" to record the first contact outcome for this candidate.</p>
+                </div>
+              ) : (
+                <div className="relative pl-6 space-y-6 before:content-[''] before:absolute before:left-2 before:top-2 before:bottom-2 before:w-[2px] before:bg-[#e1e3e4]">
+                  {historyList.map(item => (
+                    <div key={item.id} className="relative">
+                      <span className="absolute -left-6 top-1 w-3.5 h-3.5 rounded-full bg-[#00236f] ring-4 ring-white"></span>
+                      <div className="bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl p-3.5 space-y-1.5 shadow-xs">
+                        <div className="flex items-center justify-between flex-wrap gap-1">
+                          <span className="font-bold text-[#00236f] capitalize flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[15px]">
+                              {item.interaction_type === 'call' ? 'phone_in_talk' : item.interaction_type === 'sms' ? 'sms' : 'apartment'}
+                            </span>
+                            <span>{item.interaction_type.replace(/_/g, ' ')} • {item.outcome.replace(/_/g, ' ')}</span>
+                          </span>
+                          <span className="text-[10px] text-[#757682]">{item.created_at}</span>
+                        </div>
+                        <p className="text-[#191c1d] leading-relaxed">{item.notes}</p>
+                        <div className="flex items-center justify-between pt-1 border-t border-[#e1e3e4] text-[10px] text-[#757682]">
+                          <span>Counselor: <strong>{item.counselor_name}</strong></span>
+                          {item.next_followup_date && (
+                            <span className="text-amber-700 font-semibold">
+                              Next Recall: {item.next_followup_date}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 border-t border-[#e1e3e4] bg-[#f8f9fa] flex items-center justify-end">
+              <button
+                onClick={() => setSelectedLeadForHistory(null)}
+                className="px-4 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg font-bold text-xs cursor-pointer shadow-xs"
+              >
+                Close Timeline
+              </button>
             </div>
           </div>
         </div>

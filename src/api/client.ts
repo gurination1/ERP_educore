@@ -115,6 +115,20 @@ export const api = {
   getAdmissions: (status?: string) => apiRequest(`/api/admissions?status=${status || 'all'}`),
   updateAdmissionStatus: (id: string, status: string, remarks?: string) =>
     apiRequest(`/api/admissions/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status, remarks }) }),
+  getFollowupRadar: (params?: { counselor_id?: string; priority?: string; timeframe?: string; search?: string }) => {
+    const query = new URLSearchParams((params as any) || {}).toString();
+    return apiRequest(`/api/admissions/followups${query ? `?${query}` : ''}`);
+  },
+  logFollowup: (studentId: string, data: {
+    interaction_type: string;
+    outcome: string;
+    notes: string;
+    next_followup_date?: string;
+    priority?: string;
+  }) => apiRequest(`/api/admissions/${studentId}/followups`, { method: 'POST', body: JSON.stringify(data) }),
+  getStudentFollowups: (studentId: string) => apiRequest(`/api/admissions/${studentId}/followups`),
+  sendRecallNotice: (studentId: string) =>
+    apiRequest(`/api/admissions/${studentId}/quick-ping`, { method: 'POST' }),
 
   // Fees
   getFeeHeads: () => apiRequest('/api/fees/heads'),

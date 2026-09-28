@@ -68,6 +68,12 @@ export interface StudentProfile {
   condonation_granted?: boolean;
   condonation_order_no?: string;
   condonation_remarks?: string;
+  followup_status?: 'pending' | 'contacted' | 'callback_scheduled' | 'visited' | 'interested' | 'not_interested' | 'converted';
+  followup_priority?: 'p1_high' | 'p2_medium' | 'p3_low';
+  next_followup_date?: string;
+  last_followup_at?: string;
+  assigned_counselor_id?: string;
+  assigned_counselor_name?: string;
   course?: {
     id: string;
     code: string;
@@ -79,6 +85,37 @@ export interface StudentProfile {
     id: string;
     name: string;
   };
+}
+
+export interface AdmissionFollowup {
+  id: string;
+  student_id: string;
+  counselor_id: string;
+  counselor_name: string;
+  interaction_type: 'call' | 'campus_visit' | 'sms' | 'email' | 'in_person';
+  outcome: 'interested' | 'callback_requested' | 'parent_discussion' | 'fee_query' | 'visit_scheduled' | 'not_interested' | 'converted';
+  notes: string;
+  next_followup_date?: string;
+  priority?: 'p1_high' | 'p2_medium' | 'p3_low';
+  created_at: string;
+}
+
+export interface FollowupRadarStats {
+  total_prospects: number;
+  overdue: number;
+  due_today: number;
+  upcoming: number;
+  p1_high_priority: number;
+  converted: number;
+}
+
+export interface ProspectLeadItem {
+  student: StudentProfile;
+  latest_followup?: AdmissionFollowup;
+  followup_count: number;
+  is_overdue: boolean;
+  is_due_today: boolean;
+  days_since_contact: number | null;
 }
 
 export interface FeeHead {
