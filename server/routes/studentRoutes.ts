@@ -27,8 +27,8 @@ export function isStudentOwner(student: Student, identifier: string): boolean {
   );
 }
 
-// Master list of students (Admin/Staff only)
-studentRouter.get('/', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
+// Master list of students (Admin, Faculty Staff, Counselors, HOD, Accounts)
+studentRouter.get('/', authenticateToken, requireRole('admin', 'staff', 'counselor', 'hod', 'accounts'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { search, course, admission_year, fees_status, semester, page = '1', limit = '10', sort_by = 'student_id', sort_dir = 'asc' } = req.query;
 
   const rawStudents = await db.getStudents();

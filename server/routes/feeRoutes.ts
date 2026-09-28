@@ -26,7 +26,7 @@ feeRouter.get('/heads', authenticateToken, async (req: AuthRequest, res: Respons
 });
 
 // Admin: Assign Fee Head record to student (Multi-head fee management)
-feeRouter.post('/assign', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+feeRouter.post('/assign', authenticateToken, requireRole('admin', 'accounts'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { studentId, feeHeadId, amount, dueDate, semester } = req.body;
   const allStudents = await db.getStudents();
   const student = allStudents.find(s => s.id === studentId || s.student_id === studentId);
@@ -106,7 +106,7 @@ function formatIndianCurrency(amount: number): string {
 }
 
 // Admin Dashboard KPI Summary
-feeRouter.get('/kpi', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
+feeRouter.get('/kpi', authenticateToken, requireRole('admin', 'staff', 'accounts'), async (req: AuthRequest, res: Response): Promise<void> => {
   const apps = await db.getScholarshipApplications();
   const pendingApprovalsCount = apps.filter(a => a.status === 'under_review' || a.status === 'submitted').length;
   const students = await db.getStudents();
@@ -135,7 +135,7 @@ feeRouter.get('/kpi', authenticateToken, requireRole('admin', 'staff'), async (r
 });
 
 // Monthly Fees Collected Trend for Chart
-feeRouter.get('/trend', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
+feeRouter.get('/trend', authenticateToken, requireRole('admin', 'staff', 'accounts'), async (req: AuthRequest, res: Response): Promise<void> => {
   const allPayments = await db.getPayments();
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   
@@ -181,8 +181,8 @@ feeRouter.get('/trend', authenticateToken, requireRole('admin', 'staff'), async 
   });
 });
 
-// Defaulters List for Admin Screen
-feeRouter.get('/defaulters', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
+// Defaulters List for Admin & Accounts Screen
+feeRouter.get('/defaulters', authenticateToken, requireRole('admin', 'staff', 'accounts'), async (req: AuthRequest, res: Response): Promise<void> => {
   const students = await db.getStudents();
   const allFees = await db.getStudentFees();
   const courses = await db.getCourses();
