@@ -11,13 +11,18 @@ if (!JWT_SECRET) {
   process.exit(1);
 }
 
+export type AuthUserRole = 'student' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts';
+
 export interface AuthRequest extends Request {
   user?: {
     id: string;
     username: string;
     email: string;
-    role: 'student' | 'admin' | 'staff';
+    role: AuthUserRole;
     full_name: string;
+    department?: string;
+    designation?: string;
+    employee_id?: string;
   };
 }
 
@@ -36,6 +41,9 @@ export function generateToken(user: User): string {
       email: user.email,
       role: user.role,
       full_name: user.full_name,
+      department: user.department,
+      designation: user.designation,
+      employee_id: user.employee_id,
     },
     JWT_SECRET,
     { expiresIn: '7d' }
@@ -70,6 +78,9 @@ export async function authenticateToken(req: AuthRequest, res: Response, next: N
       email: userInDb.email,
       role: userInDb.role,
       full_name: userInDb.full_name,
+      department: userInDb.department,
+      designation: userInDb.designation,
+      employee_id: userInDb.employee_id,
     };
     next();
   } catch (err) {
@@ -77,7 +88,7 @@ export async function authenticateToken(req: AuthRequest, res: Response, next: N
   }
 }
 
-export function requireRole(...allowedRoles: Array<'student' | 'admin' | 'staff'>) {
+export function requireRole(...allowedRoles: Array<AuthUserRole>) {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
       res.status(401).json({ success: false, error: 'Authentication required.' });

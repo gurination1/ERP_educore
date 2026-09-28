@@ -106,6 +106,8 @@ export const api = {
   // Admissions
   saveAdmissionDraft: (data: any) =>
     apiRequest('/api/admissions/draft', { method: 'POST', body: JSON.stringify(data) }),
+  saveProgressiveIntake: (data: any) =>
+    apiRequest('/api/admissions/progressive-intake', { method: 'POST', body: JSON.stringify(data) }),
   submitAdmission: (data: any) =>
     apiRequest('/api/admissions/submit', { method: 'POST', body: JSON.stringify(data) }),
   adminAdmitStudent: (data: any) =>
@@ -191,4 +193,20 @@ export const api = {
 
   // Analytical Reports
   getAdmissionsByCourseReport: () => apiRequest('/api/reports/admissions-by-course'),
+
+  // Admin Extreme Powers: User & Staff Role Management
+  getUsers: (params: Record<string, any> = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiRequest(`/api/users?${query}`);
+  },
+  createUser: (userData: any) =>
+    apiRequest('/api/users', { method: 'POST', body: JSON.stringify(userData) }),
+  updateUser: (id: string, updates: any) =>
+    apiRequest(`/api/users/${id}`, { method: 'PATCH', body: JSON.stringify(updates) }),
+  updateUserStatus: (id: string, isActive: boolean) =>
+    apiRequest(`/api/users/${id}/status`, { method: 'PATCH', body: JSON.stringify({ isActive }) }),
+  resetUserPassword: (id: string, newPassword?: string) =>
+    apiRequest(`/api/users/${id}/reset-password`, { method: 'POST', body: JSON.stringify({ newPassword }) }),
+  deleteUser: (id: string) =>
+    apiRequest(`/api/users/${id}`, { method: 'DELETE' }),
 };

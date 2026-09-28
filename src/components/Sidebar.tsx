@@ -14,19 +14,53 @@ export const Sidebar: React.FC<SidebarProps> = ({
   currentUser,
   onLogout,
 }) => {
-  const isStaffOrAdmin = currentUser?.role === 'admin' || currentUser?.role === 'staff';
+  const role = currentUser?.role;
+  const isAdmin = role === 'admin';
+  const isFacultyOrCounselor = role === 'staff' || role === 'counselor' || role === 'hod';
+  const isStaffOrAdmin = ['admin', 'staff', 'counselor', 'hod', 'accounts'].includes(role || '');
+  const canManageIntake = ['admin', 'staff', 'counselor', 'hod'].includes(role || '');
 
   const navItems = [
     {
-      id: currentUser?.role === 'admin'
+      id: isAdmin
         ? ('admin-dashboard' as ActiveScreen)
-        : currentUser?.role === 'staff'
+        : isFacultyOrCounselor
         ? ('staff-dashboard' as ActiveScreen)
         : ('student-dashboard' as ActiveScreen),
-      label: currentUser?.role === 'admin' ? 'Provost / Admin' : currentUser?.role === 'staff' ? 'Faculty Console' : 'Dashboard',
-      icon: currentUser?.role === 'staff' ? 'co_present' : 'dashboard',
-      badge: currentUser?.role === 'staff' ? 'Active' : undefined,
+      label: isAdmin
+        ? 'Provost / Admin'
+        : role === 'counselor'
+        ? 'Counselor Desk'
+        : role === 'hod'
+        ? 'HOD Console'
+        : role === 'staff'
+        ? 'Faculty Console'
+        : role === 'accounts'
+        ? 'Accounts & Finance'
+        : 'Dashboard',
+      icon: isAdmin
+        ? 'admin_panel_settings'
+        : role === 'counselor'
+        ? 'support_agent'
+        : role === 'hod'
+        ? 'supervisor_account'
+        : role === 'staff'
+        ? 'co_present'
+        : role === 'accounts'
+        ? 'account_balance'
+        : 'dashboard',
+      badge: role === 'admin' ? 'Super' : isFacultyOrCounselor ? 'Active' : undefined,
     },
+    ...(isAdmin
+      ? [
+          {
+            id: 'user-management' as ActiveScreen,
+            label: 'User & Staff Roles',
+            icon: 'manage_accounts',
+            badge: 'Extreme',
+          },
+        ]
+      : []),
     {
       id: 'fee-ledger' as ActiveScreen,
       label: 'Fee Ledger',
@@ -35,11 +69,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'admissions' as ActiveScreen,
-      label: isStaffOrAdmin ? 'Admissions Queue' : 'Admissions',
+      label: canManageIntake ? 'Admissions & Intake' : 'Admissions',
       icon: 'edit_document',
-      badge: 'New',
+      badge: 'Active',
     },
-    ...(isStaffOrAdmin
+    ...(canManageIntake || isAdmin
       ? [
           {
             id: 'manage-students' as ActiveScreen,

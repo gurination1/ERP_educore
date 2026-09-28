@@ -13,12 +13,13 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
   onSelectStudent,
 }) => {
   const [admissions, setAdmissions] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'submitted' | 'verified' | 'approved' | 'rejected' | 'all'>('submitted');
+  const [activeTab, setActiveTab] = useState<'inquiries' | 'registered' | 'submitted' | 'verified' | 'approved' | 'rejected' | 'all'>('submitted');
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showManualIntake, setShowManualIntake] = useState(false);
+  const [selectedCandidateForIntake, setSelectedCandidateForIntake] = useState<any | null>(null);
 
   // Scrutiny & Rejection Modal States
   const [scrutinyApplicant, setScrutinyApplicant] = useState<any | null>(null);
@@ -221,6 +222,8 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
 
   const filteredAdmissions = admissions.filter(a => {
     if (activeTab === 'all') return true;
+    if (activeTab === 'inquiries') return a.admission_status === 'inquiry' || a.intake_step === 1;
+    if (activeTab === 'registered') return a.admission_status === 'registered' || a.intake_step === 2;
     if (activeTab === 'submitted') return a.admission_status === 'submitted' || a.admission_status === 'pending';
     if (activeTab === 'verified') return a.admission_status === 'verified' || a.admission_status === 'fee_pending' || a.admission_status === 'provisionally_admitted';
     if (activeTab === 'approved') return a.admission_status === 'approved' || a.admission_status === 'enrolled';
@@ -229,17 +232,24 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
   });
 
   const totalCount = admissions.length;
+  const inquiryCount = admissions.filter(a => a.admission_status === 'inquiry' || a.intake_step === 1).length;
+  const registeredCount = admissions.filter(a => a.admission_status === 'registered' || a.intake_step === 2).length;
   const submittedCount = admissions.filter(a => a.admission_status === 'submitted' || a.admission_status === 'pending').length;
   const verifiedCount = admissions.filter(a => a.admission_status === 'verified' || a.admission_status === 'fee_pending' || a.admission_status === 'provisionally_admitted').length;
   const approvedCount = admissions.filter(a => a.admission_status === 'approved' || a.admission_status === 'enrolled').length;
   const rejectedCount = admissions.filter(a => a.admission_status === 'rejected').length;
+
+  const canApprove = ['admin', 'staff', 'counselor', 'hod'].includes(currentUser?.role || '');
 
   if (showManualIntake) {
     return (
       <div className="space-y-4">
         <div className="p-4 bg-white border-b border-[#e1e3e4] flex items-center justify-between">
           <button
-            onClick={() => setShowManualIntake(false)}
+            onClick={() => {
+              setShowManualIntake(false);
+              setSelectedCandidateForIntake(null);
+            }}
             className="flex items-center gap-1.5 text-xs font-bold text-[#00236f] hover:underline cursor-pointer"
           >
             <span className="material-symbols-outlined text-[16px]">arrow_back</span>
@@ -247,8 +257,15 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
           </button>
         </div>
         <AdmissionFormView
+          initialStudent={selectedCandidateForIntake}
           onApplicationSubmitted={() => {
             setShowManualIntake(false);
+            setSelectedCandidateForIntake(null);
+            loadAdmissions();
+          }}
+          onClose={() => {
+            setShowManualIntake(false);
+            setSelectedCandidateForIntake(null);
             loadAdmissions();
           }}
         />
@@ -322,64 +339,63 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
       )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-3.5">
-        <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
-          <span className="text-[10px] uppercase font-bold text-[#757682]">Total Applications</span>
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+        <div className="bg-white p-3.5 rounded-xl border border-[#e1e3e4] shadow-xs">
+          <span className="text-[10px] uppercase font-bold text-[#757682] block">Total Intake</span>
           <h4 className="text-2xl font-black text-[#191c1d] mt-1">{totalCount}</h4>
-          <p className="text-[11px] text-[#757682] mt-0.5">Session 2025-26</p>
+          <p className="text-[10px] text-[#757682] mt-0.5">Session 2025-26</p>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
-          <span className="text-[10px] uppercase font-bold text-[#b45309]">Pending Scrutiny</span>
-          <h4 className="text-2xl font-black text-[#b45309] mt-1">{submittedCount}</h4>
-          <p className="text-[11px] text-[#757682] mt-0.5">Awaiting verification</p>
+        <div className="bg-white p-3.5 rounded-xl border border-[#e1e3e4] shadow-xs">
+          <span className="text-[10px] uppercase font-bold text-amber-700 block">Inquiries (Step 1)</span>
+          <h4 className="text-2xl font-black text-amber-700 mt-1">{inquiryCount}</h4>
+          <p className="text-[10px] text-[#757682] mt-0.5">Campus Walk-in</p>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
-          <span className="text-[10px] uppercase font-bold text-[#0369a1]">Scrutiny Verified</span>
+        <div className="bg-white p-3.5 rounded-xl border border-[#e1e3e4] shadow-xs">
+          <span className="text-[10px] uppercase font-bold text-indigo-700 block">Registered (Step 2)</span>
+          <h4 className="text-2xl font-black text-indigo-700 mt-1">{registeredCount}</h4>
+          <p className="text-[10px] text-[#757682] mt-0.5">Quota & Parents</p>
+        </div>
+        <div className="bg-white p-3.5 rounded-xl border border-[#e1e3e4] shadow-xs">
+          <span className="text-[10px] uppercase font-bold text-[#0369a1] block">Verified (Step 3)</span>
           <h4 className="text-2xl font-black text-[#0369a1] mt-1">{verifiedCount}</h4>
-          <p className="text-[11px] text-[#757682] mt-0.5">Eligibility sanctioned</p>
+          <p className="text-[10px] text-[#757682] mt-0.5">Eligibility sanctioned</p>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
-          <span className="text-[10px] uppercase font-bold text-[#006a61]">Approved / Enrolled</span>
+        <div className="bg-white p-3.5 rounded-xl border border-[#e1e3e4] shadow-xs">
+          <span className="text-[10px] uppercase font-bold text-[#006a61] block">Enrolled Active</span>
           <h4 className="text-2xl font-black text-[#006a61] mt-1">{approvedCount}</h4>
-          <p className="text-[11px] text-[#757682] mt-0.5">Accounts & ledgers active</p>
+          <p className="text-[10px] text-[#757682] mt-0.5">Accounts & ledgers</p>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
-          <span className="text-[10px] uppercase font-bold text-[#ba1a1a]">Rejected</span>
+        <div className="bg-white p-3.5 rounded-xl border border-[#e1e3e4] shadow-xs">
+          <span className="text-[10px] uppercase font-bold text-[#ba1a1a] block">Rejected</span>
           <h4 className="text-2xl font-black text-[#ba1a1a] mt-1">{rejectedCount}</h4>
-          <p className="text-[11px] text-[#757682] mt-0.5">Eligibility unverified</p>
+          <p className="text-[10px] text-[#757682] mt-0.5">Eligibility unverified</p>
         </div>
       </div>
 
       {/* Tab Filter Bar */}
       <div className="flex items-center justify-between border-b border-[#e1e3e4] pb-3">
-        <div className="flex items-center gap-2">
-          {(['submitted', 'verified', 'approved', 'rejected', 'all'] as const).map(tab => (
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {(
+            [
+              { id: 'submitted', label: 'Pending Scrutiny', count: submittedCount },
+              { id: 'inquiries', label: 'Walk-in Inquiries (Step 1)', count: inquiryCount },
+              { id: 'registered', label: 'Registered (Step 2)', count: registeredCount },
+              { id: 'verified', label: 'Scrutiny Verified', count: verifiedCount },
+              { id: 'approved', label: 'Enrolled', count: approvedCount },
+              { id: 'rejected', label: 'Rejected', count: rejectedCount },
+              { id: 'all', label: 'All Intake', count: totalCount },
+            ] as const
+          ).map(tab => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ${
-                activeTab === tab
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all cursor-pointer ${
+                activeTab === tab.id
                   ? 'bg-[#00236f] text-white shadow-xs'
                   : 'bg-white text-[#444651] border border-[#e1e3e4] hover:bg-[#f8f9fa]'
               }`}
             >
-              {tab === 'submitted'
-                ? 'Pending Scrutiny'
-                : tab === 'verified'
-                ? 'Scrutiny Verified'
-                : tab === 'approved'
-                ? 'Enrolled'
-                : tab} (
-              {tab === 'all'
-                ? totalCount
-                : tab === 'submitted'
-                ? submittedCount
-                : tab === 'verified'
-                ? verifiedCount
-                : tab === 'approved'
-                ? approvedCount
-                : rejectedCount}
-              )
+              {tab.label} ({tab.count})
             </button>
           ))}
         </div>
@@ -458,15 +474,68 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                               ? 'bg-[#ffdad6] text-[#ba1a1a]'
                               : adm.admission_status === 'verified' || adm.admission_status === 'fee_pending'
                               ? 'bg-[#e0f2fe] text-[#0369a1] border border-[#bae6fd]'
+                              : adm.admission_status === 'inquiry'
+                              ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                              : adm.admission_status === 'registered'
+                              ? 'bg-indigo-50 text-indigo-800 border border-indigo-200'
                               : 'bg-[#fef3c7] text-[#b45309]'
                           }`}
                         >
-                          {adm.admission_status === 'submitted' ? 'Pending Review' : adm.admission_status}
+                          {adm.admission_status === 'inquiry'
+                            ? 'Walk-in Inquiry'
+                            : adm.admission_status === 'registered'
+                            ? 'Registered Profile'
+                            : adm.admission_status === 'submitted'
+                            ? 'Pending Scrutiny'
+                            : adm.admission_status}
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-right">
-                        {adm.admission_status === 'submitted' || adm.admission_status === 'pending' ? (
+                        {adm.admission_status === 'inquiry' || adm.admission_status === 'registered' ? (
                           <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => {
+                                setSelectedCandidateForIntake(adm);
+                                setShowManualIntake(true);
+                              }}
+                              className="px-2.5 py-1 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                              title="Resume 3-Step Intake Wizard"
+                            >
+                              <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+                              <span>Resume Intake</span>
+                            </button>
+                            {canApprove && (
+                              <button
+                                disabled={actionLoadingId === adm.id}
+                                onClick={() => handleStatusUpdate(adm.id, 'approved', 'Admitted from Progressive Intake')}
+                                className="px-2.5 py-1 bg-[#006a61] hover:bg-[#004f48] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                                title="Institutional Admission Sanction & Account Provision"
+                              >
+                                <span className="material-symbols-outlined text-[13px]">check</span>
+                                <span>Admit & Provision</span>
+                              </button>
+                            )}
+                            <button
+                              disabled={actionLoadingId === adm.id}
+                              onClick={() => openRejectionModal(adm)}
+                              className="px-2 py-1 border border-[#ba1a1a] text-[#ba1a1a] hover:bg-[#ffdad6]/40 rounded-md text-[11px] font-bold transition-all cursor-pointer disabled:opacity-50"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        ) : adm.admission_status === 'submitted' || adm.admission_status === 'pending' ? (
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => {
+                                setSelectedCandidateForIntake(adm);
+                                setShowManualIntake(true);
+                              }}
+                              className="px-2 py-1 bg-[#f3f4f5] hover:bg-[#e1e3e4] text-[#00236f] rounded-md text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer"
+                              title="Open in Progressive Intake Wizard"
+                            >
+                              <span className="material-symbols-outlined text-[13px]">edit_note</span>
+                              <span>Intake Wizard</span>
+                            </button>
                             <button
                               disabled={actionLoadingId === adm.id}
                               onClick={() => openScrutinyModal(adm)}
@@ -476,10 +545,10 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                               <span className="material-symbols-outlined text-[13px]">fact_check</span>
                               <span>Verify Documents</span>
                             </button>
-                            {currentUser?.role === 'admin' && (
+                            {canApprove && (
                               <button
                                 disabled={actionLoadingId === adm.id}
-                                onClick={() => handleStatusUpdate(adm.id, 'approved', 'Direct Provost Admission Sanction')}
+                                onClick={() => handleStatusUpdate(adm.id, 'approved', 'Institutional Admission Sanction')}
                                 className="px-2.5 py-1 bg-[#006a61] hover:bg-[#004f48] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
                                 title="Admit directly and provision student credentials"
                               >
@@ -497,7 +566,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                           </div>
                         ) : adm.admission_status === 'verified' || adm.admission_status === 'fee_pending' || adm.admission_status === 'provisionally_admitted' ? (
                           <div className="flex items-center justify-end gap-2">
-                            {currentUser?.role === 'admin' ? (
+                            {canApprove ? (
                               <button
                                 disabled={actionLoadingId === adm.id}
                                 onClick={() => handleStatusUpdate(adm.id, 'approved', 'Admitted post Scrutiny Verification')}
@@ -509,7 +578,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                             ) : (
                               <span className="text-[10px] font-bold text-[#0369a1] bg-[#e0f2fe] px-2 py-0.5 rounded border border-[#bae6fd] inline-flex items-center gap-1">
                                 <span className="material-symbols-outlined text-[12px]">verified</span>
-                                <span>Awaiting Provost Sanction</span>
+                                <span>Sanction Pending</span>
                               </span>
                             )}
                             <button

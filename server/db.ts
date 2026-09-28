@@ -10,10 +10,13 @@ export interface User {
   username: string;
   email: string;
   password_hash: string;
-  role: 'student' | 'admin' | 'staff';
+  role: 'student' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts';
   full_name: string;
   avatar_url?: string;
   is_active: boolean;
+  department?: string;
+  designation?: string;
+  employee_id?: string;
   created_at: string;
 }
 
@@ -48,11 +51,18 @@ export interface Student {
   guardian_name: string;
   guardian_relation: 'parent' | 'sibling' | 'spouse' | 'other';
   guardian_phone: string;
+  mother_name?: string;
+  address?: string;
+  city?: string;
+  district?: string;
+  state?: string;
+  pincode?: string;
+  annual_family_income?: number;
   course_id: string;
   session_id: string;
   current_semester: number;
   admission_year: number;
-  admission_status: 'draft' | 'submitted' | 'pending' | 'verified' | 'fee_pending' | 'provisionally_admitted' | 'approved' | 'enrolled' | 'rejected';
+  admission_status: 'inquiry' | 'registered' | 'draft' | 'submitted' | 'pending' | 'verified' | 'fee_pending' | 'provisionally_admitted' | 'approved' | 'enrolled' | 'rejected';
   admission_remarks?: string;
   fees_status: 'paid' | 'due' | 'overdue' | 'cancelled';
   attendance_percentage: number;
@@ -67,7 +77,20 @@ export interface Student {
   quota?: 'punjab_85' | 'other_state_15' | 'management' | 'sports';
   tenth_percentage?: number;
   twelfth_percentage?: number;
+  tenth_roll_no?: string;
+  twelfth_roll_no?: string;
   board_name?: string;
+  aadhaar_no?: string;
+  tenth_doc_verified?: boolean;
+  twelfth_doc_verified?: boolean;
+  aadhaar_doc_verified?: boolean;
+  token_fee_receipt?: string;
+  token_fee_amount?: number;
+  token_fee_mode?: string;
+  token_fee_date?: string;
+  intake_step?: number;
+  counseling_notes?: string;
+  admitted_by?: string;
   condonation_granted?: boolean;
   condonation_order_no?: string;
   condonation_remarks?: string;
@@ -548,6 +571,32 @@ class DatabaseStore {
         // Ignore duplicate column errors
       }
     };
+    // Users table additions
+    await safeAddColumn('users', 'department VARCHAR(64)');
+    await safeAddColumn('users', 'designation VARCHAR(64)');
+    await safeAddColumn('users', 'employee_id VARCHAR(32)');
+
+    // Students table additions
+    await safeAddColumn('students', 'mother_name VARCHAR(64)');
+    await safeAddColumn('students', 'address TEXT');
+    await safeAddColumn('students', 'city VARCHAR(64)');
+    await safeAddColumn('students', 'district VARCHAR(64)');
+    await safeAddColumn('students', 'state VARCHAR(64)');
+    await safeAddColumn('students', 'pincode VARCHAR(16)');
+    await safeAddColumn('students', 'annual_family_income DOUBLE');
+    await safeAddColumn('students', 'tenth_roll_no VARCHAR(32)');
+    await safeAddColumn('students', 'twelfth_roll_no VARCHAR(32)');
+    await safeAddColumn('students', 'aadhaar_no VARCHAR(20)');
+    await safeAddColumn('students', 'tenth_doc_verified TINYINT(1) DEFAULT 0');
+    await safeAddColumn('students', 'twelfth_doc_verified TINYINT(1) DEFAULT 0');
+    await safeAddColumn('students', 'aadhaar_doc_verified TINYINT(1) DEFAULT 0');
+    await safeAddColumn('students', 'token_fee_receipt VARCHAR(64)');
+    await safeAddColumn('students', 'token_fee_amount DOUBLE DEFAULT 0');
+    await safeAddColumn('students', 'token_fee_mode VARCHAR(32)');
+    await safeAddColumn('students', 'token_fee_date VARCHAR(64)');
+    await safeAddColumn('students', 'intake_step INT DEFAULT 1');
+    await safeAddColumn('students', 'counseling_notes TEXT');
+    await safeAddColumn('students', 'admitted_by VARCHAR(64)');
     await safeAddColumn('students', 'is_hosteller TINYINT(1) DEFAULT 0');
     await safeAddColumn('students', 'is_transport_user TINYINT(1) DEFAULT 0');
     await safeAddColumn('students', 'transport_route VARCHAR(128)');
@@ -559,6 +608,7 @@ class DatabaseStore {
     await safeAddColumn('students', 'board_name VARCHAR(64)');
     await safeAddColumn('students', 'condonation_granted TINYINT(1) DEFAULT 0');
     await safeAddColumn('students', 'condonation_order_no VARCHAR(64)');
+    await safeAddColumn('students', 'condonation_remarks TEXT');
     await safeAddColumn('students', 'admission_remarks TEXT');
 
     // Always sanitize legacy benchmark test candidate names in live MariaDB
@@ -716,6 +766,28 @@ class DatabaseStore {
       );
     }
 
+    // Ensure all demo staff & administrative accounts exist in MariaDB
+    const adminHash = bcrypt.hashSync('admin123', 10);
+    const staffHash = bcrypt.hashSync('staff123', 10);
+    const counselorHash = bcrypt.hashSync('counselor123', 10);
+    const hodHash = bcrypt.hashSync('hod123', 10);
+    const accountsHash = bcrypt.hashSync('accounts123', 10);
+
+    const demoStaffAccounts = [
+      { id: 'usr-admin-01', username: 'admin', email: 'admin@educore.edu', hash: adminHash, role: 'admin', full_name: 'Dr. Ramesh Chandra (Registrar & Academic Provost)', department: 'Registrar Office', designation: 'Registrar & Provost', employee_id: 'REG-PRO-001' },
+      { id: 'usr-staff-01', username: 'staff01', email: 'staff@educore.edu', hash: staffHash, role: 'staff', full_name: 'Prof. Sunita Rao (Staff / Faculty)', department: 'Computer Science & Engineering', designation: 'Assistant Professor', employee_id: 'FAC-CSE-014' },
+      { id: 'usr-counselor-01', username: 'counselor01', email: 'counselor@educore.edu', hash: counselorHash, role: 'counselor', full_name: 'Harleen Kaur (Head Counselor / Admission Cell)', department: 'Admission & Counseling Cell', designation: 'Head Counselor & Admission Cell Convener', employee_id: 'ADM-CNS-002' },
+      { id: 'usr-hod-01', username: 'hod_cse', email: 'hod.cse@educore.edu', hash: hodHash, role: 'hod', full_name: 'Dr. Balwinder Singh (HOD Computer Science)', department: 'Computer Science & Engineering', designation: 'Head of Department', employee_id: 'FAC-HOD-001' },
+      { id: 'usr-accounts-01', username: 'accounts01', email: 'accounts@educore.edu', hash: accountsHash, role: 'accounts', full_name: 'Manmohan Sharma (Chief Accounts Officer)', department: 'Finance & Accounts Section', designation: 'Chief Accounts Officer', employee_id: 'ACC-OFF-005' },
+    ];
+
+    for (const sa of demoStaffAccounts) {
+      await this.mariaPool.query(
+        'INSERT INTO users (id, username, email, password_hash, role, full_name, is_active, department, designation, employee_id, created_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE username = VALUES(username), password_hash = VALUES(password_hash), role = VALUES(role), full_name = VALUES(full_name), department = VALUES(department), designation = VALUES(designation), employee_id = VALUES(employee_id)',
+        [sa.id, sa.username, sa.email, sa.hash, sa.role, sa.full_name, sa.department, sa.designation, sa.employee_id]
+      );
+    }
+
     // Seed default grievances if table is empty
     const [grvCount]: any = await this.mariaPool.query('SELECT COUNT(*) as count FROM grievances');
     if (!grvCount || grvCount[0]?.count === 0) {
@@ -841,7 +913,7 @@ class DatabaseStore {
     this.sqlDb.run(`
       CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY, username TEXT UNIQUE, email TEXT UNIQUE, password_hash TEXT,
-        role TEXT, full_name TEXT, avatar_url TEXT, is_active INTEGER, created_at TEXT
+        role TEXT, full_name TEXT, avatar_url TEXT, is_active INTEGER, department TEXT, designation TEXT, employee_id TEXT, created_at TEXT
       );
       CREATE TABLE IF NOT EXISTS sessions (
         id TEXT PRIMARY KEY, name TEXT UNIQUE, start_date TEXT, end_date TEXT, is_current INTEGER
@@ -853,11 +925,16 @@ class DatabaseStore {
       CREATE TABLE IF NOT EXISTS students (
         id TEXT PRIMARY KEY, user_id TEXT, student_id TEXT UNIQUE, first_name TEXT, last_name TEXT,
         gender TEXT, dob TEXT, email TEXT UNIQUE, phone TEXT, guardian_name TEXT, guardian_relation TEXT,
-        guardian_phone TEXT, course_id TEXT, session_id TEXT, current_semester INTEGER, admission_year INTEGER,
+        guardian_phone TEXT, mother_name TEXT, address TEXT, city TEXT, district TEXT, state TEXT, pincode TEXT, annual_family_income REAL,
+        course_id TEXT, session_id TEXT, current_semester INTEGER, admission_year INTEGER,
         admission_status TEXT, fees_status TEXT, attendance_percentage REAL, total_classes INTEGER,
         attended_classes INTEGER, is_hosteller INTEGER, is_transport_user INTEGER, transport_route TEXT,
         hostel_room_no TEXT, category TEXT, quota TEXT, tenth_percentage REAL, twelfth_percentage REAL,
-        board_name TEXT, created_at TEXT
+        tenth_roll_no TEXT, twelfth_roll_no TEXT, board_name TEXT, aadhaar_no TEXT,
+        tenth_doc_verified INTEGER, twelfth_doc_verified INTEGER, aadhaar_doc_verified INTEGER,
+        token_fee_receipt TEXT, token_fee_amount REAL, token_fee_mode TEXT, token_fee_date TEXT,
+        intake_step INTEGER, counseling_notes TEXT, admitted_by TEXT,
+        condonation_granted INTEGER, condonation_order_no TEXT, condonation_remarks TEXT, admission_remarks TEXT, created_at TEXT
       );
       CREATE TABLE IF NOT EXISTS fee_heads (
         id TEXT PRIMARY KEY, code TEXT UNIQUE, title TEXT, description TEXT, is_recurring INTEGER
@@ -896,6 +973,31 @@ class DatabaseStore {
       );
     `);
 
+    // Safe column additions for existing SQLite files
+    try { this.sqlDb.run('ALTER TABLE users ADD COLUMN department TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE users ADD COLUMN designation TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE users ADD COLUMN employee_id TEXT;'); } catch {}
+
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN mother_name TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN address TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN city TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN district TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN state TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN pincode TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN annual_family_income REAL;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN tenth_roll_no TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN twelfth_roll_no TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN aadhaar_no TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN tenth_doc_verified INTEGER DEFAULT 0;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN twelfth_doc_verified INTEGER DEFAULT 0;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN aadhaar_doc_verified INTEGER DEFAULT 0;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN token_fee_receipt TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN token_fee_amount REAL DEFAULT 0;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN token_fee_mode TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN token_fee_date TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN intake_step INTEGER DEFAULT 1;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN counseling_notes TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE students ADD COLUMN admitted_by TEXT;'); } catch {}
     try { this.sqlDb.run('ALTER TABLE students ADD COLUMN is_hosteller INTEGER DEFAULT 0;'); } catch {}
     try { this.sqlDb.run('ALTER TABLE students ADD COLUMN is_transport_user INTEGER DEFAULT 0;'); } catch {}
     try { this.sqlDb.run('ALTER TABLE students ADD COLUMN transport_route TEXT;'); } catch {}
@@ -981,6 +1083,35 @@ class DatabaseStore {
             }
           }
         }
+
+        // Ensure all demo staff & administrative accounts exist in SQLite mode
+        const demoStaffAccounts = [
+          { username: 'admin', email: 'admin@educore.edu', name: 'Dr. Ramesh Chandra (Registrar & Provost)', role: 'admin' as const, dept: 'Registrar Office', desig: 'Registrar & Provost', empId: 'REG-PRO-001', pass: 'admin123' },
+          { username: 'staff01', email: 'staff@educore.edu', name: 'Prof. Sunita Rao (Staff / Faculty)', role: 'staff' as const, dept: 'Computer Science & Engineering', desig: 'Assistant Professor', empId: 'FAC-CSE-014', pass: 'staff123' },
+          { username: 'counselor01', email: 'counselor@educore.edu', name: 'Harleen Kaur (Head Counselor / Admission Cell)', role: 'counselor' as const, dept: 'Admission & Counseling Cell', desig: 'Head Counselor & Admission Cell Convener', empId: 'ADM-CNS-002', pass: 'counselor123' },
+          { username: 'hod_cse', email: 'hod.cse@educore.edu', name: 'Dr. Balwinder Singh (HOD Computer Science)', role: 'hod' as const, dept: 'Computer Science & Engineering', desig: 'Head of Department', empId: 'FAC-HOD-001', pass: 'hod123' },
+          { username: 'accounts01', email: 'accounts@educore.edu', name: 'Manmohan Sharma (Chief Accounts Officer)', role: 'accounts' as const, dept: 'Finance & Accounts Section', desig: 'Chief Accounts Officer', empId: 'ACC-OFF-005', pass: 'accounts123' },
+        ];
+
+        for (const stf of demoStaffAccounts) {
+          const existing = this.users.find(u => u.username.toLowerCase() === stf.username || u.email.toLowerCase() === stf.email);
+          if (!existing) {
+            const passwordHash = bcrypt.hashSync(stf.pass, 10);
+            this.users.push({
+              id: `usr-${stf.role}-01`,
+              username: stf.username,
+              email: stf.email,
+              password_hash: passwordHash,
+              role: stf.role,
+              full_name: stf.name,
+              department: stf.dept,
+              designation: stf.desig,
+              employee_id: stf.empId,
+              is_active: true,
+              created_at: new Date().toISOString(),
+            });
+          }
+        }
       } else {
         this.createSqliteTables();
         this.saveToSqlite();
@@ -1020,14 +1151,16 @@ class DatabaseStore {
         }
       };
 
-      clearAndInsert('users', this.users, ['id', 'username', 'email', 'password_hash', 'role', 'full_name', 'avatar_url', 'is_active', 'created_at']);
+      clearAndInsert('users', this.users, ['id', 'username', 'email', 'password_hash', 'role', 'full_name', 'avatar_url', 'is_active', 'department', 'designation', 'employee_id', 'created_at']);
       clearAndInsert('sessions', this.sessions, ['id', 'name', 'start_date', 'end_date', 'is_current']);
       clearAndInsert('courses', this.courses, ['id', 'code', 'name', 'department', 'duration_years', 'total_semesters', 'base_tuition_fee']);
       clearAndInsert('students', this.students, [
         'id', 'user_id', 'student_id', 'first_name', 'last_name', 'gender', 'dob', 'email', 'phone',
-        'guardian_name', 'guardian_relation', 'guardian_phone', 'course_id', 'session_id', 'current_semester',
-        'admission_year', 'admission_status', 'fees_status', 'attendance_percentage', 'total_classes', 'attended_classes',
-        'is_hosteller', 'is_transport_user', 'transport_route', 'hostel_room_no', 'category', 'quota', 'tenth_percentage', 'twelfth_percentage', 'board_name', 'condonation_granted', 'condonation_order_no', 'condonation_remarks', 'admission_remarks', 'created_at',
+        'guardian_name', 'guardian_relation', 'guardian_phone', 'mother_name', 'address', 'city', 'district', 'state', 'pincode', 'annual_family_income',
+        'course_id', 'session_id', 'current_semester', 'admission_year', 'admission_status', 'fees_status', 'attendance_percentage', 'total_classes', 'attended_classes',
+        'is_hosteller', 'is_transport_user', 'transport_route', 'hostel_room_no', 'category', 'quota', 'tenth_percentage', 'twelfth_percentage', 'tenth_roll_no', 'twelfth_roll_no', 'board_name', 'aadhaar_no',
+        'tenth_doc_verified', 'twelfth_doc_verified', 'aadhaar_doc_verified', 'token_fee_receipt', 'token_fee_amount', 'token_fee_mode', 'token_fee_date', 'intake_step', 'counseling_notes', 'admitted_by',
+        'condonation_granted', 'condonation_order_no', 'condonation_remarks', 'admission_remarks', 'created_at',
       ]);
       clearAndInsert('fee_heads', this.fee_heads, ['id', 'code', 'title', 'description', 'is_recurring']);
       clearAndInsert('student_fees', this.student_fees, ['id', 'student_id', 'fee_head_id', 'session_id', 'semester', 'amount', 'discount_amount', 'paid_amount', 'due_amount', 'due_date', 'status']);
@@ -1089,7 +1222,12 @@ class DatabaseStore {
   // --- USER OPERATIONS ---
   public async findUserByUsernameOrEmail(input: string): Promise<User | null> {
     const val = input.trim().toLowerCase();
-    const effectiveVal = val === 'staff' ? 'staff01' : val;
+    let effectiveVal = val;
+    if (val === 'staff') effectiveVal = 'staff01';
+    else if (val === 'counselor') effectiveVal = 'counselor01';
+    else if (val === 'hod') effectiveVal = 'hod_cse';
+    else if (val === 'accounts') effectiveVal = 'accounts01';
+
     if (this.mode === 'mariadb' && this.mariaPool) {
       const [rows]: any = await this.mariaPool.query(
         'SELECT * FROM users WHERE LOWER(username) = ? OR LOWER(email) = ? OR LOWER(username) = ?',
@@ -1139,13 +1277,95 @@ class DatabaseStore {
     return user ? { ...user } : null;
   }
 
-  public async updateUserPasswordHash(email: string, passwordHash: string): Promise<boolean> {
-    const val = email.trim().toLowerCase();
+  public async getUsers(filters?: { role?: string; search?: string; is_active?: boolean }): Promise<User[]> {
     if (this.mode === 'mariadb' && this.mariaPool) {
-      await this.mariaPool.query('UPDATE users SET password_hash = ? WHERE LOWER(email) = ?', [passwordHash, val]);
+      let sql = 'SELECT * FROM users WHERE 1=1';
+      const params: any[] = [];
+      if (filters?.role && filters.role !== 'all') {
+        sql += ' AND role = ?';
+        params.push(filters.role);
+      }
+      if (filters?.is_active !== undefined) {
+        sql += ' AND is_active = ?';
+        params.push(filters.is_active ? 1 : 0);
+      }
+      if (filters?.search) {
+        const s = `%${filters.search.toLowerCase()}%`;
+        sql += ' AND (LOWER(username) LIKE ? OR LOWER(email) LIKE ? OR LOWER(full_name) LIKE ? OR LOWER(department) LIKE ?)';
+        params.push(s, s, s, s);
+      }
+      sql += ' ORDER BY created_at DESC';
+      const [rows]: any = await this.mariaPool.query(sql, params);
+      return rows.map((r: any) => ({ ...r, is_active: Boolean(r.is_active) }));
+    }
+
+    let list = [...this.users];
+    if (filters?.role && filters.role !== 'all') {
+      list = list.filter(u => u.role === filters.role);
+    }
+    if (filters?.is_active !== undefined) {
+      list = list.filter(u => Boolean(u.is_active) === filters.is_active);
+    }
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      list = list.filter(u =>
+        u.username.toLowerCase().includes(q) ||
+        u.email.toLowerCase().includes(q) ||
+        u.full_name.toLowerCase().includes(q) ||
+        (u.department && u.department.toLowerCase().includes(q))
+      );
+    }
+    return list;
+  }
+
+  public async updateUser(id: string, updates: Partial<User>): Promise<User | null> {
+    if (this.mode === 'mariadb' && this.mariaPool) {
+      const allowedCols = ['username', 'email', 'password_hash', 'role', 'full_name', 'avatar_url', 'is_active', 'department', 'designation', 'employee_id'];
+      const keys = Object.keys(updates).filter(k => allowedCols.includes(k));
+      if (keys.length === 0) return this.findUserById(id);
+
+      const setClause = keys.map(k => `\`${k}\` = ?`).join(', ');
+      const values = keys.map(k => {
+        const val = (updates as any)[k];
+        if (k === 'is_active') return val ? 1 : 0;
+        return val !== undefined ? val : null;
+      });
+      values.push(id);
+
+      await this.mariaPool.query(`UPDATE users SET ${setClause} WHERE id = ?`, values);
+      return this.findUserById(id);
+    }
+
+    const idx = this.users.findIndex(u => u.id === id);
+    if (idx !== -1) {
+      this.users[idx] = { ...this.users[idx], ...updates };
+      this.save();
+      return { ...this.users[idx] };
+    }
+    return null;
+  }
+
+  public async deleteUser(id: string): Promise<boolean> {
+    if (this.mode === 'mariadb' && this.mariaPool) {
+      await this.mariaPool.query('DELETE FROM users WHERE id = ?', [id]);
       return true;
     }
-    const user = this.users.find(u => u.email.toLowerCase() === val);
+    const idx = this.users.findIndex(u => u.id === id);
+    if (idx !== -1) {
+      this.users.splice(idx, 1);
+      this.save();
+      return true;
+    }
+    return false;
+  }
+
+  public async updateUserPasswordHash(emailOrId: string, passwordHash: string): Promise<boolean> {
+    const val = emailOrId.trim().toLowerCase();
+    if (this.mode === 'mariadb' && this.mariaPool) {
+      await this.mariaPool.query('UPDATE users SET password_hash = ? WHERE LOWER(email) = ? OR id = ?', [passwordHash, val, emailOrId]);
+      return true;
+    }
+    const user = this.users.find(u => u.email.toLowerCase() === val || u.id === emailOrId);
     if (user) {
       user.password_hash = passwordHash;
       this.save();
@@ -1157,8 +1377,21 @@ class DatabaseStore {
   public async createUser(user: User): Promise<User> {
     if (this.mode === 'mariadb' && this.mariaPool) {
       await this.mariaPool.query(
-        'INSERT INTO users (id, username, email, password_hash, role, full_name, avatar_url, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [user.id, user.username, user.email, user.password_hash, user.role, user.full_name, user.avatar_url || null, user.is_active ? 1 : 0, formatSqlDateTime(user.created_at)]
+        'INSERT INTO users (id, username, email, password_hash, role, full_name, avatar_url, is_active, department, designation, employee_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [
+          user.id,
+          user.username,
+          user.email,
+          user.password_hash,
+          user.role,
+          user.full_name,
+          user.avatar_url || null,
+          user.is_active ? 1 : 0,
+          user.department || null,
+          user.designation || null,
+          user.employee_id || null,
+          formatSqlDateTime(user.created_at),
+        ]
       );
       return user;
     }
@@ -1256,7 +1489,14 @@ class DatabaseStore {
   public async createStudent(student: Student): Promise<Student> {
     if (this.mode === 'mariadb' && this.mariaPool) {
       await this.mariaPool.query(
-        `INSERT INTO students (id, user_id, student_id, first_name, last_name, gender, dob, email, phone, guardian_name, guardian_relation, guardian_phone, course_id, session_id, current_semester, admission_year, admission_status, fees_status, attendance_percentage, total_classes, attended_classes, is_hosteller, is_transport_user, transport_route, hostel_room_no, category, quota, tenth_percentage, twelfth_percentage, board_name, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO students (
+          id, user_id, student_id, first_name, last_name, gender, dob, email, phone,
+          guardian_name, guardian_relation, guardian_phone, mother_name, address, city, district, state, pincode, annual_family_income,
+          course_id, session_id, current_semester, admission_year, admission_status, fees_status, attendance_percentage, total_classes, attended_classes,
+          is_hosteller, is_transport_user, transport_route, hostel_room_no, category, quota, tenth_percentage, twelfth_percentage,
+          tenth_roll_no, twelfth_roll_no, board_name, aadhaar_no, tenth_doc_verified, twelfth_doc_verified, aadhaar_doc_verified,
+          token_fee_receipt, token_fee_amount, token_fee_mode, token_fee_date, intake_step, counseling_notes, admitted_by, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           student.id,
           student.user_id || null,
@@ -1270,6 +1510,13 @@ class DatabaseStore {
           student.guardian_name,
           student.guardian_relation,
           student.guardian_phone,
+          student.mother_name || null,
+          student.address || null,
+          student.city || null,
+          student.district || null,
+          student.state || null,
+          student.pincode || null,
+          student.annual_family_income ?? null,
           student.course_id,
           student.session_id,
           student.current_semester,
@@ -1287,7 +1534,20 @@ class DatabaseStore {
           student.quota || 'punjab_85',
           student.tenth_percentage ?? null,
           student.twelfth_percentage ?? null,
+          student.tenth_roll_no || null,
+          student.twelfth_roll_no || null,
           student.board_name || null,
+          student.aadhaar_no || null,
+          student.tenth_doc_verified ? 1 : 0,
+          student.twelfth_doc_verified ? 1 : 0,
+          student.aadhaar_doc_verified ? 1 : 0,
+          student.token_fee_receipt || null,
+          student.token_fee_amount ?? 0,
+          student.token_fee_mode || null,
+          student.token_fee_date || null,
+          student.intake_step ?? 1,
+          student.counseling_notes || null,
+          student.admitted_by || null,
           formatSqlDateTime(student.created_at),
         ]
       );
@@ -1303,17 +1563,27 @@ class DatabaseStore {
       const allowedCols = [
         'user_id', 'student_id', 'first_name', 'last_name', 'gender', 'dob',
         'email', 'phone', 'guardian_name', 'guardian_relation', 'guardian_phone',
+        'mother_name', 'address', 'city', 'district', 'state', 'pincode', 'annual_family_income',
         'course_id', 'session_id', 'current_semester', 'admission_year',
         'admission_status', 'fees_status', 'attendance_percentage', 'total_classes',
         'attended_classes', 'is_hosteller', 'is_transport_user', 'transport_route',
         'hostel_room_no', 'category', 'quota', 'tenth_percentage', 'twelfth_percentage',
-        'board_name', 'condonation_granted', 'condonation_order_no', 'condonation_remarks', 'admission_remarks', 'created_at'
+        'tenth_roll_no', 'twelfth_roll_no', 'board_name', 'aadhaar_no',
+        'tenth_doc_verified', 'twelfth_doc_verified', 'aadhaar_doc_verified',
+        'token_fee_receipt', 'token_fee_amount', 'token_fee_mode', 'token_fee_date',
+        'intake_step', 'counseling_notes', 'admitted_by',
+        'condonation_granted', 'condonation_order_no', 'condonation_remarks', 'admission_remarks', 'created_at'
       ];
       const keys = Object.keys(updates).filter(k => allowedCols.includes(k));
       if (keys.length === 0) return this.getStudentById(id);
 
+      const boolCols = ['is_hosteller', 'is_transport_user', 'condonation_granted', 'tenth_doc_verified', 'twelfth_doc_verified', 'aadhaar_doc_verified'];
       const setClause = keys.map(k => `\`${k}\` = ?`).join(', ');
-      const values = keys.map(k => (updates as any)[k]);
+      const values = keys.map(k => {
+        const val = (updates as any)[k];
+        if (boolCols.includes(k)) return val ? 1 : 0;
+        return val !== undefined ? val : null;
+      });
       values.push(id);
 
       await this.mariaPool.query(`UPDATE students SET ${setClause} WHERE id = ?`, values);
@@ -1776,7 +2046,10 @@ class DatabaseStore {
         email: 'admin@educore.edu',
         password_hash: adminHash,
         role: 'admin',
-        full_name: 'Dr. Ramesh Chandra (Registrar)',
+        full_name: 'Dr. Ramesh Chandra (Registrar & Academic Provost)',
+        department: 'Registrar Office',
+        designation: 'Registrar & Provost',
+        employee_id: 'REG-PRO-001',
         avatar_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAmCe2nK5yn2MzfaI3kCnW0nsowqO3EV58Ga69olnaTWnrwRkrVYL41WIGBNg3bCeeSll-y7q-sNxZnHAmS6R6flXcHN8FmEd7YctXzyaVMrHWtueSk6o9YibOVt8o5EF2w8Sb20QpYV9jv4_fwNINqv1CYnW8CqP4LtuL4L7W6_MOM7pY86gWQTI9AN3JgzjczSurPGgarPw32rrk9xSW0oSixeifD_sg3dYr9-I-QBTghh310DDep',
         is_active: true,
         created_at: new Date().toISOString(),
@@ -1889,6 +2162,48 @@ class DatabaseStore {
         password_hash: bcrypt.hashSync('staff123', 10),
         role: 'staff',
         full_name: 'Prof. Sunita Rao (Staff / Faculty)',
+        department: 'Computer Science & Engineering',
+        designation: 'Assistant Professor',
+        employee_id: 'FAC-CSE-014',
+        is_active: true,
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: 'usr-counselor-01',
+        username: 'counselor01',
+        email: 'counselor@educore.edu',
+        password_hash: bcrypt.hashSync('counselor123', 10),
+        role: 'counselor',
+        full_name: 'Harleen Kaur (Head Counselor / Admission Cell)',
+        department: 'Admission & Counseling Cell',
+        designation: 'Head Counselor & Admission Cell Convener',
+        employee_id: 'ADM-CNS-002',
+        is_active: true,
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: 'usr-hod-01',
+        username: 'hod_cse',
+        email: 'hod.cse@educore.edu',
+        password_hash: bcrypt.hashSync('hod123', 10),
+        role: 'hod',
+        full_name: 'Dr. Balwinder Singh (HOD Computer Science)',
+        department: 'Computer Science & Engineering',
+        designation: 'Head of Department',
+        employee_id: 'FAC-HOD-001',
+        is_active: true,
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: 'usr-accounts-01',
+        username: 'accounts01',
+        email: 'accounts@educore.edu',
+        password_hash: bcrypt.hashSync('accounts123', 10),
+        role: 'accounts',
+        full_name: 'Manmohan Sharma (Chief Accounts Officer)',
+        department: 'Finance & Accounts Section',
+        designation: 'Chief Accounts Officer',
+        employee_id: 'ACC-OFF-005',
         is_active: true,
         created_at: new Date().toISOString(),
       },

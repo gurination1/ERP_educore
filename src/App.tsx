@@ -24,6 +24,7 @@ import { MRSPTUAdmitCardModal } from './components/MRSPTUAdmitCardModal';
 import { StaffDashboardView } from './components/StaffDashboardView';
 import { AcademicsView } from './components/AcademicsView';
 import { ReportsView } from './components/ReportsView';
+import { UserManagementView } from './components/UserManagementView';
 
 interface LayoutProps {
   currentUser: User | null;
@@ -64,12 +65,16 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
         return 'settings';
       case '/grievances':
         return 'grievances';
+      case '/user-management':
+        return 'user-management';
       case '/dashboard':
       default:
         return currentUser?.role === 'admin'
           ? 'admin-dashboard'
-          : currentUser?.role === 'staff'
+          : (currentUser?.role === 'staff' || currentUser?.role === 'counselor' || currentUser?.role === 'hod')
           ? 'staff-dashboard'
+          : currentUser?.role === 'accounts'
+          ? 'fee-ledger'
           : 'student-dashboard';
     }
   };
@@ -308,7 +313,7 @@ function MainApp() {
                     onNavigate={handleScreenNavigate}
                     onOpenEmailReminders={() => setIsEmailRemindersOpen(true)}
                   />
-                ) : currentUser.role === 'staff' ? (
+                ) : (currentUser.role === 'staff' || currentUser.role === 'counselor' || currentUser.role === 'hod') ? (
                   <StaffDashboardView
                     currentUser={currentUser}
                     onNavigate={handleScreenNavigate}
@@ -377,7 +382,7 @@ function MainApp() {
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
               >
-                {(currentUser.role === 'admin' || currentUser.role === 'staff') ? (
+                {['admin', 'staff', 'counselor', 'hod'].includes(currentUser.role) ? (
                   <AdmissionsAdminView
                     currentUser={currentUser}
                     onSelectStudent={student => setViewingStudent(student)}
@@ -399,7 +404,7 @@ function MainApp() {
           element={
             !currentUser ? (
               <Navigate to="/admin" replace />
-            ) : (currentUser.role !== 'admin' && currentUser.role !== 'staff') ? (
+            ) : !['admin', 'staff', 'counselor', 'hod'].includes(currentUser.role) ? (
               <Navigate to="/dashboard" replace />
             ) : (
               <AuthenticatedLayout
@@ -551,6 +556,26 @@ function MainApp() {
                 onSearchChange={setSearchQuery}
               >
                 <GrievanceView currentUser={currentUser} />
+              </AuthenticatedLayout>
+            )
+          }
+        />
+
+        <Route
+          path="/user-management"
+          element={
+            !currentUser ? (
+              <Navigate to="/admin" replace />
+            ) : currentUser.role !== 'admin' ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <AuthenticatedLayout
+                currentUser={currentUser}
+                onLogout={handleLogout}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              >
+                <UserManagementView currentUser={currentUser} />
               </AuthenticatedLayout>
             )
           }

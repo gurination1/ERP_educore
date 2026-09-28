@@ -21,7 +21,7 @@ const loginSchema = z.object({
   username: z.string().optional(),
   email: z.string().optional(),
   password: z.string({ required_error: 'Password is required' }).min(1, 'Password is required'),
-  role: z.enum(['student', 'admin', 'staff']).optional(),
+  role: z.enum(['student', 'admin', 'staff', 'counselor', 'hod', 'accounts']).optional(),
 });
 
 const forgotPasswordSchema = z.object({
@@ -61,6 +61,11 @@ authRouter.post('/login', authLimiter, async (req: Request, res: Response): Prom
     return;
   }
 
+  if (user.is_active === false) {
+    res.status(403).json({ success: false, error: 'Account suspended. Please contact the Registrar / Administrator.' });
+    return;
+  }
+
   const token = generateToken(user);
 
   // If student, find student profile
@@ -79,6 +84,9 @@ authRouter.post('/login', authLimiter, async (req: Request, res: Response): Prom
       role: user.role,
       full_name: user.full_name,
       avatar_url: user.avatar_url,
+      department: user.department,
+      designation: user.designation,
+      employee_id: user.employee_id,
     },
     student: student
       ? {
@@ -116,6 +124,9 @@ authRouter.get('/me', authenticateToken, async (req: AuthRequest, res: Response)
       role: user.role,
       full_name: user.full_name,
       avatar_url: user.avatar_url,
+      department: user.department,
+      designation: user.designation,
+      employee_id: user.employee_id,
     },
     student: student
       ? {

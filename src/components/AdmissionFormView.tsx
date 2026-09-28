@@ -1,52 +1,101 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import { AIAssistantModal } from './AIAssistantModal';
 
 interface AdmissionFormViewProps {
+  initialStudent?: any | null;
   onApplicationSubmitted?: (data: any) => void;
+  onClose?: () => void;
 }
 
-export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({ onApplicationSubmitted }) => {
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
+  initialStudent,
+  onApplicationSubmitted,
+  onClose,
+}) => {
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(
+    initialStudent?.intake_step === 2 ? 2 : (initialStudent?.intake_step === 3 ? 3 : 1)
+  );
+  const [studentRecordId, setStudentRecordId] = useState<string | null>(initialStudent?.id || null);
+  const [assignedRollId, setAssignedRollId] = useState<string | null>(initialStudent?.student_id || null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [draftSavedMsg, setDraftSavedMsg] = useState<string | null>(null);
-  const [submittedSuccess, setSubmittedSuccess] = useState<any | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [statusFeedback, setStatusFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
   const [aiExtractedBadge, setAiExtractedBadge] = useState<any | null>(null);
+  const [credentialsSlip, setCredentialsSlip] = useState<any | null>(null);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   // Form State
   const [formData, setFormData] = useState({
-    // Step 1: Personal Info
-    firstName: '',
-    lastName: '',
-    dob: '2005-06-15',
-    gender: 'male',
-    email: '',
-    phone: '',
-    guardianName: '',
-    relationship: 'parent',
-    guardianPhone: '',
-    // Step 2: Course & Academics
-    courseId: 'crs-btech-cs',
-    session: '2025-26',
-    semester: '1',
-    previousSchool: 'Delhi Public School, R.K. Puram',
-    previousScore: '92.4%',
-    quota: 'punjab_85',
-    category: 'General',
-    residentialMode: 'self_commute', // 'self_commute' | 'hosteller' | 'bus_commuter'
-    hostelRoomNo: 'BH-1 (Allotment on arrival)',
-    transportRoute: 'Route 1 - Mohali Phase 7 Corridor',
-    // Step 3: Files
-    photoUploaded: true,
-    transcriptUploaded: true,
-    idProofUploaded: true,
+    // Step 1: Basic Contact & Campus Visit Inquiry
+    firstName: initialStudent?.first_name || '',
+    lastName: initialStudent?.last_name || '',
+    email: initialStudent?.email || '',
+    phone: initialStudent?.phone || '',
+    address: initialStudent?.address || '',
+    city: initialStudent?.city || '',
+    district: initialStudent?.district || 'Bathinda',
+    state: initialStudent?.state || 'Punjab',
+    pincode: initialStudent?.pincode || '',
+    courseId: initialStudent?.course_id || 'crs-btech-cs',
+    sessionId: initialStudent?.session_id || 'sess-2025-26',
+    counselingNotes: initialStudent?.counseling_notes || 'Walk-in campus counseling inquiry. Discussed curriculum & placement track.',
+
+    // Step 2: Parental & Domicile / Quota Profile
+    guardianName: initialStudent?.guardian_name || '',
+    guardianPhone: initialStudent?.guardian_phone || '',
+    motherName: initialStudent?.mother_name || '',
+    relationship: initialStudent?.guardian_relation || 'parent',
+    gender: initialStudent?.gender || 'male',
+    dob: initialStudent?.dob || '2005-06-15',
+    category: initialStudent?.category || 'General',
+    quota: initialStudent?.quota || 'punjab_85',
+    annualFamilyIncome: initialStudent?.annual_family_income ? String(initialStudent.annual_family_income) : '350000',
+    residentialMode: initialStudent?.is_hosteller
+      ? 'hosteller'
+      : (initialStudent?.is_transport_user ? 'bus_commuter' : 'self_commute'),
+    hostelRoomNo: initialStudent?.hostel_room_no || 'BH-1 (Allotment on Arrival)',
+    transportRoute: initialStudent?.transport_route || 'Route 2 - Bathinda City / Rose Garden Bypass',
+
+    // Step 3: Crucial Documents, 12-Digit Aadhaar & Token Admission Fee
+    aadhaarNo: initialStudent?.aadhaar_no || '',
+    tenthBoard: initialStudent?.board_name || 'PSEB (Punjab School Education Board)',
+    tenthRollNo: initialStudent?.tenth_roll_no || '',
+    tenthPercentage: initialStudent?.tenth_percentage ? String(initialStudent.tenth_percentage) : '85.5',
+    tenthDocVerified: initialStudent?.tenth_doc_verified ?? true,
+
+    twelfthBoard: initialStudent?.board_name || 'PSEB (Punjab School Education Board)',
+    twelfthRollNo: initialStudent?.twelfth_roll_no || '',
+    twelfthPercentage: initialStudent?.twelfth_percentage ? String(initialStudent.twelfth_percentage) : '82.0',
+    twelfthDocVerified: initialStudent?.twelfth_doc_verified ?? true,
+
+    aadhaarDocVerified: initialStudent?.aadhaar_doc_verified ?? true,
+    tokenFeeReceipt: initialStudent?.token_fee_receipt || `REC-ADM-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`,
+    tokenFeeAmount: initialStudent?.token_fee_amount ? String(initialStudent.token_fee_amount) : '15000',
+    tokenFeeMode: initialStudent?.token_fee_mode || 'online_upi',
+    tokenFeeDate: initialStudent?.token_fee_date || new Date().toISOString().split('T')[0],
     agreedToTerms: false,
   });
 
+  useEffect(() => {
+    if (initialStudent) {
+      setStudentRecordId(initialStudent.id);
+      setAssignedRollId(initialStudent.student_id);
+      if (initialStudent.intake_step === 2) setCurrentStep(2);
+      else if (initialStudent.intake_step === 3) setCurrentStep(3);
+    }
+  }, [initialStudent]);
+
   const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleCopy = (text: string, key: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2500);
   };
 
   const handleApplyAIData = (extracted: any) => {
@@ -62,8 +111,6 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({ onApplicat
       relationship: extracted.relationship || prev.relationship,
       guardianPhone: extracted.guardianPhone || prev.guardianPhone,
       courseId: extracted.courseId || prev.courseId,
-      previousSchool: extracted.previousSchool || prev.previousSchool,
-      previousScore: extracted.previousScore || prev.previousScore,
     }));
     setAiExtractedBadge({
       meritScore: extracted.meritScore,
@@ -71,150 +118,297 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({ onApplicat
       summary: extracted.aiSummary,
       courseName: extracted.courseName,
     });
-    setDraftSavedMsg('✨ Form populated instantly via Gemini AI Admission Intelligence!');
-    setTimeout(() => setDraftSavedMsg(null), 5000);
+    setStatusFeedback({
+      type: 'success',
+      message: 'Applicant details auto-extracted via Gemini Multimodal Scrutiny!',
+    });
+    setTimeout(() => setStatusFeedback(null), 4000);
   };
 
-  const handleSaveDraft = async () => {
+  // Step 1 Save & Continue
+  const handleSaveStep1 = async (advance: boolean = true) => {
+    if (!formData.firstName.trim() || !formData.lastName.trim()) {
+      setStatusFeedback({ type: 'error', message: 'Candidate First Name and Last Name are required.' });
+      return;
+    }
+    const cleanPhone = formData.phone.replace(/\D/g, '');
+    if (cleanPhone.length < 10) {
+      setStatusFeedback({ type: 'error', message: 'Valid 10-digit mobile contact number is mandatory for campus follow-up.' });
+      return;
+    }
+    if (!formData.email || !formData.email.includes('@')) {
+      setStatusFeedback({ type: 'error', message: 'Valid email address is mandatory.' });
+      return;
+    }
+
+    setIsSavingDraft(true);
+    setStatusFeedback(null);
     try {
-      const res = await api.saveAdmissionDraft(formData);
-      if (res.success) {
-        setDraftSavedMsg(`Draft saved successfully at ${new Date().toLocaleTimeString()} (ID: ${res.draftId})`);
-        setTimeout(() => setDraftSavedMsg(null), 4000);
+      const res = await api.saveProgressiveIntake({
+        id: studentRecordId || undefined,
+        step: 1,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        city: formData.city,
+        district: formData.district,
+        state: formData.state,
+        pincode: formData.pincode,
+        courseId: formData.courseId,
+        sessionId: formData.sessionId,
+        counselingNotes: formData.counselingNotes,
+      });
+
+      if (res.success && res.student) {
+        setStudentRecordId(res.student.id);
+        setAssignedRollId(res.student.student_id);
+        setStatusFeedback({
+          type: 'success',
+          message: res.message || 'Campus visit inquiry recorded (Step 1 Complete)!',
+        });
+        if (advance) {
+          setCurrentStep(2);
+        }
+      } else {
+        setStatusFeedback({ type: 'error', message: res.error || 'Failed to save campus inquiry.' });
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      setStatusFeedback({ type: 'error', message: err.message || 'Network error saving campus inquiry.' });
+    } finally {
+      setIsSavingDraft(false);
     }
   };
 
-  const handleNext = () => {
-    if (currentStep === 1) {
-      if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone) {
-        setErrorMsg('Please complete all mandatory personal information fields.');
-        return;
+  // Step 2 Save & Continue
+  const handleSaveStep2 = async (advance: boolean = true) => {
+    if (!formData.guardianName.trim()) {
+      setStatusFeedback({ type: 'error', message: "Father's / Guardian's name is required for registration." });
+      return;
+    }
+
+    setIsSavingDraft(true);
+    setStatusFeedback(null);
+    try {
+      const res = await api.saveProgressiveIntake({
+        id: studentRecordId || undefined,
+        step: 2,
+        guardianName: formData.guardianName,
+        guardianPhone: formData.guardianPhone || formData.phone,
+        motherName: formData.motherName,
+        relationship: formData.relationship,
+        gender: formData.gender,
+        dob: formData.dob,
+        category: formData.category,
+        quota: formData.quota,
+        annualFamilyIncome: formData.annualFamilyIncome,
+        residentialMode: formData.residentialMode,
+        hostelRoomNo: formData.hostelRoomNo,
+        transportRoute: formData.transportRoute,
+      });
+
+      if (res.success && res.student) {
+        setStudentRecordId(res.student.id);
+        setAssignedRollId(res.student.student_id);
+        setStatusFeedback({
+          type: 'success',
+          message: res.message || 'Parental profile & quota details saved (Step 2 Complete)!',
+        });
+        if (advance) {
+          setCurrentStep(3);
+        }
+      } else {
+        setStatusFeedback({ type: 'error', message: res.error || 'Failed to save registration profile.' });
       }
-      setErrorMsg(null);
-      setCurrentStep(2);
-    } else if (currentStep === 2) {
-      setErrorMsg(null);
-      setCurrentStep(3);
+    } catch (err: any) {
+      setStatusFeedback({ type: 'error', message: err.message || 'Network error saving registration profile.' });
+    } finally {
+      setIsSavingDraft(false);
     }
   };
 
-  const handleFinalSubmit = async (e: React.FormEvent) => {
+  // Step 3 Final Submission
+  const handleFinalizeStep3 = async (e: React.FormEvent) => {
     e.preventDefault();
+    const cleanAadhaar = formData.aadhaarNo.replace(/\D/g, '');
+    if (cleanAadhaar.length !== 12) {
+      setStatusFeedback({
+        type: 'error',
+        message: 'Aadhaar Card number must be exactly 12 digits (format: XXXX XXXX XXXX).',
+      });
+      return;
+    }
+
     if (!formData.agreedToTerms) {
-      setErrorMsg('Please accept the institutional accuracy declaration before submitting.');
+      setStatusFeedback({
+        type: 'error',
+        message: 'Please confirm the academic document verification declaration.',
+      });
       return;
     }
 
     setIsSubmitting(true);
-    setErrorMsg(null);
-
-    const isHosteller = formData.residentialMode === 'hosteller';
-    const isTransportUser = formData.residentialMode === 'bus_commuter';
-
+    setStatusFeedback(null);
     try {
-      const res = await api.submitAdmission({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        dob: formData.dob,
-        gender: formData.gender,
-        email: formData.email,
-        phone: formData.phone,
-        guardianName: formData.guardianName,
-        relationship: formData.relationship,
-        guardianPhone: formData.guardianPhone,
-        courseId: formData.courseId,
-        admissionYear: new Date().getFullYear(),
-        quota: formData.quota,
-        category: formData.category,
-        isHosteller,
-        isTransportUser,
-        hostelRoomNo: isHosteller ? formData.hostelRoomNo : undefined,
-        transportRoute: isTransportUser ? formData.transportRoute : undefined,
+      const res = await api.saveProgressiveIntake({
+        id: studentRecordId || undefined,
+        step: 3,
+        aadhaarNo: cleanAadhaar,
+        tenthRollNo: formData.tenthRollNo,
+        tenthPercentage: formData.tenthPercentage,
+        boardName: formData.tenthBoard,
+        tenthDocVerified: formData.tenthDocVerified,
+        twelfthRollNo: formData.twelfthRollNo,
+        twelfthPercentage: formData.twelfthPercentage,
+        twelfthDocVerified: formData.twelfthDocVerified,
+        aadhaarDocVerified: formData.aadhaarDocVerified,
+        tokenFeeReceipt: formData.tokenFeeReceipt,
+        tokenFeeAmount: formData.tokenFeeAmount,
+        tokenFeeMode: formData.tokenFeeMode,
+        tokenFeeDate: formData.tokenFeeDate,
       });
 
-      if (res.success) {
-        setSubmittedSuccess(res);
-        if (onApplicationSubmitted) onApplicationSubmitted(res);
+      if (res.success && res.student) {
+        setStudentRecordId(res.student.id);
+        setAssignedRollId(res.student.student_id);
+        setCredentialsSlip(res.credentialsSlip);
+        setStatusFeedback({
+          type: 'success',
+          message: 'Admission officially finalized, student portal credentials issued and fee ledger created!',
+        });
+        if (onApplicationSubmitted) {
+          onApplicationSubmitted(res);
+        }
       } else {
-        setErrorMsg(res.error || 'Submission failed. Please verify the inputs.');
+        setStatusFeedback({ type: 'error', message: res.error || 'Failed to finalize admission.' });
       }
     } catch (err: any) {
-      setErrorMsg(err.message || 'Submission error');
+      setStatusFeedback({ type: 'error', message: err.message || 'Network error finalizing admission.' });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (submittedSuccess) {
+  // If Admission finalized, show the Credentials Slip
+  if (credentialsSlip) {
     return (
-      <div className="p-8 max-w-3xl mx-auto animate-fadeIn text-center space-y-6">
-        <div className="w-16 h-16 bg-[#86f2e4]/30 text-[#006a61] rounded-full flex items-center justify-center mx-auto shadow-sm">
-          <span className="material-symbols-outlined text-[36px]">check_circle</span>
-        </div>
-        <h2 className="text-2xl font-bold text-[#191c1d]">Application Submitted Successfully!</h2>
-        <p className="text-sm text-[#444651]">
-          Your admission enrollment application has been recorded in the EduCore ERP database.
-        </p>
+      <div id="admission-credentials-slip" className="p-8 max-w-4xl mx-auto space-y-6 animate-fadeIn">
+        <div className="bg-white border-2 border-emerald-500 rounded-2xl p-8 shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-36 h-36 bg-emerald-50 rounded-bl-full -z-0 pointer-events-none" />
+          <div className="flex items-start justify-between relative z-10">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                <span className="material-symbols-outlined text-[32px]">verified</span>
+              </div>
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                  Admission Formally Approved & Provisioned
+                </span>
+                <h2 className="text-2xl font-black text-[#191c1d] mt-1.5">
+                  Official Admission & Credentials Slip
+                </h2>
+                <p className="text-xs text-[#757682]">
+                  Affiliated to I.K. Gujral Punjab Technical University (IKGPTU) / MRSPTU
+                </p>
+              </div>
+            </div>
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="text-[#757682] hover:text-[#191c1d] p-1.5 rounded-lg hover:bg-[#f1f2f4]"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            )}
+          </div>
 
-        <div className="p-6 bg-white rounded-xl border border-[#e1e3e4] text-left max-w-md mx-auto space-y-2 text-sm shadow-xs">
-          <div className="flex justify-between py-1 border-b border-[#f3f4f5]">
-            <span className="text-[#757682]">Application No:</span>
-            <strong className="text-[#00236f]">{submittedSuccess.applicationNumber}</strong>
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 bg-[#f8f9fa] rounded-xl border border-[#e1e3e4]">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-[#757682]">Student Roll ID</p>
+              <div className="flex items-center justify-between mt-1">
+                <p className="text-lg font-black text-[#00236f]">{credentialsSlip.studentId}</p>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(credentialsSlip.studentId, 'roll')}
+                  className="text-xs text-[#00236f] hover:underline flex items-center gap-1 font-bold"
+                >
+                  <span className="material-symbols-outlined text-[16px]">
+                    {copiedKey === 'roll' ? 'check' : 'content_copy'}
+                  </span>
+                  {copiedKey === 'roll' ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+            </div>
+
+            <div className="p-4 bg-[#f8f9fa] rounded-xl border border-[#e1e3e4]">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-[#757682]">Student Full Name</p>
+              <p className="text-lg font-black text-[#191c1d] mt-1">{credentialsSlip.fullName}</p>
+            </div>
+
+            <div className="p-4 bg-[#f8f9fa] rounded-xl border border-[#e1e3e4]">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-[#757682]">Portal Login Username</p>
+              <div className="flex items-center justify-between mt-1">
+                <p className="text-base font-bold text-[#191c1d]">{credentialsSlip.username}</p>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(credentialsSlip.username, 'usr')}
+                  className="text-xs text-[#00236f] hover:underline flex items-center gap-1 font-bold"
+                >
+                  <span className="material-symbols-outlined text-[16px]">
+                    {copiedKey === 'usr' ? 'check' : 'content_copy'}
+                  </span>
+                  {copiedKey === 'usr' ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+            </div>
+
+            <div className="p-4 bg-[#f8f9fa] rounded-xl border border-[#e1e3e4]">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-[#757682]">Temporary Password</p>
+              <div className="flex items-center justify-between mt-1">
+                <p className="text-base font-bold text-amber-700 font-mono">{credentialsSlip.tempPassword}</p>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(credentialsSlip.tempPassword, 'pwd')}
+                  className="text-xs text-[#00236f] hover:underline flex items-center gap-1 font-bold"
+                >
+                  <span className="material-symbols-outlined text-[16px]">
+                    {copiedKey === 'pwd' ? 'check' : 'content_copy'}
+                  </span>
+                  {copiedKey === 'pwd' ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+            </div>
+
+            <div className="p-4 bg-[#f8f9fa] rounded-xl border border-[#e1e3e4]">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-[#757682]">Enrolled Program & Quota</p>
+              <p className="text-sm font-bold text-[#191c1d] mt-1">{credentialsSlip.course}</p>
+              <p className="text-xs text-[#555] mt-0.5">{credentialsSlip.quota}</p>
+            </div>
+
+            <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">Token Fee Received</p>
+              <p className="text-lg font-black text-emerald-700 mt-1">₹ {Number(credentialsSlip.tokenFeeAmount).toLocaleString('en-IN')}</p>
+              <p className="text-xs text-emerald-800 mt-0.5">Receipt: {credentialsSlip.tokenFeeReceipt}</p>
+            </div>
           </div>
-          <div className="flex justify-between py-1 border-b border-[#f3f4f5]">
-            <span className="text-[#757682]">Candidate Name:</span>
-            <span className="font-semibold text-[#191c1d]">
-              {formData.firstName} {formData.lastName}
-            </span>
-          </div>
-          <div className="flex justify-between py-1 border-b border-[#f3f4f5]">
-            <span className="text-[#757682]">Email:</span>
-            <span className="text-[#191c1d]">{formData.email}</span>
-          </div>
-          <div className="flex justify-between py-1 border-b border-[#f3f4f5]">
-            <span className="text-[#757682]">Course:</span>
-            <span className="text-[#191c1d]">B.Tech in Computer Science</span>
-          </div>
-          <div className="flex justify-between py-1">
-            <span className="text-[#757682]">Status:</span>
-            <span className="px-2 py-0.5 bg-[#86f2e4]/40 text-[#006a61] rounded text-xs font-bold">
-              Submitted (Under Review)
-            </span>
+
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-[#00236f]">verified_user</span>
+              <p className="text-xs text-[#00236f]">
+                Admitted and authenticated by: <span className="font-bold">{credentialsSlip.admittedBy || 'Faculty Admissions Committee'}</span>
+              </p>
+            </div>
+            <button
+              onClick={() => window.print()}
+              className="px-3.5 py-1.5 bg-[#00236f] text-white text-xs font-bold rounded-lg hover:bg-[#1a388a] flex items-center gap-1.5 cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[16px]">print</span>
+              Print Slip
+            </button>
           </div>
         </div>
-
-        <button
-          onClick={() => {
-            setSubmittedSuccess(null);
-            setCurrentStep(1);
-            setFormData({
-              firstName: '',
-              lastName: '',
-              dob: '2005-06-15',
-              gender: 'male',
-              email: '',
-              phone: '',
-              guardianName: '',
-              relationship: 'parent',
-              guardianPhone: '',
-              courseId: 'crs-btech-cs',
-              session: '2025-26',
-              semester: '1',
-              previousSchool: '',
-              previousScore: '',
-              photoUploaded: true,
-              transcriptUploaded: true,
-              idProofUploaded: true,
-              agreedToTerms: false,
-            });
-          }}
-          className="px-6 py-2.5 bg-[#00236f] text-white font-semibold rounded-lg text-sm hover:bg-[#1e3a8a] transition-colors"
-        >
-          Submit Another Application
-        </button>
       </div>
     );
   }
@@ -224,20 +418,59 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({ onApplicat
       {/* Page Title & AI Action Button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-[#191c1d] tracking-tight">Student Admission</h2>
-          <p className="text-sm text-[#444651] mt-1">
-            Complete the multi-step admission enrollment process for the academic session 2025-26.
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 bg-[#dce1ff] text-[#00236f] rounded-full">
+              Punjab & Indian College Workflow
+            </span>
+            {assignedRollId && (
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full">
+                ID: {assignedRollId}
+              </span>
+            )}
+          </div>
+          <h2 className="text-2xl font-black text-[#191c1d] tracking-tight mt-1">
+            3-Step Progressive Student Intake
+          </h2>
+          <p className="text-sm text-[#444651]">
+            Walk-in campus counseling inquiry → Domicile & Parental profile → 12-Digit Aadhaar, Marksheets & Token Admission Fee
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowAIAssistant(true)}
-          className="px-4 py-2.5 bg-linear-to-r from-[#00236f] to-[#1a4bb0] text-white text-xs font-bold rounded-xl shadow-md hover:brightness-110 flex items-center gap-2 transition-all shrink-0 cursor-pointer"
-        >
-          <span className="material-symbols-outlined text-[18px] text-amber-300">auto_awesome</span>
-          AI Smart Auto-Fill
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowAIAssistant(true)}
+            className="px-4 py-2.5 bg-linear-to-r from-[#00236f] to-[#1a4bb0] text-white text-xs font-bold rounded-xl shadow-md hover:brightness-110 flex items-center gap-2 transition-all cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[18px] text-amber-300">auto_awesome</span>
+            AI Smart Auto-Fill
+          </button>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-3.5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-all"
+            >
+              Close
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Status Feedback Toast */}
+      {statusFeedback && (
+        <div
+          className={`p-4 rounded-xl border flex items-center gap-3 transition-all ${
+            statusFeedback.type === 'success'
+              ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+              : 'bg-red-50 border-red-300 text-red-900'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[20px]">
+            {statusFeedback.type === 'success' ? 'check_circle' : 'error'}
+          </span>
+          <p className="text-xs font-semibold">{statusFeedback.message}</p>
+        </div>
+      )}
 
       {/* AI Extracted Banner if active */}
       {aiExtractedBadge && (
@@ -249,7 +482,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({ onApplicat
                 AI Parsed Profile: {formData.firstName} {formData.lastName}
               </p>
               <p className="text-[11px] text-emerald-700">
-                Merit Rating: <span className="font-bold">{aiExtractedBadge.meritScore || 90}%</span> • Quota: <span className="font-semibold uppercase">{aiExtractedBadge.quota || 'Merit'}</span>
+                Merit Rating: <span className="font-bold">{aiExtractedBadge.meritScore || 90}%</span> • Quota: <span className="font-semibold uppercase">{aiExtractedBadge.quota || 'Punjab 85%'}</span>
               </p>
             </div>
           </div>
@@ -259,636 +492,726 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({ onApplicat
         </div>
       )}
 
-      {/* 3-Step Progress Header */}
-      <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
-        <div className="grid grid-cols-3 gap-2">
-          {/* Step 1 */}
-          <div
+      {/* Progressive Step Indicator */}
+      <div className="bg-white border border-[#e1e3e4] rounded-2xl p-6 shadow-xs">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <button
+            type="button"
             onClick={() => setCurrentStep(1)}
-            className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-colors ${
+            className={`p-4 rounded-xl text-left border transition-all ${
               currentStep === 1
-                ? 'bg-[#dce1ff] text-[#00236f]'
-                : currentStep > 1
-                ? 'bg-[#86f2e4]/20 text-[#006a61]'
-                : 'text-[#757682] hover:bg-[#f8f9fa]'
+                ? 'border-[#00236f] bg-blue-50/50 shadow-xs'
+                : 'border-[#e1e3e4] hover:bg-[#f8f9fa]'
             }`}
           >
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-                currentStep === 1
-                  ? 'bg-[#00236f] text-white'
-                  : currentStep > 1
-                  ? 'bg-[#006a61] text-white'
-                  : 'bg-[#e1e3e4] text-[#757682]'
-              }`}
-            >
-              {currentStep > 1 ? '✓' : '1'}
+            <div className="flex items-center justify-between">
+              <span
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                  currentStep === 1
+                    ? 'bg-[#00236f] text-white'
+                    : 'bg-emerald-100 text-emerald-800'
+                }`}
+              >
+                1
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#757682]">
+                Stage 1
+              </span>
             </div>
-            <div>
-              <p className="text-xs font-bold">1. Personal Info</p>
-              <p className="text-[10px] opacity-80">Applicant & Guardian</p>
-            </div>
-          </div>
+            <p className="text-sm font-bold text-[#191c1d] mt-2">Campus Visit & Inquiry</p>
+            <p className="text-xs text-[#757682] mt-0.5">Name, phone, address & target course</p>
+          </button>
 
-          {/* Step 2 */}
-          <div
+          <button
+            type="button"
             onClick={() => setCurrentStep(2)}
-            className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-colors ${
+            className={`p-4 rounded-xl text-left border transition-all ${
               currentStep === 2
-                ? 'bg-[#dce1ff] text-[#00236f]'
-                : currentStep > 2
-                ? 'bg-[#86f2e4]/20 text-[#006a61]'
-                : 'text-[#757682] hover:bg-[#f8f9fa]'
+                ? 'border-[#00236f] bg-blue-50/50 shadow-xs'
+                : 'border-[#e1e3e4] hover:bg-[#f8f9fa]'
             }`}
           >
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-                currentStep === 2
-                  ? 'bg-[#00236f] text-white'
-                  : currentStep > 2
-                  ? 'bg-[#006a61] text-white'
-                  : 'bg-[#e1e3e4] text-[#757682]'
-              }`}
-            >
-              {currentStep > 2 ? '✓' : '2'}
+            <div className="flex items-center justify-between">
+              <span
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                  currentStep === 2
+                    ? 'bg-[#00236f] text-white'
+                    : (currentStep > 2 ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-200 text-gray-700')
+                }`}
+              >
+                2
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#757682]">
+                Stage 2
+              </span>
             </div>
-            <div>
-              <p className="text-xs font-bold">2. Course Selection</p>
-              <p className="text-[10px] opacity-80">Degree & Prior Scores</p>
-            </div>
-          </div>
+            <p className="text-sm font-bold text-[#191c1d] mt-2">Parental & Quota Profile</p>
+            <p className="text-xs text-[#757682] mt-0.5">Father/Mother, Punjab 85% domicile & quota</p>
+          </button>
 
-          {/* Step 3 */}
-          <div
+          <button
+            type="button"
             onClick={() => setCurrentStep(3)}
-            className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-colors ${
+            className={`p-4 rounded-xl text-left border transition-all ${
               currentStep === 3
-                ? 'bg-[#dce1ff] text-[#00236f]'
-                : 'text-[#757682] hover:bg-[#f8f9fa]'
+                ? 'border-[#00236f] bg-blue-50/50 shadow-xs'
+                : 'border-[#e1e3e4] hover:bg-[#f8f9fa]'
             }`}
           >
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-                currentStep === 3
-                  ? 'bg-[#00236f] text-white'
-                  : 'bg-[#e1e3e4] text-[#757682]'
-              }`}
-            >
-              3
+            <div className="flex items-center justify-between">
+              <span
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                  currentStep === 3
+                    ? 'bg-[#00236f] text-white'
+                    : 'bg-gray-200 text-gray-700'
+                }`}
+              >
+                3
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#757682]">
+                Final Stage
+              </span>
             </div>
-            <div>
-              <p className="text-xs font-bold">3. Document Upload</p>
-              <p className="text-[10px] opacity-80">Verification & Review</p>
-            </div>
-          </div>
+            <p className="text-sm font-bold text-[#191c1d] mt-2">Aadhaar & Token Fee</p>
+            <p className="text-xs text-[#757682] mt-0.5">12-Digit Aadhaar, Marksheets & Token Receipt</p>
+          </button>
         </div>
       </div>
 
-      {/* Notifications / Alerts */}
-      {draftSavedMsg && (
-        <div className="p-3 bg-[#86f2e4]/20 border border-[#86f2e4] text-[#006a61] rounded-lg text-xs font-semibold flex items-center gap-2 animate-fadeIn">
-          <span className="material-symbols-outlined text-[18px]">check_circle</span>
-          <span>{draftSavedMsg}</span>
-        </div>
-      )}
-      {errorMsg && (
-        <div className="p-3 bg-[#ffdad6] border border-[#ba1a1a]/30 text-[#ba1a1a] rounded-lg text-xs font-semibold flex items-center gap-2 animate-fadeIn">
-          <span className="material-symbols-outlined text-[18px]">error</span>
-          <span>{errorMsg}</span>
-        </div>
-      )}
+      {/* Step 1: Campus Visit & Inquiry */}
+      {currentStep === 1 && (
+        <div className="bg-white border border-[#e1e3e4] rounded-2xl p-8 shadow-xs space-y-6">
+          <div className="border-b border-[#e1e3e4] pb-4">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#00236f] bg-blue-50 px-2.5 py-1 rounded-md">
+              Step 1 • Initial Contact & Walk-in Inquiry
+            </span>
+            <h3 className="text-lg font-black text-[#191c1d] mt-2">Candidate Basic Information</h3>
+            <p className="text-xs text-[#757682]">
+              Record walk-in campus visitors, counseling attendees, or prospective candidates. Can be saved independently as an inquiry.
+            </p>
+          </div>
 
-      {/* Form Container */}
-      <div className="bg-white rounded-xl p-8 border border-[#e1e3e4] shadow-xs">
-        {/* STEP 1: Personal Info & Guardian */}
-        {currentStep === 1 && (
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h3 className="text-base font-bold text-[#191c1d]">Applicant Details</h3>
-              <p className="text-xs text-[#757682] mt-0.5">
-                Enter your legal personal details as per official government records.
-              </p>
+              <label className="block text-xs font-bold text-[#191c1d] mb-1.5">
+                First Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.firstName}
+                onChange={e => handleChange('firstName', e.target.value)}
+                placeholder="e.g. Gurpreet"
+                className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#c4c6d0] rounded-xl text-sm focus:bg-white focus:border-[#00236f] focus:outline-hidden"
+              />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-[#191c1d] uppercase tracking-wider mb-1.5">
-                  First Name <span className="text-[#ba1a1a]">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.firstName}
-                  onChange={e => handleChange('firstName', e.target.value)}
-                  placeholder="e.g. Aryan"
-                  className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
-                />
-              </div>
+            <div>
+              <label className="block text-xs font-bold text-[#191c1d] mb-1.5">
+                Last Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.lastName}
+                onChange={e => handleChange('lastName', e.target.value)}
+                placeholder="e.g. Singh"
+                className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#c4c6d0] rounded-xl text-sm focus:bg-white focus:border-[#00236f] focus:outline-hidden"
+              />
+            </div>
 
-              <div>
-                <label className="block text-xs font-bold text-[#191c1d] uppercase tracking-wider mb-1.5">
-                  Last Name <span className="text-[#ba1a1a]">*</span>
-                </label>
+            <div>
+              <label className="block text-xs font-bold text-[#191c1d] mb-1.5">
+                Mobile Number (SMS & WhatsApp updates) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                value={formData.phone}
+                onChange={e => handleChange('phone', e.target.value)}
+                placeholder="e.g. +91 98765 43210"
+                className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#c4c6d0] rounded-xl text-sm focus:bg-white focus:border-[#00236f] focus:outline-hidden"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#191c1d] mb-1.5">
+                Email Address <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={e => handleChange('email', e.target.value)}
+                placeholder="e.g. candidate@example.com"
+                className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#c4c6d0] rounded-xl text-sm focus:bg-white focus:border-[#00236f] focus:outline-hidden"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-xs font-bold text-[#191c1d] mb-1.5">
+                Permanent Address / Street
+              </label>
+              <input
+                type="text"
+                value={formData.address}
+                onChange={e => handleChange('address', e.target.value)}
+                placeholder="e.g. House No. 248, Model Town Phase 2"
+                className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#c4c6d0] rounded-xl text-sm focus:bg-white focus:border-[#00236f] focus:outline-hidden"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#191c1d] mb-1.5">District / City</label>
+              <input
+                type="text"
+                value={formData.district}
+                onChange={e => handleChange('district', e.target.value)}
+                placeholder="e.g. Bathinda / Patiala / Ludhiana"
+                className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#c4c6d0] rounded-xl text-sm focus:bg-white focus:border-[#00236f] focus:outline-hidden"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#191c1d] mb-1.5">State & Pincode</label>
+              <div className="flex gap-2">
                 <input
                   type="text"
-                  required
-                  value={formData.lastName}
-                  onChange={e => handleChange('lastName', e.target.value)}
-                  placeholder="e.g. Sharma"
-                  className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+                  value={formData.state}
+                  onChange={e => handleChange('state', e.target.value)}
+                  placeholder="Punjab"
+                  className="w-2/3 px-3.5 py-2.5 bg-[#f8f9fa] border border-[#c4c6d0] rounded-xl text-sm focus:bg-white focus:border-[#00236f] focus:outline-hidden"
+                />
+                <input
+                  type="text"
+                  value={formData.pincode}
+                  onChange={e => handleChange('pincode', e.target.value)}
+                  placeholder="151001"
+                  className="w-1/3 px-3.5 py-2.5 bg-[#f8f9fa] border border-[#c4c6d0] rounded-xl text-sm focus:bg-white focus:border-[#00236f] focus:outline-hidden"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <div className="flex items-center gap-1 mb-1.5">
-                  <label className="text-xs font-bold text-[#191c1d] uppercase tracking-wider">
-                    Date of Birth <span className="text-[#ba1a1a]">*</span>
-                  </label>
-                  <span
-                    className="material-symbols-outlined text-[14px] text-[#757682] cursor-help"
-                    title="Format: YYYY-MM-DD"
-                  >
-                    info
-                  </span>
-                </div>
+            <div>
+              <label className="block text-xs font-bold text-[#191c1d] mb-1.5">
+                Target Degree Program
+              </label>
+              <select
+                value={formData.courseId}
+                onChange={e => handleChange('courseId', e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#c4c6d0] rounded-xl text-sm focus:bg-white focus:border-[#00236f] focus:outline-hidden font-medium"
+              >
+                <option value="crs-btech-cs">B.Tech Computer Science & Engineering (4 Years)</option>
+                <option value="crs-btech-me">B.Tech Mechanical Engineering (4 Years)</option>
+                <option value="crs-mba-fin">MBA Financial Management (2 Years)</option>
+                <option value="crs-bsc-phy">B.Sc Applied Physics (3 Years)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#191c1d] mb-1.5">Academic Session</label>
+              <select
+                value={formData.sessionId}
+                onChange={e => handleChange('sessionId', e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#c4c6d0] rounded-xl text-sm focus:bg-white focus:border-[#00236f] focus:outline-hidden font-medium"
+              >
+                <option value="sess-2025-26">2025-26 (Active Intake)</option>
+                <option value="sess-2024-25">2024-25 (Lateral Entry)</option>
+              </select>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-xs font-bold text-[#191c1d] mb-1.5">
+                Campus Visit Counseling Notes / Inquiry Remarks
+              </label>
+              <textarea
+                rows={2}
+                value={formData.counselingNotes}
+                onChange={e => handleChange('counselingNotes', e.target.value)}
+                placeholder="Notes from Admission Counselor or Faculty Advisor on student query, stream interest, hostel visit, etc."
+                className="w-full px-3.5 py-2 bg-[#f8f9fa] border border-[#c4c6d0] rounded-xl text-xs focus:bg-white focus:border-[#00236f] focus:outline-hidden"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-4 border-t border-[#e1e3e4]">
+            <button
+              type="button"
+              disabled={isSavingDraft}
+              onClick={() => handleSaveStep1(false)}
+              className="px-5 py-2.5 bg-[#f1f2f4] hover:bg-[#e1e3e4] text-[#191c1d] font-bold text-xs rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[18px]">save</span>
+              Save Visit Inquiry (Resume Later)
+            </button>
+
+            <button
+              type="button"
+              disabled={isSavingDraft}
+              onClick={() => handleSaveStep1(true)}
+              className="px-6 py-2.5 bg-[#00236f] hover:bg-[#1a388a] text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer"
+            >
+              Save & Proceed to Step 2
+              <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 2: Parental & Domicile / Quota Profile */}
+      {currentStep === 2 && (
+        <div className="bg-white border border-[#e1e3e4] rounded-2xl p-8 shadow-xs space-y-6">
+          <div className="border-b border-[#e1e3e4] pb-4">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#00236f] bg-blue-50 px-2.5 py-1 rounded-md">
+              Step 2 • Parental & Domicile Quota Profile
+            </span>
+            <h3 className="text-lg font-black text-[#191c1d] mt-2">Family & Admission Quota</h3>
+            <p className="text-xs text-[#757682]">
+              Record parental credentials, Punjab state 85% domicile reservation, category, and residential modes.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-xs font-bold text-[#191c1d] mb-1.5">
+                Father's / Guardian Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.guardianName}
+                onChange={e => handleChange('guardianName', e.target.value)}
+                placeholder="e.g. Sardar Baldev Singh"
+                className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#c4c6d0] rounded-xl text-sm focus:bg-white focus:border-[#00236f] focus:outline-hidden"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#191c1d] mb-1.5">
+                Father's / Guardian Mobile Number
+              </label>
+              <input
+                type="tel"
+                value={formData.guardianPhone}
+                onChange={e => handleChange('guardianPhone', e.target.value)}
+                placeholder="e.g. +91 98765 11223"
+                className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#c4c6d0] rounded-xl text-sm focus:bg-white focus:border-[#00236f] focus:outline-hidden"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#191c1d] mb-1.5">Mother's Name</label>
+              <input
+                type="text"
+                value={formData.motherName}
+                onChange={e => handleChange('motherName', e.target.value)}
+                placeholder="e.g. Jaswinder Kaur"
+                className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#c4c6d0] rounded-xl text-sm focus:bg-white focus:border-[#00236f] focus:outline-hidden"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#191c1d] mb-1.5">Date of Birth & Gender</label>
+              <div className="flex gap-2">
                 <input
                   type="date"
-                  required
                   value={formData.dob}
                   onChange={e => handleChange('dob', e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+                  className="w-3/5 px-3 py-2 bg-[#f8f9fa] border border-[#c4c6d0] rounded-xl text-xs focus:bg-white focus:border-[#00236f] focus:outline-hidden"
                 />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#191c1d] uppercase tracking-wider mb-1.5">
-                  Gender <span className="text-[#ba1a1a]">*</span>
-                </label>
                 <select
                   value={formData.gender}
                   onChange={e => handleChange('gender', e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+                  className="w-2/5 px-2.5 py-2 bg-[#f8f9fa] border border-[#c4c6d0] rounded-xl text-xs focus:bg-white focus:border-[#00236f] focus:outline-hidden font-medium"
                 >
                   <option value="male">Male</option>
                   <option value="female">Female</option>
-                  <option value="nonbinary">Non-binary</option>
-                  <option value="prefer_not_to_say">Prefer not to say</option>
+                  <option value="nonbinary">Other</option>
                 </select>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-[#f3f4f5]">
-              <h3 className="text-base font-bold text-[#191c1d]">Contact Information</h3>
-              <p className="text-xs text-[#757682] mt-0.5">
-                Official contact channel for admission confirmation and notices.
-              </p>
+            <div>
+              <label className="block text-xs font-bold text-[#191c1d] mb-1.5">
+                Domicile Admission Quota (PTU / MRSPTU)
+              </label>
+              <select
+                value={formData.quota}
+                onChange={e => handleChange('quota', e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#c4c6d0] rounded-xl text-sm focus:bg-white focus:border-[#00236f] focus:outline-hidden font-bold text-[#00236f]"
+              >
+                <option value="punjab_85">Punjab State Domicile Quota (85% Reserved)</option>
+                <option value="other_state_15">All India Quota (15% Open)</option>
+                <option value="management">Direct Management / NRI Quota</option>
+                <option value="sports">State / National Sports Quota</option>
+              </select>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <div className="flex items-center gap-1 mb-1.5">
-                  <label className="text-xs font-bold text-[#191c1d] uppercase tracking-wider">
-                    Email Address <span className="text-[#ba1a1a]">*</span>
-                  </label>
-                  <span
-                    className="material-symbols-outlined text-[14px] text-[#757682] cursor-help"
-                    title="Institutional & verification emails will be sent here"
-                  >
-                    info
-                  </span>
-                </div>
-                <input
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={e => handleChange('email', e.target.value)}
-                  placeholder="e.g. aryan.sharma@example.com"
-                  className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#191c1d] uppercase tracking-wider mb-1.5">
-                  Phone Number <span className="text-[#ba1a1a]">*</span>
-                </label>
-                <input
-                  type="tel"
-                  required
-                  value={formData.phone}
-                  onChange={e => handleChange('phone', e.target.value)}
-                  placeholder="+91 98765 43210"
-                  className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
-                />
-              </div>
+            <div>
+              <label className="block text-xs font-bold text-[#191c1d] mb-1.5">Social Category</label>
+              <select
+                value={formData.category}
+                onChange={e => handleChange('category', e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#c4c6d0] rounded-xl text-sm focus:bg-white focus:border-[#00236f] focus:outline-hidden font-medium"
+              >
+                <option value="General">General / Open Category</option>
+                <option value="SC/ST">Scheduled Caste (SC) / Scheduled Tribe (ST)</option>
+                <option value="OBC">Other Backward Class (OBC / BC)</option>
+                <option value="EWS">Economically Weaker Section (EWS)</option>
+                <option value="Sports">Sports Person</option>
+              </select>
             </div>
 
-            <div className="pt-4 border-t border-[#f3f4f5]">
-              <h3 className="text-base font-bold text-[#191c1d]">Guardian Details</h3>
+            <div>
+              <label className="block text-xs font-bold text-[#191c1d] mb-1.5">
+                Annual Family Income (₹ INR)
+              </label>
+              <input
+                type="number"
+                value={formData.annualFamilyIncome}
+                onChange={e => handleChange('annualFamilyIncome', e.target.value)}
+                placeholder="350000"
+                className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#c4c6d0] rounded-xl text-sm focus:bg-white focus:border-[#00236f] focus:outline-hidden"
+              />
+              {Number(formData.annualFamilyIncome) <= 250000 && formData.category === 'SC/ST' && (
+                <p className="text-[11px] text-emerald-700 font-bold mt-1 flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[14px]">stars</span>
+                  Eligible for 100% Tuition Fee Waiver under Dr. Ambedkar Punjab PMS Portal!
+                </p>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-[#191c1d] uppercase tracking-wider mb-1.5">
-                  Guardian Name
-                </label>
-                <input
-                  type="text"
-                  value={formData.guardianName}
-                  onChange={e => handleChange('guardianName', e.target.value)}
-                  placeholder="e.g. Sunil Sharma"
-                  className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#191c1d] uppercase tracking-wider mb-1.5">
-                  Relationship
-                </label>
-                <select
-                  value={formData.relationship}
-                  onChange={e => handleChange('relationship', e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
-                >
-                  <option value="parent">Parent</option>
-                  <option value="sibling">Sibling</option>
-                  <option value="spouse">Spouse</option>
-                  <option value="other">Legal Guardian / Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#191c1d] uppercase tracking-wider mb-1.5">
-                  Guardian Phone
-                </label>
-                <input
-                  type="tel"
-                  value={formData.guardianPhone}
-                  onChange={e => handleChange('guardianPhone', e.target.value)}
-                  placeholder="+91 98765 43200"
-                  className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
-                />
-              </div>
+            <div>
+              <label className="block text-xs font-bold text-[#191c1d] mb-1.5">
+                Residential & Commuter Preference
+              </label>
+              <select
+                value={formData.residentialMode}
+                onChange={e => handleChange('residentialMode', e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#c4c6d0] rounded-xl text-sm focus:bg-white focus:border-[#00236f] focus:outline-hidden font-medium"
+              >
+                <option value="self_commute">Day Scholar (Self-Commute / Walking)</option>
+                <option value="hosteller">Campus Hosteller (Boys/Girls Residential Hall)</option>
+                <option value="bus_commuter">College Bus Transit (Fleet Pass User)</option>
+              </select>
             </div>
+          </div>
 
-            {/* Step 1 Actions */}
-            <div className="pt-6 border-t border-[#e1e3e4] flex items-center justify-between">
+          <div className="flex items-center justify-between pt-4 border-t border-[#e1e3e4]">
+            <button
+              type="button"
+              onClick={() => setCurrentStep(1)}
+              className="px-4 py-2.5 border border-[#c4c6d0] hover:bg-[#f1f2f4] text-[#444651] font-bold text-xs rounded-xl transition-all cursor-pointer"
+            >
+              Back to Step 1
+            </button>
+
+            <div className="flex items-center gap-3">
               <button
                 type="button"
-                id="admission-save-draft-btn"
-                onClick={handleSaveDraft}
-                className="px-5 py-2.5 border border-[#e1e3e4] bg-[#ffffff] hover:bg-[#f8f9fa] text-[#191c1d] rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 cursor-pointer"
+                disabled={isSavingDraft}
+                onClick={() => handleSaveStep2(false)}
+                className="px-5 py-2.5 bg-[#f1f2f4] hover:bg-[#e1e3e4] text-[#191c1d] font-bold text-xs rounded-xl transition-all flex items-center gap-2 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px] text-[#757682]">save</span>
-                <span>Save Draft</span>
+                <span className="material-symbols-outlined text-[18px]">save</span>
+                Save Registration (Resume Later)
               </button>
 
               <button
                 type="button"
-                id="admission-step1-next-btn"
-                onClick={handleNext}
-                className="px-6 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 shadow-xs cursor-pointer"
+                disabled={isSavingDraft}
+                onClick={() => handleSaveStep2(true)}
+                className="px-6 py-2.5 bg-[#00236f] hover:bg-[#1a388a] text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer"
               >
-                <span>Next Step</span>
+                Proceed to Step 3 (Verification & Fees)
                 <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
               </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* STEP 2: Course Selection */}
-        {currentStep === 2 && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-base font-bold text-[#191c1d]">Course Selection & Academics</h3>
-              <p className="text-xs text-[#757682] mt-0.5">
-                Select your intended program of study and record your qualifying test score.
-              </p>
-            </div>
+      {/* Step 3: Crucial Documents, 12-Digit Aadhaar & Token Admission Fee */}
+      {currentStep === 3 && (
+        <form onSubmit={handleFinalizeStep3} className="bg-white border border-[#e1e3e4] rounded-2xl p-8 shadow-xs space-y-6">
+          <div className="border-b border-[#e1e3e4] pb-4">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">
+              Step 3 • Crucial Documents, 12-Digit Aadhaar & Token Fee Deposit
+            </span>
+            <h3 className="text-lg font-black text-[#191c1d] mt-2">Document Scrutiny & Admission Finalization</h3>
+            <p className="text-xs text-[#757682]">
+              Strictly verify 12-digit Aadhaar Card, 10th and 10+2 marksheet certificates, and record Token Admission Fee payment.
+            </p>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Aadhaar Verification Box */}
+          <div className="p-5 bg-blue-50/60 border-2 border-blue-200 rounded-2xl space-y-3">
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-[#00236f] text-[28px]">badge</span>
               <div>
-                <label className="block text-xs font-bold text-[#191c1d] uppercase tracking-wider mb-1.5">
-                  Academic Degree / Course <span className="text-[#ba1a1a]">*</span>
+                <label className="block text-xs font-bold text-[#00236f] uppercase tracking-wider">
+                  12-Digit Aadhaar Card Number <span className="text-red-500">*</span>
                 </label>
-                <select
-                  value={formData.courseId}
-                  onChange={e => handleChange('courseId', e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
-                >
-                  <option value="crs-btech-cs">B.Tech - Computer Science & Engineering</option>
-                  <option value="crs-btech-me">B.Tech - Mechanical Engineering</option>
-                  <option value="crs-mba-fin">MBA - Financial Management</option>
-                  <option value="crs-bsc-phy">B.Sc - Applied Physics</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#191c1d] uppercase tracking-wider mb-1.5">
-                  Academic Session
-                </label>
-                <input
-                  type="text"
-                  disabled
-                  value="2025-26 (Fall Admissions)"
-                  className="w-full px-3.5 py-2.5 bg-[#f3f4f5] border border-[#e1e3e4] rounded-lg text-sm text-[#757682]"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-[#191c1d] uppercase tracking-wider mb-1.5">
-                  Previous School / Board
-                </label>
-                <input
-                  type="text"
-                  value={formData.previousSchool}
-                  onChange={e => handleChange('previousSchool', e.target.value)}
-                  placeholder="e.g. CBSE / Central Board of Secondary Education"
-                  className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#191c1d] uppercase tracking-wider mb-1.5">
-                  12th Standard Percentage / Score
-                </label>
-                <input
-                  type="text"
-                  value={formData.previousScore}
-                  onChange={e => handleChange('previousScore', e.target.value)}
-                  placeholder="e.g. 92.4%"
-                  className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-[#191c1d] uppercase tracking-wider mb-1.5">
-                  Admission Domicile Quota <span className="text-[#ba1a1a]">*</span>
-                </label>
-                <select
-                  value={formData.quota}
-                  onChange={e => handleChange('quota', e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30 font-medium"
-                >
-                  <option value="punjab_85">Punjab State Domicile (85% Quota)</option>
-                  <option value="other_state_15">All India / Other States (15% Quota)</option>
-                  <option value="management">Management / Discretionary Quota</option>
-                  <option value="sports">State Sports Merit Quota</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#191c1d] uppercase tracking-wider mb-1.5">
-                  Social Category <span className="text-[#ba1a1a]">*</span>
-                </label>
-                <select
-                  value={formData.category}
-                  onChange={e => handleChange('category', e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30 font-medium"
-                >
-                  <option value="General">General / Open Merit</option>
-                  <option value="SC/ST">SC / ST (Post-Matric Scheme Eligible)</option>
-                  <option value="OBC">OBC / Other Backward Classes</option>
-                  <option value="EWS">Economically Weaker Section (EWS)</option>
-                  <option value="Sports">State Sports Quota</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Statutory Residential Choice (Mutually Exclusive) */}
-            <div className="p-4 bg-gray-50/80 rounded-xl border border-[#e1e3e4] space-y-3">
-              <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-[#00236f]">
-                  Residential Accommodation & Daily Commute Choice
-                </h4>
-                <p className="text-[11px] text-[#757682] mt-0.5">
-                  <strong>Affiliation Rule:</strong> Campus hostel residents and college bus commuters are physically mutually exclusive. You cannot opt for both.
+                <p className="text-[11px] text-[#555]">
+                  Mandatory statutory identification required for Punjab State Scholarship Portal & University Registration.
                 </p>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {/* 1. Day Scholar Self */}
-                <label
-                  className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                    formData.residentialMode === 'self_commute'
-                      ? 'border-[#00236f] bg-white ring-2 ring-[#00236f]/30 shadow-xs'
-                      : 'border-[#e1e3e4] bg-white/60 hover:bg-white'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="residentialMode"
-                      checked={formData.residentialMode === 'self_commute'}
-                      onChange={() => handleChange('residentialMode', 'self_commute')}
-                    />
-                    <span className="text-xs font-bold text-[#191c1d]">Day Scholar</span>
-                  </div>
-                  <p className="text-[11px] text-[#757682] mt-1 pl-5">
-                    Self-commute (Private vehicle / walking). Zero hostel or transport surcharge.
-                  </p>
-                </label>
-
-                {/* 2. Campus Hosteller */}
-                <label
-                  className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                    formData.residentialMode === 'hosteller'
-                      ? 'border-purple-600 bg-white ring-2 ring-purple-600/30 shadow-xs'
-                      : 'border-[#e1e3e4] bg-white/60 hover:bg-white'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="residentialMode"
-                      checked={formData.residentialMode === 'hosteller'}
-                      onChange={() => handleChange('residentialMode', 'hosteller')}
-                    />
-                    <span className="text-xs font-bold text-purple-900">Campus Hosteller</span>
-                  </div>
-                  <p className="text-[11px] text-[#757682] mt-1 pl-5">
-                    Campus dorms & 3-meal mess board. Disables bus fleet pass.
-                  </p>
-                </label>
-
-                {/* 3. Bus Commuter */}
-                <label
-                  className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                    formData.residentialMode === 'bus_commuter'
-                      ? 'border-emerald-600 bg-white ring-2 ring-emerald-600/30 shadow-xs'
-                      : 'border-[#e1e3e4] bg-white/60 hover:bg-white'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="residentialMode"
-                      checked={formData.residentialMode === 'bus_commuter'}
-                      onChange={() => handleChange('residentialMode', 'bus_commuter')}
-                    />
-                    <span className="text-xs font-bold text-emerald-900">Bus Fleet Commuter</span>
-                  </div>
-                  <p className="text-[11px] text-[#757682] mt-1 pl-5">
-                    College bus fleet service & RFID pass. Disables hostel allotment.
-                  </p>
-                </label>
-              </div>
-
-              {formData.residentialMode === 'hosteller' && (
-                <div className="pt-2">
-                  <label className="block text-[11px] font-bold text-purple-900 uppercase mb-1">
-                    Hostel Wing / Room Preference
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.hostelRoomNo}
-                    onChange={e => handleChange('hostelRoomNo', e.target.value)}
-                    placeholder="e.g. Boys Hostel 1 / Girls Hostel 2"
-                    className="w-full p-2 bg-white border border-purple-200 rounded-lg text-xs"
-                  />
-                </div>
-              )}
-
-              {formData.residentialMode === 'bus_commuter' && (
-                <div className="pt-2">
-                  <label className="block text-[11px] font-bold text-emerald-900 uppercase mb-1">
-                    College Transit Bus Route / Stop
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.transportRoute}
-                    onChange={e => handleChange('transportRoute', e.target.value)}
-                    placeholder="e.g. Route 3 (Mohali Phase 7 - Kharar Corridor)"
-                    className="w-full p-2 bg-white border border-emerald-200 rounded-lg text-xs"
-                  />
-                </div>
-              )}
-            </div>
-            <div className="pt-6 border-t border-[#e1e3e4] flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setCurrentStep(1)}
-                className="px-5 py-2.5 border border-[#e1e3e4] bg-[#ffffff] hover:bg-[#f8f9fa] text-[#191c1d] rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-                <span>Previous Step</span>
-              </button>
-
-              <button
-                type="button"
-                id="admission-step2-next-btn"
-                onClick={handleNext}
-                className="px-6 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 shadow-xs cursor-pointer"
-              >
-                <span>Proceed to Documents</span>
-                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 3: Document Upload & Final Submission */}
-        {currentStep === 3 && (
-          <form onSubmit={handleFinalSubmit} className="space-y-6">
-            <div>
-              <h3 className="text-base font-bold text-[#191c1d]">Document Upload & Review</h3>
-              <p className="text-xs text-[#757682] mt-0.5">
-                Upload verified digital copies of required certificates (PDF or Image under 10MB).
-              </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Document 1 */}
-              <div className="p-4 border-2 border-dashed border-[#c5c5d3] hover:border-[#00236f] rounded-xl text-center bg-[#f8f9fa] transition-colors cursor-pointer">
-                <span className="material-symbols-outlined text-[32px] text-[#00236f] mb-2">
-                  description
-                </span>
-                <p className="text-xs font-bold text-[#191c1d]">10th & 12th Marksheet</p>
-                <p className="text-[10px] text-[#757682] mt-1">PDF or scanned JPG</p>
-                <span className="inline-block mt-2 px-2 py-0.5 bg-[#86f2e4]/30 text-[#006a61] rounded text-[10px] font-bold">
-                  ✓ File Attached
-                </span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+              <div className="sm:col-span-2">
+                <input
+                  type="text"
+                  maxLength={14}
+                  value={formData.aadhaarNo}
+                  onChange={e => {
+                    const raw = e.target.value.replace(/\D/g, '').slice(0, 12);
+                    const formatted = raw.replace(/(\d{4})(?=\d)/g, '$1 ');
+                    handleChange('aadhaarNo', formatted);
+                  }}
+                  placeholder="e.g. 5482 9104 3821"
+                  className="w-full px-4 py-2.5 bg-white border border-[#00236f] rounded-xl text-base font-mono font-bold tracking-widest text-[#00236f] focus:outline-hidden shadow-xs"
+                />
               </div>
-
-              {/* Document 2 */}
-              <div className="p-4 border-2 border-dashed border-[#c5c5d3] hover:border-[#00236f] rounded-xl text-center bg-[#f8f9fa] transition-colors cursor-pointer">
-                <span className="material-symbols-outlined text-[32px] text-[#00236f] mb-2">
-                  badge
-                </span>
-                <p className="text-xs font-bold text-[#191c1d]">Government Photo ID</p>
-                <p className="text-[10px] text-[#757682] mt-1">Aadhaar / Passport</p>
-                <span className="inline-block mt-2 px-2 py-0.5 bg-[#86f2e4]/30 text-[#006a61] rounded text-[10px] font-bold">
-                  ✓ File Attached
-                </span>
-              </div>
-
-              {/* Document 3 */}
-              <div className="p-4 border-2 border-dashed border-[#c5c5d3] hover:border-[#00236f] rounded-xl text-center bg-[#f8f9fa] transition-colors cursor-pointer">
-                <span className="material-symbols-outlined text-[32px] text-[#00236f] mb-2">
-                  account_box
-                </span>
-                <p className="text-xs font-bold text-[#191c1d]">Passport Photograph</p>
-                <p className="text-[10px] text-[#757682] mt-1">Clear white backdrop</p>
-                <span className="inline-block mt-2 px-2 py-0.5 bg-[#86f2e4]/30 text-[#006a61] rounded text-[10px] font-bold">
-                  ✓ Ready
-                </span>
-              </div>
-            </div>
-
-            {/* Declaration Checkbox */}
-            <div className="p-4 bg-[#f8f9fa] rounded-lg border border-[#e1e3e4]">
-              <label className="flex items-start gap-3 cursor-pointer">
+              <label className="flex items-center gap-2 cursor-pointer bg-white px-3.5 py-2.5 rounded-xl border border-blue-200">
                 <input
                   type="checkbox"
-                  required
-                  checked={formData.agreedToTerms}
-                  onChange={e => handleChange('agreedToTerms', e.target.checked)}
-                  className="mt-0.5 rounded border-[#e1e3e4] text-[#00236f] focus:ring-[#00236f]"
+                  checked={formData.aadhaarDocVerified}
+                  onChange={e => handleChange('aadhaarDocVerified', e.target.checked)}
+                  className="w-4 h-4 text-[#00236f] rounded-sm focus:ring-0"
                 />
-                <span className="text-xs text-[#444651] leading-relaxed">
-                  I hereby declare that the information provided in this admission application is true,
-                  complete, and accurate to the best of my knowledge. I agree to abide by the rules and
-                  disciplinary regulations of EduCore Institute of Higher Learning.
-                </span>
+                <span className="text-xs font-bold text-[#191c1d]">Physical Aadhaar Verified</span>
               </label>
             </div>
+          </div>
 
-            {/* Step 3 Actions */}
-            <div className="pt-6 border-t border-[#e1e3e4] flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setCurrentStep(2)}
-                className="px-5 py-2.5 border border-[#e1e3e4] bg-[#ffffff] hover:bg-[#f8f9fa] text-[#191c1d] rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-                <span>Back</span>
-              </button>
+          {/* Academic Marksheets Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 10th Class Marksheet */}
+            <div className="p-5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-2xl space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[#00236f] flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[18px]">school</span>
+                  10th Matriculation Certificate
+                </span>
+                <label className="flex items-center gap-1.5 text-xs text-emerald-800 font-semibold cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.tenthDocVerified}
+                    onChange={e => handleChange('tenthDocVerified', e.target.checked)}
+                    className="w-3.5 h-3.5 text-emerald-600 rounded-sm"
+                  />
+                  Marksheet Verified
+                </label>
+              </div>
 
-              <button
-                type="submit"
-                id="admission-final-submit-btn"
-                disabled={isSubmitting}
-                className="px-6 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 shadow-md cursor-pointer disabled:opacity-70"
-              >
-                {isSubmitting ? (
-                  <span>Processing Application...</span>
-                ) : (
-                  <>
-                    <span className="material-symbols-outlined text-[18px]">send</span>
-                    <span>Submit Admission Application</span>
-                  </>
-                )}
-              </button>
+              <div>
+                <label className="block text-[11px] font-bold text-[#444651] mb-1">Education Board</label>
+                <select
+                  value={formData.tenthBoard}
+                  onChange={e => handleChange('tenthBoard', e.target.value)}
+                  className="w-full px-3 py-2 bg-white border border-[#c4c6d0] rounded-xl text-xs"
+                >
+                  <option value="PSEB (Punjab School Education Board)">PSEB (Punjab School Education Board)</option>
+                  <option value="CBSE (Central Board of Secondary Education)">CBSE (Central Board of Secondary Education)</option>
+                  <option value="ICSE (Indian Certificate of Secondary Education)">ICSE (Indian Certificate of Secondary Education)</option>
+                  <option value="Haryana Board / Others">Haryana Board / Others</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[11px] font-bold text-[#444651] mb-1">10th Roll Number</label>
+                  <input
+                    type="text"
+                    value={formData.tenthRollNo}
+                    onChange={e => handleChange('tenthRollNo', e.target.value)}
+                    placeholder="e.g. 1029384"
+                    className="w-full px-3 py-2 bg-white border border-[#c4c6d0] rounded-xl text-xs font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[#444651] mb-1">Percentage (%)</label>
+                  <input
+                    type="text"
+                    value={formData.tenthPercentage}
+                    onChange={e => handleChange('tenthPercentage', e.target.value)}
+                    placeholder="85.5"
+                    className="w-full px-3 py-2 bg-white border border-[#c4c6d0] rounded-xl text-xs font-bold"
+                  />
+                </div>
+              </div>
             </div>
-          </form>
-        )}
-      </div>
 
+            {/* 12th Class Marksheet */}
+            <div className="p-5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-2xl space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[#00236f] flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[18px]">workspace_premium</span>
+                  10+2 / Qualifying Marksheet
+                </span>
+                <label className="flex items-center gap-1.5 text-xs text-emerald-800 font-semibold cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.twelfthDocVerified}
+                    onChange={e => handleChange('twelfthDocVerified', e.target.checked)}
+                    className="w-3.5 h-3.5 text-emerald-600 rounded-sm"
+                  />
+                  Marksheet Verified
+                </label>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-[#444651] mb-1">Education Board</label>
+                <select
+                  value={formData.twelfthBoard}
+                  onChange={e => handleChange('twelfthBoard', e.target.value)}
+                  className="w-full px-3 py-2 bg-white border border-[#c4c6d0] rounded-xl text-xs"
+                >
+                  <option value="PSEB (Punjab School Education Board)">PSEB (Punjab School Education Board)</option>
+                  <option value="CBSE (Central Board of Secondary Education)">CBSE (Central Board of Secondary Education)</option>
+                  <option value="ICSE (Indian Certificate of Secondary Education)">ICSE (Indian Certificate of Secondary Education)</option>
+                  <option value="Haryana Board / Others">Haryana Board / Others</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[11px] font-bold text-[#444651] mb-1">12th Roll Number</label>
+                  <input
+                    type="text"
+                    value={formData.twelfthRollNo}
+                    onChange={e => handleChange('twelfthRollNo', e.target.value)}
+                    placeholder="e.g. 2049182"
+                    className="w-full px-3 py-2 bg-white border border-[#c4c6d0] rounded-xl text-xs font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[#444651] mb-1">Percentage (%)</label>
+                  <input
+                    type="text"
+                    value={formData.twelfthPercentage}
+                    onChange={e => handleChange('twelfthPercentage', e.target.value)}
+                    placeholder="82.0"
+                    className="w-full px-3 py-2 bg-white border border-[#c4c6d0] rounded-xl text-xs font-bold"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Token Admission Fee Received Section */}
+          <div className="p-6 bg-emerald-50/50 border border-emerald-300 rounded-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+                  <span className="material-symbols-outlined text-[24px]">receipt_long</span>
+                </div>
+                <div>
+                  <h4 className="text-sm font-black text-emerald-950">
+                    Token Admission Fee Receipt (Admission Confirmation Deposit)
+                  </h4>
+                  <p className="text-xs text-emerald-800">
+                    Standard Punjab college practice: Token amount credited directly against tuition ledger.
+                  </p>
+                </div>
+              </div>
+              <span className="text-xs font-bold px-3 py-1 bg-emerald-100 text-emerald-900 rounded-full border border-emerald-300">
+                Official Treasury Receipt
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-emerald-950 mb-1">Receipt Number</label>
+                <input
+                  type="text"
+                  value={formData.tokenFeeReceipt}
+                  onChange={e => handleChange('tokenFeeReceipt', e.target.value)}
+                  className="w-full px-3 py-2 bg-white border border-emerald-300 rounded-xl text-xs font-mono font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-emerald-950 mb-1">
+                  Token Amount Received (₹)
+                </label>
+                <input
+                  type="number"
+                  value={formData.tokenFeeAmount}
+                  onChange={e => handleChange('tokenFeeAmount', e.target.value)}
+                  placeholder="15000"
+                  className="w-full px-3 py-2 bg-white border border-emerald-300 rounded-xl text-xs font-bold text-emerald-900"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-emerald-950 mb-1">Payment Mode</label>
+                <select
+                  value={formData.tokenFeeMode}
+                  onChange={e => handleChange('tokenFeeMode', e.target.value)}
+                  className="w-full px-3 py-2 bg-white border border-emerald-300 rounded-xl text-xs font-medium"
+                >
+                  <option value="online_upi">UPI (PhonePe / GPay / Paytm)</option>
+                  <option value="cash">Cash at Counter</option>
+                  <option value="net_banking">Net Banking / RTGS / NEFT</option>
+                  <option value="cheque">Bank Demand Draft (DD)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-emerald-950 mb-1">Collection Date</label>
+                <input
+                  type="date"
+                  value={formData.tokenFeeDate}
+                  onChange={e => handleChange('tokenFeeDate', e.target.value)}
+                  className="w-full px-3 py-2 bg-white border border-emerald-300 rounded-xl text-xs"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Statutory Verification Declaration */}
+          <div className="p-4 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl flex items-start gap-3">
+            <input
+              type="checkbox"
+              id="declaration-checkbox"
+              checked={formData.agreedToTerms}
+              onChange={e => handleChange('agreedToTerms', e.target.checked)}
+              className="mt-1 w-4 h-4 text-[#00236f] rounded-sm focus:ring-0 cursor-pointer"
+            />
+            <label htmlFor="declaration-checkbox" className="text-xs text-[#444651] cursor-pointer">
+              <span className="font-bold text-[#191c1d]">Admissions Committee Verification Affirmation:</span> I certify that I have inspected the candidate's original 12-digit Aadhaar Card, 10th and 10+2 marksheets, verified Punjab domicile eligibility, and recorded receipt of the token admission fee.
+            </label>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center justify-between pt-4 border-t border-[#e1e3e4]">
+            <button
+              type="button"
+              onClick={() => setCurrentStep(2)}
+              className="px-4 py-2.5 border border-[#c4c6d0] hover:bg-[#f1f2f4] text-[#444651] font-bold text-xs rounded-xl transition-all cursor-pointer"
+            >
+              Back to Step 2
+            </button>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-8 py-3 bg-linear-to-r from-emerald-700 to-[#00236f] hover:brightness-110 text-white font-black text-sm rounded-xl transition-all shadow-lg flex items-center gap-2 cursor-pointer"
+            >
+              {isSubmitting ? (
+                <>
+                  <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                  Finalizing & Generating Credentials...
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-[20px]">check_circle</span>
+                  Finalize Admission & Provision Student Account (Step 3 Complete)
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* AI Assistant Modal for Extraction */}
       <AIAssistantModal
         isOpen={showAIAssistant}
         onClose={() => setShowAIAssistant(false)}

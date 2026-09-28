@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'admin' | 'staff';
+export type UserRole = 'student' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts';
 
 export interface User {
   id: string;
@@ -7,6 +7,11 @@ export interface User {
   role: UserRole;
   full_name: string;
   avatar_url?: string;
+  is_active?: boolean;
+  department?: string;
+  designation?: string;
+  employee_id?: string;
+  created_at?: string;
 }
 
 export interface StudentProfile {
@@ -21,12 +26,20 @@ export interface StudentProfile {
   guardian_name: string;
   guardian_relation: string;
   guardian_phone: string;
+  mother_name?: string;
+  address?: string;
+  city?: string;
+  district?: string;
+  state?: string;
+  pincode?: string;
+  annual_family_income?: number;
   course_id: string;
   session_id: string;
   current_semester: number;
   admission_year: number;
-  admission_status: 'draft' | 'submitted' | 'pending' | 'approved' | 'rejected';
-  fees_status: 'paid' | 'due' | 'overdue';
+  admission_status: 'inquiry' | 'registered' | 'draft' | 'submitted' | 'pending' | 'verified' | 'fee_pending' | 'provisionally_admitted' | 'approved' | 'enrolled' | 'rejected';
+  admission_remarks?: string;
+  fees_status: 'paid' | 'due' | 'overdue' | 'cancelled';
   attendance_percentage: number;
   total_classes: number;
   attended_classes: number;
@@ -38,7 +51,23 @@ export interface StudentProfile {
   quota?: 'punjab_85' | 'other_state_15' | 'management' | 'sports';
   tenth_percentage?: number;
   twelfth_percentage?: number;
+  tenth_roll_no?: string;
+  twelfth_roll_no?: string;
   board_name?: string;
+  aadhaar_no?: string;
+  tenth_doc_verified?: boolean;
+  twelfth_doc_verified?: boolean;
+  aadhaar_doc_verified?: boolean;
+  token_fee_receipt?: string;
+  token_fee_amount?: number;
+  token_fee_mode?: string;
+  token_fee_date?: string;
+  intake_step?: number;
+  counseling_notes?: string;
+  admitted_by?: string;
+  condonation_granted?: boolean;
+  condonation_order_no?: string;
+  condonation_remarks?: string;
   course?: {
     id: string;
     code: string;
@@ -170,6 +199,8 @@ export type ActiveScreen =
   | 'admin-dashboard'   // Screen 7 & 8
   | 'staff-dashboard'   // Dedicated Faculty / Academic Staff Portal
   | 'manage-students'   // Screen 9 & 10
+  | 'user-management'   // Admin Extreme Powers: Staff Role Hiring & Provisioning
+  | 'progressive-intake' // 3-Step Student Intake Wizard
   | 'fee-ledger'
   | 'scholarships'
   | 'form-builder'
