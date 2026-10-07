@@ -1,0 +1,10 @@
+.git
+node_modules
+audio/*.mp3
+database/*.sqlite
+database/*.sqlite-journal
+database/*.db
+uploads
+*.png
+screenshots_audit
+.gemini

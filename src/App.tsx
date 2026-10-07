@@ -681,6 +681,21 @@ function MainApp() {
                     currentUser={currentUser}
                     onNavigate={handleScreenNavigate}
                   />
+                ) : currentUser.role === 'partner' ? (
+                  <PartnerPortalView currentUser={currentUser} />
+                ) : currentUser.role === 'accounts' ? (
+                  <FeeLedgerView
+                    currentUser={currentUser}
+                    onOpenReceiptModal={receiptNo => {
+                      setActiveReceiptNo(receiptNo);
+                      setIsReceiptOpen(true);
+                    }}
+                    onOpenPayModal={(feeId, student) => {
+                      setTargetPayFeeId(feeId);
+                      setTargetPayStudent(student);
+                      setIsPayModalOpen(true);
+                    }}
+                  />
                 ) : (
                   <StudentDashboardView
                     student={currentStudent}

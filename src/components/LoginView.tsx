@@ -298,7 +298,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
               disabled={isLoading}
               className="w-full py-2 px-3 bg-[#00236f] hover:bg-[#00236f]/90 text-white rounded font-bold text-[11px] uppercase tracking-wider transition shadow-sm cursor-pointer disabled:opacity-70"
             >
-              {isLoading ? 'AUTHENTICATING ENCRYPTED SESSION...' : 'ENTER SECURE ERP PORTAL &rarr;'}
+              {isLoading ? 'AUTHENTICATING ENCRYPTED SESSION...' : '[ENTER SECURE ERP PORTAL →]'}
             </button>
           </form>
         </div>

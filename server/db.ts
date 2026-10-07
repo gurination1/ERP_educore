@@ -1862,13 +1862,15 @@ class DatabaseStore {
     const counselorHash = bcrypt.hashSync('counselor123', 10);
     const hodHash = bcrypt.hashSync('hod123', 10);
     const accountsHash = bcrypt.hashSync('accounts123', 10);
+    const partnerHash = bcrypt.hashSync('partner123', 10);
 
     const demoStaffAccounts = [
-      { id: 'usr-admin-01', username: 'admin', email: 'admin@educore.edu', hash: adminHash, role: 'admin', full_name: 'Dr. Ramesh Chandra (Registrar & Academic Provost)', department: 'Registrar Office', designation: 'Registrar & Provost', employee_id: 'REG-PRO-001' },
-      { id: 'usr-staff-01', username: 'staff01', email: 'staff@educore.edu', hash: staffHash, role: 'staff', full_name: 'Prof. Sunita Rao (Staff / Faculty)', department: 'Computer Science & Engineering', designation: 'Assistant Professor', employee_id: 'FAC-CSE-014' },
-      { id: 'usr-counselor-01', username: 'counselor01', email: 'counselor@educore.edu', hash: counselorHash, role: 'counselor', full_name: 'Harleen Kaur (Head Counselor / Admission Cell)', department: 'Admission & Counseling Cell', designation: 'Head Counselor & Admission Cell Convener', employee_id: 'ADM-CNS-002' },
-      { id: 'usr-hod-01', username: 'hod_cse', email: 'hod.cse@educore.edu', hash: hodHash, role: 'hod', full_name: 'Dr. Balwinder Singh (HOD Computer Science)', department: 'Computer Science & Engineering', designation: 'Head of Department', employee_id: 'FAC-HOD-001' },
-      { id: 'usr-accounts-01', username: 'accounts01', email: 'accounts@educore.edu', hash: accountsHash, role: 'accounts', full_name: 'Manmohan Sharma (Chief Accounts Officer)', department: 'Finance & Accounts Section', designation: 'Chief Accounts Officer', employee_id: 'ACC-OFF-005' },
+      { id: 'usr-admin-01', username: 'admin', email: 'admin@educore.edu', hash: adminHash, role: 'admin', full_name: 'Dr. Ramesh Chandra (Registrar & Academic Provost)', department: 'Registrar Office', designation: 'Registrar & Provost', employee_id: 'REG-PRO-001', enterprise_uid: '4001-03-BFGI-0001' },
+      { id: 'usr-staff-01', username: 'staff01', email: 'staff@educore.edu', hash: staffHash, role: 'staff', full_name: 'Prof. Sunita Rao (Staff / Faculty)', department: 'Computer Science & Engineering', designation: 'Assistant Professor', employee_id: 'FAC-CSE-014', enterprise_uid: '2001-03-BFGI-0014' },
+      { id: 'usr-counselor-01', username: 'counselor01', email: 'counselor@educore.edu', hash: counselorHash, role: 'counselor', full_name: 'Harleen Kaur (Head Counselor / Admission Cell)', department: 'Admission & Counseling Cell', designation: 'Head Counselor & Admission Cell Convener', employee_id: 'ADM-CNS-002', enterprise_uid: '6001-03-BFGI-0002' },
+      { id: 'usr-hod-01', username: 'hod_cse', email: 'hod.cse@educore.edu', hash: hodHash, role: 'hod', full_name: 'Dr. Balwinder Singh (HOD Computer Science)', department: 'Computer Science & Engineering', designation: 'Head of Department', employee_id: 'FAC-HOD-001', enterprise_uid: '3001-03-BFGI-0001' },
+      { id: 'usr-accounts-01', username: 'accounts01', email: 'accounts@educore.edu', hash: accountsHash, role: 'accounts', full_name: 'Manmohan Sharma (Chief Accounts Officer)', department: 'Finance & Accounts Section', designation: 'Chief Accounts Officer', employee_id: 'ACC-OFF-005', enterprise_uid: '5001-03-BFGI-0005' },
+      { id: 'usr-partner-01', username: 'partner01', email: 'partner@educore.edu', hash: partnerHash, role: 'partner', full_name: 'Infosys Campus Relations Lead', department: 'Corporate Relations', designation: 'Campus Hiring Director', employee_id: 'PRT-001', enterprise_uid: '7001-03-BFGI-0001' },
     ];
 
     for (const sa of demoStaffAccounts) {
@@ -2671,11 +2673,12 @@ class DatabaseStore {
     else if (val === 'hod') effectiveVal = 'hod_cse';
     else if (val === 'accounts') effectiveVal = 'accounts01';
     else if (val === 'super') effectiveVal = 'superadmin';
+    else if (val === 'partner' || val === 'prt-001' || val === 'prt-inf-001') effectiveVal = 'partner01';
 
     if (this.mode === 'mariadb' && this.mariaPool) {
       const [rows]: any = await this.mariaPool.query(
-        'SELECT * FROM users WHERE LOWER(username) = ? OR LOWER(email) = ? OR LOWER(username) = ? OR LOWER(enterprise_uid) = ?',
-        [val, val, effectiveVal, val]
+        'SELECT * FROM users WHERE LOWER(username) = ? OR LOWER(email) = ? OR LOWER(username) = ? OR LOWER(enterprise_uid) = ? OR LOWER(employee_id) = ?',
+        [val, val, effectiveVal, val, val]
       );
       if (rows && rows.length > 0) {
         const u = rows[0];
@@ -2695,7 +2698,8 @@ class DatabaseStore {
       u.username.toLowerCase() === val ||
       u.username.toLowerCase() === effectiveVal ||
       u.email.toLowerCase() === val ||
-      (u.enterprise_uid && u.enterprise_uid.toLowerCase() === val)
+      (u.enterprise_uid && u.enterprise_uid.toLowerCase() === val) ||
+      (u.employee_id && u.employee_id.toLowerCase() === val)
     );
     if (!user) {
       const stu = this.students.find(
