@@ -71,8 +71,12 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     },
   ]);
 
+  const [masterSummary, setMasterSummary] = useState<any>(null);
+  const [staffCount, setStaffCount] = useState<number>(4);
+  const [partnerCount, setPartnerCount] = useState<number>(2);
+  const [enquiryCount, setEnquiryCount] = useState<number>(3);
+
   useEffect(() => {
-    // Load dynamic data from server
     api.getFeeKPIs().then(res => {
       if (res.success && res.kpi) setKpiData(res.kpi);
     });
@@ -82,366 +86,354 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     api.getDefaulters().then(res => {
       if (res.success && res.defaulters) setDefaulters(res.defaulters);
     });
+    api.getEnterpriseMaster().then(res => {
+      if (res.success && res.master) setMasterSummary(res.master);
+    });
+    api.getStaffList().then(res => {
+      if (res.success && res.staff) setStaffCount(res.staff.length);
+    });
+    api.getPartners().then(res => {
+      if (res.success && res.partners) setPartnerCount(res.partners.length);
+    });
+    api.getEnquiries().then(res => {
+      if (res.success && res.enquiries) setEnquiryCount(res.enquiries.length);
+    });
   }, []);
 
   return (
-    <div id="admin-dashboard-screen" className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
-      {/* Header with Title and Dropdown Filters */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div id="admin-dashboard-screen" className="p-4 max-w-7xl mx-auto space-y-4 animate-fadeIn text-[11px]">
+      {/* Top Institutional Header Banner */}
+      <div className="bg-[#00236f] text-white p-3.5 rounded border-b-2 border-[#ea580c] flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xs">
         <div>
-          <h2 className="text-2xl font-bold text-[#191c1d] tracking-tight">Dashboard Overview</h2>
-          <p className="text-sm text-[#444651] mt-1">
-            Fees management summary and critical alerts.
+          <div className="flex items-center gap-2 mb-1">
+            <span className="bg-[#ea580c] text-white px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider">
+              ENTERPRISE ERP CONSOLE
+            </span>
+            <span className="font-mono text-[10px] text-orange-200">
+              UID: 4001-03-BFGI-0001 (BFGI BATHINDA • PUNJAB)
+            </span>
+          </div>
+          <h2 className="text-sm font-bold uppercase tracking-tight text-white">
+            ADMINISTRATION & INSTITUTIONAL OPERATIONS DASHBOARD
+          </h2>
+          <p className="text-[10px] text-blue-200 mt-0.5">
+            Multi-College Governance • Tagged Departments • Multi-Table Staff • Pre-Admission CRM • Corporate Partners
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* Course filter */}
+        {/* Quick Filter Selectors */}
+        <div className="flex items-center gap-2">
           <select
             id="admin-filter-course"
             value={selectedCourse}
             onChange={e => setSelectedCourse(e.target.value)}
-            className="px-3.5 py-2 bg-white border border-[#e1e3e4] rounded-lg text-xs font-semibold text-[#191c1d] focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+            className="px-2 py-1 bg-white text-[#00236f] border border-blue-200 rounded font-bold text-[10px]"
           >
-            <option value="All Courses">All Courses</option>
-            <option value="B.Tech CS">B.Tech CS</option>
-            <option value="B.Tech ME">B.Tech ME</option>
-            <option value="MBA Finance">MBA Finance</option>
-            <option value="B.Sc Physics">B.Sc Physics</option>
+            <option value="All Courses">ALL COURSES</option>
+            <option value="B.Tech CS">B.TECH CSE</option>
+            <option value="B.Tech ME">B.TECH ME</option>
+            <option value="B.Sc Agri">B.SC AGRICULTURE</option>
+            <option value="MBA Finance">MBA MANAGEMENT</option>
           </select>
 
-          {/* Semester filter */}
           <select
             id="admin-filter-semester"
             value={selectedSemester}
             onChange={e => setSelectedSemester(e.target.value)}
-            className="px-3.5 py-2 bg-white border border-[#e1e3e4] rounded-lg text-xs font-semibold text-[#191c1d] focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+            className="px-2 py-1 bg-white text-[#00236f] border border-blue-200 rounded font-bold text-[10px]"
           >
-            <option value="Current Semester">Current Semester</option>
-            <option value="Semester 1">Semester 1</option>
-            <option value="Semester 2">Semester 2</option>
-            <option value="Semester 3">Semester 3</option>
-            <option value="Semester 4">Semester 4</option>
+            <option value="Current Semester">CURRENT SEMESTER</option>
+            <option value="Semester 1">SEM 1</option>
+            <option value="Semester 2">SEM 2</option>
+            <option value="Semester 3">SEM 3</option>
+            <option value="Semester 4">SEM 4</option>
           </select>
         </div>
       </div>
 
-      {/* Executive Command Strips */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {/* Enterprise Architecture Quick Jump Command Hub */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
         <button
           type="button"
-          onClick={() => onNavigate('student-documents')}
-          className="p-3.5 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-emerald-500 rounded-xl flex items-center justify-between text-left transition-all shadow-2xs group cursor-pointer"
+          onClick={() => onNavigate('staff-management')}
+          className="p-2.5 bg-white hover:bg-blue-50 border border-[#00236f]/20 rounded text-left transition shadow-2xs group cursor-pointer"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <span className="material-symbols-outlined text-[20px]">folder_shared</span>
-            </div>
-            <div>
-              <h4 className="text-xs font-bold text-[#191c1d]">Student Document Vault</h4>
-              <p className="text-[10px] text-[#757682]">AICTE, MRSPTU & 85% Domicile Verification</p>
-            </div>
-          </div>
-          <span className="material-symbols-outlined text-[15px] text-slate-400 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+          <span className="text-[9px] font-mono text-[#ea580c] block font-bold">[STAFF MASTER]</span>
+          <strong className="text-[11px] text-[#00236f] block mt-0.5">Staff & Journey</strong>
+          <span className="text-[9px] text-gray-500 block">4 Staff • Multi-Tables</span>
         </button>
 
         <button
           type="button"
-          onClick={() => onNavigate('teacher-documents')}
-          className="p-3.5 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-indigo-500 rounded-xl flex items-center justify-between text-left transition-all shadow-2xs group cursor-pointer"
+          onClick={() => onNavigate('enquiries')}
+          className="p-2.5 bg-white hover:bg-orange-50 border border-[#ea580c]/30 rounded text-left transition shadow-2xs group cursor-pointer"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <span className="material-symbols-outlined text-[20px]">workspace_premium</span>
-            </div>
-            <div>
-              <h4 className="text-xs font-bold text-[#191c1d]">Faculty Credentials Vault</h4>
-              <p className="text-[10px] text-[#757682]">Ph.D. Awards, Scopus Papers, AICTE Mandates</p>
-            </div>
-          </div>
-          <span className="material-symbols-outlined text-[15px] text-slate-400 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+          <span className="text-[9px] font-mono text-[#ea580c] block font-bold">[ADMISSIONS CRM]</span>
+          <strong className="text-[11px] text-[#00236f] block mt-0.5">Pre-Admission CRM</strong>
+          <span className="text-[9px] text-gray-500 block">Auto-Dialer • Leads ({enquiryCount})</span>
         </button>
 
         <button
           type="button"
-          onClick={() => onNavigate('student-quiz-lms')}
-          className="p-3.5 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-purple-500 rounded-xl flex items-center justify-between text-left transition-all shadow-2xs group cursor-pointer"
+          onClick={() => onNavigate('bulk-import')}
+          className="p-2.5 bg-white hover:bg-blue-50 border border-[#00236f]/20 rounded text-left transition shadow-2xs group cursor-pointer"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <span className="material-symbols-outlined text-[20px]">psychology</span>
-            </div>
-            <div>
-              <h4 className="text-xs font-bold text-[#191c1d]">LMS & CBT Quiz Engine</h4>
-              <p className="text-[10px] text-[#757682]">Mid-Term Assessments & Question Banks</p>
-            </div>
-          </div>
-          <span className="material-symbols-outlined text-[15px] text-slate-400 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+          <span className="text-[9px] font-mono text-[#00236f] block font-bold">[CSV ENGINE]</span>
+          <strong className="text-[11px] text-[#00236f] block mt-0.5">Dynamic Mapper</strong>
+          <span className="text-[9px] text-gray-500 block">3-Tier Validator</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onNavigate('partner-portal')}
+          className="p-2.5 bg-white hover:bg-blue-50 border border-[#00236f]/20 rounded text-left transition shadow-2xs group cursor-pointer"
+        >
+          <span className="text-[9px] font-mono text-[#ea580c] block font-bold">[PARTNER PORTAL]</span>
+          <strong className="text-[11px] text-[#00236f] block mt-0.5">Corporate Partners</strong>
+          <span className="text-[9px] text-gray-500 block">{partnerCount} Firms • Talent Share</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onNavigate('manage-students')}
+          className="p-2.5 bg-white hover:bg-blue-50 border border-[#00236f]/20 rounded text-left transition shadow-2xs group cursor-pointer"
+        >
+          <span className="text-[9px] font-mono text-[#00236f] block font-bold">[STUDENT MASTER]</span>
+          <strong className="text-[11px] text-[#00236f] block mt-0.5">Student Records</strong>
+          <span className="text-[9px] text-gray-500 block">Roll Nos & Domicile</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onNavigate('fee-ledger')}
+          className="p-2.5 bg-white hover:bg-blue-50 border border-[#00236f]/20 rounded text-left transition shadow-2xs group cursor-pointer"
+        >
+          <span className="text-[9px] font-mono text-[#ea580c] block font-bold">[ACCOUNTS]</span>
+          <strong className="text-[11px] text-[#00236f] block mt-0.5">Fee Ledger & Billing</strong>
+          <span className="text-[9px] text-gray-500 block">Tally XML & Dues</span>
         </button>
       </div>
 
-      {/* 4 KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {/* KPI 1: Total Collected */}
-        <div
-          id="kpi-total-collected"
-          className="bg-white rounded-xl p-6 border border-[#e1e3e4] shadow-xs flex flex-col justify-between"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#757682]">
-              Total Collected
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-[#dce1ff] text-[#00236f] flex items-center justify-center">
-              <span className="material-symbols-outlined text-[18px]">payments</span>
-            </div>
+      {/* Operational Master & Tagging Status Strip */}
+      <div className="bg-white border border-[#00236f]/20 rounded p-3 space-y-2">
+        <div className="flex justify-between items-center border-b pb-1.5">
+          <div>
+            <span className="font-bold text-[#00236f]">[TAGGING NATION: MASTER DEPARTMENTS & ENTERPRISE STATUSES]</span>
+            <span className="text-[10px] text-gray-500 ml-2">7 Tagged Departments • 5 Reserve Columns Active</span>
           </div>
-          <div className="mt-4">
-            <h3 className="text-3xl font-extrabold text-[#191c1d] tracking-tight">
+          <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-mono text-[9px] font-bold">
+            DB ENGINE: RELATIONAL ACTIVE
+          </span>
+        </div>
+
+        <div className="flex flex-wrap gap-1.5">
+          <span className="px-2 py-1 bg-blue-50 border border-blue-200 text-[#00236f] rounded text-[10px] font-bold">
+            CSE [AI, Engineering, Software]
+          </span>
+          <span className="px-2 py-1 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded text-[10px] font-bold">
+            AGRI [Agronomy, Soil, Field]
+          </span>
+          <span className="px-2 py-1 bg-amber-50 border border-amber-200 text-amber-900 rounded text-[10px] font-bold">
+            CE [Structural, Surveying]
+          </span>
+          <span className="px-2 py-1 bg-purple-50 border border-purple-200 text-purple-900 rounded text-[10px] font-bold">
+            ME [Thermal, Robotics]
+          </span>
+          <span className="px-2 py-1 bg-cyan-50 border border-cyan-200 text-cyan-900 rounded text-[10px] font-bold">
+            MGMT [Finance, HR, Marketing]
+          </span>
+          <span className="px-2 py-1 bg-rose-50 border border-rose-200 text-rose-900 rounded text-[10px] font-bold">
+            PHARM [Clinical, Chemistry]
+          </span>
+          <span className="px-2 py-1 bg-gray-50 border border-gray-200 text-gray-800 rounded text-[10px] font-bold">
+            APP_SCI [Physics, Math, Chemistry]
+          </span>
+        </div>
+      </div>
+
+      {/* 4 Financial & Operational KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* KPI 1: Total Collected */}
+        <div className="bg-white rounded p-3.5 border border-[#00236f]/20 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+              Total Fee Collection
+            </span>
+            <span className="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[9px] font-bold">
+              [COLLECTED]
+            </span>
+          </div>
+          <div className="mt-2">
+            <h3 className="text-xl font-black text-[#00236f] tracking-tight">
               {kpiData.totalCollectedFormatted}
             </h3>
-            <p className="text-xs font-semibold text-[#006a61] mt-1 flex items-center gap-1">
-              <span className="material-symbols-outlined text-[14px]">trending_up</span>
-              <span>{kpiData.totalCollectedGrowth}</span>
+            <p className="text-[10px] font-bold text-emerald-700 mt-0.5">
+              {kpiData.totalCollectedGrowth}
             </p>
           </div>
         </div>
 
         {/* KPI 2: Pending Dues */}
-        <div
-          id="kpi-pending-dues"
-          className="bg-white rounded-xl p-6 border border-[#e1e3e4] shadow-xs flex flex-col justify-between"
-        >
+        <div className="bg-white rounded p-3.5 border border-rose-200 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#757682]">
-              Pending Dues
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+              Pending Dues Alert
             </span>
-            <div className="w-8 h-8 rounded-lg bg-[#ffdad6] text-[#ba1a1a] flex items-center justify-center">
-              <span className="material-symbols-outlined text-[18px]">warning</span>
-            </div>
+            <span className="bg-rose-100 text-rose-800 px-1.5 py-0.5 rounded text-[9px] font-bold">
+              [DUES]
+            </span>
           </div>
-          <div className="mt-4">
-            <h3 className="text-3xl font-extrabold text-[#ba1a1a] tracking-tight">
+          <div className="mt-2">
+            <h3 className="text-xl font-black text-rose-700 tracking-tight">
               {kpiData.pendingDuesFormatted}
             </h3>
-            <p className="text-xs font-semibold text-[#ba1a1a] mt-1">
+            <p className="text-[10px] font-bold text-rose-600 mt-0.5">
               {kpiData.pendingDuesAlert}
             </p>
           </div>
         </div>
 
         {/* KPI 3: Pending Approvals */}
-        <div
-          id="kpi-pending-approvals"
-          className="bg-white rounded-xl p-6 border border-[#e1e3e4] shadow-xs flex flex-col justify-between"
-        >
+        <div className="bg-white rounded p-3.5 border border-[#ea580c]/30 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#757682]">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
               Pending Approvals
             </span>
-            <div className="w-8 h-8 rounded-lg bg-[#fef3c7] text-[#b45309] flex items-center justify-center">
-              <span className="material-symbols-outlined text-[18px]">assignment_late</span>
-            </div>
+            <span className="bg-orange-100 text-[#ea580c] px-1.5 py-0.5 rounded text-[9px] font-bold">
+              [APPROVALS]
+            </span>
           </div>
-          <div className="mt-4">
-            <h3 className="text-3xl font-extrabold text-[#191c1d] tracking-tight">
+          <div className="mt-2">
+            <h3 className="text-xl font-black text-[#ea580c] tracking-tight">
               {kpiData.pendingApprovals}
             </h3>
-            <p className="text-xs text-[#757682] mt-1">{kpiData.pendingApprovalsLabel}</p>
+            <p className="text-[10px] text-gray-500 mt-0.5">{kpiData.pendingApprovalsLabel}</p>
           </div>
         </div>
 
         {/* KPI 4: Total Students */}
-        <div
-          id="kpi-total-students"
-          className="bg-white rounded-xl p-6 border border-[#e1e3e4] shadow-xs flex flex-col justify-between"
-        >
+        <div className="bg-white rounded p-3.5 border border-[#00236f]/20 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#757682]">
-              Total Students
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+              Enrolled Students
             </span>
-            <div className="w-8 h-8 rounded-lg bg-[#86f2e4]/30 text-[#006a61] flex items-center justify-center">
-              <span className="material-symbols-outlined text-[18px]">group</span>
-            </div>
+            <span className="bg-blue-100 text-[#00236f] px-1.5 py-0.5 rounded text-[9px] font-bold">
+              [ENROLLED]
+            </span>
           </div>
-          <div className="mt-4">
-            <h3 className="text-3xl font-extrabold text-[#191c1d] tracking-tight">
+          <div className="mt-2">
+            <h3 className="text-xl font-black text-[#00236f] tracking-tight">
               {kpiData.totalStudents}
             </h3>
-            <p className="text-xs text-[#757682] mt-1">{kpiData.totalStudentsLabel}</p>
+            <p className="text-[10px] text-gray-500 mt-0.5">{kpiData.totalStudentsLabel}</p>
           </div>
         </div>
       </div>
 
       {/* Main Grid: Chart & Defaulters List */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
         {/* Fees Collected Trend Bar Chart (7 cols) */}
         <div
           id="fees-trend-chart-card"
-          className="lg:col-span-7 bg-white rounded-xl p-6 border border-[#e1e3e4] shadow-xs flex flex-col justify-between"
+          className="lg:col-span-7 bg-white rounded p-4 border border-[#00236f]/20 shadow-xs flex flex-col justify-between"
         >
           <div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between border-b pb-2">
               <div>
-                <h3 className="text-base font-bold text-[#191c1d]">Fees Collected Trend</h3>
-                <p className="text-xs text-[#757682] mt-0.5">
-                  Monthly institutional fee collection in INR (Lakhs)
+                <h3 className="text-xs font-bold text-[#00236f] uppercase">Fees Collected Trend (Lakhs INR)</h3>
+                <p className="text-[10px] text-gray-500">
+                  Monthly institutional collections & revenue realization
                 </p>
               </div>
-              <span className="px-2 py-1 bg-[#f8f9fa] border border-[#e1e3e4] rounded text-[11px] font-bold text-[#444651]">
-                Jan - Jun 2025
+              <span className="px-2 py-0.5 bg-gray-100 border rounded text-[9px] font-mono text-gray-700">
+                JAN - JUN 2026
               </span>
             </div>
 
-            {/* Custom Bar Visualization */}
-            <div className="mt-8 h-56 flex items-end justify-between gap-3 px-2 pt-6 pb-2 border-b border-[#e1e3e4]">
+            {/* Bar Visualization */}
+            <div className="mt-4 h-48 flex items-end justify-between gap-3 px-2 pt-4 pb-2 border-b border-gray-200">
               {trendData.map((item, idx) => (
-                <div key={idx} className="flex-1 flex flex-col items-center gap-2 group h-full justify-end">
-                  {/* Hover tooltip value */}
-                  <span className="text-[10px] font-bold text-[#00236f] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap bg-[#dce1ff] px-1.5 py-0.5 rounded shadow-xs">
+                <div key={idx} className="flex-1 flex flex-col items-center gap-1 group h-full justify-end">
+                  <span className="text-[9px] font-mono font-bold text-[#00236f] opacity-0 group-hover:opacity-100 transition whitespace-nowrap bg-blue-100 px-1 rounded">
                     {item.amount}
                   </span>
-
-                  {/* Bar */}
                   <div
                     style={{ height: `${item.percentage}%` }}
-                    className={`w-full max-w-[42px] rounded-t-md transition-all duration-300 ${
-                      item.isHighest
-                        ? 'bg-[#00236f] hover:bg-[#1e3a8a]'
-                        : 'bg-[#b6c4ff] hover:bg-[#90a8ff]'
+                    className={`w-full max-w-[42px] rounded-t transition-all ${
+                      item.isHighest ? 'bg-[#ea580c]' : 'bg-[#00236f] hover:bg-[#00236f]/80'
                     }`}
                   ></div>
-
-                  {/* Month Label */}
-                  <span className="text-xs font-semibold text-[#444651] mt-1">
-                    {item.month}
-                  </span>
+                  <span className="text-[9px] font-mono text-gray-600 mt-1">{item.month}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="mt-4 pt-3 flex items-center justify-between text-xs text-[#757682]">
-            <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded bg-[#00236f]"></span>
-                <span>Peak Collection (June)</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded bg-[#b6c4ff]"></span>
-                <span>Regular Months</span>
-              </span>
-            </div>
-            <span className="font-semibold text-[#00236f]">Annual Target: 88% Achieved</span>
+          <div className="mt-3 pt-2 flex items-center justify-between text-[10px] text-gray-500">
+            <span>Orange indicates peak collection month (June Sem End)</span>
+            <button
+              onClick={() => onNavigate('fee-ledger')}
+              className="text-[#00236f] font-bold hover:underline"
+            >
+              [VIEW COMPLETE FEE AUDIT LEDGER &rarr;]
+            </button>
           </div>
         </div>
 
-        {/* Defaulters List Card (5 cols) */}
-        <div
-          id="defaulters-list-card"
-          className="lg:col-span-5 bg-white rounded-xl p-6 border border-[#e1e3e4] shadow-xs flex flex-col justify-between"
-        >
+        {/* Critical Defaulters Table (5 cols) */}
+        <div className="lg:col-span-5 bg-white rounded p-4 border border-[#00236f]/20 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between border-b pb-2">
               <div>
-                <h3 className="text-base font-bold text-[#191c1d]">Defaulters List</h3>
-                <p className="text-xs text-[#757682] mt-0.5">Critical overdue tuition balances</p>
+                <h3 className="text-xs font-bold text-rose-800 uppercase">Critical Defaulter Alerts</h3>
+                <p className="text-[10px] text-gray-500">Students with outstanding semester fees</p>
               </div>
-              <button
-                id="send-reminders-action-btn"
-                onClick={onOpenEmailReminders}
-                className="px-3 py-1.5 bg-[#dce1ff] text-[#00236f] hover:bg-[#b6c4ff] rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5"
-              >
-                <span className="material-symbols-outlined text-[14px]">mail</span>
-                <span>Send Reminders</span>
-              </button>
+              <span className="px-1.5 py-0.5 bg-rose-100 text-rose-800 rounded text-[9px] font-bold">
+                [{defaulters.length} OVERDUE]
+              </span>
             </div>
 
-            {/* List */}
-            <div className="space-y-3">
-              {defaulters
-                .filter(def => {
-                  if (selectedCourse !== 'All Courses' && !def.courseInfo.toLowerCase().includes(selectedCourse.toLowerCase())) {
-                    return false;
-                  }
-                  if (selectedSemester !== 'Current Semester') {
-                    const semNum = selectedSemester.replace('Semester ', 'Sem ');
-                    if (!def.courseInfo.includes(semNum)) return false;
-                  }
-                  return true;
-                })
-                .map(def => (
-                  <div
-                    key={def.id}
-                    className="p-3 bg-[#f8f9fa] rounded-lg border border-[#edeeef] flex items-center justify-between hover:bg-[#f3f4f5] transition-colors"
-                  >
-                    <div>
-                      <h4 className="text-xs font-bold text-[#191c1d]">{def.studentName}</h4>
-                      <p className="text-[11px] text-[#757682] mt-0.5">{def.courseInfo}</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-right">
-                        <span className="text-xs font-bold text-[#191c1d] block">
-                          {def.dueAmountFormatted}
-                        </span>
-                        <span
-                          className={`inline-block mt-0.5 px-2 py-0.5 rounded text-[9px] font-extrabold uppercase ${
-                            def.badgeType === 'error'
-                              ? 'bg-[#ffdad6] text-[#ba1a1a]'
-                              : 'bg-[#fef3c7] text-[#b45309]'
-                          }`}
-                        >
-                          {def.status}
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedDefaulter(def);
-                          setShowAINotice(true);
-                        }}
-                        className="p-1.5 bg-[#dce1ff] text-[#00236f] hover:bg-[#b6c4ff] rounded-lg transition-colors cursor-pointer"
-                        title="Generate AI Recovery Notice with Gemini"
-                      >
-                        <span className="material-symbols-outlined text-[16px]">auto_awesome</span>
-                      </button>
-                    </div>
+            <div className="divide-y divide-gray-100 mt-2 space-y-1">
+              {defaulters.map(d => (
+                <div key={d.id} className="py-2 flex items-center justify-between text-[10px]">
+                  <div>
+                    <strong className="text-gray-900 block">{d.studentName}</strong>
+                    <span className="text-gray-500 text-[9px]">{d.courseInfo}</span>
                   </div>
-                ))}
-
-              {defaulters.filter(def => {
-                if (selectedCourse !== 'All Courses' && !def.courseInfo.toLowerCase().includes(selectedCourse.toLowerCase())) return false;
-                if (selectedSemester !== 'Current Semester') {
-                  const semNum = selectedSemester.replace('Semester ', 'Sem ');
-                  if (!def.courseInfo.includes(semNum)) return false;
-                }
-                return true;
-              }).length === 0 && (
-                <p className="text-xs text-[#757682] py-4 text-center">
-                  No fee defaulters for {selectedCourse} ({selectedSemester}).
-                </p>
-              )}
+                  <div className="text-right">
+                    <span className="font-mono font-bold text-rose-700 block">{d.dueAmountFormatted}</span>
+                    <span className="text-[8px] px-1 py-0.5 rounded font-bold bg-rose-50 text-rose-800 border border-rose-200">
+                      [{d.status}]
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-[#f3f4f5] text-center">
+          <div className="mt-3 pt-2 border-t flex justify-end gap-2">
             <button
-              onClick={() => onNavigate('manage-students')}
-              className="text-xs font-bold text-[#00236f] hover:underline flex items-center justify-center gap-1 mx-auto"
+              onClick={onOpenEmailReminders}
+              className="px-2.5 py-1 bg-white border border-[#00236f] text-[#00236f] hover:bg-blue-50 rounded font-bold text-[10px]"
             >
-              <span>View All Defaulters in Student Master</span>
-              <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+              [DISPATCH REMINDERS]
+            </button>
+            <button
+              onClick={() => setShowAINotice(true)}
+              className="px-3 py-1 bg-[#ea580c] hover:bg-[#ea580c]/90 text-white rounded font-bold text-[10px]"
+            >
+              [AI NOTICE GENERATOR]
             </button>
           </div>
         </div>
       </div>
 
-      {selectedDefaulter && (
+      {/* AI Notice Modal */}
+      {showAINotice && (
         <AIFeeNoticeModal
           isOpen={showAINotice}
           onClose={() => setShowAINotice(false)}
-          studentId={selectedDefaulter.id}
-          studentName={selectedDefaulter.studentName}
-          dueAmount={selectedDefaulter.dueAmount || 45000}
+          defaultStudent={selectedDefaulter}
         />
       )}
     </div>

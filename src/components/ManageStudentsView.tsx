@@ -140,7 +140,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
             onClick={onOpenEmailReminders}
             className="px-4 py-2.5 bg-white border border-[#e1e3e4] hover:bg-[#f8f9fa] text-[#191c1d] rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
           >
-            <span className="material-symbols-outlined text-[18px] text-[#757682]">mail</span>
+            
             <span>Email Reminders</span>
           </button>
 
@@ -149,7 +149,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
             onClick={handleExportCsv}
             className="px-4 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
           >
-            <span className="material-symbols-outlined text-[18px]">download</span>
+            <span className="font-bold text-[10px]">[DL]</span>
             <span>Export CSV</span>
           </button>
         </div>
@@ -179,9 +179,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
                   Search Name or ID
                 </label>
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#757682] text-[18px]">
-                    search
-                  </span>
+                  
                   <input
                     type="text"
                     id="filter-search-input"
@@ -267,13 +265,13 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
                 Total Enrolled
               </span>
               <div className="w-8 h-8 rounded-lg bg-[#dce1ff] text-[#00236f] flex items-center justify-center">
-                <span className="material-symbols-outlined text-[18px]">school</span>
+                
               </div>
             </div>
             <div className="mt-3">
               <h3 className="text-3xl font-extrabold text-[#191c1d] tracking-tight">{totalCount.toLocaleString('en-IN')}</h3>
               <p className="text-xs font-semibold text-[#006a61] mt-1 flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px]">trending_up</span>
+                
                 <span>+12% this semester</span>
               </p>
             </div>
@@ -353,9 +351,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
                             className="text-[#00236f] hover:text-[#1e3a8a] font-bold inline-flex items-center gap-0.5 text-xs hover:underline cursor-pointer"
                           >
                             <span>View</span>
-                            <span className="material-symbols-outlined text-[14px]">
-                              arrow_forward
-                            </span>
+                            <span className="font-bold text-[10px]">→</span>
                           </button>
                         </td>
                       </tr>

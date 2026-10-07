@@ -158,7 +158,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="p-6 border-b border-[#e1e3e4]">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-[#00236f] flex items-center justify-center text-white shadow-sm font-bold text-lg">
-              <span className="material-symbols-outlined text-[24px]">school</span>
+              
             </div>
             <div>
               <h1 className="text-base font-bold tracking-tight text-[#191c1d] leading-none">
@@ -186,14 +186,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     : 'text-[#444651] hover:bg-[#edeeef] hover:text-[#191c1d]'
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`material-symbols-outlined text-[20px] ${
-                      isActive ? 'filled text-[#00236f]' : 'text-[#757682]'
-                    }`}
-                  >
-                    {item.icon}
-                  </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[9px] text-[#ea580c] font-bold">[{item.id.slice(0, 3).toUpperCase()}]</span>
                   <span>{item.label}</span>
                 </div>
                 {item.badge && (
@@ -243,7 +237,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onClick={onLogout}
           className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-[#ba1a1a] hover:bg-[#ffdad6]/40 transition-colors text-left"
         >
-          <span className="material-symbols-outlined text-[20px]">logout</span>
+          
           <span>Log Out</span>
         </button>
       </div>

@@ -68,7 +68,7 @@ export const AIFeeNoticeModal: React.FC<AIFeeNoticeModalProps> = ({
         {/* Header */}
         <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-linear-to-r from-[#00236f] to-[#1a4bb0] text-white">
           <div className="flex items-center gap-2.5">
-            <span className="material-symbols-outlined text-[24px] text-amber-300">notifications_active</span>
+            
             <div>
               <h2 className="text-base font-bold leading-tight">AI Fee Recovery Notice Generator</h2>
               <p className="text-xs text-blue-100">
@@ -118,7 +118,7 @@ export const AIFeeNoticeModal: React.FC<AIFeeNoticeModalProps> = ({
             </div>
           ) : error ? (
             <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2">
-              <span className="material-symbols-outlined text-sm">error</span>
+              <span className="font-bold text-[10px]">[!]</span>
               <span>{error}</span>
             </div>
           ) : noticeData ? (
@@ -134,7 +134,7 @@ export const AIFeeNoticeModal: React.FC<AIFeeNoticeModalProps> = ({
                       : 'border-transparent text-[#757682] hover:text-[#191c1d]'
                   }`}
                 >
-                  <span className="material-symbols-outlined text-[16px]">mail</span>
+                  
                   Email Notice
                 </button>
                 <button
@@ -146,7 +146,7 @@ export const AIFeeNoticeModal: React.FC<AIFeeNoticeModalProps> = ({
                       : 'border-transparent text-[#757682] hover:text-[#191c1d]'
                   }`}
                 >
-                  <span className="material-symbols-outlined text-[16px]">chat</span>
+                  
                   WhatsApp Text
                 </button>
                 <button
@@ -158,7 +158,7 @@ export const AIFeeNoticeModal: React.FC<AIFeeNoticeModalProps> = ({
                       : 'border-transparent text-[#757682] hover:text-[#191c1d]'
                   }`}
                 >
-                  <span className="material-symbols-outlined text-[16px]">sms</span>
+                  
                   SMS Alert
                 </button>
               </div>
@@ -221,9 +221,7 @@ export const AIFeeNoticeModal: React.FC<AIFeeNoticeModalProps> = ({
                 }}
                 className="px-4 py-2 text-xs font-bold text-white bg-[#00236f] hover:bg-[#1a4bb0] rounded-lg shadow-sm flex items-center gap-1.5 transition-all"
               >
-                <span className="material-symbols-outlined text-[16px]">
-                  {copied ? 'check' : 'content_copy'}
-                </span>
+                
                 {copied ? 'Copied to Clipboard!' : `Copy ${activeTab.toUpperCase()}`}
               </button>
             )}

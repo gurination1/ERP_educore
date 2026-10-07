@@ -110,9 +110,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
             disabled={isExporting}
             className="px-4 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer disabled:opacity-60"
           >
-            <span className="material-symbols-outlined text-[16px]">
-              {isExporting ? 'hourglass_top' : 'download'}
-            </span>
+            
             <span>{isExporting ? 'Generating CSV...' : 'Export Master Data (CSV)'}</span>
           </button>
         )}
@@ -121,7 +119,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
       {/* Export feedback toast */}
       {exportMessage && (
         <div className="p-3.5 bg-[#86f2e4]/20 border border-[#86f2e4] text-[#006a61] rounded-xl text-xs font-bold flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">info</span>
+          
           <span>{exportMessage}</span>
         </div>
       )}
@@ -192,7 +190,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
             onClick={loadReportsData}
             className="text-xs font-bold text-[#00236f] hover:underline flex items-center gap-1 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[15px]">refresh</span>
+            <span className="font-bold text-[10px]">[REFRESH]</span>
             <span>Refresh Table</span>
           </button>
         </div>

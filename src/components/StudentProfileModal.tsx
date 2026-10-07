@@ -81,7 +81,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
           </div>
 
           <button onClick={onClose} className="text-[#757682] hover:text-[#191c1d]">
-            <span className="material-symbols-outlined text-[22px]">close</span>
+            <span className="font-bold text-[10px]">✕</span>
           </button>
         </div>
 
@@ -194,7 +194,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
 
             {promoteMsg && (
               <div className="p-3 bg-[#86f2e4]/20 border border-[#006a61] rounded-lg text-[#006a61] text-xs font-semibold flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px]">verified</span>
+                <span className="font-bold text-[10px]">✓</span>
                 <span>{promoteMsg}</span>
               </div>
             )}
@@ -209,7 +209,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                     className="px-3.5 py-2 bg-[#006a61] hover:bg-[#004f48] text-white font-bold rounded-lg text-xs flex items-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-xs"
                     title="Advance student to next academic term and assess statutory tuition"
                   >
-                    <span className="material-symbols-outlined text-[16px]">school</span>
+                    
                     <span>
                       {isPromoting
                         ? 'Promoting...'

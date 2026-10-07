@@ -23,6 +23,10 @@ uploads/
 # Logs
 *.log
 npm-debug.log*
+
+# Audio binaries
+audio/*.mp3
+*.mp3
 logs/
 
 # Coverage / test output

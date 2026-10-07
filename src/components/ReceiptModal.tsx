@@ -36,9 +36,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptNo, onClose }
         {/* Modal Top Actions */}
         <div className="p-4 bg-[#f8f9fa] border-b border-[#e1e3e4] flex items-center justify-between print:hidden">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[#00236f] text-[20px]">
-              receipt_long
-            </span>
+            
             <span className="text-sm font-bold text-[#191c1d]">
               Institutional Fee Payment Receipt
             </span>
@@ -49,14 +47,14 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptNo, onClose }
               onClick={handlePrint}
               className="px-3.5 py-1.5 bg-[#00236f] text-white text-xs font-bold rounded-lg hover:bg-[#1e3a8a] transition-colors flex items-center gap-1.5 shadow-xs"
             >
-              <span className="material-symbols-outlined text-[16px]">print</span>
+              <span className="font-bold text-[10px]">[PRINT]</span>
               <span>Print / PDF</span>
             </button>
             <button
               onClick={onClose}
               className="text-[#757682] hover:text-[#191c1d] p-1 rounded-lg hover:bg-[#edeeef]"
             >
-              <span className="material-symbols-outlined text-[22px]">close</span>
+              <span className="font-bold text-[10px]">✕</span>
             </button>
           </div>
         </div>
@@ -66,7 +64,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptNo, onClose }
           {/* Header with College Crest */}
           <div className="text-center border-b-2 border-[#00236f] pb-5">
             <div className="w-12 h-12 rounded-xl bg-[#00236f] text-white flex items-center justify-center mx-auto mb-2 shadow-sm">
-              <span className="material-symbols-outlined text-[28px]">school</span>
+              
             </div>
             <h2 className="text-lg font-black tracking-tight text-[#00236f] uppercase">
               {receiptData?.institutionName || 'Baba Farid College of Engineering & Technology (BFGI)'}
@@ -197,7 +195,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptNo, onClose }
             </div>
           ) : (
             <div className="py-12 text-center space-y-3">
-              <span className="material-symbols-outlined text-[48px] text-[#757682]">receipt_long</span>
+              
               <h3 className="text-sm font-bold text-[#191c1d]">No Verified Fee Payment Receipt Found</h3>
               <p className="text-xs text-[#757682] max-w-sm mx-auto">
                 No completed institutional fee payments are recorded on file for this account. Once a payment is confirmed, official digitally signed receipts will appear here automatically.

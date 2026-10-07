@@ -61,7 +61,7 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
                 onClick={handlePrint}
                 className="px-3 py-1.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
               >
-                <span className="material-symbols-outlined text-[16px]">print</span>
+                <span className="font-bold text-[10px]">[PRINT]</span>
                 <span>Print Slip</span>
               </button>
             )}
@@ -70,7 +70,7 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
               onClick={onClose}
               className="p-1.5 text-[#757682] hover:text-[#191c1d] hover:bg-[#f3f4f5] rounded-lg transition-colors cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[20px]">close</span>
+              <span className="font-bold text-[10px]">✕</span>
             </button>
           </div>
         </div>
@@ -84,7 +84,7 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
         ) : errorMsg ? (
           <div className="py-8 text-center space-y-3">
             <div className="w-12 h-12 bg-[#ffdad6] text-[#ba1a1a] rounded-full flex items-center justify-center mx-auto">
-              <span className="material-symbols-outlined text-[24px]">error</span>
+              <span className="font-bold text-[10px]">[!]</span>
             </div>
             <p className="text-sm font-bold text-[#ba1a1a]">{errorMsg}</p>
           </div>
@@ -93,7 +93,7 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
           <div className="py-6 space-y-6">
             <div className="p-5 rounded-2xl bg-[#ffdad6]/40 border-2 border-[#ba1a1a] space-y-3 text-center">
               <div className="w-12 h-12 bg-[#ba1a1a] text-white rounded-full flex items-center justify-center mx-auto shadow-xs">
-                <span className="material-symbols-outlined text-[26px]">block</span>
+                <span className="font-bold text-[10px]">[BLOCKED]</span>
               </div>
               <h3 className="text-lg font-extrabold text-[#ba1a1a] tracking-tight">
                 EXAMINATION ADMIT CARD WITHHELD
@@ -109,9 +109,7 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
                   key={idx}
                   className="p-3.5 rounded-xl border border-[#ffdad6] bg-[#fff8f7] flex items-start gap-3 text-left"
                 >
-                  <span className="material-symbols-outlined text-[#ba1a1a] text-[20px] shrink-0 mt-0.5">
-                    warning
-                  </span>
+                  <span className="font-bold text-[10px]">[!]</span>
                   <div className="text-xs text-[#191c1d]">
                     <p className="font-semibold">{reason}</p>
                   </div>
@@ -129,7 +127,7 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
                   }}
                   className="px-6 py-3 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-xl text-xs font-bold transition-all shadow-md inline-flex items-center gap-2 cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-[18px]">credit_card</span>
+                  
                   <span>Pay ₹{data.totalOutstandingDue.toLocaleString('en-IN')} to Clear Accounts Hold</span>
                 </button>
               </div>
@@ -203,7 +201,7 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
               {/* Candidate Photo & Barcode Block */}
               <div className="sm:col-span-3 flex flex-col items-center justify-between border-t sm:border-t-0 sm:border-l border-[#e1e3e4] sm:pl-4 pt-3 sm:pt-0">
                 <div className="w-24 h-28 border-2 border-[#757682] rounded bg-[#f8f9fa] flex flex-col items-center justify-center text-center p-1">
-                  <span className="material-symbols-outlined text-[36px] text-[#757682]">person</span>
+                  
                   <span className="text-[8px] uppercase font-bold text-[#757682]">Affix Photo</span>
                 </div>
                 <div className="w-full text-center mt-2">

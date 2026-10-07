@@ -89,7 +89,7 @@ export const StaffAcademicJourneyModal: React.FC<StaffAcademicJourneyModalProps>
         <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#f8f9fa] flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#00236f] text-white flex items-center justify-center shadow-sm">
-              <span className="material-symbols-outlined text-[24px]">school</span>
+              
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -107,7 +107,7 @@ export const StaffAcademicJourneyModal: React.FC<StaffAcademicJourneyModalProps>
             onClick={onClose}
             className="w-8 h-8 rounded-lg flex items-center justify-center text-[#757682] hover:bg-[#e1e3e4] hover:text-[#191c1d] transition-all cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[20px]">close</span>
+            <span className="font-bold text-[10px]">✕</span>
           </button>
         </div>
 
@@ -121,9 +121,7 @@ export const StaffAcademicJourneyModal: React.FC<StaffAcademicJourneyModalProps>
               onClick={() => setShowAddForm(!showAddForm)}
               className="px-3 py-1.5 bg-[#00236f] text-white rounded-lg text-xs font-bold hover:brightness-110 flex items-center gap-1.5 cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[16px]">
-                {showAddForm ? 'close' : 'add'}
-              </span>
+              
               <span>{showAddForm ? 'Cancel Entry' : 'Record Academic Degree / Patent'}</span>
             </button>
           )}
@@ -134,7 +132,7 @@ export const StaffAcademicJourneyModal: React.FC<StaffAcademicJourneyModalProps>
           {showAddForm && (
             <form onSubmit={handleAdd} className="p-4 bg-white border border-[#e1e3e4] rounded-xl shadow-xs space-y-3 text-xs">
               <h4 className="font-bold text-sm text-[#00236f] flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[18px]">post_add</span>
+                
                 Record New Academic Degree or Research Milestone
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -262,7 +260,7 @@ export const StaffAcademicJourneyModal: React.FC<StaffAcademicJourneyModalProps>
             </div>
           ) : journeys.length === 0 ? (
             <div className="h-40 flex flex-col items-center justify-center text-xs text-[#757682] space-y-2">
-              <span className="material-symbols-outlined text-4xl text-[#c5c5d3]">school</span>
+              
               <p>No faculty academic journey records yet.</p>
             </div>
           ) : (
@@ -283,9 +281,7 @@ export const StaffAcademicJourneyModal: React.FC<StaffAcademicJourneyModalProps>
                       <p className="text-xs font-semibold text-[#00236f] mt-1">{j.degree_name}</p>
                     </div>
                     {j.verified && (
-                      <span className="material-symbols-outlined text-emerald-600 text-[18px]" title="University Dean Verified">
-                        verified
-                      </span>
+                      <span className="font-bold text-[10px]">✓</span>
                     )}
                   </div>
 

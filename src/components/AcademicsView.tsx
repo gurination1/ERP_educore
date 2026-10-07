@@ -353,7 +353,7 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
       {/* Download Alert Toast */}
       {downloadSuccess && (
         <div className="p-3.5 bg-[#86f2e4]/20 border border-[#86f2e4] text-[#006a61] rounded-xl text-xs font-bold flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">verified</span>
+          <span className="font-bold text-[10px]">✓</span>
           <span>{downloadSuccess}</span>
         </div>
       )}
@@ -362,7 +362,7 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
           <div className="flex items-center gap-2.5 text-[#00236f]">
-            <span className="material-symbols-outlined text-[20px]">school</span>
+            
             <h4 className="text-xs font-bold uppercase tracking-wider text-[#757682]">
               Degree Program
             </h4>
@@ -377,7 +377,7 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
 
         <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
           <div className="flex items-center gap-2.5 text-[#006a61]">
-            <span className="material-symbols-outlined text-[20px]">fact_check</span>
+            
             <h4 className="text-xs font-bold uppercase tracking-wider text-[#757682]">
               Evaluation Ratio
             </h4>
@@ -392,7 +392,7 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
 
         <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
           <div className="flex items-center gap-2.5 text-[#ba1a1a]">
-            <span className="material-symbols-outlined text-[20px]">rule</span>
+            
             <h4 className="text-xs font-bold uppercase tracking-wider text-[#757682]">
               Statutory Attendance Rule
             </h4>
@@ -456,7 +456,7 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
                   onClick={() => setSelectedCourse(course)}
                   className="text-xs font-bold text-[#00236f] hover:underline flex items-center gap-1 cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-[16px]">visibility</span>
+                  <span className="font-bold text-[10px]">[VIEW]</span>
                   <span>View Detailed Syllabus</span>
                 </button>
 
@@ -465,7 +465,7 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
                   onClick={() => handleDownloadSyllabus(course)}
                   className="px-3 py-1.5 bg-[#f3f4f5] hover:bg-[#e1e3e4] text-[#191c1d] rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-[15px]">download</span>
+                  <span className="font-bold text-[10px]">[DL]</span>
                   <span>Download Syllabus</span>
                 </button>
               </div>
@@ -497,7 +497,7 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
                 onClick={() => setSelectedCourse(null)}
                 className="w-8 h-8 rounded-full flex items-center justify-center text-[#757682] hover:bg-[#edeeef] cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <span className="font-bold text-[10px]">✕</span>
               </button>
             </div>
 
@@ -572,7 +572,7 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
                   onClick={() => handleDownloadSyllabus(selectedCourse)}
                   className="px-4 py-2 bg-[#00236f] text-white rounded-lg text-xs font-bold hover:bg-[#1e3a8a] flex items-center gap-1.5 cursor-pointer shadow-xs"
                 >
-                  <span className="material-symbols-outlined text-[16px]">download</span>
+                  <span className="font-bold text-[10px]">[DL]</span>
                   <span>Download Document</span>
                 </button>
               </div>

@@ -202,7 +202,7 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
         <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-[#00236f] text-white flex items-center justify-center shadow-xs">
-              <span className="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+              
             </div>
             <div>
               <h3 className="text-base font-bold text-[#191c1d]">Targeted Fee Settlement</h3>
@@ -213,13 +213,13 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
             </div>
           </div>
           <button onClick={onClose} className="text-[#757682] hover:text-[#191c1d] p-1 rounded-lg hover:bg-[#f3f4f5]">
-            <span className="material-symbols-outlined text-[22px]">close</span>
+            <span className="font-bold text-[10px]">✕</span>
           </button>
         </div>
 
         {errorMsg && (
           <div className="p-3 bg-[#ffdad6] border border-[#ba1a1a]/30 text-[#ba1a1a] rounded-lg text-xs font-semibold flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px]">error</span>
+            <span className="font-bold text-[10px]">[!]</span>
             <span>{errorMsg}</span>
           </div>
         )}
@@ -248,7 +248,7 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
                 onClick={() => selectCategoryOnly('hostel')}
                 className="px-2.5 py-1 bg-[#fef3c7] hover:bg-[#fde68a] text-[#b45309] rounded-lg text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[14px]">bed</span>
+                
                 <span>Hostel Fee Only</span>
               </button>
             )}
@@ -258,7 +258,7 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
                 onClick={() => selectCategoryOnly('transport')}
                 className="px-2.5 py-1 bg-[#dbeafe] hover:bg-[#bfdbfe] text-[#1e40af] rounded-lg text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[14px]">directions_bus</span>
+                
                 <span>Transport Fee Only</span>
               </button>
             )}
@@ -268,7 +268,7 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
                 onClick={() => selectCategoryOnly('tuition')}
                 className="px-2.5 py-1 bg-[#ede9fe] hover:bg-[#ddd6fe] text-[#5b21b6] rounded-lg text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[14px]">school</span>
+                
                 <span>Tuition Only</span>
               </button>
             )}
@@ -302,9 +302,7 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
                     className="w-4 h-4 text-[#00236f] rounded border-[#e1e3e4] focus:ring-[#00236f]"
                   />
                   <div className="w-7 h-7 rounded-lg bg-white border border-[#e1e3e4] flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-[16px] text-[#00236f]">
-                      {getHeadIcon(item.category)}
-                    </span>
+                    
                   </div>
                   <div className="truncate">
                     <h4 className="text-xs font-bold text-[#191c1d] truncate">{item.title}</h4>
@@ -357,7 +355,7 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
                     : 'border-[#e1e3e4] bg-[#f8f9fa] text-[#444651]'
                 }`}
               >
-                <span className="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+                
                 <span className="text-[11px]">UPI / QR</span>
               </button>
 
@@ -370,7 +368,7 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
                     : 'border-[#e1e3e4] bg-[#f8f9fa] text-[#444651]'
                 }`}
               >
-                <span className="material-symbols-outlined text-[18px]">account_balance</span>
+                
                 <span className="text-[11px]">Net Banking</span>
               </button>
 
@@ -383,7 +381,7 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
                     : 'border-[#e1e3e4] bg-[#f8f9fa] text-[#444651]'
                 }`}
               >
-                <span className="material-symbols-outlined text-[18px]">credit_card</span>
+                
                 <span className="text-[11px]">Debit/Credit</span>
               </button>
 
@@ -396,7 +394,7 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
                     : 'border-[#e1e3e4] bg-[#f8f9fa] text-[#444651]'
                 }`}
               >
-                <span className="material-symbols-outlined text-[18px]">payments</span>
+                
                 <span className="text-[11px]">Cash Counter</span>
               </button>
             </div>
@@ -460,7 +458,7 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
               disabled={isProcessing || totalAmount <= 0}
               className="px-6 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white font-bold rounded-lg transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[18px]">verified</span>
+              <span className="font-bold text-[10px]">✓</span>
               <span>{isProcessing ? 'Processing Transaction...' : `Confirm & Pay ₹ ${totalAmount.toLocaleString('en-IN')}`}</span>
             </button>
           </div>

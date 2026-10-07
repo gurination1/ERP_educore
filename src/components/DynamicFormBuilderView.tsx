@@ -132,9 +132,7 @@ export const DynamicFormBuilderView: React.FC<DynamicFormBuilderViewProps> = ({ 
             onClick={() => setIsCreatingNew(!isCreatingNew)}
             className="px-4 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-2 shadow-xs cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[18px]">
-              {isCreatingNew ? 'close' : 'add'}
-            </span>
+            
             <span>{isCreatingNew ? 'Cancel Builder' : 'Create New Form Schema'}</span>
           </button>
         )}
@@ -198,7 +196,7 @@ export const DynamicFormBuilderView: React.FC<DynamicFormBuilderViewProps> = ({ 
                   onClick={handleAddField}
                   className="px-3 py-1 bg-[#86f2e4]/30 text-[#006a61] hover:bg-[#86f2e4]/50 rounded text-xs font-bold flex items-center gap-1"
                 >
-                  <span className="material-symbols-outlined text-[14px]">add</span>
+                  <span className="font-bold text-[10px]">+</span>
                   <span>Add Field</span>
                 </button>
               </div>
@@ -260,7 +258,7 @@ export const DynamicFormBuilderView: React.FC<DynamicFormBuilderViewProps> = ({ 
                     onClick={() => handleRemoveField(idx)}
                     className="text-[#ba1a1a] hover:text-[#900000] p-1"
                   >
-                    <span className="material-symbols-outlined text-[18px]">delete</span>
+                    <span className="font-bold text-[10px]">[DEL]</span>
                   </button>
                 </div>
               ))}
@@ -343,9 +341,7 @@ export const DynamicFormBuilderView: React.FC<DynamicFormBuilderViewProps> = ({ 
                       onClick={() => setPreviewMode(!previewMode)}
                       className="px-3 py-1.5 bg-[#f3f4f5] hover:bg-[#e1e3e4] text-[#191c1d] rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-[15px]">
-                        {previewMode ? 'format_list_bulleted' : 'edit_note'}
-                      </span>
+                      
                       <span>{previewMode ? 'View Submissions' : 'Preview Student Form'}</span>
                     </button>
                   )}
@@ -355,7 +351,7 @@ export const DynamicFormBuilderView: React.FC<DynamicFormBuilderViewProps> = ({ 
 
               {submissionSuccess && (
                 <div className="mt-4 p-3.5 bg-[#86f2e4]/30 border border-[#86f2e4] text-[#006a61] rounded-xl text-xs font-bold flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                  <span className="font-bold text-[10px]">✓</span>
                   <span>{submissionSuccess}</span>
                 </div>
               )}
@@ -482,7 +478,7 @@ export const DynamicFormBuilderView: React.FC<DynamicFormBuilderViewProps> = ({ 
                       type="submit"
                       className="px-6 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-colors shadow-xs cursor-pointer flex items-center gap-1.5"
                     >
-                      <span className="material-symbols-outlined text-[16px]">send</span>
+                      
                       <span>Submit Form Response</span>
                     </button>
                   </div>

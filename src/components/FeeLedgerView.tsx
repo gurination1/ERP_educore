@@ -151,35 +151,35 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                 onClick={() => onOpenPayModal(undefined, activeStudentObj)}
                 className="px-4 py-2 bg-[#00236f] text-white rounded-lg text-xs font-bold hover:bg-[#1e3a8a] flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
               >
-                <span className="material-symbols-outlined text-[16px]">point_of_sale</span>
+                
                 <span>Collect Student Fee</span>
               </button>
               <button
                 onClick={() => { setIsAssignModalOpen(true); setAssignError(null); }}
                 className="px-4 py-2 bg-white border border-[#e1e3e4] text-[#191c1d] rounded-lg text-xs font-bold hover:bg-[#f8f9fa] flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
               >
-                <span className="material-symbols-outlined text-[16px]">add_circle</span>
+                <span className="font-bold text-[10px]">+</span>
                 <span>Assign Fee Head</span>
               </button>
               <button
                 onClick={() => window.print()}
                 className="px-4 py-2 bg-white border border-[#e1e3e4] text-[#191c1d] rounded-lg text-xs font-bold hover:bg-[#f8f9fa] flex items-center gap-1.5 shadow-xs cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[16px]">print</span>
+                <span className="font-bold text-[10px]">[PRINT]</span>
                 <span>Print Ledger</span>
               </button>
             </>
           ) : isStaff ? (
             <>
               <span className="px-3 py-1.5 bg-[#f3f4f5] text-[#535f70] text-xs font-semibold rounded-lg border border-[#e1e3e4] flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[16px]">shield_person</span>
+                
                 <span>Faculty Advisory Mode</span>
               </span>
               <button
                 onClick={() => window.print()}
                 className="px-4 py-2 bg-white border border-[#e1e3e4] text-[#191c1d] rounded-lg text-xs font-bold hover:bg-[#f8f9fa] flex items-center gap-1.5 shadow-xs cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[16px]">print</span>
+                <span className="font-bold text-[10px]">[PRINT]</span>
                 <span>Print Statement</span>
               </button>
             </>
@@ -188,7 +188,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
               onClick={() => onOpenPayModal(undefined, currentStudent)}
               className="px-5 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 shadow-xs cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[18px]">credit_card</span>
+              
               <span>Make Fee Payment</span>
             </button>
           )}
@@ -200,9 +200,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
         <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="relative flex-1">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#757682] text-[18px]">
-                search
-              </span>
+              
               <input
                 type="text"
                 placeholder="Search student by UID / Roll No (STU-008), Name (Rohan), Department, or Email..."
@@ -255,7 +253,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
             {/* Currently Audited Student Badge */}
             {activeStudentObj && (
               <div className="flex items-center gap-2 bg-[#f0f4ff] border border-[#dce1ff] px-3 py-1.5 rounded-lg shrink-0 text-xs">
-                <span className="material-symbols-outlined text-[#00236f] text-[18px]">verified_user</span>
+                
                 <div>
                   <span className="text-[10px] uppercase font-bold text-[#757682] block">Auditing Account</span>
                   <span className="font-bold text-[#00236f]">
@@ -414,7 +412,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                     <td className="py-3.5 px-4">
                       {item.discount_amount > 0 ? (
                         <span className="px-2 py-0.5 bg-[#86f2e4]/30 text-[#006a61] rounded text-[11px] font-bold inline-flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[13px]">workspace_premium</span>
+                          
                           <span>-₹ {item.discount_amount.toLocaleString('en-IN')}</span>
                         </span>
                       ) : (
@@ -460,7 +458,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                           onClick={() => onOpenReceiptModal()}
                           className="text-[#006a61] font-bold text-xs hover:underline inline-flex items-center gap-1"
                         >
-                          <span className="material-symbols-outlined text-[14px]">receipt</span>
+                          
                           <span>Receipt</span>
                         </button>
                       )}
@@ -526,7 +524,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                         onClick={() => onOpenReceiptModal(pay.receipt_no)}
                         className="px-3 py-1 bg-[#f3f4f5] hover:bg-[#dce1ff] text-[#00236f] rounded text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer"
                       >
-                        <span className="material-symbols-outlined text-[14px]">download</span>
+                        <span className="font-bold text-[10px]">[DL]</span>
                         <span>Print</span>
                       </button>
                     </td>
@@ -553,14 +551,14 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                 onClick={() => setIsAssignModalOpen(false)}
                 className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10"
               >
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <span className="font-bold text-[10px]">✕</span>
               </button>
             </div>
 
             <form onSubmit={handleAssignHead} className="p-6 space-y-4">
               {assignError && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 font-semibold flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px]">error</span>
+                  <span className="font-bold text-[10px]">[!]</span>
                   <span>{assignError}</span>
                 </div>
               )}
@@ -641,7 +639,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                     <span>Assigning...</span>
                   ) : (
                     <>
-                      <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                      <span className="font-bold text-[10px]">✓</span>
                       <span>Confirm Assessment</span>
                     </>
                   )}

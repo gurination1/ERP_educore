@@ -68,7 +68,7 @@ Extracurriculars: National Science Olympiad Finalist, School Coding Club Preside
         {/* Header */}
         <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-linear-to-r from-[#00236f] to-[#1a4bb0] text-white">
           <div className="flex items-center gap-2.5">
-            <span className="material-symbols-outlined text-[24px] text-amber-300">auto_awesome</span>
+            
             <div>
               <h2 className="text-base font-bold leading-tight">AI Admission Document Auto-Parser</h2>
               <p className="text-xs text-blue-100">Powered by Google Gemini • Zero manual typing</p>
@@ -105,7 +105,7 @@ Extracurriculars: National Science Olympiad Finalist, School Coding Club Preside
                   onClick={() => setInputText(sampleApplicant)}
                   className="text-xs font-semibold text-[#00236f] hover:underline flex items-center gap-1"
                 >
-                  <span className="material-symbols-outlined text-[16px]">content_paste</span>
+                  
                   Load Sample Engineering Application
                 </button>
                 <span className="text-[11px] text-[#757682]">
@@ -115,7 +115,7 @@ Extracurriculars: National Science Olympiad Finalist, School Coding Club Preside
 
               {error && (
                 <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">error</span>
+                  <span className="font-bold text-[10px]">[!]</span>
                   <span>{error}</span>
                 </div>
               )}
@@ -125,7 +125,7 @@ Extracurriculars: National Science Olympiad Finalist, School Coding Club Preside
             <div className="space-y-4">
               <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-emerald-600">verified</span>
+                  <span className="font-bold text-[10px]">✓</span>
                   <div>
                     <p className="text-xs font-bold text-emerald-900">Successfully Extracted by Gemini AI</p>
                     <p className="text-[11px] text-emerald-700">
@@ -202,7 +202,7 @@ Extracurriculars: National Science Olympiad Finalist, School Coding Club Preside
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined text-[16px]">auto_awesome</span>
+                  
                   Extract with Gemini AI
                 </>
               )}
@@ -213,7 +213,7 @@ Extracurriculars: National Science Olympiad Finalist, School Coding Club Preside
               onClick={handleConfirmApply}
               className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm flex items-center gap-1.5 transition-all"
             >
-              <span className="material-symbols-outlined text-[16px]">check_circle</span>
+              <span className="font-bold text-[10px]">✓</span>
               Auto-Fill Admission Form
             </button>
           )}

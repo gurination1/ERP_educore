@@ -386,7 +386,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[#00236f] text-[28px]">manage_accounts</span>
+            
             <h2 className="text-2xl font-bold text-[#191c1d] tracking-tight">
               Institutional User & Staff Governance
             </h2>
@@ -401,7 +401,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
             onClick={openHireModal}
             className="px-4 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[17px]">person_add</span>
+            
             <span>Hire & Provision Staff</span>
           </button>
           <button
@@ -409,7 +409,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
             className="p-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg text-[#444651]"
             title="Refresh Staff Roster"
           >
-            <span className="material-symbols-outlined text-[18px]">refresh</span>
+            <span className="font-bold text-[10px]">[REFRESH]</span>
           </button>
         </div>
       </div>
@@ -424,13 +424,11 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
           }`}
         >
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px]">
-              {feedback.type === 'success' ? 'check_circle' : 'error'}
-            </span>
+            
             <span>{feedback.message}</span>
           </div>
           <button onClick={() => setFeedback(null)} className="hover:opacity-75 cursor-pointer">
-            <span className="material-symbols-outlined text-[16px]">close</span>
+            <span className="font-bold text-[10px]">✕</span>
           </button>
         </div>
       )}
@@ -500,9 +498,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
         {/* Search and Status Dropdown */}
         <div className="flex items-center gap-3">
           <div className="relative">
-            <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[#757682] text-[18px]">
-              search
-            </span>
+            
             <input
               type="text"
               value={searchQuery}
@@ -619,7 +615,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                               className="p-1 text-amber-600 hover:bg-amber-50 rounded border border-transparent hover:border-amber-300 cursor-pointer"
                               title="Apex Universal Override (Super Admin Omnipotent Edit)"
                             >
-                              <span className="material-symbols-outlined text-[16px]">shield_person</span>
+                              
                             </button>
                           )}
                           <button
@@ -627,14 +623,14 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                             className="p-1 text-[#444651] hover:text-[#00236f] hover:bg-white rounded border border-transparent hover:border-[#e1e3e4] cursor-pointer"
                             title="Edit User Profile"
                           >
-                            <span className="material-symbols-outlined text-[16px]">edit</span>
+                            <span className="font-bold text-[10px]">[EDIT]</span>
                           </button>
                           <button
                             onClick={() => openResetPasswordModal(user)}
                             className="p-1 text-[#006a61] hover:bg-teal-50 rounded border border-transparent hover:border-teal-200 cursor-pointer"
                             title="Override & Reset Password"
                           >
-                            <span className="material-symbols-outlined text-[16px]">key</span>
+                            
                           </button>
                           <button
                             disabled={actionLoadingId === user.id || user.id === currentUser?.id}
@@ -646,9 +642,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                             }`}
                             title={isUserActive ? 'Suspend Account' : 'Reactivate Account'}
                           >
-                            <span className="material-symbols-outlined text-[16px]">
-                              {isUserActive ? 'block' : 'check_circle'}
-                            </span>
+                            
                           </button>
                         </div>
                       </td>
@@ -667,7 +661,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
           <div className="bg-white rounded-2xl max-w-xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-linear-to-r from-[#00236f] to-[#1e3a8a] text-white">
               <div className="flex items-center gap-2.5">
-                <span className="material-symbols-outlined text-[22px] text-amber-300">person_add</span>
+                
                 <div>
                   <h3 className="text-base font-bold">Hire & Provision Staff Role</h3>
                   <p className="text-[11px] text-blue-100">Punjab College ERP Institutional Authority</p>
@@ -677,7 +671,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                 onClick={() => setIsHireModalOpen(false)}
                 className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <span className="font-bold text-[10px]">✕</span>
               </button>
             </div>
 
@@ -836,7 +830,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                   disabled={actionLoadingId === 'hire'}
                   className="px-5 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
                 >
-                  <span className="material-symbols-outlined text-[16px]">how_to_reg</span>
+                  
                   <span>Provision Credentials</span>
                 </button>
               </div>
@@ -851,14 +845,14 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
           <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-[#f8f9fa]">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#00236f] text-[20px]">edit</span>
+                <span className="font-bold text-[10px]">[EDIT]</span>
                 <h3 className="text-sm font-bold text-[#191c1d]">Edit Employee Profile</h3>
               </div>
               <button
                 onClick={() => setIsEditModalOpen(false)}
                 className="text-[#757682] hover:text-[#191c1d] cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <span className="font-bold text-[10px]">✕</span>
               </button>
             </div>
 
@@ -959,14 +953,14 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
           <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-red-50 text-red-900">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[20px] text-[#ba1a1a]">lock_reset</span>
+                
                 <h3 className="text-sm font-bold">Admin Password Reset Override</h3>
               </div>
               <button
                 onClick={() => setIsResetPasswordModalOpen(false)}
                 className="text-red-700 hover:text-red-900 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <span className="font-bold text-[10px]">✕</span>
               </button>
             </div>
 
@@ -1010,7 +1004,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                   disabled={actionLoadingId === selectedUser.id}
                   className="px-5 py-2 bg-[#ba1a1a] hover:bg-[#93000a] text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
                 >
-                  <span className="material-symbols-outlined text-[16px]">lock_reset</span>
+                  
                   <span>Commit Password Override</span>
                 </button>
               </div>
@@ -1024,7 +1018,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="p-6 bg-linear-to-r from-[#00236f] to-[#1e3a8a] text-white text-center">
-              <span className="material-symbols-outlined text-[36px] text-amber-300">badge</span>
+              
               <h3 className="text-lg font-bold mt-1">Staff Appointment & Credentials Slip</h3>
               <p className="text-[11px] text-blue-100 mt-0.5">EduCore Institutional Governance Authority</p>
             </div>
@@ -1063,9 +1057,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                       onClick={() => handleCopy(credentialsSlip.username, 'slip_user')}
                       className="text-[#00236f] hover:underline cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-[14px]">
-                        {copiedKey === 'slip_user' ? 'check' : 'content_copy'}
-                      </span>
+                      
                     </button>
                   </div>
                 </div>
@@ -1077,9 +1069,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                       onClick={() => handleCopy(credentialsSlip.temporaryPassword, 'slip_pwd')}
                       className="text-[#00236f] hover:underline cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-[14px]">
-                        {copiedKey === 'slip_pwd' ? 'check' : 'content_copy'}
-                      </span>
+                      
                     </button>
                   </div>
                 </div>
@@ -1094,7 +1084,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                   onClick={() => window.print()}
                   className="px-3 py-2 border border-[#e1e3e4] rounded-lg text-xs font-bold text-[#444651] hover:bg-[#f8f9fa] flex items-center gap-1 cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-[15px]">print</span>
+                  <span className="font-bold text-[10px]">[PRINT]</span>
                   <span>Print Slip</span>
                 </button>
                 <button
@@ -1115,7 +1105,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
           <div className="bg-white rounded-2xl max-w-lg w-full flex flex-col shadow-2xl border border-amber-300 overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="px-6 py-4 border-b border-amber-200 flex items-center justify-between bg-gradient-to-r from-amber-700 via-amber-800 to-[#00236f] text-white">
               <div className="flex items-center gap-2.5">
-                <span className="material-symbols-outlined text-[24px] text-amber-300">shield_person</span>
+                
                 <div>
                   <h3 className="text-base font-bold">Apex Universal Override</h3>
                   <p className="text-[11px] text-amber-100">Super Admin Omnipotent Directive • Append-Only Audit Trail</p>
@@ -1125,14 +1115,14 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                 onClick={() => setIsApexOverrideModalOpen(false)}
                 className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <span className="font-bold text-[10px]">✕</span>
               </button>
             </div>
 
             <form onSubmit={handleApexOverrideSubmit} className="p-6 space-y-3.5 text-xs">
               <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-[11px] space-y-1">
                 <div className="font-bold flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[16px]">verified</span>
+                  <span className="font-bold text-[10px]">✓</span>
                   <span>Target: {selectedUser.full_name} ({selectedUser.enterprise_uid || selectedUser.id})</span>
                 </div>
                 <p className="text-[10px] text-amber-800">
@@ -1240,7 +1230,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                   disabled={actionLoadingId === selectedUser.id}
                   className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-xs cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-[16px]">verified</span>
+                  <span className="font-bold text-[10px]">✓</span>
                   <span>{actionLoadingId === selectedUser.id ? 'Overriding...' : 'Apply Universal Override'}</span>
                 </button>
               </div>

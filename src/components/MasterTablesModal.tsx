@@ -41,7 +41,7 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
         <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#f8f9fa] flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#00236f] text-white flex items-center justify-center shadow-sm">
-              <span className="material-symbols-outlined text-[24px]">account_balance</span>
+              
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -59,7 +59,7 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
             onClick={onClose}
             className="w-8 h-8 rounded-lg flex items-center justify-center text-[#757682] hover:bg-[#e1e3e4] hover:text-[#191c1d] transition-all cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[20px]">close</span>
+            <span className="font-bold text-[10px]">✕</span>
           </button>
         </div>
 

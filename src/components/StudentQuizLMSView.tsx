@@ -209,7 +209,7 @@ export const StudentQuizLMSView: React.FC<StudentQuizLMSViewProps> = ({ currentU
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-[#00236f] via-[#103e91] to-[#00236f] text-white p-6 rounded-2xl shadow-md border border-white/10">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[11px] font-mono text-cyan-200 mb-2 border border-white/10">
-            <span className="material-symbols-outlined text-[14px]">psychology</span>
+            
             <span>MRSPTU CBCS ACADEMIC LMS & CONTINUOUS ASSESSMENT (CA)</span>
           </div>
           <h1 className="text-2xl font-black tracking-tight">Student Quiz & LMS Learning Portal</h1>
@@ -261,7 +261,7 @@ export const StudentQuizLMSView: React.FC<StudentQuizLMSViewProps> = ({ currentU
                 <div className="flex items-center gap-3">
                   {!isSubmitted && (
                     <div className="flex items-center gap-2 px-3.5 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-full font-mono text-sm font-bold shadow-xs">
-                      <span className="material-symbols-outlined text-[18px] animate-pulse">timer</span>
+                      
                       <span>{formatTimer(timeLeftSeconds)}</span>
                     </div>
                   )}
@@ -271,7 +271,7 @@ export const StudentQuizLMSView: React.FC<StudentQuizLMSViewProps> = ({ currentU
                       onClick={handleSubmitQuiz}
                       className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-[16px]">done_all</span>
+                      <span className="font-bold text-[10px]">✓</span>
                       <span>Finish & Submit</span>
                     </button>
                   ) : (
@@ -294,9 +294,7 @@ export const StudentQuizLMSView: React.FC<StudentQuizLMSViewProps> = ({ currentU
                 }`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[32px] text-emerald-700">
-                        {quizScore.passed ? 'workspace_premium' : 'warning'}
-                      </span>
+                      
                       <div>
                         <h3 className="text-lg font-black">
                           {quizScore.passed ? 'Assessment Passed Successfully!' : 'Needs Revision'}
@@ -378,7 +376,7 @@ export const StudentQuizLMSView: React.FC<StudentQuizLMSViewProps> = ({ currentU
                         {isSubmitted && (
                           <div className="p-4 bg-blue-50/60 border border-blue-200 rounded-xl text-xs text-[#00236f] space-y-1">
                             <span className="font-bold flex items-center gap-1">
-                              <span className="material-symbols-outlined text-[16px]">info</span>
+                              
                               <span>Examiner Answer Key & Explanation:</span>
                             </span>
                             <p className="text-[11px] leading-relaxed">{q.explanation}</p>
@@ -393,7 +391,7 @@ export const StudentQuizLMSView: React.FC<StudentQuizLMSViewProps> = ({ currentU
                             onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
                             className="px-4 py-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg text-xs font-bold text-[#444651] disabled:opacity-30 cursor-pointer flex items-center gap-1"
                           >
-                            <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+                            <span className="font-bold text-[10px]">←</span>
                             <span>Previous</span>
                           </button>
 
@@ -404,7 +402,7 @@ export const StudentQuizLMSView: React.FC<StudentQuizLMSViewProps> = ({ currentU
                             className="px-4 py-2 bg-[#00236f] hover:bg-[#1a4bb0] text-white rounded-lg text-xs font-bold disabled:opacity-30 cursor-pointer flex items-center gap-1"
                           >
                             <span>Next Question</span>
-                            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                            <span className="font-bold text-[10px]">→</span>
                           </button>
                         </div>
                       </div>
@@ -500,7 +498,7 @@ export const StudentQuizLMSView: React.FC<StudentQuizLMSViewProps> = ({ currentU
                     onClick={() => handleStartQuiz(quiz)}
                     className="w-full py-2.5 bg-[#00236f] hover:bg-[#1a4bb0] text-white rounded-xl font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-[16px]">play_arrow</span>
+                    
                     <span>Start Online Assessment</span>
                   </button>
                 </div>
@@ -526,7 +524,7 @@ export const StudentQuizLMSView: React.FC<StudentQuizLMSViewProps> = ({ currentU
               >
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200 flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-[22px]">menu_book</span>
+                    
                   </div>
                   <div>
                     <h3 className="text-xs font-bold text-[#191c1d]">{res.title}</h3>
@@ -539,7 +537,7 @@ export const StudentQuizLMSView: React.FC<StudentQuizLMSViewProps> = ({ currentU
                   onClick={() => alert(`Simulated downloading: ${res.title}`)}
                   className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1"
                 >
-                  <span className="material-symbols-outlined text-[14px]">download</span>
+                  <span className="font-bold text-[10px]">[DL]</span>
                   <span>Get PDF</span>
                 </button>
               </div>

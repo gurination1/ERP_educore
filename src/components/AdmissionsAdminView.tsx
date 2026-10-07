@@ -379,7 +379,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
             }}
             className="flex items-center gap-1.5 text-xs font-bold text-[#00236f] hover:underline cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+            <span className="font-bold text-[10px]">←</span>
             <span>Return to Admissions Adjudication Roster</span>
           </button>
         </div>
@@ -406,7 +406,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[#00236f] text-[26px]">how_to_reg</span>
+            
             <h2 className="text-2xl font-bold text-[#191c1d] tracking-tight">
               Admissions & Enrollment Governance
             </h2>
@@ -422,7 +422,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
               onClick={() => setIsDirectAdmitOpen(true)}
               className="px-4 py-2 bg-[#006a61] hover:bg-[#004f48] text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[16px]">verified_user</span>
+              
               <span>Direct College Admission</span>
             </button>
           )}
@@ -430,7 +430,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
             onClick={() => setShowManualIntake(true)}
             className="px-4 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[16px]">person_add</span>
+            
             <span>Applicant Portal Form</span>
           </button>
           <button
@@ -438,14 +438,14 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
             className="p-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg text-[#444651]"
             title="Refresh Admissions Roster"
           >
-            <span className="material-symbols-outlined text-[18px]">refresh</span>
+            <span className="font-bold text-[10px]">[REFRESH]</span>
           </button>
         </div>
       </div>
 
       {statusMessage && (
         <div className="p-3.5 bg-[#86f2e4]/30 border border-[#86f2e4] text-[#006a61] rounded-xl text-xs font-bold flex items-center gap-2 animate-fadeIn">
-          <span className="material-symbols-outlined text-[18px]">check_circle</span>
+          <span className="font-bold text-[10px]">✓</span>
           <span>{statusMessage}</span>
         </div>
       )}
@@ -453,14 +453,14 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
       {errorMessage && (
         <div className="p-3.5 bg-[#ffdad6]/50 border border-[#ba1a1a]/30 text-[#ba1a1a] rounded-xl text-xs font-bold flex items-center justify-between gap-2 animate-fadeIn">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px]">error</span>
+            <span className="font-bold text-[10px]">[!]</span>
             <span>{errorMessage}</span>
           </div>
           <button
             onClick={() => setErrorMessage(null)}
             className="text-[#ba1a1a] hover:opacity-75 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[16px]">close</span>
+            <span className="font-bold text-[10px]">✕</span>
           </button>
         </div>
       )}
@@ -476,7 +476,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 : 'text-[#444651] hover:text-[#191c1d]'
             }`}
           >
-            <span className="material-symbols-outlined text-[17px]">how_to_reg</span>
+            
             <span>Admissions Roster & Scrutiny</span>
             <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-[#e1e3e4] text-[#444651]">
               {admissions.length}
@@ -494,7 +494,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 : 'text-[#444651] hover:text-[#191c1d]'
             }`}
           >
-            <span className="material-symbols-outlined text-[17px]">radar</span>
+            
             <span>Prospect CRM & Follow-Up Radar</span>
             {(followupStats?.overdue || 0) + (followupStats?.due_today || 0) > 0 ? (
               <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#ba1a1a] text-white animate-pulse">
@@ -511,7 +511,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
         <div className="flex items-center gap-3 px-2">
           {/* Cloud Telephony Toggle Switch */}
           <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-[#e1e3e4] shadow-2xs">
-            <span className="material-symbols-outlined text-[17px] text-[#00236f]">phone_iphone</span>
+            
             <div className="flex flex-col text-left">
               <span className="text-[11px] font-bold text-[#191c1d] leading-none">Cloud Telephony</span>
               <span className="text-[9px] text-[#757682] leading-none mt-0.5">iPhone Call Dock</span>
@@ -535,7 +535,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
           </div>
 
           <div className="hidden lg:flex items-center gap-1.5 text-[11px] text-[#757682]">
-            <span className="material-symbols-outlined text-[15px] text-[#006a61]">verified</span>
+            <span className="font-bold text-[10px]">✓</span>
             <span className="font-semibold">PTU Recall Engine</span>
           </div>
         </div>
@@ -572,7 +572,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
             }}
             className="px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
           >
-            <span className="material-symbols-outlined text-[15px]">dialpad</span>
+            
             <span>Manual Dial Pad</span>
           </button>
         </div>
@@ -584,9 +584,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
           {((followupStats?.overdue || 0) > 0 || (followupStats?.due_today || 0) > 0) && (
             <div className="p-4 bg-amber-50/90 border border-amber-300 rounded-xl text-amber-950 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xs">
               <div className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-amber-600 text-[26px] mt-0.5 animate-bounce">
-                  alarm_on
-                </span>
+                
                 <div>
                   <div className="font-bold text-xs uppercase tracking-wide text-amber-900 flex items-center gap-2">
                     <span>Admissions Recall & Follow-Up Radar Alert</span>
@@ -604,14 +602,14 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                   onClick={() => setTimeframeFilter('overdue')}
                   className="px-3.5 py-1.5 bg-[#ba1a1a] hover:bg-[#991b1b] text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1"
                 >
-                  <span className="material-symbols-outlined text-[15px]">warning</span>
+                  <span className="font-bold text-[10px]">[!]</span>
                   <span>View Overdue ({followupStats?.overdue || 0})</span>
                 </button>
                 <button
                   onClick={() => setTimeframeFilter('today')}
                   className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1"
                 >
-                  <span className="material-symbols-outlined text-[15px]">today</span>
+                  
                   <span>Due Today ({followupStats?.due_today || 0})</span>
                 </button>
               </div>
@@ -630,7 +628,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
             >
               <div className="flex items-center justify-between text-[#ba1a1a]">
                 <span className="text-[10px] uppercase font-bold tracking-wider">Overdue Callbacks</span>
-                <span className="material-symbols-outlined text-[18px]">timer_off</span>
+                
               </div>
               <h4 className="text-3xl font-black text-[#ba1a1a] mt-1.5">
                 {followupStats?.overdue ?? 0}
@@ -648,7 +646,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
             >
               <div className="flex items-center justify-between text-amber-700">
                 <span className="text-[10px] uppercase font-bold tracking-wider">Scheduled Today</span>
-                <span className="material-symbols-outlined text-[18px]">notifications_active</span>
+                
               </div>
               <h4 className="text-3xl font-black text-amber-700 mt-1.5">
                 {followupStats?.due_today ?? 0}
@@ -666,7 +664,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
             >
               <div className="flex items-center justify-between text-[#00236f]">
                 <span className="text-[10px] uppercase font-bold tracking-wider">P1 Walk-Ins (Hot Leads)</span>
-                <span className="material-symbols-outlined text-[18px]">local_fire_department</span>
+                
               </div>
               <h4 className="text-3xl font-black text-[#00236f] mt-1.5">
                 {followupStats?.p1_high_priority ?? 0}
@@ -679,7 +677,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
             >
               <div className="flex items-center justify-between text-[#006a61]">
                 <span className="text-[10px] uppercase font-bold tracking-wider">Admitted Converted</span>
-                <span className="material-symbols-outlined text-[18px]">verified</span>
+                <span className="font-bold text-[10px]">✓</span>
               </div>
               <h4 className="text-3xl font-black text-[#006a61] mt-1.5">
                 {followupStats?.converted ?? 0}
@@ -721,9 +719,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
 
             <div className="flex items-center gap-2">
               <div className="relative w-full md:w-64">
-                <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[#757682] text-[18px]">
-                  search
-                </span>
+                
                 <input
                   type="text"
                   placeholder="Search prospect, phone, roll..."
@@ -737,7 +733,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 className="p-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg text-[#444651] cursor-pointer"
                 title="Refresh Lead Queue"
               >
-                <span className="material-symbols-outlined text-[16px]">refresh</span>
+                <span className="font-bold text-[10px]">[REFRESH]</span>
               </button>
             </div>
           </div>
@@ -746,12 +742,12 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
           <div className="bg-white rounded-xl border border-[#e1e3e4] shadow-xs overflow-hidden">
             {crmLoading ? (
               <div className="p-12 text-center text-xs text-[#757682] flex flex-col items-center gap-2">
-                <span className="material-symbols-outlined text-[28px] animate-spin text-[#00236f]">progress_activity</span>
+                
                 <span>Scanning prospect pipeline & recall radar...</span>
               </div>
             ) : prospects.length === 0 ? (
               <div className="p-12 text-center text-xs text-[#757682] space-y-1">
-                <span className="material-symbols-outlined text-[36px] text-gray-400 block mb-1">done_all</span>
+                <span className="font-bold text-[10px]">✓</span>
                 <p className="font-bold text-sm text-[#191c1d]">No prospects match filter '{timeframeFilter}'.</p>
                 <p className="text-[11px]">All follow-ups are up to date, or search returned 0 candidate matches.</p>
               </div>
@@ -792,7 +788,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                             </div>
                             <div className="text-[10px] text-[#757682] font-normal flex items-center gap-1 mt-0.5">
                               <a href={`tel:${student.phone}`} className="hover:text-[#00236f] hover:underline flex items-center gap-0.5">
-                                <span className="material-symbols-outlined text-[12px]">phone</span>
+                                
                                 <span>{student.phone}</span>
                               </a>
                               <span>•</span>
@@ -815,12 +811,12 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                           <td className="py-3.5 px-4">
                             {isP1 ? (
                               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300">
-                                <span className="material-symbols-outlined text-[13px] text-rose-600">local_fire_department</span>
+                                
                                 <span>P1 High (Hot Lead)</span>
                               </span>
                             ) : student.followup_priority === 'p2_medium' ? (
                               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                                <span className="material-symbols-outlined text-[13px] text-amber-600">flag</span>
+                                
                                 <span>P2 Medium</span>
                               </span>
                             ) : (
@@ -834,7 +830,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                             {is_overdue ? (
                               <div className="flex flex-col">
                                 <span className="inline-flex items-center gap-1 font-bold text-[#ba1a1a] text-[11px]">
-                                  <span className="material-symbols-outlined text-[14px]">warning</span>
+                                  <span className="font-bold text-[10px]">[!]</span>
                                   <span>Overdue: {nextDate || 'No Date'}</span>
                                 </span>
                                 <span className="text-[10px] text-[#ba1a1a]/80">Immediate callback needed</span>
@@ -842,7 +838,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                             ) : is_due_today ? (
                               <div className="flex flex-col">
                                 <span className="inline-flex items-center gap-1 font-bold text-amber-700 text-[11px]">
-                                  <span className="material-symbols-outlined text-[14px]">alarm</span>
+                                  
                                   <span>Due Today: {nextDate}</span>
                                 </span>
                                 <span className="text-[10px] text-amber-600">Scheduled for today</span>
@@ -861,9 +857,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                             {latest_followup ? (
                               <div>
                                 <div className="font-medium text-[#191c1d] flex items-center gap-1">
-                                  <span className="material-symbols-outlined text-[13px] text-[#00236f]">
-                                    {latest_followup.interaction_type === 'call' ? 'call' : latest_followup.interaction_type === 'sms' ? 'sms' : 'apartment'}
-                                  </span>
+                                  
                                   <span className="capitalize">{latest_followup.outcome.replace(/_/g, ' ')}</span>
                                   <span className="text-[10px] text-[#757682]">({days_since_contact ?? 0}d ago)</span>
                                 </div>
@@ -901,7 +895,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                                   className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
                                   title="Initiate Masked 2-Leg Call via Cloud Telephony (Virtual DID)"
                                 >
-                                  <span className="material-symbols-outlined text-[13px]">phone_in_talk</span>
+                                  
                                   <span>Call</span>
                                 </button>
                               )}
@@ -920,7 +914,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                                 className="px-2.5 py-1 bg-[#006a61] hover:bg-[#004f48] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
                                 title="Log Phone Call, Campus Visit or Parent Counseling Outcome"
                               >
-                                <span className="material-symbols-outlined text-[13px]">add_call</span>
+                                
                                 <span>Log Call</span>
                               </button>
 
@@ -929,7 +923,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                                 className="px-2.5 py-1 border border-[#e1e3e4] hover:bg-[#f8f9fa] text-[#444651] rounded-md text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer"
                                 title="Audit Trail & Interaction History"
                               >
-                                <span className="material-symbols-outlined text-[13px]">history</span>
+                                
                                 <span>History</span>
                               </button>
 
@@ -941,7 +935,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                                 className="px-2 py-1 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
                                 title="Resume Intake Wizard (Step 2 or 3)"
                               >
-                                <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+                                <span className="font-bold text-[10px]">→</span>
                                 <span>Intake</span>
                               </button>
                             </div>
@@ -1072,12 +1066,12 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                       <td className="py-3.5 px-4">
                         {adm.is_hosteller ? (
                           <span className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-800 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
-                            <span className="material-symbols-outlined text-[13px]">hotel</span>
+                            
                             <span>Hosteller ({adm.hostel_room_no || 'Room Allotted'})</span>
                           </span>
                         ) : adm.is_transport_user ? (
                           <span className="inline-flex items-center gap-1 text-[11px] font-bold text-sky-800 bg-sky-50 px-2 py-0.5 rounded border border-sky-200">
-                            <span className="material-symbols-outlined text-[13px]">directions_bus</span>
+                            
                             <span>Bus Commuter</span>
                           </span>
                         ) : (
@@ -1119,7 +1113,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                                 className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
                                 title="Call Applicant via Cloud Telephony (Virtual DID)"
                               >
-                                <span className="material-symbols-outlined text-[13px]">phone_in_talk</span>
+                                
                                 <span>Call</span>
                               </button>
                             )}
@@ -1131,7 +1125,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                               className="px-2.5 py-1 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
                               title="Resume 3-Step Intake Wizard"
                             >
-                              <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+                              <span className="font-bold text-[10px]">→</span>
                               <span>Resume Intake</span>
                             </button>
                             {canApprove && (
@@ -1141,7 +1135,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                                 className="px-2.5 py-1 bg-[#006a61] hover:bg-[#004f48] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
                                 title="Institutional Admission Sanction & Account Provision"
                               >
-                                <span className="material-symbols-outlined text-[13px]">check</span>
+                                <span className="font-bold text-[10px]">✓</span>
                                 <span>Admit & Provision</span>
                               </button>
                             )}
@@ -1162,7 +1156,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                                 className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
                                 title="Call Applicant via Cloud Telephony (Virtual DID)"
                               >
-                                <span className="material-symbols-outlined text-[13px]">phone_in_talk</span>
+                                
                                 <span>Call</span>
                               </button>
                             )}
@@ -1174,7 +1168,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                               className="px-2 py-1 bg-[#f3f4f5] hover:bg-[#e1e3e4] text-[#00236f] rounded-md text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer"
                               title="Open in Progressive Intake Wizard"
                             >
-                              <span className="material-symbols-outlined text-[13px]">edit_note</span>
+                              
                               <span>Intake Wizard</span>
                             </button>
                             <button
@@ -1183,7 +1177,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                               className="px-2.5 py-1 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
                               title="Verify marksheets, domicile quota, and eligibility"
                             >
-                              <span className="material-symbols-outlined text-[13px]">fact_check</span>
+                              
                               <span>Verify Documents</span>
                             </button>
                             {canApprove && (
@@ -1193,7 +1187,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                                 className="px-2.5 py-1 bg-[#006a61] hover:bg-[#004f48] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
                                 title="Admit directly and provision student credentials"
                               >
-                                <span className="material-symbols-outlined text-[13px]">check</span>
+                                <span className="font-bold text-[10px]">✓</span>
                                 <span>Admit & Provision</span>
                               </button>
                             )}
@@ -1214,7 +1208,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                                 className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
                                 title="Call Applicant via Cloud Telephony (Virtual DID)"
                               >
-                                <span className="material-symbols-outlined text-[13px]">phone_in_talk</span>
+                                
                                 <span>Call</span>
                               </button>
                             )}
@@ -1224,12 +1218,12 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                                 onClick={() => handleStatusUpdate(adm.id, 'approved', 'Admitted post Scrutiny Verification')}
                                 className="px-3 py-1 bg-[#006a61] hover:bg-[#004f48] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
                               >
-                                <span className="material-symbols-outlined text-[13px]">how_to_reg</span>
+                                
                                 <span>Admit & Provision</span>
                               </button>
                             ) : (
                               <span className="text-[10px] font-bold text-[#0369a1] bg-[#e0f2fe] px-2 py-0.5 rounded border border-[#bae6fd] inline-flex items-center gap-1">
-                                <span className="material-symbols-outlined text-[12px]">verified</span>
+                                <span className="font-bold text-[10px]">✓</span>
                                 <span>Sanction Pending</span>
                               </span>
                             )}
@@ -1243,12 +1237,12 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                           </div>
                         ) : adm.admission_status === 'approved' || adm.admission_status === 'enrolled' ? (
                           <span className="text-[11px] font-bold text-[#006a61] inline-flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                            <span className="font-bold text-[10px]">✓</span>
                             <span>Enrolled & Active</span>
                           </span>
                         ) : (
                           <span className="text-[11px] font-bold text-[#ba1a1a] inline-flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[14px]">cancel</span>
+                            <span className="font-bold text-[10px]">✕</span>
                             <span>Application Rejected</span>
                           </span>
                         )}
@@ -1271,7 +1265,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
             {/* Header */}
             <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-linear-to-r from-[#00236f] to-[#1e3a8a] text-white">
               <div className="flex items-center gap-2.5">
-                <span className="material-symbols-outlined text-[24px] text-amber-300">how_to_reg</span>
+                
                 <div>
                   <h3 className="text-base font-bold">Direct Institutional Admission Intake</h3>
                   <p className="text-[11px] text-blue-100">Affiliated to Punjab Technical University (PTU) / State Regulatory Board</p>
@@ -1289,7 +1283,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
             <form onSubmit={handleDirectAdmitSubmit} className="p-6 overflow-y-auto space-y-5 text-xs flex-1">
               {directError && (
                 <div className="p-3 bg-red-50 border border-red-200 text-red-800 rounded-lg font-semibold flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[16px]">error</span>
+                  <span className="font-bold text-[10px]">[!]</span>
                   <span>{directError}</span>
                 </div>
               )}
@@ -1627,7 +1621,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                   disabled={directSubmitting}
                   className="px-6 py-2.5 bg-[#006a61] hover:bg-[#004f48] text-white rounded-lg text-xs font-bold shadow-xs disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
                 >
-                  <span className="material-symbols-outlined text-[16px]">how_to_reg</span>
+                  
                   <span>{directSubmitting ? 'Enrolling & Generating...' : 'Confirm Admission & Provision Credentials'}</span>
                 </button>
               </div>
@@ -1643,7 +1637,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
             {/* Printable Slip Header */}
             <div className="p-6 bg-[#00236f] text-white text-center space-y-1">
               <div className="inline-block p-2 bg-white/10 rounded-full mb-1">
-                <span className="material-symbols-outlined text-[32px] text-amber-300">verified</span>
+                <span className="font-bold text-[10px]">✓</span>
               </div>
               <h3 className="text-lg font-bold tracking-tight">EduCore Institute of Higher Education</h3>
               <p className="text-xs text-blue-100">Affiliated to State Technical University • Admission Session 2025-26</p>
@@ -1678,7 +1672,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
               {/* Portal Login Credentials Box */}
               <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-xl space-y-2">
                 <div className="flex items-center gap-1.5 text-amber-900 font-bold">
-                  <span className="material-symbols-outlined text-[18px]">key</span>
+                  
                   <span>Student Portal Login Credentials (Handover to Student)</span>
                 </div>
                 <div className="grid grid-cols-2 gap-3 pt-1">
@@ -1692,9 +1686,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                       className="text-[#757682] hover:text-[#00236f]"
                       title="Copy Username"
                     >
-                      <span className="material-symbols-outlined text-[16px]">
-                        {copiedKey === 'usr' ? 'check' : 'content_copy'}
-                      </span>
+                      
                     </button>
                   </div>
 
@@ -1708,9 +1700,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                       className="text-[#757682] hover:text-red-700"
                       title="Copy Password"
                     >
-                      <span className="material-symbols-outlined text-[16px]">
-                        {copiedKey === 'pwd' ? 'check' : 'content_copy'}
-                      </span>
+                      
                     </button>
                   </div>
                 </div>
@@ -1744,7 +1734,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                   onClick={() => window.print()}
                   className="px-4 py-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg font-bold flex items-center gap-1.5 cursor-pointer text-[#444651]"
                 >
-                  <span className="material-symbols-outlined text-[16px]">print</span>
+                  <span className="font-bold text-[10px]">[PRINT]</span>
                   <span>Print Slip</span>
                 </button>
                 <button
@@ -1765,7 +1755,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
           <div className="bg-white rounded-2xl max-w-xl w-full flex flex-col shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="px-6 py-4 border-b border-[#e1e3e4] bg-linear-to-r from-[#00236f] to-[#1e3a8a] text-white flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <span className="material-symbols-outlined text-amber-300 text-[22px]">fact_check</span>
+                
                 <div>
                   <h3 className="font-bold text-sm">Faculty Scrutiny Committee Verification</h3>
                   <p className="text-[11px] text-blue-100">Document inspection & statutory quota validation</p>
@@ -1775,7 +1765,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 onClick={() => setScrutinyApplicant(null)}
                 className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <span className="font-bold text-[10px]">✕</span>
               </button>
             </div>
 
@@ -1891,7 +1881,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                   onClick={handleConfirmScrutiny}
                   className="px-5 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg font-bold shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
-                  <span className="material-symbols-outlined text-[16px]">verified</span>
+                  <span className="font-bold text-[10px]">✓</span>
                   <span>Confirm Scrutiny & Mark Verified</span>
                 </button>
               </div>
@@ -1906,7 +1896,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
           <div className="bg-white rounded-2xl max-w-lg w-full flex flex-col shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#ba1a1a] text-white flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <span className="material-symbols-outlined text-white text-[22px]">cancel</span>
+                <span className="font-bold text-[10px]">✕</span>
                 <div>
                   <h3 className="font-bold text-sm">Reject Admission Application</h3>
                   <p className="text-[11px] text-red-100">Official Committee Disqualification Notice</p>
@@ -1916,7 +1906,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 onClick={() => setRejectionApplicant(null)}
                 className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <span className="font-bold text-[10px]">✕</span>
               </button>
             </div>
 
@@ -1969,7 +1959,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                   onClick={handleConfirmRejection}
                   className="px-5 py-2 bg-[#ba1a1a] hover:bg-[#991b1b] text-white rounded-lg font-bold shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
-                  <span className="material-symbols-outlined text-[16px]">cancel</span>
+                  <span className="font-bold text-[10px]">✕</span>
                   <span>Confirm Disqualification</span>
                 </button>
               </div>
@@ -1984,7 +1974,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
           <div className="bg-white rounded-2xl max-w-lg w-full flex flex-col shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#00236f] text-white flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <span className="material-symbols-outlined text-amber-300 text-[22px]">add_call</span>
+                
                 <div>
                   <h3 className="font-bold text-sm">Log Counseling Follow-Up Interaction</h3>
                   <p className="text-[11px] text-blue-100">Candidate Recall Audit • Admissions Cell</p>
@@ -1994,7 +1984,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 onClick={() => setSelectedLeadForFollowup(null)}
                 className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <span className="font-bold text-[10px]">✕</span>
               </button>
             </div>
 
@@ -2093,7 +2083,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                   disabled={followupSubmitting}
                   className="px-5 py-2 bg-[#006a61] hover:bg-[#004f48] text-white rounded-lg font-bold shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
-                  <span className="material-symbols-outlined text-[16px]">save</span>
+                  
                   <span>{followupSubmitting ? 'Saving...' : 'Save Interaction & Schedule Callback'}</span>
                 </button>
               </div>
@@ -2108,7 +2098,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
           <div className="bg-white rounded-2xl max-w-xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#00236f] text-white flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <span className="material-symbols-outlined text-amber-300 text-[22px]">history</span>
+                
                 <div>
                   <h3 className="font-bold text-sm">Interaction Timeline & Audit Trail</h3>
                   <p className="text-[11px] text-blue-100">{selectedLeadForHistory.first_name} {selectedLeadForHistory.last_name} ({selectedLeadForHistory.student_id})</p>
@@ -2118,7 +2108,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 onClick={() => setSelectedLeadForHistory(null)}
                 className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <span className="font-bold text-[10px]">✕</span>
               </button>
             </div>
 
@@ -2127,7 +2117,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 <div className="py-8 text-center text-xs text-[#757682]">Loading interaction timeline...</div>
               ) : historyList.length === 0 ? (
                 <div className="py-8 text-center text-xs text-[#757682] space-y-1">
-                  <span className="material-symbols-outlined text-[32px] text-gray-400 block mb-1">contact_phone</span>
+                  
                   <p className="font-bold text-sm text-[#191c1d]">No interaction logs yet.</p>
                   <p className="text-[11px]">Use "Log Call" to record the first contact outcome for this candidate.</p>
                 </div>
@@ -2139,9 +2129,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                       <div className="bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl p-3.5 space-y-1.5 shadow-xs">
                         <div className="flex items-center justify-between flex-wrap gap-1">
                           <span className="font-bold text-[#00236f] capitalize flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[15px]">
-                              {item.interaction_type === 'call' ? 'phone_in_talk' : item.interaction_type === 'sms' ? 'sms' : 'apartment'}
-                            </span>
+                            
                             <span>{item.interaction_type.replace(/_/g, ' ')} • {item.outcome.replace(/_/g, ' ')}</span>
                           </span>
                           <span className="text-[10px] text-[#757682]">{item.created_at}</span>

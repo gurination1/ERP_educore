@@ -34,7 +34,7 @@ export const EmailRemindersModal: React.FC<EmailRemindersModalProps> = ({ onClos
         <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-[#dce1ff] text-[#00236f] flex items-center justify-center">
-              <span className="material-symbols-outlined text-[18px]">mail</span>
+              
             </div>
             <div>
               <h3 className="text-base font-bold text-[#191c1d]">Broadcast Fee Reminders</h3>
@@ -42,7 +42,7 @@ export const EmailRemindersModal: React.FC<EmailRemindersModalProps> = ({ onClos
             </div>
           </div>
           <button onClick={onClose} className="text-[#757682] hover:text-[#191c1d]">
-            <span className="material-symbols-outlined text-[22px]">close</span>
+            <span className="font-bold text-[10px]">✕</span>
           </button>
         </div>
 
@@ -91,7 +91,7 @@ export const EmailRemindersModal: React.FC<EmailRemindersModalProps> = ({ onClos
               onClick={handleSendBroadcast}
               className="px-5 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white font-bold rounded-lg transition-colors flex items-center gap-1.5"
             >
-              <span className="material-symbols-outlined text-[16px]">send</span>
+              
               <span>{isSending ? 'Dispatching Mails...' : 'Send Email Blast'}</span>
             </button>
           </div>

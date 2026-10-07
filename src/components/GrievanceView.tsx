@@ -212,7 +212,7 @@ export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => 
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-red-700 text-[26px]">gavel</span>
+            
             <h2 className="text-2xl font-bold text-[#191c1d] tracking-tight">
               UGC Grievance Redressal Cell (SGRC)
             </h2>
@@ -227,7 +227,7 @@ export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => 
             onClick={() => setIsLodgeModalOpen(true)}
             className="px-4 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[16px]">add_alert</span>
+            
             <span>Lodge Grievance</span>
           </button>
           <button
@@ -235,14 +235,14 @@ export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => 
             className="p-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg text-[#444651]"
             title="Refresh Grievance Records"
           >
-            <span className="material-symbols-outlined text-[18px]">refresh</span>
+            <span className="font-bold text-[10px]">[REFRESH]</span>
           </button>
         </div>
       </div>
 
       {successMessage && (
         <div className="p-4 bg-[#86f2e4]/30 border border-[#86f2e4] text-[#006a61] rounded-xl text-xs font-bold flex items-center gap-2 animate-fadeIn">
-          <span className="material-symbols-outlined text-[18px]">verified</span>
+          <span className="font-bold text-[10px]">✓</span>
           <span>{successMessage}</span>
         </div>
       )}
@@ -313,7 +313,7 @@ export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => 
 
         {/* Search */}
         <div className="relative w-full md:w-64">
-          <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[16px] text-[#757682]">search</span>
+          
           <input
             type="text"
             placeholder="Search token, keyword..."
@@ -379,7 +379,7 @@ export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => 
                     }}
                     className="px-3 py-1.5 bg-[#00236f] text-white rounded-lg text-xs font-bold hover:bg-[#1e3a8a] transition-all flex items-center gap-1 cursor-pointer self-start md:self-auto"
                   >
-                    <span className="material-symbols-outlined text-[14px]">edit_note</span>
+                    
                     <span>Committee Action & Remarks</span>
                   </button>
                 )}
@@ -389,7 +389,7 @@ export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => 
               {g.admin_remarks && (
                 <div className="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-lg text-xs space-y-1">
                   <div className="flex items-center gap-1.5 text-[#006a61] font-bold">
-                    <span className="material-symbols-outlined text-[15px]">assignment_turned_in</span>
+                    
                     <span>Official SGRC Committee Resolution:</span>
                     {g.resolved_by && <span className="text-[10px] text-emerald-800">({g.resolved_by})</span>}
                   </div>
@@ -412,7 +412,7 @@ export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => 
           <div className="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-linear-to-r from-[#00236f] to-[#1e3a8a] text-white">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[22px] text-amber-300">shield_with_heart</span>
+                
                 <h3 className="text-base font-bold">Lodge Formal UGC Grievance</h3>
               </div>
               <button

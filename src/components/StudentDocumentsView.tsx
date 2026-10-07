@@ -183,7 +183,7 @@ export const StudentDocumentsView: React.FC<StudentDocumentsViewProps> = ({ curr
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-[#00236f] via-[#0b3896] to-[#00236f] text-white p-6 rounded-2xl shadow-md border border-white/10">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[11px] font-mono text-cyan-200 mb-2 border border-white/10">
-            <span className="material-symbols-outlined text-[14px]">shield</span>
+            
             <span>MRSPTU STATUTORY REPOSITORY • 256-BIT ENCRYPTED</span>
           </div>
           <h1 className="text-2xl font-black tracking-tight">Student Regulatory Documents Vault</h1>
@@ -206,7 +206,7 @@ export const StudentDocumentsView: React.FC<StudentDocumentsViewProps> = ({ curr
 
       {uploadSuccess && (
         <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center gap-2 animate-fadeIn">
-          <span className="material-symbols-outlined text-[18px]">check_circle</span>
+          <span className="font-bold text-[10px]">✓</span>
           <span>{uploadSuccess}</span>
         </div>
       )}
@@ -216,7 +216,7 @@ export const StudentDocumentsView: React.FC<StudentDocumentsViewProps> = ({ curr
         {/* Left Column: Upload New Document */}
         <div className="bg-white p-5 rounded-2xl border border-[#e1e3e4] shadow-xs space-y-4">
           <div className="flex items-center gap-2 border-b border-[#f3f4f5] pb-3">
-            <span className="material-symbols-outlined text-[#00236f] text-[22px]">upload_file</span>
+            
             <div>
               <h2 className="text-sm font-bold text-[#191c1d]">Upload Compliance Document</h2>
               <p className="text-[10px] text-[#757682]">PDF, PNG, JPG (Max 5MB)</p>
@@ -268,7 +268,7 @@ export const StudentDocumentsView: React.FC<StudentDocumentsViewProps> = ({ curr
                 Select File (PDF / Scanned Copy)
               </label>
               <div className="border-2 border-dashed border-[#e1e3e4] rounded-xl p-4 text-center hover:bg-[#f8f9fa] transition-colors cursor-pointer">
-                <span className="material-symbols-outlined text-[28px] text-[#757682] mb-1">cloud_upload</span>
+                
                 <p className="text-[11px] font-medium text-[#191c1d]">Drag file here or click to browse</p>
                 <p className="text-[9px] text-[#757682] mt-0.5">SHA-256 integrity hash generated automatically</p>
                 <input
@@ -286,7 +286,7 @@ export const StudentDocumentsView: React.FC<StudentDocumentsViewProps> = ({ curr
               disabled={isUploading}
               className="w-full py-2.5 bg-[#00236f] hover:bg-[#1a4bb0] text-white rounded-lg font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
-              <span className="material-symbols-outlined text-[16px]">security</span>
+              
               <span>{isUploading ? 'Encrypting & Storing...' : 'Commit to Document Vault'}</span>
             </button>
           </form>
@@ -328,7 +328,7 @@ export const StudentDocumentsView: React.FC<StudentDocumentsViewProps> = ({ curr
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#00236f] border border-blue-200 flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-[22px]">description</span>
+                        
                       </div>
                       <div>
                         <h3 className="text-xs font-bold text-[#191c1d]">{doc.title}</h3>
@@ -361,7 +361,7 @@ export const StudentDocumentsView: React.FC<StudentDocumentsViewProps> = ({ curr
                     {doc.remarks && <p className="text-[#191c1d]">“{doc.remarks}”</p>}
                     {doc.verified_by && (
                       <div className="text-[10px] text-emerald-800 font-semibold flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[13px]">verified</span>
+                        <span className="font-bold text-[10px]">✓</span>
                         <span>Attested by {doc.verified_by} on {new Date(doc.verified_at || '').toLocaleDateString()}</span>
                       </div>
                     )}
@@ -413,7 +413,7 @@ export const StudentDocumentsView: React.FC<StudentDocumentsViewProps> = ({ curr
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#e1e3e4] space-y-4 animate-in fade-in zoom-in duration-200">
             <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#00236f] text-[24px]">verified</span>
+                <span className="font-bold text-[10px]">✓</span>
                 <div>
                   <h3 className="text-sm font-bold text-[#191c1d]">{selectedDoc.title}</h3>
                   <p className="text-[10px] text-[#757682] font-mono">{selectedDoc.file_name}</p>
@@ -423,7 +423,7 @@ export const StudentDocumentsView: React.FC<StudentDocumentsViewProps> = ({ curr
                 onClick={() => setSelectedDoc(null)}
                 className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[#f3f4f5] text-[#757682] cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <span className="font-bold text-[10px]">✕</span>
               </button>
             </div>
 
@@ -457,7 +457,7 @@ export const StudentDocumentsView: React.FC<StudentDocumentsViewProps> = ({ curr
                 onClick={() => alert(`Simulated downloading ${selectedDoc.file_name}`)}
                 className="px-4 py-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg text-xs font-bold text-[#444651] flex items-center gap-1 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[16px]">download</span>
+                <span className="font-bold text-[10px]">[DL]</span>
                 <span>Download Vault Copy</span>
               </button>
               <button

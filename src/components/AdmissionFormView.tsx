@@ -299,7 +299,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
           <div className="flex items-start justify-between relative z-10">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-                <span className="material-symbols-outlined text-[32px]">verified</span>
+                <span className="font-bold text-[10px]">✓</span>
               </div>
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
@@ -318,7 +318,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
                 onClick={onClose}
                 className="text-[#757682] hover:text-[#191c1d] p-1.5 rounded-lg hover:bg-[#f1f2f4]"
               >
-                <span className="material-symbols-outlined">close</span>
+                <span className="font-bold text-[10px]">✕</span>
               </button>
             )}
           </div>
@@ -333,9 +333,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
                   onClick={() => handleCopy(credentialsSlip.studentId, 'roll')}
                   className="text-xs text-[#00236f] hover:underline flex items-center gap-1 font-bold"
                 >
-                  <span className="material-symbols-outlined text-[16px]">
-                    {copiedKey === 'roll' ? 'check' : 'content_copy'}
-                  </span>
+                  
                   {copiedKey === 'roll' ? 'Copied' : 'Copy'}
                 </button>
               </div>
@@ -355,9 +353,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
                   onClick={() => handleCopy(credentialsSlip.username, 'usr')}
                   className="text-xs text-[#00236f] hover:underline flex items-center gap-1 font-bold"
                 >
-                  <span className="material-symbols-outlined text-[16px]">
-                    {copiedKey === 'usr' ? 'check' : 'content_copy'}
-                  </span>
+                  
                   {copiedKey === 'usr' ? 'Copied' : 'Copy'}
                 </button>
               </div>
@@ -372,9 +368,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
                   onClick={() => handleCopy(credentialsSlip.tempPassword, 'pwd')}
                   className="text-xs text-[#00236f] hover:underline flex items-center gap-1 font-bold"
                 >
-                  <span className="material-symbols-outlined text-[16px]">
-                    {copiedKey === 'pwd' ? 'check' : 'content_copy'}
-                  </span>
+                  
                   {copiedKey === 'pwd' ? 'Copied' : 'Copy'}
                 </button>
               </div>
@@ -395,7 +389,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
 
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-[#00236f]">verified_user</span>
+              
               <p className="text-xs text-[#00236f]">
                 Admitted and authenticated by: <span className="font-bold">{credentialsSlip.admittedBy || 'Faculty Admissions Committee'}</span>
               </p>
@@ -404,7 +398,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
               onClick={() => window.print()}
               className="px-3.5 py-1.5 bg-[#00236f] text-white text-xs font-bold rounded-lg hover:bg-[#1a388a] flex items-center gap-1.5 cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[16px]">print</span>
+              <span className="font-bold text-[10px]">[PRINT]</span>
               Print Slip
             </button>
           </div>
@@ -441,7 +435,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
             onClick={() => setShowAIAssistant(true)}
             className="px-4 py-2.5 bg-linear-to-r from-[#00236f] to-[#1a4bb0] text-white text-xs font-bold rounded-xl shadow-md hover:brightness-110 flex items-center gap-2 transition-all cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[18px] text-amber-300">auto_awesome</span>
+            
             AI Smart Auto-Fill
           </button>
           {onClose && (
@@ -465,9 +459,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
               : 'bg-red-50 border-red-300 text-red-900'
           }`}
         >
-          <span className="material-symbols-outlined text-[20px]">
-            {statusFeedback.type === 'success' ? 'check_circle' : 'error'}
-          </span>
+          
           <p className="text-xs font-semibold">{statusFeedback.message}</p>
         </div>
       )}
@@ -476,7 +468,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
       {aiExtractedBadge && (
         <div className="p-4 bg-linear-to-r from-emerald-50 via-teal-50 to-blue-50 border border-emerald-200 rounded-xl flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-emerald-600 text-[24px]">verified</span>
+            <span className="font-bold text-[10px]">✓</span>
             <div>
               <p className="text-xs font-bold text-emerald-900">
                 AI Parsed Profile: {formData.firstName} {formData.lastName}
@@ -737,7 +729,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
               onClick={() => handleSaveStep1(false)}
               className="px-5 py-2.5 bg-[#f1f2f4] hover:bg-[#e1e3e4] text-[#191c1d] font-bold text-xs rounded-xl transition-all flex items-center gap-2 cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[18px]">save</span>
+              
               Save Visit Inquiry (Resume Later)
             </button>
 
@@ -748,7 +740,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
               className="px-6 py-2.5 bg-[#00236f] hover:bg-[#1a388a] text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer"
             >
               Save & Proceed to Step 2
-              <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+              <span className="font-bold text-[10px]">→</span>
             </button>
           </div>
         </div>
@@ -870,7 +862,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
               />
               {Number(formData.annualFamilyIncome) <= 250000 && formData.category === 'SC/ST' && (
                 <p className="text-[11px] text-emerald-700 font-bold mt-1 flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">stars</span>
+                  
                   Eligible for 100% Tuition Fee Waiver under Dr. Ambedkar Punjab PMS Portal!
                 </p>
               )}
@@ -908,7 +900,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
                 onClick={() => handleSaveStep2(false)}
                 className="px-5 py-2.5 bg-[#f1f2f4] hover:bg-[#e1e3e4] text-[#191c1d] font-bold text-xs rounded-xl transition-all flex items-center gap-2 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px]">save</span>
+                
                 Save Registration (Resume Later)
               </button>
 
@@ -919,7 +911,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
                 className="px-6 py-2.5 bg-[#00236f] hover:bg-[#1a388a] text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer"
               >
                 Proceed to Step 3 (Verification & Fees)
-                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                <span className="font-bold text-[10px]">→</span>
               </button>
             </div>
           </div>
@@ -942,7 +934,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
           {/* Aadhaar Verification Box */}
           <div className="p-5 bg-blue-50/60 border-2 border-blue-200 rounded-2xl space-y-3">
             <div className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-[#00236f] text-[28px]">badge</span>
+              
               <div>
                 <label className="block text-xs font-bold text-[#00236f] uppercase tracking-wider">
                   12-Digit Aadhaar Card Number <span className="text-red-500">*</span>
@@ -986,7 +978,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
             <div className="p-5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-2xl space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-[#00236f] flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[18px]">school</span>
+                  
                   10th Matriculation Certificate
                 </span>
                 <label className="flex items-center gap-1.5 text-xs text-emerald-800 font-semibold cursor-pointer">
@@ -1042,7 +1034,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
             <div className="p-5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-2xl space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-[#00236f] flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[18px]">workspace_premium</span>
+                  
                   10+2 / Qualifying Marksheet
                 </span>
                 <label className="flex items-center gap-1.5 text-xs text-emerald-800 font-semibold cursor-pointer">
@@ -1100,7 +1092,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
-                  <span className="material-symbols-outlined text-[24px]">receipt_long</span>
+                  
                 </div>
                 <div>
                   <h4 className="text-sm font-black text-emerald-950">
@@ -1197,12 +1189,12 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
             >
               {isSubmitting ? (
                 <>
-                  <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                  
                   Finalizing & Generating Credentials...
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined text-[20px]">check_circle</span>
+                  <span className="font-bold text-[10px]">✓</span>
                   Finalize Admission & Provision Student Account (Step 3 Complete)
                 </>
               )}

@@ -69,9 +69,7 @@ export const AICopilotModal: React.FC<AICopilotModalProps> = ({
         }`}>
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-amber-400/20 border border-amber-300/40 flex items-center justify-center">
-              <span className="material-symbols-outlined text-[20px] text-amber-300">
-                {isStudent ? 'school' : 'smart_toy'}
-              </span>
+              
             </div>
             <div>
               <h2 className="text-base font-bold leading-tight">
@@ -149,7 +147,7 @@ export const AICopilotModal: React.FC<AICopilotModalProps> = ({
               ) : (
                 <>
                   Ask AI
-                  <span className="material-symbols-outlined text-[14px]">send</span>
+                  
                 </>
               )}
             </button>
@@ -189,9 +187,7 @@ export const AICopilotModal: React.FC<AICopilotModalProps> = ({
                     : 'bg-blue-50/60 border-blue-100 text-blue-900'
                 }`}>
                   <h4 className="text-xs font-bold mb-1.5 flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[16px]">
-                      {isStudent ? 'verified' : 'lightbulb'}
-                    </span>
+                    
                     {isStudent ? 'Key Academic Insights' : 'Strategic Insights'}
                   </h4>
                   <ul className={`list-disc list-inside space-y-1 text-xs ${
@@ -208,7 +204,7 @@ export const AICopilotModal: React.FC<AICopilotModalProps> = ({
               {copilotResponse.recommendedActions && copilotResponse.recommendedActions.length > 0 && (
                 <div className="p-3.5 bg-amber-50/60 border border-amber-200/70 rounded-xl">
                   <h4 className="text-xs font-bold text-amber-950 mb-1.5 flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[16px]">task_alt</span>
+                    
                     Recommended Next Actions
                   </h4>
                   <ul className="list-disc list-inside space-y-1 text-xs text-amber-900">

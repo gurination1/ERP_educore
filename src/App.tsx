@@ -240,7 +240,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
             className="px-3 py-1 bg-white hover:bg-slate-100 text-slate-900 text-xs font-bold rounded-lg transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
             title="Switch back to Widescreen Desktop Web Portal"
           >
-            <span className="material-symbols-outlined text-[15px]">desktop_windows</span>
+            
             <span>Web Portal</span>
           </button>
         </div>
@@ -327,8 +327,8 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
             </div>
             <div className="flex items-center gap-1.5 text-[11px]">
               <span className="font-mono text-[9px] font-bold">5G</span>
-              <span className="material-symbols-outlined text-[13px]">wifi</span>
-              <span className="material-symbols-outlined text-[15px]">battery_full</span>
+              
+              
             </div>
           </div>
 
@@ -336,7 +336,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
           <div className="px-3.5 py-2 bg-white border-b border-[#e1e3e4] flex items-center justify-between shrink-0 shadow-2xs">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg bg-[#00236f] text-white flex items-center justify-center font-bold text-xs shadow-xs">
-                <span className="material-symbols-outlined text-[16px]">school</span>
+                
               </div>
               <div>
                 <h1 className="text-xs font-extrabold text-[#191c1d] leading-none">EduCore Mobile</h1>
@@ -351,14 +351,14 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
                 className="p-1.5 rounded-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 cursor-pointer"
                 title="AI Copilot"
               >
-                <span className="material-symbols-outlined text-[16px]">auto_awesome</span>
+                
               </button>
               <button
                 onClick={onLogout}
                 className="p-1.5 rounded-full hover:bg-slate-100 text-slate-600 cursor-pointer"
                 title="Sign Out"
               >
-                <span className="material-symbols-outlined text-[16px]">logout</span>
+                
               </button>
             </div>
           </div>
@@ -378,7 +378,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
                   : 'text-slate-400'
               }`}
             >
-              <span className="material-symbols-outlined text-[20px]">dashboard</span>
+              
               <span>Home</span>
             </button>
             <button
@@ -389,7 +389,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
                   : 'text-slate-400'
               }`}
             >
-              <span className="material-symbols-outlined text-[20px]">psychology</span>
+              
               <span>LMS</span>
             </button>
             <button
@@ -400,7 +400,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
                   : 'text-slate-400'
               }`}
             >
-              <span className="material-symbols-outlined text-[20px]">folder_shared</span>
+              
               <span>Docs</span>
             </button>
             {isFacultyOrAdmin ? (
@@ -412,7 +412,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
                     : 'text-slate-400'
                 }`}
               >
-                <span className="material-symbols-outlined text-[20px]">workspace_premium</span>
+                
                 <span>Faculty</span>
               </button>
             ) : (
@@ -424,7 +424,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
                     : 'text-slate-400'
                 }`}
               >
-                <span className="material-symbols-outlined text-[20px]">school</span>
+                
                 <span>Courses</span>
               </button>
             )}
@@ -436,7 +436,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
                   : 'text-slate-400'
               }`}
             >
-              <span className="material-symbols-outlined text-[20px]">receipt_long</span>
+              
               <span>Fees</span>
             </button>
           </div>

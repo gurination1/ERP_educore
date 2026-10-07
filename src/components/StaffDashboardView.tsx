@@ -311,17 +311,17 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
             </p>
             <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-[#757682]">
               <span className="flex items-center gap-1">
-                <span className="material-symbols-outlined text-[15px]">badge</span>
+                
                 <span>ID: FAC-CSE-014</span>
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
-                <span className="material-symbols-outlined text-[15px]">apartment</span>
+                
                 <span>Block B, Faculty Room 204</span>
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
-                <span className="material-symbols-outlined text-[15px]">calendar_today</span>
+                
                 <span>Fall Session 2025-26</span>
               </span>
             </div>
@@ -374,14 +374,14 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <span className="material-symbols-outlined text-[20px]">workspace_premium</span>
+              
             </div>
             <div>
               <h4 className="text-xs font-bold text-[#191c1d]">Faculty Credentials Vault</h4>
               <p className="text-[10px] text-[#757682]">AICTE ID, Ph.D. Awards, Scopus Papers</p>
             </div>
           </div>
-          <span className="material-symbols-outlined text-[16px] text-slate-400 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+          <span className="font-bold text-[10px]">→</span>
         </button>
 
         <button
@@ -391,14 +391,14 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <span className="material-symbols-outlined text-[20px]">psychology</span>
+              
             </div>
             <div>
               <h4 className="text-xs font-bold text-[#191c1d]">LMS & CBT Assessment</h4>
               <p className="text-[10px] text-[#757682]">Mid-Term CBT Quizzes & Question Banks</p>
             </div>
           </div>
-          <span className="material-symbols-outlined text-[16px] text-slate-400 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+          <span className="font-bold text-[10px]">→</span>
         </button>
 
         <button
@@ -408,14 +408,14 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <span className="material-symbols-outlined text-[20px]">folder_shared</span>
+              
             </div>
             <div>
               <h4 className="text-xs font-bold text-[#191c1d]">Student Document Vault</h4>
               <p className="text-[10px] text-[#757682]">MRSPTU & 85% Domicile Verification</p>
             </div>
           </div>
-          <span className="material-symbols-outlined text-[16px] text-slate-400 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+          <span className="font-bold text-[10px]">→</span>
         </button>
       </div>
 
@@ -423,7 +423,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
       {((followupStats?.overdue || 0) > 0 || (followupStats?.due_today || 0) > 0) && (
         <div className="p-3.5 bg-amber-50/90 border border-amber-300 rounded-xl text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs animate-fadeIn">
           <div className="flex items-center gap-2.5">
-            <span className="material-symbols-outlined text-amber-600 text-[22px] animate-bounce">radar</span>
+            
             <div>
               <strong className="text-amber-900 font-bold">Admissions Recall Radar Alert:</strong>{' '}
               <span className="text-amber-900/90">{followupStats?.overdue || 0} candidate callbacks overdue and {followupStats?.due_today || 0} scheduled today. Re-engage walk-in prospects within 24–48 hours to preserve intake conversion.</span>
@@ -434,7 +434,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
             className="px-3.5 py-1.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg font-bold text-[11px] shrink-0 cursor-pointer shadow-xs flex items-center gap-1"
           >
             <span>Open Follow-Up CRM</span>
-            <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+            <span className="font-bold text-[10px]">→</span>
           </button>
         </div>
       )}
@@ -449,9 +449,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
           }`}
         >
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[20px]">
-              {feedbackMessage.type === 'success' ? 'check_circle' : 'error'}
-            </span>
+            
             <span>{feedbackMessage.text}</span>
           </div>
           <button
@@ -473,7 +471,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
               : 'border-transparent text-[#757682] hover:text-[#191c1d]'
           }`}
         >
-          <span className="material-symbols-outlined text-[18px]">how_to_reg</span>
+          
           <span>Daily Lecture Attendance</span>
           <span className="ml-1 text-[11px] px-1.5 py-0.2 bg-[#00236f]/10 rounded-full font-bold">
             Live Register
@@ -488,7 +486,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
               : 'border-transparent text-[#757682] hover:text-[#191c1d]'
           }`}
         >
-          <span className="material-symbols-outlined text-[18px]">grade</span>
+          
           <span>Mid-Semester Test & Sessional</span>
           <span className="ml-1 text-[11px] px-1.5 py-0.2 bg-[#006a61]/10 text-[#006a61] rounded-full font-bold">
             60 Marks
@@ -503,7 +501,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
               : 'border-transparent text-[#757682] hover:text-[#191c1d]'
           }`}
         >
-          <span className="material-symbols-outlined text-[18px]">supervisor_account</span>
+          
           <span>Mentee / Proctor Group</span>
         </button>
 
@@ -515,7 +513,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
               : 'border-transparent text-[#757682] hover:text-[#191c1d]'
           }`}
         >
-          <span className="material-symbols-outlined text-[18px]">event_note</span>
+          
           <span>Teaching Timetable</span>
         </button>
       </div>
@@ -589,7 +587,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
             <div className="flex items-center gap-2">
               {isLocked ? (
                 <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#006a61] bg-[#86f2e4]/30 px-3 py-1.5 rounded-lg border border-[#86f2e4]">
-                  <span className="material-symbols-outlined text-[16px]">lock</span>
+                  <span className="font-bold text-[10px]">[LOCKED]</span>
                   <span>Register Locked ({lockedRecord?.lockedAt})</span>
                 </span>
               ) : (
@@ -617,7 +615,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
           {lockedRecord && (
             <div className="p-4 bg-[#86f2e4]/15 border border-[#86f2e4] text-[#006a61] rounded-xl text-xs font-semibold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
               <div className="flex items-center gap-2.5">
-                <span className="material-symbols-outlined text-[22px] text-[#006a61]">verified_user</span>
+                
                 <div>
                   <strong className="block font-bold text-[#00236f] text-xs">
                     Institutional Register Locked for {selectedCourse} ({lectureSlot})
@@ -637,7 +635,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                     onClick={() => setIsEditingLocked(true)}
                     className="px-3 py-1.5 bg-white border border-[#86f2e4] hover:bg-[#86f2e4]/20 text-[#006a61] rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-2xs flex items-center gap-1"
                   >
-                    <span className="material-symbols-outlined text-[14px]">lock_open</span>
+                    <span className="font-bold text-[10px]">[UNLOCKED]</span>
                     <span>Unlock Register to Edit</span>
                   </button>
                 ) : (
@@ -793,17 +791,17 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                           <td className="p-3.5">
                             {isStrictlyDetained ? (
                               <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#ba1a1a] bg-[#ffdad6] px-2 py-0.5 rounded">
-                                <span className="material-symbols-outlined text-[14px]">block</span>
+                                <span className="font-bold text-[10px]">[BLOCKED]</span>
                                 <span>Detained (&lt;65%)</span>
                               </span>
                             ) : isDetained ? (
                               <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#755b00] bg-[#fae29f] px-2 py-0.5 rounded">
-                                <span className="material-symbols-outlined text-[14px]">warning</span>
+                                <span className="font-bold text-[10px]">[!]</span>
                                 <span>Condonation Needed (65-74%)</span>
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#006a61] bg-[#86f2e4]/30 px-2 py-0.5 rounded">
-                                <span className="material-symbols-outlined text-[14px]">verified</span>
+                                <span className="font-bold text-[10px]">✓</span>
                                 <span>Exam Admit Cleared</span>
                               </span>
                             )}
@@ -837,7 +835,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                     onClick={() => setIsEditingLocked(true)}
                     className="px-5 py-2.5 bg-white border border-[#006a61] text-[#006a61] hover:bg-[#86f2e4]/20 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-2xs"
                   >
-                    <span className="material-symbols-outlined text-[16px]">lock_open</span>
+                    <span className="font-bold text-[10px]">[UNLOCKED]</span>
                     <span>Unlock to Amend Register</span>
                   </button>
                 ) : (
@@ -847,9 +845,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                     disabled={isSubmitting}
                     className="px-6 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold shadow-xs transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
                   >
-                    <span className="material-symbols-outlined text-[16px]">
-                      {isSubmitting ? 'hourglass_top' : 'how_to_reg'}
-                    </span>
+                    
                     <span>
                       {isSubmitting
                         ? 'Recording in MariaDB...'
@@ -892,7 +888,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                 onClick={handleSaveSessionalMarks}
                 className="px-4 py-2 bg-[#006a61] hover:bg-[#005a52] text-white text-xs font-bold rounded-lg shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[16px]">save</span>
+                
                 <span>Save Sessional Marks</span>
               </button>
             </div>

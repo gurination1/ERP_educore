@@ -62,7 +62,7 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
         <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#f8f9fa] flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#00236f] text-white flex items-center justify-center shadow-sm">
-              <span className="material-symbols-outlined text-[24px]">verified_user</span>
+              
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -80,7 +80,7 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
             onClick={onClose}
             className="w-8 h-8 rounded-lg flex items-center justify-center text-[#757682] hover:bg-[#e1e3e4] hover:text-[#191c1d] transition-all cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[20px]">close</span>
+            <span className="font-bold text-[10px]">✕</span>
           </button>
         </div>
 
@@ -88,9 +88,7 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
         <div className="px-6 py-3 border-b border-[#e1e3e4] bg-white flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 flex-1 max-w-md">
             <div className="relative w-full">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#757682] text-[18px]">
-                search
-              </span>
+              
               <input
                 type="text"
                 value={search}
@@ -134,10 +132,7 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
               disabled={isLoading}
               className="px-3 py-1.5 bg-[#00236f] text-white font-bold rounded-lg hover:brightness-110 flex items-center gap-1 cursor-pointer"
             >
-              <span className={`material-symbols-outlined text-[16px] ${isLoading ? 'animate-spin' : ''}`}>
-                refresh
-              </span>
-              <span>Refresh</span>
+              <span>{isLoading ? '[SYNCING...]' : '[REFRESH LOGS]'}</span>
             </button>
           </div>
         </div>
@@ -150,7 +145,7 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
             </div>
           ) : filteredLogs.length === 0 ? (
             <div className="h-48 flex flex-col items-center justify-center text-xs text-[#757682] space-y-2">
-              <span className="material-symbols-outlined text-4xl text-[#c5c5d3]">shield</span>
+              
               <p>No audit logs matching current filter.</p>
             </div>
           ) : (
@@ -237,11 +232,11 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
             <div className="bg-white rounded-xl max-w-lg w-full p-5 border border-[#e1e3e4] shadow-2xl space-y-3">
               <div className="flex items-center justify-between border-b border-[#f1f3f4] pb-2">
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#00236f]">code</span>
+                  
                   <h4 className="font-bold text-sm text-[#191c1d]">Audit Log Change Diff</h4>
                 </div>
                 <button onClick={() => setSelectedLog(null)} className="text-[#757682] hover:text-[#191c1d]">
-                  <span className="material-symbols-outlined text-[20px]">close</span>
+                  <span className="font-bold text-[10px]">✕</span>
                 </button>
               </div>
               <div className="text-xs space-y-1">

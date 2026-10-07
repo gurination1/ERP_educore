@@ -306,14 +306,14 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
             <div className="flex flex-col items-center justify-center px-2 py-1 bg-slate-900/60 rounded-xl border border-white/5 min-w-[150px]">
               {callState === 'dialing' && (
                 <div className="flex items-center gap-1.5 text-amber-400 text-xs font-medium animate-pulse">
-                  <span className="material-symbols-outlined text-[15px]">ring_volume</span>
+                  
                   <span>Dialing Counselor Leg...</span>
                 </div>
               )}
 
               {callState === 'ringing' && (
                 <div className="flex items-center gap-1.5 text-sky-400 text-xs font-medium">
-                  <span className="material-symbols-outlined text-[15px] animate-bounce">call</span>
+                  <span className="font-bold text-[10px]">[CALL]</span>
                   <span>Ringing Candidate...</span>
                 </div>
               )}
@@ -366,9 +366,7 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
                 } disabled:opacity-40 disabled:cursor-not-allowed`}
                 title={isMuted ? 'Unmute Microphone' : 'Mute Microphone'}
               >
-                <span className="material-symbols-outlined text-[19px]">
-                  {isMuted ? 'mic_off' : 'mic'}
-                </span>
+                
               </button>
 
               {/* Hold Call */}
@@ -383,9 +381,7 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
                 } disabled:opacity-40 disabled:cursor-not-allowed`}
                 title={isOnHold ? 'Resume Call' : 'Hold Call'}
               >
-                <span className="material-symbols-outlined text-[19px]">
-                  {isOnHold ? 'play_arrow' : 'pause'}
-                </span>
+                
               </button>
 
               {/* DTMF Keypad */}
@@ -399,7 +395,7 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
                 }`}
                 title="Dial Pad (DTMF)"
               >
-                <span className="material-symbols-outlined text-[19px]">dialpad</span>
+                
               </button>
 
               {/* Sound FX Toggle */}
@@ -409,9 +405,7 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
                 className="w-10 h-10 rounded-full bg-slate-800/80 hover:bg-slate-800 text-slate-300 border border-slate-700 flex items-center justify-center transition-all cursor-pointer"
                 title={soundEnabled ? 'Call Sound FX Active' : 'Sound FX Muted'}
               >
-                <span className="material-symbols-outlined text-[18px]">
-                  {soundEnabled ? 'volume_up' : 'volume_off'}
-                </span>
+                
               </button>
 
               {/* Minimize Dock */}
@@ -421,7 +415,7 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
                 className="w-10 h-10 rounded-full bg-slate-800/80 hover:bg-slate-800 text-slate-400 border border-slate-700 flex items-center justify-center transition-all cursor-pointer"
                 title="Minimize Call Dock"
               >
-                <span className="material-symbols-outlined text-[18px]">expand_more</span>
+                <span className="font-bold text-[10px]">▼</span>
               </button>
 
               {/* End Call / Red Button */}
@@ -431,7 +425,7 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
                 className="w-12 h-12 rounded-full bg-rose-600 hover:bg-rose-500 active:scale-95 text-white flex items-center justify-center shadow-lg shadow-rose-900/50 transition-all cursor-pointer ml-1"
                 title="End Telephony Call"
               >
-                <span className="material-symbols-outlined text-[24px]">call_end</span>
+                <span className="font-bold text-[10px]">[END]</span>
               </button>
             </div>
           </div>
@@ -485,7 +479,7 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
             className="w-7 h-7 rounded-full bg-rose-600 hover:bg-rose-500 flex items-center justify-center text-white"
             title="Hang Up"
           >
-            <span className="material-symbols-outlined text-[15px]">call_end</span>
+            <span className="font-bold text-[10px]">[END]</span>
           </button>
         </div>
       )}
@@ -500,7 +494,7 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
             <div className="bg-[#00236f] text-white p-5 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-emerald-400">
-                  <span className="material-symbols-outlined text-[24px]">call_log</span>
+                  
                 </div>
                 <div>
                   <h3 className="font-bold text-sm tracking-tight text-white">Log Call Disposition</h3>
@@ -517,7 +511,7 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
                 }}
                 className="text-white/70 hover:text-white cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <span className="font-bold text-[10px]">✕</span>
               </button>
             </div>
 
@@ -628,12 +622,12 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
                 >
                   {savingDisposition ? (
                     <>
-                      <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                      
                       <span>Saving to Student CRM...</span>
                     </>
                   ) : (
                     <>
-                      <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                      <span className="font-bold text-[10px]">✓</span>
                       <span>Save & Update Lead</span>
                     </>
                   )}

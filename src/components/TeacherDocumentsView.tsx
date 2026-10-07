@@ -180,7 +180,7 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-purple-900 via-indigo-950 to-[#00236f] text-white p-6 rounded-2xl shadow-md border border-white/10">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[11px] font-mono text-purple-200 mb-2 border border-white/10">
-            <span className="material-symbols-outlined text-[14px]">school</span>
+            
             <span>AICTE • UGC • NBA • NAAC COMPLIANCE PORTFOLIO</span>
           </div>
           <h1 className="text-2xl font-black tracking-tight">Faculty & Teachers Credentials Vault</h1>
@@ -204,7 +204,7 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
 
       {uploadSuccess && (
         <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center gap-2 animate-fadeIn">
-          <span className="material-symbols-outlined text-[18px]">check_circle</span>
+          <span className="font-bold text-[10px]">✓</span>
           <span>{uploadSuccess}</span>
         </div>
       )}
@@ -214,7 +214,7 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
         {/* Left Column: Deposit New Faculty Asset */}
         <div className="bg-white p-5 rounded-2xl border border-[#e1e3e4] shadow-xs space-y-4">
           <div className="flex items-center gap-2 border-b border-[#f3f4f5] pb-3">
-            <span className="material-symbols-outlined text-purple-700 text-[22px]">workspace_premium</span>
+            
             <div>
               <h2 className="text-sm font-bold text-[#191c1d]">Deposit Faculty Credential</h2>
               <p className="text-[10px] text-[#757682]">AICTE & University Affiliation Audit</p>
@@ -266,7 +266,7 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
                 Proof Document File (PDF)
               </label>
               <div className="border-2 border-dashed border-[#e1e3e4] rounded-xl p-4 text-center hover:bg-[#f8f9fa] transition-colors cursor-pointer">
-                <span className="material-symbols-outlined text-[28px] text-purple-600 mb-1">upload_file</span>
+                
                 <p className="text-[11px] font-medium text-[#191c1d]">Drop attested PDF or research reprint</p>
                 <input
                   type="text"
@@ -283,7 +283,7 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
               disabled={isUploading}
               className="w-full py-2.5 bg-gradient-to-r from-purple-800 to-indigo-900 hover:from-purple-900 hover:to-indigo-950 text-white rounded-lg font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
-              <span className="material-symbols-outlined text-[16px]">verified</span>
+              <span className="font-bold text-[10px]">✓</span>
               <span>{isUploading ? 'Securing & Anchoring...' : 'Deposit to Faculty Portfolio'}</span>
             </button>
           </form>
@@ -331,7 +331,7 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 border border-purple-200 flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-[22px]">badge</span>
+                        
                       </div>
                       <div>
                         <h3 className="text-xs font-bold text-[#191c1d]">{doc.title}</h3>
@@ -361,7 +361,7 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
                     {doc.remarks && <p className="text-[#191c1d] italic">“{doc.remarks}”</p>}
                     {doc.verified_by && (
                       <div className="text-[10px] text-purple-900 font-semibold flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[13px] text-purple-600">verified</span>
+                        <span className="font-bold text-[10px]">✓</span>
                         <span>Attested by {doc.verified_by} on {new Date(doc.verified_at || '').toLocaleDateString()}</span>
                       </div>
                     )}
@@ -412,7 +412,7 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-purple-200 space-y-4 animate-in fade-in zoom-in duration-200">
             <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-purple-700 text-[24px]">verified</span>
+                <span className="font-bold text-[10px]">✓</span>
                 <div>
                   <h3 className="text-sm font-bold text-[#191c1d]">{selectedDoc.title}</h3>
                   <p className="text-[10px] text-[#757682] font-mono">{selectedDoc.file_name}</p>
@@ -422,7 +422,7 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
                 onClick={() => setSelectedDoc(null)}
                 className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[#f3f4f5] text-[#757682] cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <span className="font-bold text-[10px]">✕</span>
               </button>
             </div>
 
@@ -456,7 +456,7 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
                 onClick={() => alert(`Simulated downloading ${selectedDoc.file_name}`)}
                 className="px-4 py-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg text-xs font-bold text-[#444651] flex items-center gap-1 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[16px]">download</span>
+                <span className="font-bold text-[10px]">[DL]</span>
                 <span>Download Certified PDF</span>
               </button>
               <button
