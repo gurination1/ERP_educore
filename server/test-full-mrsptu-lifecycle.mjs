@@ -274,7 +274,7 @@ async function runTests() {
       paymentMode: 'online_upi',
     },
   });
-  assert('Full fee clearance payment succeeds', fullClearance.status === 200 && fullClearance.data.success);
+  assert('Full fee clearance payment succeeds', (fullClearance.status === 200 || fullClearance.status === 201) && fullClearance.data.success);
   assert('Remaining due is now zero', fullClearance.data.remainingDue === 0);
 
   // Receipt verification

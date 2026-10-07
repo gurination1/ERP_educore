@@ -5,20 +5,237 @@ import initSqlJs from 'sql.js';
 import type { Database as SqlJsDatabase } from 'sql.js';
 import mysql from 'mysql2/promise';
 
+export type EnterpriseUserRole = 'super_admin' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts' | 'student';
+
 export interface User {
   id: string;
   username: string;
   email: string;
   password_hash: string;
-  role: 'student' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts';
+  role: EnterpriseUserRole;
   full_name: string;
   avatar_url?: string;
   is_active: boolean;
   department?: string;
   designation?: string;
   employee_id?: string;
+  enterprise_uid?: string;
   created_at: string;
 }
+
+export interface AuditLog {
+  id: string;
+  timestamp: string;
+  actor_id: string;
+  actor_name: string;
+  actor_role: EnterpriseUserRole | 'system';
+  actor_ip?: string;
+  action: string;
+  target_type: 'user' | 'student' | 'fee' | 'scholarship' | 'form' | 'attendance' | 'system';
+  target_id: string;
+  details: string;
+  changes_diff?: string;
+  severity: 'info' | 'warn' | 'critical';
+}
+
+export interface MasterState {
+  gst_code: string;
+  state_name: string;
+  state_short_code: string;
+  is_union_territory: boolean;
+}
+
+export interface MasterUserType {
+  type_code: string;
+  alpha_prefix: string;
+  role_key: EnterpriseUserRole;
+  display_title: string;
+  description: string;
+}
+
+export interface MasterDegree {
+  degree_code: string;
+  degree_name: string;
+  level: 'undergraduate' | 'postgraduate' | 'diploma' | 'doctorate';
+  duration_years: number;
+  total_semesters: number;
+  statutory_body: 'AICTE' | 'UGC' | 'PCI' | 'BCI';
+}
+
+export interface MasterDocumentType {
+  doc_type_code: string;
+  title: string;
+  mandatory_for: 'all' | 'punjab_quota' | 'scholarship_pms' | 'hosteller';
+  max_file_size_mb: number;
+  allowed_mime_types: string;
+}
+
+export interface StaffAcademicJourney {
+  id: string;
+  staff_id: string;
+  staff_name: string;
+  qualification_level: 'PhD' | 'PostDoc' | 'M.Tech' | 'M.Sc' | 'MBA' | 'B.Tech' | 'B.Sc';
+  degree_name: string;
+  awarding_university: string;
+  year_of_passing: number;
+  specialization: string;
+  scopus_publications: number;
+  sci_publications: number;
+  patents_count: number;
+  past_institutions_summary: string;
+  verified: boolean;
+  created_at: string;
+}
+
+export function generateEnterpriseUID(
+  userType: EnterpriseUserRole,
+  stateGst: string = '03',
+  instCode: string = 'BFGI',
+  sequenceNum?: number | string
+): string {
+  const typeMap: Record<EnterpriseUserRole, { numeric: string; alpha: string }> = {
+    student: { numeric: '1001', alpha: 'STU' },
+    staff: { numeric: '2001', alpha: 'FAC' },
+    hod: { numeric: '3001', alpha: 'HOD' },
+    admin: { numeric: '4001', alpha: 'ADM' },
+    accounts: { numeric: '5001', alpha: 'ACC' },
+    counselor: { numeric: '6001', alpha: 'CNS' },
+    super_admin: { numeric: '9001', alpha: 'SUP' },
+  };
+
+  const selected = typeMap[userType] || { numeric: '1001', alpha: 'STU' };
+  const yearSuffix = new Date().getFullYear().toString().slice(-2);
+  const seq = sequenceNum
+    ? String(sequenceNum).padStart(4, '0')
+    : Math.floor(1000 + Math.random() * 9000).toString();
+
+  return `${selected.numeric}-${stateGst}-${instCode}-${yearSuffix}${seq}`;
+}
+
+export const DEFAULT_MASTER_STATES: MasterState[] = [
+  { gst_code: '01', state_name: 'Jammu and Kashmir', state_short_code: 'JK', is_union_territory: true },
+  { gst_code: '02', state_name: 'Himachal Pradesh', state_short_code: 'HP', is_union_territory: false },
+  { gst_code: '03', state_name: 'Punjab', state_short_code: 'PB', is_union_territory: false },
+  { gst_code: '04', state_name: 'Chandigarh', state_short_code: 'CH', is_union_territory: true },
+  { gst_code: '06', state_name: 'Haryana', state_short_code: 'HR', is_union_territory: false },
+  { gst_code: '07', state_name: 'Delhi', state_short_code: 'DL', is_union_territory: true },
+  { gst_code: '08', state_name: 'Rajasthan', state_short_code: 'RJ', is_union_territory: false },
+  { gst_code: '09', state_name: 'Uttar Pradesh', state_short_code: 'UP', is_union_territory: false },
+  { gst_code: '10', state_name: 'Bihar', state_short_code: 'BR', is_union_territory: false },
+  { gst_code: '27', state_name: 'Maharashtra', state_short_code: 'MH', is_union_territory: false },
+];
+
+export const DEFAULT_MASTER_USER_TYPES: MasterUserType[] = [
+  { type_code: '1001', alpha_prefix: 'STU', role_key: 'student', display_title: 'Student Scholar', description: 'Enrolled or admitted undergraduate/postgraduate student candidate' },
+  { type_code: '2001', alpha_prefix: 'FAC', role_key: 'staff', display_title: 'Faculty / Academic Staff', description: 'Teaching assistant, assistant professor, associate professor or lab in-charge' },
+  { type_code: '3001', alpha_prefix: 'HOD', role_key: 'hod', display_title: 'Head of Department (HOD)', description: 'Departmental administrative and curriculum head' },
+  { type_code: '4001', alpha_prefix: 'ADM', role_key: 'admin', display_title: 'Institutional Administrator', description: 'College registrar, dean, administrative head' },
+  { type_code: '5001', alpha_prefix: 'ACC', role_key: 'accounts', display_title: 'Accounts & Bursar Officer', description: 'Finance department, tuition collection, bursar' },
+  { type_code: '6001', alpha_prefix: 'CNS', role_key: 'counselor', display_title: 'Admissions Counselor', description: 'Counseling cell, leads pipeline, CRM coordinator' },
+  { type_code: '9001', alpha_prefix: 'SUP', role_key: 'super_admin', display_title: 'Universal Provost & Super Admin', description: 'Apex system authority, universal access, invisible to subordinate users' },
+];
+
+export const DEFAULT_MASTER_DEGREES: MasterDegree[] = [
+  { degree_code: 'BTECH_CSE', degree_name: 'Bachelor of Technology (Computer Science & Engineering)', level: 'undergraduate', duration_years: 4, total_semesters: 8, statutory_body: 'AICTE' },
+  { degree_code: 'BTECH_ME', degree_name: 'Bachelor of Technology (Mechanical Engineering)', level: 'undergraduate', duration_years: 4, total_semesters: 8, statutory_body: 'AICTE' },
+  { degree_code: 'MTECH_CSE', degree_name: 'Master of Technology (Computer Science & Engineering)', level: 'postgraduate', duration_years: 2, total_semesters: 4, statutory_body: 'AICTE' },
+  { degree_code: 'MBA', degree_name: 'Master of Business Administration', level: 'postgraduate', duration_years: 2, total_semesters: 4, statutory_body: 'AICTE' },
+  { degree_code: 'BCA', degree_name: 'Bachelor of Computer Applications', level: 'undergraduate', duration_years: 3, total_semesters: 6, statutory_body: 'UGC' },
+  { degree_code: 'MCA', degree_name: 'Master of Computer Applications', level: 'postgraduate', duration_years: 2, total_semesters: 4, statutory_body: 'AICTE' },
+  { degree_code: 'BSC_PHY', degree_name: 'Bachelor of Science (Physics)', level: 'undergraduate', duration_years: 3, total_semesters: 6, statutory_body: 'UGC' },
+  { degree_code: 'PHD_ENG', degree_name: 'Doctor of Philosophy (Engineering & Technology)', level: 'doctorate', duration_years: 3, total_semesters: 6, statutory_body: 'UGC' },
+];
+
+export const DEFAULT_MASTER_DOCUMENT_TYPES: MasterDocumentType[] = [
+  { doc_type_code: 'DOC_AADHAAR', title: 'UIDAI Aadhaar Card', mandatory_for: 'all', max_file_size_mb: 5, allowed_mime_types: 'image/jpeg,image/png,application/pdf' },
+  { doc_type_code: 'DOC_10TH', title: 'Matriculation (10th) Certificate & Marksheet', mandatory_for: 'all', max_file_size_mb: 5, allowed_mime_types: 'image/jpeg,image/png,application/pdf' },
+  { doc_type_code: 'DOC_12TH', title: 'Senior Secondary (12th / Diploma) Marksheet', mandatory_for: 'all', max_file_size_mb: 5, allowed_mime_types: 'image/jpeg,image/png,application/pdf' },
+  { doc_type_code: 'DOC_PB_DOMICILE', title: 'Punjab State Domicile Certificate (85% Quota)', mandatory_for: 'punjab_quota', max_file_size_mb: 5, allowed_mime_types: 'image/jpeg,image/png,application/pdf' },
+  { doc_type_code: 'DOC_INCOME_CERT', title: 'Tehsildar Annual Income Certificate (PMS / EWS)', mandatory_for: 'scholarship_pms', max_file_size_mb: 5, allowed_mime_types: 'image/jpeg,image/png,application/pdf' },
+  { doc_type_code: 'DOC_CASTE_CERT', title: 'SC / ST / OBC Category Certificate', mandatory_for: 'scholarship_pms', max_file_size_mb: 5, allowed_mime_types: 'image/jpeg,image/png,application/pdf' },
+  { doc_type_code: 'DOC_HOSTEL_AFF', title: 'Hostel Anti-Ragging Undertaking & Medical Slip', mandatory_for: 'hosteller', max_file_size_mb: 5, allowed_mime_types: 'image/jpeg,image/png,application/pdf' },
+];
+
+export const DEFAULT_STAFF_ACADEMIC_JOURNEY: StaffAcademicJourney[] = [
+  {
+    id: 'saj-01',
+    staff_id: 'usr-staff-01',
+    staff_name: 'Prof. Sunita Rao',
+    qualification_level: 'PhD',
+    degree_name: 'Doctor of Philosophy in Cloud Computing & Fault Tolerant Systems',
+    awarding_university: 'Thapar Institute of Engineering and Technology, Patiala',
+    year_of_passing: 2020,
+    specialization: 'Distributed Systems & Cloud Virtualization',
+    scopus_publications: 14,
+    sci_publications: 6,
+    patents_count: 2,
+    past_institutions_summary: 'Assistant Professor at GNDU Regional Campus Jalandhar (2016-2021)',
+    verified: true,
+    created_at: '2024-01-15T10:00:00Z',
+  },
+  {
+    id: 'saj-02',
+    staff_id: 'usr-staff-01',
+    staff_name: 'Prof. Sunita Rao',
+    qualification_level: 'M.Tech',
+    degree_name: 'Master of Technology in Computer Science & Engineering',
+    awarding_university: 'MRSPTU Bathinda Campus',
+    year_of_passing: 2015,
+    specialization: 'Information Security & Cryptography',
+    scopus_publications: 4,
+    sci_publications: 1,
+    patents_count: 0,
+    past_institutions_summary: 'Lecturer at Baba Farid College of Engineering & Technology (2015-2016)',
+    verified: true,
+    created_at: '2024-01-15T10:00:00Z',
+  },
+  {
+    id: 'saj-03',
+    staff_id: 'usr-hod-01',
+    staff_name: 'Dr. Balwinder Singh',
+    qualification_level: 'PhD',
+    degree_name: 'Doctor of Philosophy in Artificial Intelligence & Deep Neural Systems',
+    awarding_university: 'Indian Institute of Technology (IIT) Roorkee',
+    year_of_passing: 2016,
+    specialization: 'High Performance AI, Tensor Architecture, Edge Inference',
+    scopus_publications: 28,
+    sci_publications: 12,
+    patents_count: 5,
+    past_institutions_summary: 'Associate Professor & Research Chair at PEC Chandigarh (2016-2022)',
+    verified: true,
+    created_at: '2024-01-10T09:30:00Z',
+  },
+];
+
+export const DEFAULT_AUDIT_LOGS: AuditLog[] = [
+  {
+    id: 'aud-sys-init-01',
+    timestamp: new Date().toISOString(),
+    actor_id: 'usr-super-01',
+    actor_name: 'Prof. Dr. Amritpal Singh (Chief System Provost)',
+    actor_role: 'super_admin',
+    actor_ip: '127.0.0.1',
+    action: 'SYSTEM_BOOTSTRAP',
+    target_type: 'system',
+    target_id: 'sys-core',
+    details: 'System initialized with Enterprise UID matrix and immutable audit trail.',
+    changes_diff: JSON.stringify({ version: '3.0.0-enterprise', gst_state: '03', institution: 'BFGI' }),
+    severity: 'info',
+  },
+  {
+    id: 'aud-sec-02',
+    timestamp: new Date(Date.now() - 3600000).toISOString(),
+    actor_id: 'usr-admin-01',
+    actor_name: 'Dr. Ramesh Chandra (Registrar & Provost)',
+    actor_role: 'admin',
+    actor_ip: '192.168.1.10',
+    action: 'POLICY_VERIFICATION',
+    target_type: 'system',
+    target_id: 'mrsptu-ord-7.4',
+    details: 'Verified MRSPTU Ordinance 7.4 75% attendance gating criteria compliance.',
+    severity: 'info',
+  },
+];
 
 export interface Session {
   id: string;
@@ -269,6 +486,12 @@ class DatabaseStore {
   public notices: Notice[] = [];
   public grievances: Grievance[] = [];
   public admission_followups: AdmissionFollowup[] = [];
+  public audit_logs: AuditLog[] = [];
+  public master_states: MasterState[] = [];
+  public master_user_types: MasterUserType[] = [];
+  public master_degrees: MasterDegree[] = [];
+  public master_document_types: MasterDocumentType[] = [];
+  public staff_academic_journey: StaffAcademicJourney[] = [];
 
   public mode: 'mariadb' | 'sqlite' = 'sqlite';
   private dbPath: string = process.env.DB_PATH || path.join(process.cwd(), 'database', 'educore.sqlite');
@@ -599,6 +822,82 @@ class DatabaseStore {
       );
     `);
 
+    await this.mariaPool.query(`
+      CREATE TABLE IF NOT EXISTS audit_logs (
+        id VARCHAR(64) PRIMARY KEY,
+        timestamp VARCHAR(64) NOT NULL,
+        actor_id VARCHAR(64) NOT NULL,
+        actor_name VARCHAR(128) NOT NULL,
+        actor_role VARCHAR(32) NOT NULL,
+        actor_ip VARCHAR(64),
+        action VARCHAR(64) NOT NULL,
+        target_type VARCHAR(32) NOT NULL,
+        target_id VARCHAR(64) NOT NULL,
+        details TEXT NOT NULL,
+        changes_diff TEXT,
+        severity VARCHAR(32) NOT NULL
+      );
+    `);
+
+    await this.mariaPool.query(`
+      CREATE TABLE IF NOT EXISTS master_states (
+        gst_code VARCHAR(8) PRIMARY KEY,
+        state_name VARCHAR(64) NOT NULL,
+        state_short_code VARCHAR(8) NOT NULL,
+        is_union_territory TINYINT(1) DEFAULT 0
+      );
+    `);
+
+    await this.mariaPool.query(`
+      CREATE TABLE IF NOT EXISTS master_user_types (
+        type_code VARCHAR(16) PRIMARY KEY,
+        alpha_prefix VARCHAR(8) NOT NULL,
+        role_key VARCHAR(32) NOT NULL,
+        display_title VARCHAR(64) NOT NULL,
+        description TEXT NOT NULL
+      );
+    `);
+
+    await this.mariaPool.query(`
+      CREATE TABLE IF NOT EXISTS master_degrees (
+        degree_code VARCHAR(32) PRIMARY KEY,
+        degree_name VARCHAR(128) NOT NULL,
+        level VARCHAR(32) NOT NULL,
+        duration_years INT NOT NULL,
+        total_semesters INT NOT NULL,
+        statutory_body VARCHAR(32) NOT NULL
+      );
+    `);
+
+    await this.mariaPool.query(`
+      CREATE TABLE IF NOT EXISTS master_document_types (
+        doc_type_code VARCHAR(32) PRIMARY KEY,
+        title VARCHAR(128) NOT NULL,
+        mandatory_for VARCHAR(32) NOT NULL,
+        max_file_size_mb INT NOT NULL,
+        allowed_mime_types VARCHAR(128) NOT NULL
+      );
+    `);
+
+    await this.mariaPool.query(`
+      CREATE TABLE IF NOT EXISTS staff_academic_journey (
+        id VARCHAR(64) PRIMARY KEY,
+        staff_id VARCHAR(64) NOT NULL,
+        staff_name VARCHAR(128) NOT NULL,
+        qualification_level VARCHAR(32) NOT NULL,
+        degree_name VARCHAR(128) NOT NULL,
+        awarding_university VARCHAR(128) NOT NULL,
+        year_of_passing INT NOT NULL,
+        specialization VARCHAR(128) NOT NULL,
+        scopus_publications INT DEFAULT 0,
+        sci_publications INT DEFAULT 0,
+        patents_count INT DEFAULT 0,
+        past_institutions_summary TEXT,
+        verified TINYINT(1) DEFAULT 0,
+        created_at VARCHAR(64) NOT NULL
+      );
+    `);
+
     // Ensure newly added student columns exist in live MariaDB
     const safeAddColumn = async (table: string, colDef: string) => {
       try {
@@ -611,6 +910,7 @@ class DatabaseStore {
     await safeAddColumn('users', 'department VARCHAR(64)');
     await safeAddColumn('users', 'designation VARCHAR(64)');
     await safeAddColumn('users', 'employee_id VARCHAR(32)');
+    await safeAddColumn('users', 'enterprise_uid VARCHAR(64)');
 
     // Students table additions
     await safeAddColumn('students', 'mother_name VARCHAR(64)');
@@ -1057,12 +1357,36 @@ class DatabaseStore {
         interaction_type TEXT, outcome TEXT, notes TEXT, next_followup_date TEXT,
         priority TEXT, created_at TEXT
       );
+      CREATE TABLE IF NOT EXISTS audit_logs (
+        id TEXT PRIMARY KEY, timestamp TEXT, actor_id TEXT, actor_name TEXT,
+        actor_role TEXT, actor_ip TEXT, action TEXT, target_type TEXT,
+        target_id TEXT, details TEXT, changes_diff TEXT, severity TEXT
+      );
+      CREATE TABLE IF NOT EXISTS master_states (
+        gst_code TEXT PRIMARY KEY, state_name TEXT, state_short_code TEXT, is_union_territory INTEGER
+      );
+      CREATE TABLE IF NOT EXISTS master_user_types (
+        type_code TEXT PRIMARY KEY, alpha_prefix TEXT, role_key TEXT, display_title TEXT, description TEXT
+      );
+      CREATE TABLE IF NOT EXISTS master_degrees (
+        degree_code TEXT PRIMARY KEY, degree_name TEXT, level TEXT, duration_years INTEGER, total_semesters INTEGER, statutory_body TEXT
+      );
+      CREATE TABLE IF NOT EXISTS master_document_types (
+        doc_type_code TEXT PRIMARY KEY, title TEXT, mandatory_for TEXT, max_file_size_mb INTEGER, allowed_mime_types TEXT
+      );
+      CREATE TABLE IF NOT EXISTS staff_academic_journey (
+        id TEXT PRIMARY KEY, staff_id TEXT, staff_name TEXT, qualification_level TEXT,
+        degree_name TEXT, awarding_university TEXT, year_of_passing INTEGER, specialization TEXT,
+        scopus_publications INTEGER, sci_publications INTEGER, patents_count INTEGER,
+        past_institutions_summary TEXT, verified INTEGER, created_at TEXT
+      );
     `);
 
     // Safe column additions for existing SQLite files
     try { this.sqlDb.run('ALTER TABLE users ADD COLUMN department TEXT;'); } catch {}
     try { this.sqlDb.run('ALTER TABLE users ADD COLUMN designation TEXT;'); } catch {}
     try { this.sqlDb.run('ALTER TABLE users ADD COLUMN employee_id TEXT;'); } catch {}
+    try { this.sqlDb.run('ALTER TABLE users ADD COLUMN enterprise_uid TEXT;'); } catch {}
 
     try { this.sqlDb.run('ALTER TABLE students ADD COLUMN mother_name TEXT;'); } catch {}
     try { this.sqlDb.run('ALTER TABLE students ADD COLUMN address TEXT;'); } catch {}
@@ -1150,6 +1474,43 @@ class DatabaseStore {
         } catch {
           this.admission_followups = [];
         }
+        try {
+          this.audit_logs = readTable('audit_logs');
+        } catch {
+          this.audit_logs = [];
+        }
+        try {
+          this.master_states = readTable('master_states').map(s => ({ ...s, is_union_territory: Boolean(s.is_union_territory) }));
+        } catch {
+          this.master_states = [];
+        }
+        try {
+          this.master_user_types = readTable('master_user_types');
+        } catch {
+          this.master_user_types = [];
+        }
+        try {
+          this.master_degrees = readTable('master_degrees');
+        } catch {
+          this.master_degrees = [];
+        }
+        try {
+          this.master_document_types = readTable('master_document_types');
+        } catch {
+          this.master_document_types = [];
+        }
+        try {
+          this.staff_academic_journey = readTable('staff_academic_journey').map(j => ({ ...j, verified: Boolean(j.verified) }));
+        } catch {
+          this.staff_academic_journey = [];
+        }
+
+        if (this.master_states.length === 0) this.master_states = [...DEFAULT_MASTER_STATES];
+        if (this.master_user_types.length === 0) this.master_user_types = [...DEFAULT_MASTER_USER_TYPES];
+        if (this.master_degrees.length === 0) this.master_degrees = [...DEFAULT_MASTER_DEGREES];
+        if (this.master_document_types.length === 0) this.master_document_types = [...DEFAULT_MASTER_DOCUMENT_TYPES];
+        if (this.staff_academic_journey.length === 0) this.staff_academic_journey = [...DEFAULT_STAFF_ACADEMIC_JOURNEY];
+        if (this.audit_logs.length === 0) this.audit_logs = [...DEFAULT_AUDIT_LOGS];
 
         // Ensure all demo students have active accounts in SQLite mode
         const demoAccounts = [
@@ -1172,6 +1533,7 @@ class DatabaseStore {
               role: 'student',
               full_name: demo.name,
               is_active: true,
+              enterprise_uid: generateEnterpriseUID('student', '03', 'BFGI'),
               created_at: new Date().toISOString(),
             });
             const stuIdx = this.students.findIndex(s => s.student_id === demo.stuId || s.email.toLowerCase() === demo.email);
@@ -1183,11 +1545,11 @@ class DatabaseStore {
 
         // Ensure all demo staff & administrative accounts exist in SQLite mode
         const demoStaffAccounts = [
-          { username: 'admin', email: 'admin@educore.edu', name: 'Dr. Ramesh Chandra (Registrar & Provost)', role: 'admin' as const, dept: 'Registrar Office', desig: 'Registrar & Provost', empId: 'REG-PRO-001', pass: 'admin123' },
-          { username: 'staff01', email: 'staff@educore.edu', name: 'Prof. Sunita Rao (Staff / Faculty)', role: 'staff' as const, dept: 'Computer Science & Engineering', desig: 'Assistant Professor', empId: 'FAC-CSE-014', pass: 'staff123' },
-          { username: 'counselor01', email: 'counselor@educore.edu', name: 'Harleen Kaur (Head Counselor / Admission Cell)', role: 'counselor' as const, dept: 'Admission & Counseling Cell', desig: 'Head Counselor & Admission Cell Convener', empId: 'ADM-CNS-002', pass: 'counselor123' },
-          { username: 'hod_cse', email: 'hod.cse@educore.edu', name: 'Dr. Balwinder Singh (HOD Computer Science)', role: 'hod' as const, dept: 'Computer Science & Engineering', desig: 'Head of Department', empId: 'FAC-HOD-001', pass: 'hod123' },
-          { username: 'accounts01', email: 'accounts@educore.edu', name: 'Manmohan Sharma (Chief Accounts Officer)', role: 'accounts' as const, dept: 'Finance & Accounts Section', desig: 'Chief Accounts Officer', empId: 'ACC-OFF-005', pass: 'accounts123' },
+          { username: 'admin', email: 'admin@educore.edu', name: 'Dr. Ramesh Chandra (Registrar & Provost)', role: 'admin' as const, dept: 'Registrar Office', desig: 'Registrar & Provost', empId: 'REG-PRO-001', pass: 'admin123', uid: '4001-03-BFGI-0001' },
+          { username: 'staff01', email: 'staff@educore.edu', name: 'Prof. Sunita Rao (Staff / Faculty)', role: 'staff' as const, dept: 'Computer Science & Engineering', desig: 'Assistant Professor', empId: 'FAC-CSE-014', pass: 'staff123', uid: '2001-03-BFGI-0014' },
+          { username: 'counselor01', email: 'counselor@educore.edu', name: 'Harleen Kaur (Head Counselor / Admission Cell)', role: 'counselor' as const, dept: 'Admission & Counseling Cell', desig: 'Head Counselor & Admission Cell Convener', empId: 'ADM-CNS-002', pass: 'counselor123', uid: '6001-03-BFGI-0002' },
+          { username: 'hod_cse', email: 'hod.cse@educore.edu', name: 'Dr. Balwinder Singh (HOD Computer Science)', role: 'hod' as const, dept: 'Computer Science & Engineering', desig: 'Head of Department', empId: 'FAC-HOD-001', pass: 'hod123', uid: '3001-03-BFGI-0001' },
+          { username: 'accounts01', email: 'accounts@educore.edu', name: 'Manmohan Sharma (Chief Accounts Officer)', role: 'accounts' as const, dept: 'Finance & Accounts Section', desig: 'Chief Accounts Officer', empId: 'ACC-OFF-005', pass: 'accounts123', uid: '5001-03-BFGI-0005' },
         ];
 
         for (const stf of demoStaffAccounts) {
@@ -1204,11 +1566,54 @@ class DatabaseStore {
               department: stf.dept,
               designation: stf.desig,
               employee_id: stf.empId,
+              enterprise_uid: stf.uid,
               is_active: true,
               created_at: new Date().toISOString(),
             });
+          } else {
+            existing.enterprise_uid = stf.uid;
+            if (!existing.employee_id) existing.employee_id = stf.empId;
           }
         }
+
+        // Ensure canonical UID for demo student Aryan
+        const aryanUser = this.users.find(u => u.username.toLowerCase() === 'aryan');
+        if (aryanUser) {
+          aryanUser.enterprise_uid = '1001-03-BFGI-260088';
+          aryanUser.password_hash = bcrypt.hashSync('student123', 10);
+        }
+
+        // Ensure apex Super Admin exists in SQLite mode
+        const superAdminExisting = this.users.find(u => u.username.toLowerCase() === 'superadmin' || u.role === 'super_admin');
+        if (!superAdminExisting) {
+          const superHash = bcrypt.hashSync('super123', 10);
+          this.users.unshift({
+            id: 'usr-super-01',
+            username: 'superadmin',
+            email: 'superadmin@educore.edu',
+            password_hash: superHash,
+            role: 'super_admin',
+            full_name: 'Prof. Dr. Amritpal Singh (Chief System Provost)',
+            department: 'Executive Directorate & University Governance',
+            designation: 'Chief System Provost & Chancellor Delegate',
+            employee_id: 'PRO-SUP-001',
+            enterprise_uid: '9001-03-BFGI-000001',
+            is_active: true,
+            created_at: new Date().toISOString(),
+          });
+        } else {
+          superAdminExisting.enterprise_uid = '9001-03-BFGI-000001';
+        }
+
+        // Backfill enterprise_uid for all users if missing
+        for (const u of this.users) {
+          if (!u.enterprise_uid) {
+            u.enterprise_uid = generateEnterpriseUID(u.role);
+          }
+        }
+
+        // Persist newly backfilled UIDs & master tables to SQLite disk
+        this.saveToSqlite();
       } else {
         this.createSqliteTables();
         this.saveToSqlite();
@@ -1248,7 +1653,7 @@ class DatabaseStore {
         }
       };
 
-      clearAndInsert('users', this.users, ['id', 'username', 'email', 'password_hash', 'role', 'full_name', 'avatar_url', 'is_active', 'department', 'designation', 'employee_id', 'created_at']);
+      clearAndInsert('users', this.users, ['id', 'username', 'email', 'password_hash', 'role', 'full_name', 'avatar_url', 'is_active', 'department', 'designation', 'employee_id', 'enterprise_uid', 'created_at']);
       clearAndInsert('sessions', this.sessions, ['id', 'name', 'start_date', 'end_date', 'is_current']);
       clearAndInsert('courses', this.courses, ['id', 'code', 'name', 'department', 'duration_years', 'total_semesters', 'base_tuition_fee']);
       clearAndInsert('students', this.students, [
@@ -1270,6 +1675,12 @@ class DatabaseStore {
       clearAndInsert('notices', this.notices, ['id', 'title', 'summary', 'content', 'notice_date', 'category', 'is_pinned']);
       clearAndInsert('grievances', this.grievances, ['id', 'tracking_code', 'student_id', 'student_name', 'category', 'subject', 'description', 'priority', 'status', 'admin_remarks', 'resolved_by', 'resolved_at', 'created_at']);
       clearAndInsert('admission_followups', this.admission_followups, ['id', 'student_id', 'counselor_id', 'counselor_name', 'interaction_type', 'outcome', 'notes', 'next_followup_date', 'priority', 'created_at']);
+      clearAndInsert('audit_logs', this.audit_logs, ['id', 'timestamp', 'actor_id', 'actor_name', 'actor_role', 'actor_ip', 'action', 'target_type', 'target_id', 'details', 'changes_diff', 'severity']);
+      clearAndInsert('master_states', this.master_states, ['gst_code', 'state_name', 'state_short_code', 'is_union_territory']);
+      clearAndInsert('master_user_types', this.master_user_types, ['type_code', 'alpha_prefix', 'role_key', 'display_title', 'description']);
+      clearAndInsert('master_degrees', this.master_degrees, ['degree_code', 'degree_name', 'level', 'duration_years', 'total_semesters', 'statutory_body']);
+      clearAndInsert('master_document_types', this.master_document_types, ['doc_type_code', 'title', 'mandatory_for', 'max_file_size_mb', 'allowed_mime_types']);
+      clearAndInsert('staff_academic_journey', this.staff_academic_journey, ['id', 'staff_id', 'staff_name', 'qualification_level', 'degree_name', 'awarding_university', 'year_of_passing', 'specialization', 'scopus_publications', 'sci_publications', 'patents_count', 'past_institutions_summary', 'verified', 'created_at']);
 
       this.sqlDb.run('COMMIT;');
 
@@ -1326,11 +1737,12 @@ class DatabaseStore {
     else if (val === 'counselor') effectiveVal = 'counselor01';
     else if (val === 'hod') effectiveVal = 'hod_cse';
     else if (val === 'accounts') effectiveVal = 'accounts01';
+    else if (val === 'super') effectiveVal = 'superadmin';
 
     if (this.mode === 'mariadb' && this.mariaPool) {
       const [rows]: any = await this.mariaPool.query(
-        'SELECT * FROM users WHERE LOWER(username) = ? OR LOWER(email) = ? OR LOWER(username) = ?',
-        [val, val, effectiveVal]
+        'SELECT * FROM users WHERE LOWER(username) = ? OR LOWER(email) = ? OR LOWER(username) = ? OR LOWER(enterprise_uid) = ?',
+        [val, val, effectiveVal, val]
       );
       if (rows && rows.length > 0) {
         const u = rows[0];
@@ -1346,7 +1758,12 @@ class DatabaseStore {
       }
       return null;
     }
-    let user = this.users.find(u => u.username.toLowerCase() === val || u.username.toLowerCase() === effectiveVal || u.email.toLowerCase() === val);
+    let user = this.users.find(u =>
+      u.username.toLowerCase() === val ||
+      u.username.toLowerCase() === effectiveVal ||
+      u.email.toLowerCase() === val ||
+      (u.enterprise_uid && u.enterprise_uid.toLowerCase() === val)
+    );
     if (!user) {
       const stu = this.students.find(
         s => s.student_id.toLowerCase() === val || s.first_name.toLowerCase() === val || s.email.toLowerCase() === val
@@ -1390,8 +1807,8 @@ class DatabaseStore {
       }
       if (filters?.search) {
         const s = `%${filters.search.toLowerCase()}%`;
-        sql += ' AND (LOWER(username) LIKE ? OR LOWER(email) LIKE ? OR LOWER(full_name) LIKE ? OR LOWER(department) LIKE ?)';
-        params.push(s, s, s, s);
+        sql += ' AND (LOWER(username) LIKE ? OR LOWER(email) LIKE ? OR LOWER(full_name) LIKE ? OR LOWER(department) LIKE ? OR LOWER(enterprise_uid) LIKE ?)';
+        params.push(s, s, s, s, s);
       }
       sql += ' ORDER BY created_at DESC';
       const [rows]: any = await this.mariaPool.query(sql, params);
@@ -1411,7 +1828,8 @@ class DatabaseStore {
         u.username.toLowerCase().includes(q) ||
         u.email.toLowerCase().includes(q) ||
         u.full_name.toLowerCase().includes(q) ||
-        (u.department && u.department.toLowerCase().includes(q))
+        (u.department && u.department.toLowerCase().includes(q)) ||
+        (u.enterprise_uid && u.enterprise_uid.toLowerCase().includes(q))
       );
     }
     return list;
@@ -1419,7 +1837,7 @@ class DatabaseStore {
 
   public async updateUser(id: string, updates: Partial<User>): Promise<User | null> {
     if (this.mode === 'mariadb' && this.mariaPool) {
-      const allowedCols = ['username', 'email', 'password_hash', 'role', 'full_name', 'avatar_url', 'is_active', 'department', 'designation', 'employee_id'];
+      const allowedCols = ['username', 'email', 'password_hash', 'role', 'full_name', 'avatar_url', 'is_active', 'department', 'designation', 'employee_id', 'enterprise_uid'];
       const keys = Object.keys(updates).filter(k => allowedCols.includes(k));
       if (keys.length === 0) return this.findUserById(id);
 
@@ -1474,9 +1892,12 @@ class DatabaseStore {
   }
 
   public async createUser(user: User): Promise<User> {
+    if (!user.enterprise_uid) {
+      user.enterprise_uid = generateEnterpriseUID(user.role);
+    }
     if (this.mode === 'mariadb' && this.mariaPool) {
       await this.mariaPool.query(
-        'INSERT INTO users (id, username, email, password_hash, role, full_name, avatar_url, is_active, department, designation, employee_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO users (id, username, email, password_hash, role, full_name, avatar_url, is_active, department, designation, employee_id, enterprise_uid, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [
           user.id,
           user.username,
@@ -1489,6 +1910,7 @@ class DatabaseStore {
           user.department || null,
           user.designation || null,
           user.employee_id || null,
+          user.enterprise_uid || null,
           formatSqlDateTime(user.created_at),
         ]
       );
@@ -1497,6 +1919,292 @@ class DatabaseStore {
     this.users.push(user);
     this.save();
     return user;
+  }
+
+  // --- AUDIT LOG OPERATIONS (Immutable Append-Only) ---
+  public async createAuditLog(entry: Omit<AuditLog, 'id' | 'timestamp'>): Promise<AuditLog> {
+    const log: AuditLog = {
+      id: `aud-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
+      timestamp: new Date().toISOString(),
+      ...entry,
+    };
+
+    if (this.mode === 'mariadb' && this.mariaPool) {
+      try {
+        await this.mariaPool.query(
+          `INSERT INTO audit_logs (id, timestamp, actor_id, actor_name, actor_role, actor_ip, action, target_type, target_id, details, changes_diff, severity)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            log.id,
+            formatSqlDateTime(log.timestamp),
+            log.actor_id,
+            log.actor_name,
+            log.actor_role,
+            log.actor_ip || null,
+            log.action,
+            log.target_type,
+            log.target_id,
+            log.details,
+            log.changes_diff || null,
+            log.severity,
+          ]
+        );
+      } catch (e: any) {
+        console.error('[AUDIT ERROR] Failed to write audit log to MariaDB:', e.message);
+      }
+    }
+
+    this.audit_logs.unshift(log);
+    this.save();
+    return log;
+  }
+
+  public async getAuditLogs(options?: {
+    limit?: number;
+    actor_role?: string;
+    target_type?: string;
+    action?: string;
+    search?: string;
+  }): Promise<AuditLog[]> {
+    const limit = options?.limit || 100;
+    if (this.mode === 'mariadb' && this.mariaPool) {
+      let sql = 'SELECT * FROM audit_logs WHERE 1=1';
+      const params: any[] = [];
+      if (options?.actor_role && options.actor_role !== 'all') {
+        sql += ' AND actor_role = ?';
+        params.push(options.actor_role);
+      }
+      if (options?.target_type && options.target_type !== 'all') {
+        sql += ' AND target_type = ?';
+        params.push(options.target_type);
+      }
+      if (options?.action) {
+        sql += ' AND action = ?';
+        params.push(options.action);
+      }
+      if (options?.search) {
+        const s = `%${options.search.toLowerCase()}%`;
+        sql += ' AND (LOWER(actor_name) LIKE ? OR LOWER(details) LIKE ? OR LOWER(target_id) LIKE ?)';
+        params.push(s, s, s);
+      }
+      sql += ' ORDER BY timestamp DESC LIMIT ?';
+      params.push(limit);
+
+      const [rows]: any = await this.mariaPool.query(sql, params);
+      return rows;
+    }
+
+    let logs = [...this.audit_logs];
+    if (options?.actor_role && options.actor_role !== 'all') {
+      logs = logs.filter(l => l.actor_role === options.actor_role);
+    }
+    if (options?.target_type && options.target_type !== 'all') {
+      logs = logs.filter(l => l.target_type === options.target_type);
+    }
+    if (options?.action) {
+      logs = logs.filter(l => l.action.toLowerCase() === options.action!.toLowerCase());
+    }
+    if (options?.search) {
+      const q = options.search.toLowerCase();
+      logs = logs.filter(l =>
+        l.actor_name.toLowerCase().includes(q) ||
+        l.details.toLowerCase().includes(q) ||
+        l.target_id.toLowerCase().includes(q)
+      );
+    }
+    return logs.slice(0, limit);
+  }
+
+  // --- MASTER TABLES OPERATIONS ---
+  public async getMasterData(): Promise<{
+    states: MasterState[];
+    userTypes: MasterUserType[];
+    degrees: MasterDegree[];
+    documentTypes: MasterDocumentType[];
+  }> {
+    if (this.mode === 'mariadb' && this.mariaPool) {
+      try {
+        const [states]: any = await this.mariaPool.query('SELECT * FROM master_states ORDER BY gst_code ASC');
+        const [userTypes]: any = await this.mariaPool.query('SELECT * FROM master_user_types ORDER BY type_code ASC');
+        const [degrees]: any = await this.mariaPool.query('SELECT * FROM master_degrees ORDER BY degree_code ASC');
+        const [docTypes]: any = await this.mariaPool.query('SELECT * FROM master_document_types ORDER BY doc_type_code ASC');
+        return {
+          states: states.map((s: any) => ({ ...s, is_union_territory: Boolean(s.is_union_territory) })),
+          userTypes,
+          degrees,
+          documentTypes: docTypes,
+        };
+      } catch (err) {
+        // Fall back to memory
+      }
+    }
+    return {
+      states: [...this.master_states],
+      userTypes: [...this.master_user_types],
+      degrees: [...this.master_degrees],
+      documentTypes: [...this.master_document_types],
+    };
+  }
+
+  // --- STAFF ACADEMIC JOURNEY OPERATIONS ---
+  public async getStaffAcademicJourney(staffId?: string): Promise<StaffAcademicJourney[]> {
+    if (this.mode === 'mariadb' && this.mariaPool) {
+      try {
+        let sql = 'SELECT * FROM staff_academic_journey WHERE 1=1';
+        const params: any[] = [];
+        if (staffId) {
+          sql += ' AND staff_id = ?';
+          params.push(staffId);
+        }
+        sql += ' ORDER BY year_of_passing DESC';
+        const [rows]: any = await this.mariaPool.query(sql, params);
+        return rows.map((r: any) => ({ ...r, verified: Boolean(r.verified) }));
+      } catch (err) {
+        // Fall back to memory
+      }
+    }
+    let list = [...this.staff_academic_journey];
+    if (staffId) {
+      list = list.filter(j => j.staff_id === staffId);
+    }
+    return list;
+  }
+
+  public async addStaffAcademicJourney(data: Omit<StaffAcademicJourney, 'id' | 'created_at'>): Promise<StaffAcademicJourney> {
+    const entry: StaffAcademicJourney = {
+      id: `saj-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+      ...data,
+      created_at: new Date().toISOString(),
+    };
+
+    if (this.mode === 'mariadb' && this.mariaPool) {
+      try {
+        await this.mariaPool.query(
+          `INSERT INTO staff_academic_journey (id, staff_id, staff_name, qualification_level, degree_name, awarding_university, year_of_passing, specialization, scopus_publications, sci_publications, patents_count, past_institutions_summary, verified, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            entry.id,
+            entry.staff_id,
+            entry.staff_name,
+            entry.qualification_level,
+            entry.degree_name,
+            entry.awarding_university,
+            entry.year_of_passing,
+            entry.specialization,
+            entry.scopus_publications || 0,
+            entry.sci_publications || 0,
+            entry.patents_count || 0,
+            entry.past_institutions_summary || null,
+            entry.verified ? 1 : 0,
+            formatSqlDateTime(entry.created_at),
+          ]
+        );
+      } catch (e: any) {
+        console.error('[DB] Failed to insert staff academic journey in MariaDB:', e.message);
+      }
+    }
+
+    this.staff_academic_journey.push(entry);
+    this.save();
+    return entry;
+  }
+
+  public async overrideUser(
+    targetUserId: string,
+    updates: {
+      full_name?: string;
+      username?: string;
+      email?: string;
+      role?: EnterpriseUserRole;
+      department?: string;
+      designation?: string;
+      employee_id?: string;
+      is_active?: boolean;
+      new_password?: string;
+    },
+    actorUser: { id: string; full_name: string; role: EnterpriseUserRole }
+  ): Promise<User> {
+    const target = await this.findUserById(targetUserId);
+    if (!target) {
+      throw new Error(`Target user with ID '${targetUserId}' not found.`);
+    }
+
+    const changedFields: Record<string, { before: any; after: any }> = {};
+
+    if (updates.full_name !== undefined && updates.full_name !== target.full_name) {
+      changedFields.full_name = { before: target.full_name, after: updates.full_name };
+      target.full_name = updates.full_name;
+    }
+    if (updates.username !== undefined && updates.username !== target.username) {
+      changedFields.username = { before: target.username, after: updates.username.toLowerCase().trim() };
+      target.username = updates.username.toLowerCase().trim();
+    }
+    if (updates.email !== undefined && updates.email !== target.email) {
+      changedFields.email = { before: target.email, after: updates.email.toLowerCase().trim() };
+      target.email = updates.email.toLowerCase().trim();
+    }
+    if (updates.role !== undefined && updates.role !== target.role) {
+      changedFields.role = { before: target.role, after: updates.role };
+      target.role = updates.role;
+    }
+    if (updates.department !== undefined && updates.department !== target.department) {
+      changedFields.department = { before: target.department, after: updates.department };
+      target.department = updates.department;
+    }
+    if (updates.designation !== undefined && updates.designation !== target.designation) {
+      changedFields.designation = { before: target.designation, after: updates.designation };
+      target.designation = updates.designation;
+    }
+    if (updates.employee_id !== undefined && updates.employee_id !== target.employee_id) {
+      changedFields.employee_id = { before: target.employee_id, after: updates.employee_id };
+      target.employee_id = updates.employee_id;
+    }
+    if (updates.is_active !== undefined && updates.is_active !== target.is_active) {
+      changedFields.is_active = { before: target.is_active, after: updates.is_active };
+      target.is_active = updates.is_active;
+    }
+    if (updates.new_password) {
+      target.password_hash = bcrypt.hashSync(updates.new_password, 10);
+      changedFields.password = { before: '********', after: '[MODIFIED_BY_ADMIN_OVERRIDE]' };
+    }
+
+    if (this.mode === 'mariadb' && this.mariaPool) {
+      await this.mariaPool.query(
+        `UPDATE users SET full_name = ?, username = ?, email = ?, role = ?, department = ?, designation = ?, employee_id = ?, is_active = ?, password_hash = ? WHERE id = ?`,
+        [
+          target.full_name,
+          target.username,
+          target.email,
+          target.role,
+          target.department || null,
+          target.designation || null,
+          target.employee_id || null,
+          target.is_active ? 1 : 0,
+          target.password_hash,
+          target.id,
+        ]
+      );
+    } else {
+      const idx = this.users.findIndex(u => u.id === targetUserId);
+      if (idx !== -1) {
+        this.users[idx] = { ...target };
+      }
+      this.save();
+    }
+
+    await this.createAuditLog({
+      actor_id: actorUser.id,
+      actor_name: actorUser.full_name,
+      actor_role: actorUser.role,
+      action: actorUser.role === 'super_admin' ? 'USER_OVERRIDE_APEX' : 'ADMIN_USER_OVERRIDE',
+      target_type: 'user',
+      target_id: target.id,
+      details: `${actorUser.full_name} (${actorUser.role}) modified user credentials/profile for ${target.username} (${target.full_name}).`,
+      changes_diff: JSON.stringify(changedFields),
+      severity: 'critical',
+    });
+
+    return target;
   }
 
   // --- STUDENT OPERATIONS ---
@@ -2291,10 +2999,26 @@ class DatabaseStore {
 
   // --- IN-MEMORY DEFAULT SEEDING ---
   private seedDefaultsInMemory(): void {
+    const superHash = bcrypt.hashSync('super123', 10);
     const adminHash = bcrypt.hashSync('admin123', 10);
     const studentHash = bcrypt.hashSync('student123', 10);
 
     this.users = [
+      {
+        id: 'usr-super-01',
+        username: 'superadmin',
+        email: 'superadmin@educore.edu',
+        password_hash: superHash,
+        role: 'super_admin',
+        full_name: 'Prof. Dr. Amritpal Singh (Chief System Provost)',
+        department: 'Executive Directorate & University Governance',
+        designation: 'Chief System Provost & Chancellor Delegate',
+        employee_id: 'PRO-SUP-001',
+        enterprise_uid: '9001-03-BFGI-000001',
+        avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
+        is_active: true,
+        created_at: new Date().toISOString(),
+      },
       {
         id: 'usr-admin-01',
         username: 'admin',
@@ -2305,6 +3029,7 @@ class DatabaseStore {
         department: 'Registrar Office',
         designation: 'Registrar & Provost',
         employee_id: 'REG-PRO-001',
+        enterprise_uid: '4001-03-BFGI-0001',
         avatar_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAmCe2nK5yn2MzfaI3kCnW0nsowqO3EV58Ga69olnaTWnrwRkrVYL41WIGBNg3bCeeSll-y7q-sNxZnHAmS6R6flXcHN8FmEd7YctXzyaVMrHWtueSk6o9YibOVt8o5EF2w8Sb20QpYV9jv4_fwNINqv1CYnW8CqP4LtuL4L7W6_MOM7pY86gWQTI9AN3JgzjczSurPGgarPw32rrk9xSW0oSixeifD_sg3dYr9-I-QBTghh310DDep',
         is_active: true,
         created_at: new Date().toISOString(),
@@ -2316,6 +3041,7 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Aryan Sharma',
+        enterprise_uid: '1001-03-BFGI-260088',
         avatar_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCeiC80XBMv76j7_mmqCTcV9ZoMVZPfV_CdXd_33ne25_LIcAK_aNzQB6o4mvRXLqi6oREzmz295hMjEcQKFSotWGv1NikCOM_tIPmBQDzFiaMO8yJKSdfRUTIfZSoUkGyEjTIjKF5D8DMp3A9swq7gKNz8yzp0zkvchBkPPxFbIrY_ZA6tW5oSONcFtKCHTd3RgKK6vRjOMjtXmy5qOVJVowbvGGivEwYdD84ExfwTGl3sAzLegZ9N',
         is_active: true,
         created_at: new Date().toISOString(),
@@ -3126,6 +3852,20 @@ class DatabaseStore {
         created_at: `${yesterdayStr} 11:30:00`,
       },
     ];
+
+    this.master_states = [...DEFAULT_MASTER_STATES];
+    this.master_user_types = [...DEFAULT_MASTER_USER_TYPES];
+    this.master_degrees = [...DEFAULT_MASTER_DEGREES];
+    this.master_document_types = [...DEFAULT_MASTER_DOCUMENT_TYPES];
+    this.staff_academic_journey = [...DEFAULT_STAFF_ACADEMIC_JOURNEY];
+    this.audit_logs = [...DEFAULT_AUDIT_LOGS];
+
+    // Ensure all seed users have enterprise_uid
+    for (const u of this.users) {
+      if (!u.enterprise_uid) {
+        u.enterprise_uid = generateEnterpriseUID(u.role);
+      }
+    }
   }
 }
 

@@ -126,6 +126,60 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         </div>
       </div>
 
+      {/* Executive Command Strips */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <button
+          type="button"
+          onClick={() => onNavigate('student-documents')}
+          className="p-3.5 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-emerald-500 rounded-xl flex items-center justify-between text-left transition-all shadow-2xs group cursor-pointer"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <span className="material-symbols-outlined text-[20px]">folder_shared</span>
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-[#191c1d]">Student Document Vault</h4>
+              <p className="text-[10px] text-[#757682]">AICTE, MRSPTU & 85% Domicile Verification</p>
+            </div>
+          </div>
+          <span className="material-symbols-outlined text-[15px] text-slate-400 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onNavigate('teacher-documents')}
+          className="p-3.5 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-indigo-500 rounded-xl flex items-center justify-between text-left transition-all shadow-2xs group cursor-pointer"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <span className="material-symbols-outlined text-[20px]">workspace_premium</span>
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-[#191c1d]">Faculty Credentials Vault</h4>
+              <p className="text-[10px] text-[#757682]">Ph.D. Awards, Scopus Papers, AICTE Mandates</p>
+            </div>
+          </div>
+          <span className="material-symbols-outlined text-[15px] text-slate-400 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onNavigate('student-quiz-lms')}
+          className="p-3.5 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-purple-500 rounded-xl flex items-center justify-between text-left transition-all shadow-2xs group cursor-pointer"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <span className="material-symbols-outlined text-[20px]">psychology</span>
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-[#191c1d]">LMS & CBT Quiz Engine</h4>
+              <p className="text-[10px] text-[#757682]">Mid-Term Assessments & Question Banks</p>
+            </div>
+          </div>
+          <span className="material-symbols-outlined text-[15px] text-slate-400 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+        </button>
+      </div>
+
       {/* 4 KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {/* KPI 1: Total Collected */}

@@ -66,41 +66,131 @@ export const LoginView: React.FC<LoginViewProps> = ({
         <div className="bg-[#ffffff] rounded-2xl p-8 shadow-2xl border border-white/20">
           <div className="mb-6 text-center">
             <h2 className="text-xl font-bold text-[#191c1d]">
-              {selectedRole === 'admin' ? 'Admin Portal Login' : 'Student Portal Login'}
+              {selectedRole === 'super_admin'
+                ? 'Super Admin Omnipotent Gateway'
+                : selectedRole === 'admin'
+                ? 'Institutional Administration Portal'
+                : selectedRole === 'staff'
+                ? 'Faculty & Academic R&D Portal'
+                : 'Student Campus & Academics Portal'}
             </h2>
             <p className="text-xs text-[#757682] mt-1">
-              Please enter your institutional credentials to authenticate.
+              Authenticate via Canonical Enterprise UID, institutional username, or email.
             </p>
           </div>
 
           {/* Role Selector Toggle */}
-          <div className="p-1 bg-[#f3f4f5] rounded-xl flex items-center mb-6 border border-[#e1e3e4]">
+          <div className="p-1 bg-[#f3f4f5] rounded-xl flex items-center mb-4 border border-[#e1e3e4] text-[11px]">
             <button
               type="button"
               id="role-toggle-student"
               onClick={() => handleRoleChange('student')}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-1.5 font-bold rounded-lg transition-all flex items-center justify-center gap-1 ${
                 selectedRole === 'student'
                   ? 'bg-white text-[#00236f] shadow-xs border border-[#e1e3e4]'
                   : 'text-[#757682] hover:text-[#191c1d]'
               }`}
             >
-              <span className="material-symbols-outlined text-[16px]">school</span>
+              <span className="material-symbols-outlined text-[15px]">school</span>
               <span>STUDENT</span>
+            </button>
+            <button
+              type="button"
+              id="role-toggle-staff"
+              onClick={() => handleRoleChange('staff')}
+              className={`flex-1 py-1.5 font-bold rounded-lg transition-all flex items-center justify-center gap-1 ${
+                selectedRole === 'staff'
+                  ? 'bg-white text-[#00236f] shadow-xs border border-[#e1e3e4]'
+                  : 'text-[#757682] hover:text-[#191c1d]'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[15px]">badge</span>
+              <span>FACULTY</span>
             </button>
             <button
               type="button"
               id="role-toggle-admin"
               onClick={() => handleRoleChange('admin')}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-1.5 font-bold rounded-lg transition-all flex items-center justify-center gap-1 ${
                 selectedRole === 'admin'
                   ? 'bg-white text-[#00236f] shadow-xs border border-[#e1e3e4]'
                   : 'text-[#757682] hover:text-[#191c1d]'
               }`}
             >
-              <span className="material-symbols-outlined text-[16px]">admin_panel_settings</span>
+              <span className="material-symbols-outlined text-[15px]">admin_panel_settings</span>
               <span>ADMIN</span>
             </button>
+            <button
+              type="button"
+              id="role-toggle-superadmin"
+              onClick={() => handleRoleChange('super_admin')}
+              className={`flex-1 py-1.5 font-bold rounded-lg transition-all flex items-center justify-center gap-1 ${
+                selectedRole === 'super_admin'
+                  ? 'bg-amber-600 text-white shadow-xs'
+                  : 'text-[#757682] hover:text-amber-800'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[15px]">shield_person</span>
+              <span>SUPER</span>
+            </button>
+          </div>
+
+          {/* Quick Demo Credentials / Enterprise UID chips */}
+          <div className="mb-4 p-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl text-[10px]">
+            <div className="flex items-center justify-between text-[#757682] font-semibold mb-1.5 px-0.5">
+              <span>Quick Enterprise UID Fill:</span>
+              <span className="text-[9px] font-mono text-[#00236f]">GST 03 • MRSPTU</span>
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedRole('super_admin');
+                  setUsername('9001-03-BFGI-000001');
+                  setPassword('super123');
+                }}
+                className="p-1 text-left bg-white hover:bg-amber-50 border border-amber-200/80 rounded font-mono text-[10px] text-amber-900 transition-colors flex items-center justify-between cursor-pointer"
+              >
+                <span className="font-bold">Super Admin</span>
+                <span className="text-[9px] text-[#757682]">9001-03...</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedRole('admin');
+                  setUsername('4001-03-BFGI-0001');
+                  setPassword('admin123');
+                }}
+                className="p-1 text-left bg-white hover:bg-blue-50 border border-[#e1e3e4] rounded font-mono text-[10px] text-[#00236f] transition-colors flex items-center justify-between cursor-pointer"
+              >
+                <span className="font-bold">Admin</span>
+                <span className="text-[9px] text-[#757682]">4001-03...</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedRole('staff');
+                  setUsername('2001-03-BFGI-0014');
+                  setPassword('staff123');
+                }}
+                className="p-1 text-left bg-white hover:bg-teal-50 border border-[#e1e3e4] rounded font-mono text-[10px] text-[#006a61] transition-colors flex items-center justify-between cursor-pointer"
+              >
+                <span className="font-bold">Faculty</span>
+                <span className="text-[9px] text-[#757682]">2001-03...</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedRole('student');
+                  setUsername('1001-03-BFGI-260088');
+                  setPassword('student123');
+                }}
+                className="p-1 text-left bg-white hover:bg-indigo-50 border border-[#e1e3e4] rounded font-mono text-[10px] text-[#191c1d] transition-colors flex items-center justify-between cursor-pointer"
+              >
+                <span className="font-bold">Student</span>
+                <span className="text-[9px] text-[#757682]">1001-03...</span>
+              </button>
+            </div>
           </div>
 
           {/* Error message */}
@@ -118,11 +208,11 @@ export const LoginView: React.FC<LoginViewProps> = ({
                 htmlFor="login-username-input"
                 className="block text-xs font-bold text-[#191c1d] uppercase tracking-wider mb-1.5"
               >
-                Institution ID / Email
+                Institution Enterprise UID / Username / Email
               </label>
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[#757682] text-[18px]">
-                  person
+                  badge
                 </span>
                 <input
                   id="login-username-input"
@@ -130,7 +220,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   required
                   value={username}
                   onChange={e => setUsername(e.target.value)}
-                  placeholder="Enter Institution ID or Email"
+                  placeholder="e.g. 9001-03-BFGI-000001 or superadmin"
                   className="w-full pl-10 pr-4 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30 focus:border-[#00236f]"
                 />
               </div>

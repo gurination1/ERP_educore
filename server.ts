@@ -17,6 +17,7 @@ import { noticeRouter } from './server/routes/noticeRoutes.ts';
 import { aiRouter } from './server/routes/aiRoutes.ts';
 import { grievanceRouter } from './server/routes/grievanceRoutes.ts';
 import { userRouter } from './server/routes/userRoutes.ts';
+import { auditRouter } from './server/routes/auditRoutes.ts';
 import { errorHandler } from './server/middleware/errorHandler.ts';
 
 dotenv.config();
@@ -66,6 +67,7 @@ async function startServer() {
   app.use('/api/ai', aiRouter);
   app.use('/api/grievances', grievanceRouter);
   app.use('/api/users', userRouter);
+  app.use('/api', auditRouter);
 
   // Centralized Error Handler for API
   app.use(errorHandler);

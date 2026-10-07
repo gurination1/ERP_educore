@@ -462,7 +462,7 @@ studentRouter.patch('/:id/attendance', authenticateToken, requireRole('admin', '
 });
 
 // Grant MRSPTU Attendance Condonation (Admin / Director / Registrar)
-studentRouter.post('/:id/condone-attendance', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+studentRouter.post('/:id/condone-attendance', authenticateToken, requireRole('admin', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   const { orderNo, reason } = req.body;
 

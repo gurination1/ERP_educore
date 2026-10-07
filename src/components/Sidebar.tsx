@@ -15,10 +15,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onLogout,
 }) => {
   const role = currentUser?.role;
-  const isAdmin = role === 'admin';
+  const isSuperAdmin = role === 'super_admin';
+  const isAdmin = role === 'admin' || isSuperAdmin;
   const isFacultyOrCounselor = role === 'staff' || role === 'counselor' || role === 'hod';
-  const isStaffOrAdmin = ['admin', 'staff', 'counselor', 'hod', 'accounts'].includes(role || '');
-  const canManageIntake = ['admin', 'staff', 'counselor', 'hod'].includes(role || '');
+  const isStaffOrAdmin = ['admin', 'super_admin', 'staff', 'counselor', 'hod', 'accounts'].includes(role || '');
+  const canManageIntake = ['admin', 'super_admin', 'staff', 'counselor', 'hod'].includes(role || '');
 
   const navItems = [
     {
@@ -101,6 +102,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: 'menu_book',
       badge: undefined,
     },
+    {
+      id: 'student-quiz-lms' as ActiveScreen,
+      label: 'LMS & Quiz CBT',
+      icon: 'psychology',
+      badge: 'CBT',
+    },
+    {
+      id: 'student-documents' as ActiveScreen,
+      label: 'Student Docs Vault',
+      icon: 'folder_shared',
+      badge: '85%',
+    },
+    ...(isStaffOrAdmin
+      ? [
+          {
+            id: 'teacher-documents' as ActiveScreen,
+            label: 'Faculty Docs Vault',
+            icon: 'workspace_premium',
+            badge: 'AICTE',
+          },
+        ]
+      : []),
     {
       id: 'grievances' as ActiveScreen,
       label: 'Grievance Cell',

@@ -20,7 +20,16 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
   const [isHireModalOpen, setIsHireModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
+  const [isApexOverrideModalOpen, setIsApexOverrideModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [apexOverrideForm, setApexOverrideForm] = useState({
+    fullName: '',
+    username: '',
+    email: '',
+    password: '',
+    role: 'staff' as UserRole,
+    reason: 'Super Admin authoritative governance override',
+  });
   const [credentialsSlip, setCredentialsSlip] = useState<{
     fullName: string;
     username: string;
@@ -291,6 +300,52 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
     }
   };
 
+  const openApexOverrideModal = (user: User) => {
+    setSelectedUser(user);
+    setApexOverrideForm({
+      fullName: user.full_name,
+      username: user.username,
+      email: user.email,
+      password: '',
+      role: user.role,
+      reason: 'Super Admin authoritative governance override',
+    });
+    setIsApexOverrideModalOpen(true);
+  };
+
+  const handleApexOverrideSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUser) return;
+    setActionLoadingId(selectedUser.id);
+    try {
+      const payload: any = {
+        fullName: apexOverrideForm.fullName.trim(),
+        username: apexOverrideForm.username.trim(),
+        email: apexOverrideForm.email.trim(),
+        role: apexOverrideForm.role,
+        reason: apexOverrideForm.reason.trim(),
+      };
+      if (apexOverrideForm.password.trim()) {
+        payload.password = apexOverrideForm.password.trim();
+      }
+      const res = await api.overrideUser(selectedUser.id, payload);
+      if (res.success) {
+        setIsApexOverrideModalOpen(false);
+        setFeedback({
+          type: 'success',
+          message: `Apex Universal Override applied: ${res.user?.full_name} (${res.user?.role.toUpperCase()}) updated with immutable audit trail.`,
+        });
+        await loadUsers();
+      } else {
+        setFeedback({ type: 'error', message: res.error || 'Failed to apply apex override.' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message || 'Apex override operation failed.' });
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
   // Filtered users
   const filteredUsers = users.filter(u => {
     // Role filter
@@ -501,10 +556,20 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                             {user.full_name.charAt(0)}
                           </div>
                           <div>
-                            <div className="font-bold text-[#191c1d]">{user.full_name}</div>
+                            <div className="font-bold text-[#191c1d] flex items-center gap-1.5">
+                              <span>{user.full_name}</span>
+                              {user.role === 'super_admin' && (
+                                <span className="px-1.5 py-0.5 text-[9px] font-black bg-amber-500 text-white rounded">SUPER</span>
+                              )}
+                            </div>
                             <div className="text-[10px] text-[#757682] font-mono">
                               @{user.username} • {user.email}
                             </div>
+                            {user.enterprise_uid && (
+                              <div className="text-[9px] text-[#00236f] font-mono font-bold tracking-tight">
+                                UID: {user.enterprise_uid}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -548,6 +613,15 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                       </td>
                       <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          {currentUser?.role === 'super_admin' && (
+                            <button
+                              onClick={() => openApexOverrideModal(user)}
+                              className="p-1 text-amber-600 hover:bg-amber-50 rounded border border-transparent hover:border-amber-300 cursor-pointer"
+                              title="Apex Universal Override (Super Admin Omnipotent Edit)"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">shield_person</span>
+                            </button>
+                          )}
                           <button
                             onClick={() => openEditModal(user)}
                             className="p-1 text-[#444651] hover:text-[#00236f] hover:bg-white rounded border border-transparent hover:border-[#e1e3e4] cursor-pointer"
@@ -1031,6 +1105,146 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Super Admin Apex Override */}
+      {isApexOverrideModalOpen && selectedUser && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full flex flex-col shadow-2xl border border-amber-300 overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-4 border-b border-amber-200 flex items-center justify-between bg-gradient-to-r from-amber-700 via-amber-800 to-[#00236f] text-white">
+              <div className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-[24px] text-amber-300">shield_person</span>
+                <div>
+                  <h3 className="text-base font-bold">Apex Universal Override</h3>
+                  <p className="text-[11px] text-amber-100">Super Admin Omnipotent Directive • Append-Only Audit Trail</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsApexOverrideModalOpen(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleApexOverrideSubmit} className="p-6 space-y-3.5 text-xs">
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-[11px] space-y-1">
+                <div className="font-bold flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px]">verified</span>
+                  <span>Target: {selectedUser.full_name} ({selectedUser.enterprise_uid || selectedUser.id})</span>
+                </div>
+                <p className="text-[10px] text-amber-800">
+                  Universal Override allows Super Admin to directly mutate full names, login handles, emails, credentials, and institutional roles across all tiers with automatic cryptographic audit logging.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-[#191c1d] uppercase mb-1">
+                  Full Legal Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={apexOverrideForm.fullName}
+                  onChange={e => setApexOverrideForm({ ...apexOverrideForm, fullName: e.target.value })}
+                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-[#191c1d] uppercase mb-1">
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={apexOverrideForm.username}
+                    onChange={e => setApexOverrideForm({ ...apexOverrideForm, username: e.target.value })}
+                    className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[#191c1d] uppercase mb-1">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={apexOverrideForm.email}
+                    onChange={e => setApexOverrideForm({ ...apexOverrideForm, email: e.target.value })}
+                    className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-[#191c1d] uppercase mb-1">
+                    Role Tier
+                  </label>
+                  <select
+                    value={apexOverrideForm.role}
+                    onChange={e => setApexOverrideForm({ ...apexOverrideForm, role: e.target.value as any })}
+                    className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-semibold"
+                  >
+                    <option value="student">Student (1001)</option>
+                    <option value="staff">Faculty / Staff (2001)</option>
+                    <option value="counselor">Counselor (2002)</option>
+                    <option value="hod">HOD (3001)</option>
+                    <option value="accounts">Accounts (3002)</option>
+                    <option value="admin">Administrator (4001)</option>
+                    <option value="super_admin">Super Administrator (9001)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[#191c1d] uppercase mb-1">
+                    New Password (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Leave blank to keep current"
+                    value={apexOverrideForm.password}
+                    onChange={e => setApexOverrideForm({ ...apexOverrideForm, password: e.target.value })}
+                    className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-[#191c1d] uppercase mb-1">
+                  Reason for Audit Record *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={apexOverrideForm.reason}
+                  onChange={e => setApexOverrideForm({ ...apexOverrideForm, reason: e.target.value })}
+                  placeholder="e.g. Identity correction requested by Registrar"
+                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-[#f3f4f5] flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsApexOverrideModalOpen(false)}
+                  className="px-4 py-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] text-[#444651] font-bold rounded-lg text-xs cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={actionLoadingId === selectedUser.id}
+                  className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-xs cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[16px]">verified</span>
+                  <span>{actionLoadingId === selectedUser.id ? 'Overriding...' : 'Apply Universal Override'}</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

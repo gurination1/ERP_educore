@@ -50,8 +50,9 @@ async function run() {
 
   // Authenticate Admin & Student
   const adminAuth = await req('/api/auth/login', 'POST', {
-    email: 'admin@educore.edu',
-    password: '123456',
+    username: 'admin@educore.edu',
+    password: 'admin123',
+    role: 'admin',
   });
   if (adminAuth.status === 200 && adminAuth.data.token) {
     adminToken = adminAuth.data.token;
@@ -61,8 +62,9 @@ async function run() {
   }
 
   const stuAuth = await req('/api/auth/login', 'POST', {
-    email: 'stu001@educore.edu',
-    password: '123456',
+    username: 'aryan@educore.edu',
+    password: 'student123',
+    role: 'student',
   });
   if (stuAuth.status === 200 && stuAuth.data.token) {
     studentToken = stuAuth.data.token;
@@ -240,9 +242,19 @@ async function run() {
   // -------------------------------------------------------------
   console.log('\n--- AREA 3: Scholarship Approval ↔ Fee Record Reconciliation ---');
 
-  // Submit scholarship application for stu001
+  const ts = Date.now();
+  const createScheme = await req('/api/scholarships/schemes', 'POST', {
+    code: `SCH-WF-${String(ts).slice(-4)}`,
+    title: `College Workflow Merit Grant ${ts}`,
+    award_amount: 50000,
+    deadline: '2026-12-31',
+    description: 'Workflow testing grant',
+  }, adminToken);
+  const targetSchemeId = createScheme.data.scheme?.id || 'sch-stem-03';
+
+  // Submit scholarship application for student
   const appRes = await req('/api/scholarships/apply', 'POST', {
-    schemeId: 'sch-merit-01',
+    schemeId: targetSchemeId,
     annualFamilyIncome: 450000,
     previousGpa: 9.4,
     reasonForApplication: 'Dedicated to artificial intelligence research.',
@@ -276,7 +288,7 @@ async function run() {
 
   // 3.3 Submit second application for approval
   const app2Res = await req('/api/scholarships/apply', 'POST', {
-    schemeId: 'sch-merit-01',
+    schemeId: targetSchemeId,
     annualFamilyIncome: 350000,
     previousGpa: 9.8,
     reasonForApplication: 'Second round full documentation.',

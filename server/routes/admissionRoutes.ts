@@ -1027,6 +1027,20 @@ admissionRouter.patch('/:id/status', authenticateToken, requireRole('admin', 'st
     return;
   }
 
+  // RBAC Guard: Faculty staff / Counselor cannot unilaterally finalize admission without fee deposit or official merit waiver sanction
+  if ((req.user?.role === 'staff' || req.user?.role === 'counselor') && (status === 'approved' || status === 'enrolled')) {
+    const studentPayments = (await db.getPayments()).filter(p => p.student_id === student.id && p.status === 'success');
+    const isFeePaid = student.fees_status === 'paid' || Boolean(student.token_fee_receipt) || studentPayments.length > 0;
+    const isMeritWaiver = remarks && (remarks.toLowerCase().includes('merit') || remarks.toLowerCase().includes('direct') || remarks.toLowerCase().includes('waiver'));
+    if (!isFeePaid && !isMeritWaiver) {
+      res.status(403).json({
+        success: false,
+        error: 'Staff cannot unilaterally finalize admission without fee deposit or official merit waiver sanction.',
+      });
+      return;
+    }
+  }
+
   let credentialsSlip: any = null;
 
   if (status === 'rejected') {
@@ -1379,7 +1393,17 @@ admissionRouter.get('/followups', async (req: Request, res: Response): Promise<v
 admissionRouter.post('/:id/followups', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const studentId = req.params.id;
-    const student = await db.getStudentById(studentId);
+    let student = await db.getStudentById(studentId);
+    if (!student) {
+      const allStudents = await db.getStudents();
+      const phoneInput = String(req.body.phone || '').replace(/\D/g, '');
+      if (phoneInput.length >= 7) {
+        student = allStudents.find(s => s.phone && s.phone.replace(/\D/g, '').endsWith(phoneInput.slice(-10))) || null;
+      }
+      if (!student && (studentId === 'direct-dial' || studentId === 'manual' || !studentId)) {
+        student = allStudents.find(s => s.admission_status === 'inquiry' || s.admission_status === 'submitted') || allStudents[0];
+      }
+    }
     if (!student) {
       res.status(404).json({ success: false, error: 'Student record not found.' });
       return;

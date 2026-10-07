@@ -7,7 +7,7 @@ interface ScholarshipsViewProps {
 }
 
 export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser }) => {
-  const isActualAdmin = currentUser?.role === 'admin';
+  const isActualAdmin = currentUser?.role === 'admin' || currentUser?.role === 'super_admin';
   const isStaff = currentUser?.role === 'staff';
   const isStaffOrAdmin = isActualAdmin || isStaff;
   const [schemes, setSchemes] = useState<ScholarshipScheme[]>([]);

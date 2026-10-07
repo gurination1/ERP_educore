@@ -373,6 +373,44 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
               </button>
 
               <button
+                id="quick-link-cbt-quiz"
+                onClick={() => onNavigate('student-quiz-lms')}
+                className="w-full flex items-center justify-between p-3 rounded-lg bg-[#f8f9fa] hover:bg-[#dce1ff]/40 text-left transition-colors border border-[#edeeef]"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-md bg-purple-100 text-purple-700 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[18px]">psychology</span>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-[#191c1d]">LMS & Online Quiz (CBT)</p>
+                    <p className="text-[10px] text-[#757682]">Algorithm Mid-Term & Practicals</p>
+                  </div>
+                </div>
+                <span className="material-symbols-outlined text-[16px] text-[#757682]">
+                  arrow_forward
+                </span>
+              </button>
+
+              <button
+                id="quick-link-docs-vault"
+                onClick={() => onNavigate('student-documents')}
+                className="w-full flex items-center justify-between p-3 rounded-lg bg-[#f8f9fa] hover:bg-[#dce1ff]/40 text-left transition-colors border border-[#edeeef]"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-md bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[18px]">folder_shared</span>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-[#191c1d]">Regulatory Documents Vault</p>
+                    <p className="text-[10px] text-[#757682]">Punjab 85% Domicile, 10th & Aadhaar</p>
+                  </div>
+                </div>
+                <span className="material-symbols-outlined text-[16px] text-[#757682]">
+                  arrow_forward
+                </span>
+              </button>
+
+              <button
                 id="quick-link-academics"
                 onClick={() => onNavigate('academics')}
                 className="w-full flex items-center justify-between p-3 rounded-lg bg-[#f8f9fa] hover:bg-[#dce1ff]/40 text-left transition-colors border border-[#edeeef]"

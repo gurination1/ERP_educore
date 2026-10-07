@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import { StudentProfile, User, FollowupRadarStats, ProspectLeadItem, AdmissionFollowup } from '../types';
 import { AdmissionFormView } from './AdmissionFormView';
+import { TelephonyCallDock, TelephonyCandidate } from './TelephonyCallDock';
 
 interface AdmissionsAdminViewProps {
   currentUser?: User | null;
@@ -90,6 +91,38 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
   // Admission & Credentials Slip Modal
   const [credentialsSlip, setCredentialsSlip] = useState<any | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  // Cloud Telephony CTI (iPhone Call Dock) States
+  const [telephonyEnabled, setTelephonyEnabled] = useState<boolean>(() => {
+    return localStorage.getItem('educore_telephony_enabled') !== 'false';
+  });
+  const [activeCallCandidate, setActiveCallCandidate] = useState<TelephonyCandidate | null>(null);
+  const [isCallDockOpen, setIsCallDockOpen] = useState(false);
+
+  const handleToggleTelephony = () => {
+    const next = !telephonyEnabled;
+    setTelephonyEnabled(next);
+    localStorage.setItem('educore_telephony_enabled', String(next));
+  };
+
+  const handleInitiateCall = (candidateOrStudent: any) => {
+    setActiveCallCandidate({
+      id: candidateOrStudent.id,
+      name: `${candidateOrStudent.first_name || ''} ${candidateOrStudent.last_name || ''}`.trim() || candidateOrStudent.name || 'Candidate',
+      phone: candidateOrStudent.phone || candidateOrStudent.guardian_phone || '+91 98765-43210',
+      course: candidateOrStudent.course?.name || candidateOrStudent.course_id || 'B.Tech CS',
+      quota: candidateOrStudent.quota,
+      studentId: candidateOrStudent.student_id,
+      intakeStep: candidateOrStudent.intake_step,
+    });
+    setIsCallDockOpen(true);
+  };
+
+  const handleDispositionSaved = async () => {
+    setStatusMessage('Call outcome & CDR successfully logged in candidate CRM ledger.');
+    setTimeout(() => setStatusMessage(null), 4500);
+    await Promise.all([loadFollowupRadar(), loadAdmissions()]);
+  };
 
   const loadAdmissions = async () => {
     setIsLoading(true);
@@ -384,7 +417,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
         </div>
 
         <div className="flex items-center gap-3">
-          {currentUser?.role === 'admin' && (
+          {(currentUser?.role === 'admin' || currentUser?.role === 'super_admin') && (
             <button
               onClick={() => setIsDirectAdmitOpen(true)}
               className="px-4 py-2 bg-[#006a61] hover:bg-[#004f48] text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
@@ -475,11 +508,75 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
           </button>
         </div>
 
-        <div className="flex items-center gap-2 px-2 text-[11px] text-[#757682]">
-          <span className="material-symbols-outlined text-[15px] text-[#006a61]">verified</span>
-          <span className="font-semibold">Punjab College Recall Engine (PTU Standard)</span>
+        <div className="flex items-center gap-3 px-2">
+          {/* Cloud Telephony Toggle Switch */}
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-[#e1e3e4] shadow-2xs">
+            <span className="material-symbols-outlined text-[17px] text-[#00236f]">phone_iphone</span>
+            <div className="flex flex-col text-left">
+              <span className="text-[11px] font-bold text-[#191c1d] leading-none">Cloud Telephony</span>
+              <span className="text-[9px] text-[#757682] leading-none mt-0.5">iPhone Call Dock</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleToggleTelephony}
+              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                telephonyEnabled ? 'bg-[#00236f]' : 'bg-gray-300'
+              }`}
+              role="switch"
+              aria-checked={telephonyEnabled}
+              title={telephonyEnabled ? 'Cloud Telephony CTI Active (Click to disable)' : 'Cloud Telephony Disabled (Click to enable)'}
+            >
+              <span
+                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                  telephonyEnabled ? 'translate-x-4' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+
+          <div className="hidden lg:flex items-center gap-1.5 text-[11px] text-[#757682]">
+            <span className="material-symbols-outlined text-[15px] text-[#006a61]">verified</span>
+            <span className="font-semibold">PTU Recall Engine</span>
+          </div>
         </div>
       </div>
+
+      {/* Cloud Telephony Active Status Banner */}
+      {telephonyEnabled && (
+        <div className="p-3 bg-emerald-50/80 border border-emerald-200/90 rounded-xl text-emerald-950 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs animate-fadeIn">
+          <div className="flex items-center gap-2.5">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600"></span>
+            </span>
+            <div className="text-xs">
+              <span className="font-bold text-emerald-950">Cloud Telephony CTI Active: </span>
+              <span className="font-mono font-bold text-[#00236f] bg-white px-2 py-0.5 rounded border border-emerald-200">
+                Pilot DID: +91-172-500-EDUCORE
+              </span>
+              <span className="text-emerald-800 text-[11px] ml-2 hidden md:inline">
+                • 2-Leg Call Bridging • Zero Counselor Phone Number Leakage • Auto-Recorded CDR
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveCallCandidate({
+                id: 'direct-dial',
+                name: 'Direct Candidate Call',
+                phone: '+91 98765-43210',
+                course: 'General Inquiry',
+              });
+              setIsCallDockOpen(true);
+            }}
+            className="px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+          >
+            <span className="material-symbols-outlined text-[15px]">dialpad</span>
+            <span>Manual Dial Pad</span>
+          </button>
+        </div>
+      )}
 
       {viewMode === 'crm' ? (
         <div className="space-y-5 animate-fadeIn">
@@ -797,6 +894,18 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
 
                           <td className="py-3.5 px-4 text-right">
                             <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                              {telephonyEnabled && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleInitiateCall(student)}
+                                  className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                                  title="Initiate Masked 2-Leg Call via Cloud Telephony (Virtual DID)"
+                                >
+                                  <span className="material-symbols-outlined text-[13px]">phone_in_talk</span>
+                                  <span>Call</span>
+                                </button>
+                              )}
+
                               <button
                                 onClick={() => {
                                   setSelectedLeadForFollowup(student);
@@ -1003,6 +1112,17 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                       <td className="py-3.5 px-4 text-right">
                         {adm.admission_status === 'inquiry' || adm.admission_status === 'registered' ? (
                           <div className="flex items-center justify-end gap-2">
+                            {telephonyEnabled && (
+                              <button
+                                type="button"
+                                onClick={() => handleInitiateCall(adm)}
+                                className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                                title="Call Applicant via Cloud Telephony (Virtual DID)"
+                              >
+                                <span className="material-symbols-outlined text-[13px]">phone_in_talk</span>
+                                <span>Call</span>
+                              </button>
+                            )}
                             <button
                               onClick={() => {
                                 setSelectedCandidateForIntake(adm);
@@ -1035,6 +1155,17 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                           </div>
                         ) : adm.admission_status === 'submitted' || adm.admission_status === 'pending' ? (
                           <div className="flex items-center justify-end gap-2">
+                            {telephonyEnabled && (
+                              <button
+                                type="button"
+                                onClick={() => handleInitiateCall(adm)}
+                                className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                                title="Call Applicant via Cloud Telephony (Virtual DID)"
+                              >
+                                <span className="material-symbols-outlined text-[13px]">phone_in_talk</span>
+                                <span>Call</span>
+                              </button>
+                            )}
                             <button
                               onClick={() => {
                                 setSelectedCandidateForIntake(adm);
@@ -1076,6 +1207,17 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                           </div>
                         ) : adm.admission_status === 'verified' || adm.admission_status === 'fee_pending' || adm.admission_status === 'provisionally_admitted' ? (
                           <div className="flex items-center justify-end gap-2">
+                            {telephonyEnabled && (
+                              <button
+                                type="button"
+                                onClick={() => handleInitiateCall(adm)}
+                                className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                                title="Call Applicant via Cloud Telephony (Virtual DID)"
+                              >
+                                <span className="material-symbols-outlined text-[13px]">phone_in_talk</span>
+                                <span>Call</span>
+                              </button>
+                            )}
                             {canApprove ? (
                               <button
                                 disabled={actionLoadingId === adm.id}
@@ -2031,6 +2173,16 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* ========================================================================= */}
+      {/* iPHONE CALLKIT-STYLE CLOUD TELEPHONY CTI DOCK                             */}
+      {/* ========================================================================= */}
+      <TelephonyCallDock
+        isOpen={isCallDockOpen}
+        onClose={() => setIsCallDockOpen(false)}
+        activeCandidate={activeCallCandidate}
+        onDispositionSaved={handleDispositionSaved}
+      />
     </div>
   );
 };

@@ -226,7 +226,17 @@ async function runCriticTestSuite() {
     // 1. Student views scholarship schemes
     const schemesRes = await request('GET', '/api/scholarships/schemes', null, studentToken);
     assert(schemesRes.status === 200, 'Student Portal retrieves active scholarship schemes');
-    const targetScheme = schemesRes.data.schemes?.[0];
+
+    // Create an isolated scheme for this test run to prevent duplicate application conflicts
+    const createSchemeRes = await request('POST', '/api/scholarships/schemes', {
+      code: `SCH-${String(timestamp).slice(-4)}`,
+      title: `State Merit & Academic Excellence Scholarship ${timestamp}`,
+      award_amount: 50000,
+      deadline: '2026-12-31',
+      description: 'Institutional scholarship for academic excellence',
+    }, adminToken);
+    assert(createSchemeRes.status === 201, 'Admin registers isolated scholarship scheme');
+    const targetScheme = createSchemeRes.data.scheme;
     assert(Boolean(targetScheme), `Scheme available: "${targetScheme?.title}" (Award: ₹${targetScheme?.award_amount})`);
 
     // 2. Student applies for scholarship

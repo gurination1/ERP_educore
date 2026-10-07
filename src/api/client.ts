@@ -223,4 +223,24 @@ export const api = {
     apiRequest(`/api/users/${id}/reset-password`, { method: 'POST', body: JSON.stringify({ newPassword }) }),
   deleteUser: (id: string) =>
     apiRequest(`/api/users/${id}`, { method: 'DELETE' }),
+  overrideUser: (id: string, updates: any) =>
+    apiRequest(`/api/users/${id}/override`, { method: 'PATCH', body: JSON.stringify(updates) }),
+
+  // Immutable Audit Logs & Master Tables
+  getAuditLogs: (params: Record<string, any> = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiRequest(`/api/audit-logs?${query}`);
+  },
+  getMasterData: () => apiRequest('/api/master-data'),
+  getStaffAcademicJourney: (staffId?: string) =>
+    apiRequest(staffId ? `/api/staff/${staffId}/academic-journey` : '/api/staff/academic-journey'),
+  addStaffAcademicJourney: (staffId: string, data: any) =>
+    apiRequest(`/api/staff/${staffId}/academic-journey`, { method: 'POST', body: JSON.stringify(data) }),
+
+  // Password Recovery Matrix (Email, SMS OTP TRAI DLT, Admin override)
+  getForgotPasswordPolicy: () => apiRequest('/api/auth/forgot-password/policy'),
+  requestSmsOtp: (identifier: string) =>
+    apiRequest('/api/auth/forgot-password/sms-otp', { method: 'POST', body: JSON.stringify({ identifier }) }),
+  verifySmsOtp: (data: { otpSessionToken: string; otp: string; newPassword: string }) =>
+    apiRequest('/api/auth/verify-sms-otp', { method: 'POST', body: JSON.stringify(data) }),
 };

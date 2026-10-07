@@ -15,7 +15,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
   onOpenPayModal,
   onOpenReceiptModal,
 }) => {
-  const isActualAdmin = currentUser ? currentUser.role === 'admin' : !currentStudent;
+  const isActualAdmin = currentUser ? (currentUser.role === 'admin' || currentUser.role === 'super_admin' || currentUser.role === 'accounts') : !currentStudent;
   const isStaff = currentUser?.role === 'staff';
   const isStudent = currentUser?.role === 'student' || (!isActualAdmin && !isStaff);
   const canSearchStudents = isActualAdmin || isStaff;

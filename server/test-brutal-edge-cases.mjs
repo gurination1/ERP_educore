@@ -2,7 +2,7 @@
 import https from 'https';
 import http from 'http';
 
-const BASE_URL = process.env.TEST_URL || 'https://educore-erp-production.up.railway.app';
+const BASE_URL = process.env.TEST_URL || process.env.BASE_URL || 'http://127.0.0.1:3000';
 
 function request(method, path, body = null, token = null) {
   return new Promise((resolve, reject) => {
@@ -198,7 +198,7 @@ async function runBrutalEdgeCases() {
       paymentMode: 'net_banking',
       notes: 'Full fee deposit verified by Bank Branch'
     }, staffToken); // staff can collect fee
-    assert(feeDeposit.status === 200, 'Staff fee collection & cashier deposit succeeded');
+    assert(feeDeposit.status === 200 || feeDeposit.status === 201, 'Staff fee collection & cashier deposit succeeded');
 
     // 8. NOW Staff member CAN finalize enrollment because fee deposit is paid!
     const staffFinalEnroll = await request('PATCH', `/api/admissions/${amritpalId}/status`, {

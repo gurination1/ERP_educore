@@ -11,7 +11,7 @@ if (!JWT_SECRET) {
   process.exit(1);
 }
 
-export type AuthUserRole = 'student' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts';
+export type AuthUserRole = 'student' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts' | 'super_admin';
 
 export interface AuthRequest extends Request {
   user?: {
@@ -20,6 +20,7 @@ export interface AuthRequest extends Request {
     email: string;
     role: AuthUserRole;
     full_name: string;
+    enterprise_uid?: string;
     department?: string;
     designation?: string;
     employee_id?: string;
@@ -41,6 +42,7 @@ export function generateToken(user: User): string {
       email: user.email,
       role: user.role,
       full_name: user.full_name,
+      enterprise_uid: user.enterprise_uid,
       department: user.department,
       designation: user.designation,
       employee_id: user.employee_id,
@@ -78,6 +80,7 @@ export async function authenticateToken(req: AuthRequest, res: Response, next: N
       email: userInDb.email,
       role: userInDb.role,
       full_name: userInDb.full_name,
+      enterprise_uid: userInDb.enterprise_uid,
       department: userInDb.department,
       designation: userInDb.designation,
       employee_id: userInDb.employee_id,
@@ -94,13 +97,14 @@ export function requireRole(...allowedRoles: Array<AuthUserRole>) {
       res.status(401).json({ success: false, error: 'Authentication required.' });
       return;
     }
-    if (!allowedRoles.includes(req.user.role)) {
-      res.status(403).json({
-        success: false,
-        error: `Access denied. Role '${req.user.role}' is not authorized. Required: ${allowedRoles.join(', ')}`,
-      });
+    // Super Admin has universal master authority across all roles & gates
+    if (req.user.role === 'super_admin' || allowedRoles.includes(req.user.role)) {
+      next();
       return;
     }
-    next();
+    res.status(403).json({
+      success: false,
+      error: `Access denied. Role '${req.user.role}' is not authorized. Required: ${allowedRoles.join(', ')}`,
+    });
   };
 }

@@ -365,6 +365,60 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
         </div>
       </div>
 
+      {/* Quick Action Navigation Bar for Faculty */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <button
+          type="button"
+          onClick={() => onNavigate('teacher-documents')}
+          className="p-3.5 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-indigo-400 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <span className="material-symbols-outlined text-[20px]">workspace_premium</span>
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-[#191c1d]">Faculty Credentials Vault</h4>
+              <p className="text-[10px] text-[#757682]">AICTE ID, Ph.D. Awards, Scopus Papers</p>
+            </div>
+          </div>
+          <span className="material-symbols-outlined text-[16px] text-slate-400 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onNavigate('student-quiz-lms')}
+          className="p-3.5 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-purple-400 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <span className="material-symbols-outlined text-[20px]">psychology</span>
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-[#191c1d]">LMS & CBT Assessment</h4>
+              <p className="text-[10px] text-[#757682]">Mid-Term CBT Quizzes & Question Banks</p>
+            </div>
+          </div>
+          <span className="material-symbols-outlined text-[16px] text-slate-400 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onNavigate('student-documents')}
+          className="p-3.5 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-emerald-400 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <span className="material-symbols-outlined text-[20px]">folder_shared</span>
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-[#191c1d]">Student Document Vault</h4>
+              <p className="text-[10px] text-[#757682]">MRSPTU & 85% Domicile Verification</p>
+            </div>
+          </div>
+          <span className="material-symbols-outlined text-[16px] text-slate-400 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+        </button>
+      </div>
+
       {/* Admissions Recall Radar Alert Banner for Faculty & Counselors */}
       {((followupStats?.overdue || 0) > 0 || (followupStats?.due_today || 0) > 0) && (
         <div className="p-3.5 bg-amber-50/90 border border-amber-300 rounded-xl text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs animate-fadeIn">

@@ -1,7 +1,7 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
-import { db, User } from '../db.ts';
+import { db, User, generateEnterpriseUID } from '../db.ts';
 import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth.ts';
 
 export const userRouter = Router();
@@ -11,7 +11,7 @@ const createUserSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
   email: z.string().email('Invalid email address format'),
   password: z.string().min(6, 'Password must be at least 6 characters').default('Educore@2025'),
-  role: z.enum(['admin', 'staff', 'counselor', 'hod', 'accounts', 'student']),
+  role: z.enum(['admin', 'staff', 'counselor', 'hod', 'accounts', 'student', 'super_admin']),
   fullName: z.string().min(2, 'Full name is required'),
   department: z.string().optional(),
   designation: z.string().optional(),
@@ -20,14 +20,14 @@ const createUserSchema = z.object({
 
 const updateUserSchema = z.object({
   fullName: z.string().min(2).optional(),
-  role: z.enum(['admin', 'staff', 'counselor', 'hod', 'accounts', 'student']).optional(),
+  role: z.enum(['admin', 'staff', 'counselor', 'hod', 'accounts', 'student', 'super_admin']).optional(),
   department: z.string().optional(),
   designation: z.string().optional(),
   employeeId: z.string().optional(),
   email: z.string().email().optional(),
 });
 
-// 1. List all users (Admin only)
+// 1. List all users (Admin & Super Admin only)
 userRouter.get('/', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { role, search, status } = req.query;
 
@@ -42,7 +42,7 @@ userRouter.get('/', authenticateToken, requireRole('admin'), async (req: AuthReq
   else if (status === 'inactive') filters.is_active = false;
 
   const users = await db.getUsers(filters);
-  const safeUsers = users.map(u => ({
+  let safeUsers = users.map(u => ({
     id: u.id,
     username: u.username,
     email: u.email,
@@ -53,8 +53,14 @@ userRouter.get('/', authenticateToken, requireRole('admin'), async (req: AuthReq
     department: u.department,
     designation: u.designation,
     employee_id: u.employee_id,
+    enterprise_uid: u.enterprise_uid,
     created_at: u.created_at,
   }));
+
+  // SUPER ADMIN INVISIBILITY RULE: Invisible to subordinate administrators, faculty, and students
+  if (req.user?.role !== 'super_admin') {
+    safeUsers = safeUsers.filter(u => u.role !== 'super_admin');
+  }
 
   res.json({
     success: true,
@@ -63,7 +69,7 @@ userRouter.get('/', authenticateToken, requireRole('admin'), async (req: AuthReq
   });
 });
 
-// 2. Hire / Provision new Staff or User (Admin extreme power)
+// 2. Hire / Provision new Staff or User (Admin & Super Admin power)
 userRouter.post('/', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
   const parseResult = createUserSchema.safeParse(req.body);
   if (!parseResult.success) {
@@ -73,6 +79,12 @@ userRouter.post('/', authenticateToken, requireRole('admin'), async (req: AuthRe
   }
 
   const { username, email, password, role, fullName, department, designation, employeeId } = parseResult.data;
+
+  // Only super_admin can create another super_admin
+  if (role === 'super_admin' && req.user?.role !== 'super_admin') {
+    res.status(403).json({ success: false, error: 'Only Universal Super Admin can provision Super Admin accounts.' });
+    return;
+  }
 
   // Check if username or email already exists
   const existingUser = await db.findUserByUsernameOrEmail(username) || await db.findUserByUsernameOrEmail(email);
@@ -86,6 +98,7 @@ userRouter.post('/', authenticateToken, requireRole('admin'), async (req: AuthRe
 
   const salt = bcrypt.genSaltSync(10);
   const passwordHash = bcrypt.hashSync(password, salt);
+  const enterpriseUid = generateEnterpriseUID(role, '03', 'BFGI');
 
   const newUser: User = {
     id: `usr-${role}-${Date.now().toString().slice(-6)}`,
@@ -97,11 +110,24 @@ userRouter.post('/', authenticateToken, requireRole('admin'), async (req: AuthRe
     department: department?.trim() || undefined,
     designation: designation?.trim() || undefined,
     employee_id: employeeId?.trim() || `EMP-${Date.now().toString().slice(-4)}`,
+    enterprise_uid: enterpriseUid,
     is_active: true,
     created_at: new Date().toISOString(),
   };
 
   const created = await db.createUser(newUser);
+
+  // Write immutable audit log
+  await db.createAuditLog({
+    actor_id: req.user!.id,
+    actor_name: req.user!.full_name,
+    actor_role: req.user!.role,
+    action: 'USER_PROVISIONED',
+    target_type: 'user',
+    target_id: created.id,
+    details: `User account created: ${created.full_name} (${created.role}) with Enterprise UID ${created.enterprise_uid}.`,
+    severity: 'info',
+  });
 
   res.status(201).json({
     success: true,
@@ -115,6 +141,7 @@ userRouter.post('/', authenticateToken, requireRole('admin'), async (req: AuthRe
       department: created.department,
       designation: created.designation,
       employee_id: created.employee_id,
+      enterprise_uid: created.enterprise_uid,
       is_active: created.is_active,
       created_at: created.created_at,
     },
@@ -123,6 +150,7 @@ userRouter.post('/', authenticateToken, requireRole('admin'), async (req: AuthRe
       username: created.username,
       tempPassword: password,
       role: created.role,
+      enterpriseUid: created.enterprise_uid,
       employeeId: created.employee_id,
       department: created.department || 'General Academic',
       issuedAt: new Date().toISOString(),
@@ -130,7 +158,7 @@ userRouter.post('/', authenticateToken, requireRole('admin'), async (req: AuthRe
   });
 });
 
-// 3. Edit User Profile & Roles (Admin only)
+// 3. Edit User Profile & Roles (Admin & Super Admin)
 userRouter.patch('/:id', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   const parseResult = updateUserSchema.safeParse(req.body);
@@ -146,6 +174,17 @@ userRouter.patch('/:id', authenticateToken, requireRole('admin'), async (req: Au
     return;
   }
 
+  // Prevent subordinate admins from modifying Super Admin
+  if (existing.role === 'super_admin' && req.user?.role !== 'super_admin') {
+    res.status(403).json({ success: false, error: 'Super Admin credentials can only be modified by Super Admin.' });
+    return;
+  }
+
+  if (parseResult.data.role === 'super_admin' && req.user?.role !== 'super_admin') {
+    res.status(403).json({ success: false, error: 'Cannot elevate role to Super Admin.' });
+    return;
+  }
+
   const updates: Partial<User> = {};
   if (parseResult.data.fullName) updates.full_name = parseResult.data.fullName;
   if (parseResult.data.role) updates.role = parseResult.data.role;
@@ -155,6 +194,18 @@ userRouter.patch('/:id', authenticateToken, requireRole('admin'), async (req: Au
   if (parseResult.data.email) updates.email = parseResult.data.email.toLowerCase().trim();
 
   const updated = await db.updateUser(id, updates);
+
+  await db.createAuditLog({
+    actor_id: req.user!.id,
+    actor_name: req.user!.full_name,
+    actor_role: req.user!.role,
+    action: 'USER_UPDATED',
+    target_type: 'user',
+    target_id: existing.id,
+    details: `Updated profile fields for ${existing.username} (${existing.full_name}).`,
+    changes_diff: JSON.stringify(updates),
+    severity: 'info',
+  });
 
   res.json({
     success: true,
@@ -174,7 +225,7 @@ userRouter.patch('/:id/status', authenticateToken, requireRole('admin'), async (
   }
 
   if (req.user?.id === id && !isActive) {
-    res.status(400).json({ success: false, error: 'Super Admin cannot deactivate their own active session.' });
+    res.status(400).json({ success: false, error: 'Cannot deactivate your own active session.' });
     return;
   }
 
@@ -184,7 +235,23 @@ userRouter.patch('/:id/status', authenticateToken, requireRole('admin'), async (
     return;
   }
 
+  if (existing.role === 'super_admin') {
+    res.status(403).json({ success: false, error: 'Super Admin status cannot be altered.' });
+    return;
+  }
+
   await db.updateUser(id, { is_active: isActive });
+
+  await db.createAuditLog({
+    actor_id: req.user!.id,
+    actor_name: req.user!.full_name,
+    actor_role: req.user!.role,
+    action: isActive ? 'USER_ACTIVATED' : 'USER_SUSPENDED',
+    target_type: 'user',
+    target_id: existing.id,
+    details: `User status changed to ${isActive ? 'active' : 'suspended'}.`,
+    severity: 'warn',
+  });
 
   res.json({
     success: true,
@@ -204,6 +271,11 @@ userRouter.post('/:id/reset-password', authenticateToken, requireRole('admin'), 
     return;
   }
 
+  if (existing.role === 'super_admin' && req.user?.role !== 'super_admin') {
+    res.status(403).json({ success: false, error: 'Super Admin credentials can only be reset by Super Admin.' });
+    return;
+  }
+
   const targetPassword = newPassword && newPassword.length >= 6
     ? newPassword
     : `Reset@${Date.now().toString().slice(-4)}`;
@@ -212,6 +284,17 @@ userRouter.post('/:id/reset-password', authenticateToken, requireRole('admin'), 
   const passwordHash = bcrypt.hashSync(targetPassword, salt);
 
   await db.updateUserPasswordHash(existing.id, passwordHash);
+
+  await db.createAuditLog({
+    actor_id: req.user!.id,
+    actor_name: req.user!.full_name,
+    actor_role: req.user!.role,
+    action: 'ADMIN_PASSWORD_RESET',
+    target_type: 'user',
+    target_id: existing.id,
+    details: `Password reset override performed for user ${existing.username}.`,
+    severity: 'warn',
+  });
 
   res.json({
     success: true,
@@ -222,6 +305,7 @@ userRouter.post('/:id/reset-password', authenticateToken, requireRole('admin'), 
       newPassword: targetPassword,
       fullName: existing.full_name,
       role: existing.role,
+      enterpriseUid: existing.enterprise_uid,
     },
   });
 });
@@ -231,7 +315,7 @@ userRouter.delete('/:id', authenticateToken, requireRole('admin'), async (req: A
   const { id } = req.params;
 
   if (req.user?.id === id) {
-    res.status(400).json({ success: false, error: 'Cannot delete current logged-in Super Admin.' });
+    res.status(400).json({ success: false, error: 'Cannot delete current logged-in user account.' });
     return;
   }
 
@@ -241,10 +325,75 @@ userRouter.delete('/:id', authenticateToken, requireRole('admin'), async (req: A
     return;
   }
 
+  if (existing.role === 'super_admin') {
+    res.status(403).json({ success: false, error: 'Super Admin account cannot be deleted.' });
+    return;
+  }
+
+  if (existing.role === 'admin' && req.user?.role !== 'super_admin') {
+    res.status(403).json({ success: false, error: 'Only Universal Super Admin can delete an institutional Administrator.' });
+    return;
+  }
+
   await db.deleteUser(id);
+
+  await db.createAuditLog({
+    actor_id: req.user!.id,
+    actor_name: req.user!.full_name,
+    actor_role: req.user!.role,
+    action: 'USER_DELETED',
+    target_type: 'user',
+    target_id: existing.id,
+    details: `User account ${existing.username} (${existing.full_name}) permanently deleted.`,
+    severity: 'critical',
+  });
 
   res.json({
     success: true,
     message: `User account ${existing.username} deleted permanently.`,
+  });
+});
+
+// 7. Apex Super Admin / Authority Override (Extreme universal power - Super Admin ONLY)
+userRouter.patch('/:id/override', authenticateToken, requireRole('super_admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const existing = await db.findUserById(id);
+  if (!existing) {
+    res.status(404).json({ success: false, error: 'User record not found.' });
+    return;
+  }
+
+  if (existing.role === 'super_admin' && req.user?.role !== 'super_admin') {
+    res.status(403).json({ success: false, error: 'Super Admin account can only be overridden by Chief Super Admin.' });
+    return;
+  }
+
+  const { fullName, username, email, role, department, designation, employeeId, isActive, newPassword } = req.body;
+
+  if (role === 'super_admin' && req.user?.role !== 'super_admin') {
+    res.status(403).json({ success: false, error: 'Only Super Admin can promote accounts to Super Admin.' });
+    return;
+  }
+
+  const updated = await db.overrideUser(
+    id,
+    {
+      full_name: fullName,
+      username,
+      email,
+      role,
+      department,
+      designation,
+      employee_id: employeeId,
+      is_active: isActive,
+      new_password: newPassword,
+    },
+    req.user as any
+  );
+
+  res.json({
+    success: true,
+    message: `Account credentials and profile for ${updated.full_name} (${updated.username}) overridden successfully.`,
+    user: updated,
   });
 });

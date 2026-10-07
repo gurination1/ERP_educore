@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts';
+export type UserRole = 'student' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts' | 'super_admin';
 
 export interface User {
   id: string;
@@ -11,7 +11,72 @@ export interface User {
   department?: string;
   designation?: string;
   employee_id?: string;
+  enterprise_uid?: string;
   created_at?: string;
+}
+
+export interface MasterState {
+  gst_code: string;
+  state_name: string;
+  state_short_code: string;
+  is_union_territory: boolean;
+}
+
+export interface MasterUserType {
+  type_code: string;
+  alpha_prefix: string;
+  role_key: UserRole;
+  display_title: string;
+  description: string;
+}
+
+export interface MasterDegree {
+  degree_code: string;
+  degree_name: string;
+  level: 'undergraduate' | 'postgraduate' | 'diploma' | 'doctorate';
+  duration_years: number;
+  total_semesters: number;
+  statutory_body: 'AICTE' | 'UGC' | 'PCI' | 'BCI';
+}
+
+export interface MasterDocumentType {
+  doc_type_code: string;
+  title: string;
+  mandatory_for: 'all' | 'punjab_quota' | 'scholarship_pms' | 'hosteller';
+  max_file_size_mb: number;
+  allowed_mime_types: string;
+}
+
+export interface StaffAcademicJourney {
+  id: string;
+  staff_id: string;
+  staff_name: string;
+  qualification_level: 'PhD' | 'PostDoc' | 'M.Tech' | 'M.Sc' | 'MBA' | 'B.Tech' | 'B.Sc';
+  degree_name: string;
+  awarding_university: string;
+  year_of_passing: number;
+  specialization: string;
+  scopus_publications: number;
+  sci_publications: number;
+  patents_count: number;
+  past_institutions_summary: string;
+  verified: boolean;
+  created_at: string;
+}
+
+export interface AuditLogItem {
+  id: string;
+  timestamp: string;
+  actor_id: string;
+  actor_name: string;
+  actor_role: UserRole | 'system';
+  actor_ip?: string;
+  action: string;
+  target_type: 'user' | 'student' | 'fee' | 'scholarship' | 'form' | 'attendance' | 'system';
+  target_id: string;
+  details: string;
+  changes_diff?: string;
+  severity: 'info' | 'warn' | 'critical';
 }
 
 export interface StudentProfile {
@@ -244,4 +309,49 @@ export type ActiveScreen =
   | 'academics'
   | 'reports'
   | 'settings'
-  | 'grievances';
+  | 'grievances'
+  | 'student-documents' // Student Regulatory Documents Vault
+  | 'teacher-documents' // Faculty / Teachers Credentials Vault
+  | 'student-quiz-lms'  // Student Quiz & LMS Assessment Engine
+  | 'audit-trail'
+  | 'academic-journey'
+  | 'master-tables';
+
+export interface DocumentRecord {
+  id: string;
+  doc_type_code: string;
+  title: string;
+  owner_id: string;
+  owner_name: string;
+  owner_role: UserRole;
+  file_name: string;
+  file_size_kb: number;
+  mime_type: string;
+  status: 'verified' | 'pending' | 'rejected' | 'reupload_required';
+  verified_by?: string;
+  verified_at?: string;
+  remarks?: string;
+  sha256_hash: string;
+  uploaded_at: string;
+}
+
+export interface LMSQuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+  marks: number;
+}
+
+export interface LMSQuiz {
+  id: string;
+  title: string;
+  courseCode: string;
+  semester: number;
+  durationMinutes: number;
+  totalMarks: number;
+  passingMarks: number;
+  questions: LMSQuizQuestion[];
+  instructions: string[];
+}

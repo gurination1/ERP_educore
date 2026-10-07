@@ -1,6 +1,6 @@
 import { URL } from 'url';
 
-const BASE_URL = process.env.TEST_URL || 'http://localhost:5055';
+const BASE_URL = process.env.TEST_URL || process.env.BASE_URL || 'http://127.0.0.1:3000';
 
 async function req(path, options = {}) {
   const url = new URL(path, BASE_URL);

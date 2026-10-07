@@ -8,6 +8,7 @@ interface StudentProfileModalProps {
   onStudentUpdated?: () => void;
   onClose: () => void;
   onPayFee: (studentId: string) => void;
+  onOpenAdmitCard?: (studentId: string) => void;
 }
 
 export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
@@ -16,6 +17,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
   onStudentUpdated,
   onClose,
   onPayFee,
+  onOpenAdmitCard,
 }) => {
   const [profileData, setProfileData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -199,7 +201,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
 
             <div className="pt-3 flex items-center justify-between gap-2 border-t border-[#f3f4f5]">
               <div>
-                {currentUser?.role === 'admin' && (
+                {(currentUser?.role === 'admin' || currentUser?.role === 'super_admin') && (
                   <button
                     type="button"
                     onClick={handlePromote}
