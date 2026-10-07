@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { User, ActiveScreen } from '../types';
 
 interface HeaderProps {
@@ -35,7 +35,8 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleViewMode,
 }) => {
   const [copiedUid, setCopiedUid] = useState(false);
-  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [openDrawer, setOpenDrawer] = useState<string | null>(null);
+  const navRef = useRef<HTMLDivElement>(null);
 
   const displayUid = currentUser?.enterprise_uid || (
     currentUser?.role === 'super_admin'
@@ -44,6 +45,8 @@ export const Header: React.FC<HeaderProps> = ({
       ? '4001-03-BFGI-0001'
       : currentUser?.role === 'staff'
       ? '2001-03-BFGI-0014'
+      : currentUser?.role === 'partner'
+      ? '7001-03-BFGI-0001'
       : '1001-03-BFGI-260088'
   );
 
@@ -55,297 +58,289 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
-  const isSuperAdmin = currentUser?.role === 'super_admin';
-  const isAdminOrSuper = currentUser?.role === 'admin' || isSuperAdmin;
-  const isFacultyOrAdmin = currentUser?.role === 'staff' || isAdminOrSuper;
+  // Close drawers when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(event.target as Node)) {
+        setOpenDrawer(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-  const navKeys: { id: ActiveScreen; label: string; icon: string; badge?: string }[] = [
+  const isSuperAdmin = currentUser?.role === 'super_admin';
+  const isAdmin = currentUser?.role === 'admin' || isSuperAdmin;
+  const isCounselor = currentUser?.role === 'counselor' || isAdmin;
+  const isFaculty = currentUser?.role === 'staff' || isAdmin;
+
+  const dashboardTarget: ActiveScreen =
+    isAdmin
+      ? 'admin-dashboard'
+      : currentUser?.role === 'staff' || currentUser?.role === 'hod' || currentUser?.role === 'counselor'
+      ? 'staff-dashboard'
+      : currentUser?.role === 'partner'
+      ? 'partner-portal'
+      : 'student-dashboard';
+
+  const menuSections = [
     {
-      id: isAdminOrSuper ? 'admin-dashboard' : currentUser?.role === 'staff' ? 'staff-dashboard' : 'student-dashboard',
-      label: 'Dashboard',
-      icon: 'dashboard',
+      id: 'dashboard',
+      label: 'DASHBOARD',
+      action: () => {
+        onNavigate(dashboardTarget);
+        setOpenDrawer(null);
+      },
+      isActive: activeScreen === 'admin-dashboard' || activeScreen === 'staff-dashboard' || activeScreen === 'student-dashboard',
     },
     {
       id: 'academics',
-      label: 'Academics',
-      icon: 'school',
+      label: 'ACADEMICS',
+      action: () => {
+        onNavigate('academics');
+        setOpenDrawer(null);
+      },
+      isActive: activeScreen === 'academics',
     },
     {
-      id: 'student-quiz-lms',
-      label: 'LMS & Quiz',
-      icon: 'psychology',
-      badge: 'CBT',
+      id: 'students',
+      label: 'STUDENT LIFECYCLE',
+      items: [
+        { id: 'manage-students' as ActiveScreen, label: 'STUDENT DIRECTORY', badge: 'MASTER' },
+        { id: 'student-documents' as ActiveScreen, label: 'REGULATORY DOCUMENTS VAULT', badge: 'AI VERIFIED' },
+        { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT QUIZ & LMS ENGINE', badge: 'EXAM CELL' },
+        { id: 'fee-ledger' as ActiveScreen, label: 'STUDENT FEE LEDGER', badge: 'FINANCE' },
+        { id: 'grievances' as ActiveScreen, label: 'GRIEVANCE & DISPUTE CELL' },
+      ],
+      isActive: ['manage-students', 'student-documents', 'student-quiz-lms', 'fee-ledger', 'grievances'].includes(activeScreen as any),
     },
     {
-      id: 'student-documents',
-      label: 'Student Vault',
-      icon: 'folder_shared',
+      id: 'crm',
+      label: 'CRM & ADMISSIONS',
+      items: [
+        { id: 'enquiries' as ActiveScreen, label: 'PRE-ADMISSION LEADS & ENQUIRIES', badge: 'RADAR 0-100%' },
+        { id: 'bulk-import' as ActiveScreen, label: 'DYNAMIC BULK CSV MAPPER', badge: '3-TIER CHECK' },
+        ...(isCounselor ? [{ id: 'admissions' as ActiveScreen, label: 'ADMISSION INTAKE DESK' }] : []),
+      ],
+      isActive: ['enquiries', 'bulk-import', 'admissions'].includes(activeScreen as any),
     },
-    ...(isFacultyOrAdmin
-      ? [
-          {
-            id: 'teacher-documents' as ActiveScreen,
-            label: 'Faculty Vault',
-            icon: 'workspace_premium',
-          },
-        ]
-      : []),
     {
-      id: 'fee-ledger',
-      label: 'Fees',
-      icon: 'receipt_long',
+      id: 'staff',
+      label: 'STAFF & HR',
+      items: [
+        { id: 'staff-management' as ActiveScreen, label: 'STAFF DIRECTORY & MULTI-TABLE PROFILE', badge: 'ORG JOURNEY' },
+        ...(isFaculty ? [{ id: 'teacher-documents' as ActiveScreen, label: 'FACULTY CREDENTIALS VAULT', badge: 'DOSSIER' }] : []),
+        { id: 'staff-academic-journey' as any, label: 'CAS RESEARCH & ACADEMIC DOSSIER', action: onOpenStaffJourney },
+      ],
+      isActive: activeScreen === 'staff-management' || activeScreen === 'teacher-documents',
     },
-    ...(isAdminOrAdminStaff(currentUser?.role)
+    {
+      id: 'partners',
+      label: 'HIRING PARTNERS',
+      action: () => {
+        onNavigate('partner-portal');
+        setOpenDrawer(null);
+      },
+      isActive: activeScreen === 'partner-portal',
+    },
+    ...(isAdmin
       ? [
           {
-            id: 'manage-students' as ActiveScreen,
-            label: 'Students',
-            icon: 'group',
-          },
-          {
-            id: 'admissions' as ActiveScreen,
-            label: 'Intake',
-            icon: 'how_to_reg',
-          },
-        ]
-      : []),
-    ...(isAdminOrSuper
-      ? [
-          {
-            id: 'user-management' as ActiveScreen,
-            label: 'Governance',
-            icon: 'manage_accounts',
-            badge: isSuperAdmin ? 'Apex' : undefined,
+            id: 'governance',
+            label: 'ADMIN & GOVERNANCE',
+            items: [
+              { id: 'master-tables' as any, label: 'INSTITUTIONAL MASTER TABLES & TAGGING', badge: 'CANONICAL', action: onOpenMasterTables },
+              { id: 'audit-trail' as any, label: 'CRYPTOGRAPHIC AUDIT TRAIL', badge: 'IMMUTABLE', action: onOpenAuditLogs },
+              { id: 'user-management' as ActiveScreen, label: 'USER ACCOUNTS & APEX PRIVILEGES' },
+              { id: 'scholarships' as ActiveScreen, label: 'SCHOLARSHIP DISBURSEMENT MATRIX' },
+              { id: 'form-builder' as ActiveScreen, label: 'DYNAMIC FORM & SURVEY DESIGNER' },
+              { id: 'reports' as ActiveScreen, label: 'INSTITUTIONAL MIS REPORTS' },
+            ],
+            isActive: ['user-management', 'scholarships', 'form-builder', 'reports'].includes(activeScreen as any),
           },
         ]
       : []),
   ];
 
-  function isAdminOrAdminStaff(role?: string) {
-    return ['admin', 'super_admin', 'staff', 'counselor', 'hod'].includes(role || '');
-  }
-
   return (
-    <header
-      id="educore-topbar"
-      className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-[#e1e3e4] px-3 sm:px-5 py-2 flex flex-col gap-2 shadow-xs"
-    >
-      {/* Top Strip: Dynamic Island, Global Spotlight & Quick Utilities */}
-      <div className="flex items-center justify-between gap-3">
-        {/* Left: Brand + Dynamic Island Enterprise Capsule */}
-        <div className="flex items-center gap-2.5">
-          {/* Logo Badge */}
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#00236f] to-[#1e3a8a] text-white flex items-center justify-center font-black text-sm shadow-xs border border-[#b6c4ff]/30">
-              <span className="material-symbols-outlined text-[20px]">school</span>
+    <header className="sticky top-0 z-40 bg-[#00236f] text-white border-b border-[#00174a] shadow-md select-none font-sans text-[11px]">
+      {/* Primary Top Bar */}
+      <div className="max-w-7xl mx-auto px-4 h-12 flex items-center justify-between gap-2" ref={navRef}>
+        {/* Left Branding */}
+        <div className="flex items-center gap-3 shrink-0">
+          <div
+            onClick={() => onNavigate(dashboardTarget)}
+            className="flex items-center gap-2 cursor-pointer hover:opacity-90 transition"
+          >
+            <div className="bg-[#ea580c] text-white font-black px-2 py-0.5 rounded text-[11px] tracking-wider">
+              EDUCORE
             </div>
-            <div className="hidden sm:block leading-none">
-              <span className="text-sm font-black tracking-tight text-[#191c1d]">EduCore</span>
-              <span className="block text-[9px] font-bold text-[#006a61] uppercase tracking-wider">MRSPTU ERP</span>
-            </div>
+            <span className="font-bold tracking-tight text-[12px] text-white hidden sm:inline">
+              CAMPUS ERP
+            </span>
           </div>
 
-          {/* Dynamic Island Capsule Pill (Enterprise UID) */}
-          <button
-            type="button"
-            onClick={handleCopyUid}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-bold border transition-all cursor-pointer select-none ${
-              isSuperAdmin
-                ? 'bg-amber-50 border-amber-300 text-amber-900 hover:bg-amber-100 shadow-xs ring-1 ring-amber-300/40'
-                : 'bg-[#f3f4f5] border-[#e1e3e4] text-[#191c1d] hover:bg-[#eceef0]'
-            }`}
-            title="Click to copy canonical Enterprise UID"
-          >
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            {isSuperAdmin && <span className="text-amber-500">👑</span>}
-            <span className="tracking-tight">{displayUid}</span>
-            <span className="text-[9px] text-[#757682] uppercase ml-0.5">
-              {copiedUid ? '✓ Copied' : 'UID'}
-            </span>
-          </button>
-        </div>
-
-        {/* Center: Search Field */}
-        <div className="relative hidden lg:block w-64 xl:w-80">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#757682] text-[16px]">
-            search
+          <span className="text-[#ea580c] text-[10px] font-mono hidden md:inline">
+            [PUNJAB REGION]
           </span>
-          <input
-            id="global-search-input"
-            type="text"
-            value={searchQuery}
-            onChange={e => onSearchChange(e.target.value)}
-            placeholder="Spotlight search (Ctrl+K)..."
-            className="w-full pl-8 pr-3 py-1 bg-[#f3f4f5] border border-transparent rounded-full text-xs text-[#191c1d] placeholder-[#757682] focus:bg-white focus:border-[#00236f]/30 focus:outline-none transition-all"
-          />
         </div>
 
-        {/* Right: Action Keys & Device Mode Switcher */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Phone vs Desktop Prototype Toggle Key */}
-          {onToggleViewMode && (
-            <button
-              type="button"
-              id="header-view-mode-toggle-btn"
-              onClick={onToggleViewMode}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-all cursor-pointer shadow-xs ${
-                viewMode === 'mobile-phone'
-                  ? 'bg-gradient-to-r from-purple-700 to-indigo-800 text-white border-purple-900 ring-2 ring-purple-300'
-                  : 'bg-white hover:bg-slate-50 text-[#191c1d] border-[#e1e3e4]'
-              }`}
-              title="Toggle between Mobile Native App Prototype (iPhone 16) and Desktop Web Portal"
-            >
-              <span className="material-symbols-outlined text-[15px]">
-                {viewMode === 'mobile-phone' ? 'phone_iphone' : 'desktop_windows'}
-              </span>
-              <span className="hidden sm:inline">
-                {viewMode === 'mobile-phone' ? 'iPhone App Mode' : 'Web Portal'}
-              </span>
-              <span className="text-[9px] px-1 py-0.2 bg-black/10 rounded font-mono">
-                {viewMode === 'mobile-phone' ? 'NATIVE' : 'REACT'}
-              </span>
-            </button>
-          )}
+        {/* Center Primary Nav (Pure Text-Based Drawers) */}
+        <nav className="hidden lg:flex items-center gap-1">
+          {menuSections.map(sec => {
+            const isDrawerOpen = openDrawer === sec.id;
+            const hasChildren = Boolean(sec.items && sec.items.length > 0);
 
-          {/* CTI CallKit Key */}
+            return (
+              <div key={sec.id} className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (hasChildren) {
+                      setOpenDrawer(isDrawerOpen ? null : sec.id);
+                    } else if (sec.action) {
+                      sec.action();
+                    }
+                  }}
+                  className={`px-2.5 py-1.5 rounded font-bold tracking-wide transition text-[10px] uppercase flex items-center gap-1 ${
+                    sec.isActive || isDrawerOpen
+                      ? 'bg-white text-[#00236f] shadow-xs'
+                      : 'text-white/90 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <span>{sec.label}</span>
+                  {hasChildren && (
+                    <span className="text-[8px] font-mono opacity-70">
+                      {isDrawerOpen ? '▲' : '▼'}
+                    </span>
+                  )}
+                </button>
+
+                {/* Dropdown Drawer */}
+                {hasChildren && isDrawerOpen && (
+                  <div className="absolute top-full left-0 mt-1.5 w-64 bg-white text-[#00236f] border border-[#00236f]/30 rounded shadow-xl py-1.5 z-50 animate-fadeIn">
+                    <div className="px-3 py-1 text-[9px] font-bold text-gray-400 border-b border-gray-100 uppercase tracking-wider">
+                      {sec.label} MODULES
+                    </div>
+
+                    <div className="py-1">
+                      {sec.items!.map((item: any) => (
+                        <div
+                          key={item.id || item.label}
+                          onClick={() => {
+                            if (item.action) {
+                              item.action();
+                            } else if (item.id) {
+                              onNavigate(item.id);
+                            }
+                            setOpenDrawer(null);
+                          }}
+                          className={`px-3 py-1.5 text-[10px] font-semibold flex items-center justify-between cursor-pointer transition ${
+                            activeScreen === item.id
+                              ? 'bg-[#00236f]/10 text-[#00236f] font-bold'
+                              : 'hover:bg-gray-50 text-gray-800'
+                          }`}
+                        >
+                          <span>{item.label}</span>
+                          {item.badge && (
+                            <span className="bg-[#ea580c] text-white px-1.5 py-0.2 rounded text-[8px] font-mono font-bold">
+                              {item.badge}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </nav>
+
+        {/* Right Action Cluster */}
+        <div className="flex items-center gap-2 shrink-0 text-[10px]">
+          {/* Canonical UID Copy Indicator */}
+          <button
+            onClick={handleCopyUid}
+            title="Click to copy canonical Enterprise UID"
+            className="hidden md:flex items-center gap-1 px-2 py-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded font-mono text-[9px] transition"
+          >
+            <span className="text-[#ea580c] font-bold">UID:</span>
+            <span className="text-white font-bold">{displayUid}</span>
+            <span className="text-white/70 ml-0.5">{copiedUid ? '[COPIED]' : '[COPY]'}</span>
+          </button>
+
+          {/* Role Badge */}
+          <span className="px-2 py-0.5 rounded font-bold uppercase text-[9px] bg-[#ea580c] text-white tracking-wider">
+            {currentUser?.role === 'super_admin' ? 'APEX PROVOST' : currentUser?.role?.replace(/_/g, ' ') || 'GUEST'}
+          </span>
+
+          {/* Telephony Headset Toggle */}
           {onToggleTelephony && (
             <button
-              type="button"
-              id="header-telephony-switch-btn"
               onClick={onToggleTelephony}
-              className={`p-1.5 sm:px-2.5 sm:py-1 rounded-full text-xs font-bold transition-all cursor-pointer border flex items-center gap-1 ${
+              className={`px-2 py-1 rounded font-bold transition text-[9px] border ${
                 isTelephonyOpen
-                  ? 'bg-emerald-600 text-white border-emerald-700 shadow-xs'
-                  : 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
+                  ? 'bg-emerald-500 text-white border-emerald-400'
+                  : 'bg-white/10 text-white/90 border-white/20 hover:bg-white/20'
               }`}
-              title="Toggle iPhone-Style CTI CallKit Dialer"
             >
-              <span className="material-symbols-outlined text-[16px]">call</span>
-              <span className="hidden xl:inline">CallKit</span>
+              {isTelephonyOpen ? '[HEADSET: LIVE]' : '[HEADSET: OFF]'}
             </button>
           )}
 
-          {/* Audit Trail Drawer Key */}
-          {isAdminOrSuper && onOpenAuditLogs && (
-            <button
-              type="button"
-              id="header-audit-trail-btn"
-              onClick={onOpenAuditLogs}
-              className="p-1.5 sm:px-2.5 sm:py-1 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
-              title="Universal Immutable Cryptographic Audit Trail"
-            >
-              <span className="material-symbols-outlined text-[16px] text-[#00236f]">verified_user</span>
-              <span className="hidden xl:inline">Audit Trail</span>
-            </button>
-          )}
-
-          {/* Master Registry Tables Key */}
-          {onOpenMasterTables && (
-            <button
-              type="button"
-              id="header-master-tables-btn"
-              onClick={onOpenMasterTables}
-              className="p-1.5 sm:px-2.5 sm:py-1 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
-              title="Tenant-Agnostic GST States & CBCS Master Tables"
-            >
-              <span className="material-symbols-outlined text-[16px] text-indigo-700">account_balance</span>
-              <span className="hidden xl:inline">Master Registry</span>
-            </button>
-          )}
-
-          {/* Faculty R&D Key */}
-          {onOpenStaffJourney && (
-            <button
-              type="button"
-              id="header-staff-journey-btn"
-              onClick={onOpenStaffJourney}
-              className="p-1.5 sm:px-2.5 sm:py-1 bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
-              title="Faculty Academic Journey & Scopus / Patent Metrics"
-            >
-              <span className="material-symbols-outlined text-[16px] text-purple-700">school</span>
-              <span className="hidden xl:inline">Faculty R&D</span>
-            </button>
-          )}
-
-          {/* AI Copilot Key */}
+          {/* AI Copilot */}
           {onOpenCopilot && (
             <button
-              id="ai-copilot-btn"
-              type="button"
               onClick={onOpenCopilot}
-              className="flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-[#00236f] to-[#1a4bb0] text-white text-xs font-bold rounded-full shadow-xs hover:brightness-110 transition-all cursor-pointer"
-              title="Ask EduCore AI Campus Copilot"
+              className="px-2 py-1 bg-white text-[#00236f] hover:bg-white/90 font-bold rounded text-[9px] transition"
             >
-              <span className="material-symbols-outlined text-[15px] text-amber-300">smart_toy</span>
-              <span className="hidden sm:inline">Copilot</span>
+              [AI COPILOT]
             </button>
           )}
 
-          {/* User Profile Pill */}
-          <div className="flex items-center gap-1.5 pl-1 border-l border-[#e1e3e4]">
-            {currentUser?.avatar_url ? (
-              <img
-                src={currentUser.avatar_url}
-                alt={currentUser.full_name}
-                referrerPolicy="no-referrer"
-                className="w-6 h-6 rounded-full object-cover border border-[#c5c5d3]"
-              />
-            ) : (
-              <div className="w-6 h-6 rounded-full bg-[#00236f] text-white flex items-center justify-center text-[10px] font-bold">
-                {currentUser ? currentUser.full_name.charAt(0) : 'U'}
-              </div>
-            )}
-            <span className="hidden md:inline text-xs font-bold text-[#191c1d] max-w-[100px] truncate">
-              {currentUser?.full_name?.split(' ')[0] || 'User'}
-            </span>
-          </div>
-
-          {/* Logout Key */}
-          {onLogout && (
+          {/* Phone / Desktop View Mode Switcher */}
+          {onToggleViewMode && (
             <button
-              id="header-logout-btn"
-              type="button"
-              onClick={onLogout}
-              className="w-7 h-7 flex items-center justify-center bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-full text-xs font-bold transition-all cursor-pointer"
-              title="Log Out of EduCore"
+              onClick={onToggleViewMode}
+              className="px-2 py-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded font-bold text-[9px] text-white transition hidden sm:inline"
             >
-              <span className="material-symbols-outlined text-[14px]">logout</span>
+              {viewMode === 'desktop' ? '[VIEW: DESKTOP]' : '[VIEW: PHONE]'}
+            </button>
+          )}
+
+          {/* User Signout */}
+          {currentUser && onLogout && (
+            <button
+              onClick={onLogout}
+              className="px-2 py-1 bg-white/10 hover:bg-rose-600 border border-white/20 rounded font-bold text-[9px] text-white transition"
+            >
+              [LOGOUT]
             </button>
           )}
         </div>
       </div>
 
-      {/* Bottom Strip: Header-Based Primary Navigation Keys */}
-      <nav
-        aria-label="Header Navigation Command Center"
-        className="flex items-center gap-1 overflow-x-auto py-0.5 border-t border-[#f3f4f5] scrollbar-none"
-      >
-        {navKeys.map(key => {
-          const isActive = activeScreen === key.id;
-          return (
-            <button
-              key={key.id}
-              type="button"
-              onClick={() => onNavigate(key.id)}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                isActive
-                  ? 'bg-[#00236f] text-white shadow-xs'
-                  : 'text-[#444651] hover:text-[#191c1d] hover:bg-[#f3f4f5]'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[16px]">{key.icon}</span>
-              <span>{key.label}</span>
-              {key.badge && (
-                <span className={`text-[9px] px-1 py-0.2 rounded font-mono font-bold ${
-                  isActive ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800'
-                }`}>
-                  {key.badge}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </nav>
+      {/* Secondary Mobile/Compact Drawer Bar for Small Screens */}
+      <div className="lg:hidden bg-[#001c57] border-t border-white/10 px-3 py-1 flex overflow-x-auto gap-1 text-[9px] font-bold">
+        {menuSections.map(sec => (
+          <button
+            key={sec.id}
+            onClick={() => {
+              if (sec.action) sec.action();
+              else if (sec.items && sec.items[0]) {
+                if (sec.items[0].action) sec.items[0].action();
+                else onNavigate(sec.items[0].id);
+              }
+            }}
+            className={`px-2 py-1 rounded whitespace-nowrap uppercase ${
+              sec.isActive ? 'bg-[#ea580c] text-white' : 'text-white/80 hover:bg-white/10'
+            }`}
+          >
+            {sec.label}
+          </button>
+        ))}
+      </div>
     </header>
   );
 };

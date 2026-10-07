@@ -5,7 +5,7 @@ import initSqlJs from 'sql.js';
 import type { Database as SqlJsDatabase } from 'sql.js';
 import mysql from 'mysql2/promise';
 
-export type EnterpriseUserRole = 'super_admin' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts' | 'student';
+export type EnterpriseUserRole = 'super_admin' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts' | 'student' | 'partner';
 
 export interface User {
   id: string;
@@ -20,6 +20,7 @@ export interface User {
   designation?: string;
   employee_id?: string;
   enterprise_uid?: string;
+  must_change_password?: boolean;
   created_at: string;
 }
 
@@ -31,7 +32,7 @@ export interface AuditLog {
   actor_role: EnterpriseUserRole | 'system';
   actor_ip?: string;
   action: string;
-  target_type: 'user' | 'student' | 'fee' | 'scholarship' | 'form' | 'attendance' | 'system';
+  target_type: 'user' | 'student' | 'fee' | 'scholarship' | 'form' | 'attendance' | 'system' | 'staff' | 'partner' | 'enquiry' | 'enquiry_batch';
   target_id: string;
   details: string;
   changes_diff?: string;
@@ -91,7 +92,8 @@ export function generateEnterpriseUID(
   userType: EnterpriseUserRole,
   stateGst: string = '03',
   instCode: string = 'BFGI',
-  sequenceNum?: number | string
+  sequenceNum?: number | string,
+  clientCode: string = 'BFGI'
 ): string {
   const typeMap: Record<EnterpriseUserRole, { numeric: string; alpha: string }> = {
     student: { numeric: '1001', alpha: 'STU' },
@@ -100,6 +102,7 @@ export function generateEnterpriseUID(
     admin: { numeric: '4001', alpha: 'ADM' },
     accounts: { numeric: '5001', alpha: 'ACC' },
     counselor: { numeric: '6001', alpha: 'CNS' },
+    partner: { numeric: '7001', alpha: 'PRT' },
     super_admin: { numeric: '9001', alpha: 'SUP' },
   };
 
@@ -132,6 +135,7 @@ export const DEFAULT_MASTER_USER_TYPES: MasterUserType[] = [
   { type_code: '4001', alpha_prefix: 'ADM', role_key: 'admin', display_title: 'Institutional Administrator', description: 'College registrar, dean, administrative head' },
   { type_code: '5001', alpha_prefix: 'ACC', role_key: 'accounts', display_title: 'Accounts & Bursar Officer', description: 'Finance department, tuition collection, bursar' },
   { type_code: '6001', alpha_prefix: 'CNS', role_key: 'counselor', display_title: 'Admissions Counselor', description: 'Counseling cell, leads pipeline, CRM coordinator' },
+  { type_code: '7001', alpha_prefix: 'PRT', role_key: 'partner', display_title: 'Corporate & Hiring Partner', description: 'Industry partners, corporate recruiters, and internship sponsors' },
   { type_code: '9001', alpha_prefix: 'SUP', role_key: 'super_admin', display_title: 'Universal Provost & Super Admin', description: 'Apex system authority, universal access, invisible to subordinate users' },
 ];
 
@@ -204,6 +208,723 @@ export const DEFAULT_STAFF_ACADEMIC_JOURNEY: StaffAcademicJourney[] = [
     past_institutions_summary: 'Associate Professor & Research Chair at PEC Chandigarh (2016-2022)',
     verified: true,
     created_at: '2024-01-10T09:30:00Z',
+  },
+];
+
+export interface MasterDepartment {
+  id: string;
+  dept_code: string;
+  dept_name: string;
+  tags_json: string;
+  head_of_dept?: string;
+  established_year: number;
+  is_active: boolean;
+}
+
+export interface MasterInstitutionType {
+  code: string;
+  name: string;
+  regulatory_authority: string;
+  description: string;
+}
+
+export interface MasterEmployeeStatus {
+  status_code: string;
+  status_name: string;
+  description: string;
+  requires_dates: boolean;
+}
+
+export interface MasterDesignationChange {
+  type_code: string;
+  name: string;
+  category: string;
+}
+
+export interface MasterERPStatus {
+  status_code: string;
+  status_name: string;
+  stage: string;
+}
+
+export interface StaffBasicInfo {
+  id: string;
+  staff_id: string;
+  employee_id: string;
+  full_name: string;
+  father_name: string;
+  dob: string;
+  gender: string;
+  date_of_joining: string;
+  date_of_resigning?: string;
+  last_working_date?: string;
+  category: 'fresher' | 'rejoiner';
+  primary_designation: string;
+  department_id: string;
+  employee_status: string;
+  login_enabled: boolean;
+  must_change_password: boolean;
+  custom_attr_1?: string;
+  custom_attr_2?: string;
+  custom_attr_3?: string;
+  custom_attr_4?: string;
+  custom_meta_json?: string;
+}
+
+export interface StaffAdditionalInfo {
+  id: string;
+  staff_id: string;
+  emergency_phone?: string;
+  blood_group?: string;
+  marital_status?: string;
+  nationality?: string;
+  pf_uan?: string;
+  esi_number?: string;
+  custom_meta_json?: string;
+}
+
+export interface StaffAddress {
+  id: string;
+  staff_id: string;
+  address_type: 'current' | 'permanent' | 'correspondence';
+  address_line: string;
+  city: string;
+  state_gst: string;
+  pincode: string;
+  is_default: boolean;
+}
+
+export interface StaffBankAccount {
+  id: string;
+  staff_id: string;
+  bank_name: string;
+  account_number: string;
+  ifsc_code: string;
+  branch_name: string;
+  is_default: boolean;
+}
+
+export interface StaffQualification {
+  id: string;
+  staff_id: string;
+  qualification_title: string;
+  institution: string;
+  year_of_passing: number;
+  percentage_or_cgpa: number;
+  is_highest: boolean;
+}
+
+export interface StaffCertification {
+  id: string;
+  staff_id: string;
+  certification_name: string;
+  issuing_body: string;
+  issue_year: number;
+  credential_id?: string;
+}
+
+export interface StaffExperience {
+  id: string;
+  staff_id: string;
+  organization_name: string;
+  designation: string;
+  start_date: string;
+  end_date: string;
+  is_latest: boolean;
+}
+
+export interface StaffOrgJourneyEvent {
+  id: string;
+  staff_id: string;
+  event_type: string;
+  effective_date: string;
+  old_designation?: string;
+  new_designation?: string;
+  actor_id: string;
+  remarks: string;
+  created_at: string;
+}
+
+export interface PartnerEntity {
+  id: string;
+  user_id?: string;
+  partner_type: string;
+  firm_name: string;
+  pan_number: string;
+  gst_number: string;
+  tan_number?: string;
+  email: string;
+  phone: string;
+  address: string;
+  is_active: boolean;
+  created_at: string;
+  custom_meta_json?: string;
+}
+
+export interface PartnerContact {
+  id: string;
+  partner_id: string;
+  contact_name: string;
+  designation: string;
+  email: string;
+  phone: string;
+  is_default: boolean;
+}
+
+export interface PartnerBankAccount {
+  id: string;
+  partner_id: string;
+  bank_name: string;
+  account_number: string;
+  ifsc_code: string;
+  branch_name: string;
+  is_default: boolean;
+}
+
+export interface PartnerJobPosting {
+  id: string;
+  partner_id: string;
+  title: string;
+  type: string;
+  stipend_salary: string;
+  eligible_departments: string;
+  min_cgpa: number;
+  description: string;
+  status: string;
+  created_at: string;
+}
+
+export interface PartnerApplication {
+  id: string;
+  posting_id: string;
+  student_id: string;
+  student_name: string;
+  cgpa: number;
+  status: string;
+  remarks?: string;
+  applied_at: string;
+}
+
+export interface BulkUploadBatch {
+  id: string;
+  upload_date: string;
+  filename: string;
+  total_rows: number;
+  fresh_count: number;
+  duplicate_count: number;
+  wrong_count: number;
+  source_label: string;
+  uploaded_by: string;
+}
+
+export interface EnquiryRecord {
+  id: string;
+  enquiry_no: string;
+  student_name: string;
+  gender: string;
+  father_name: string;
+  mobile: string;
+  email: string;
+  selected_course: string;
+  course_fee: number;
+  admission_probability: number;
+  status: string;
+  assigned_counselor_id?: string;
+  assigned_counselor_name?: string;
+  batch_id?: string;
+  created_at: string;
+  custom_meta_json?: string;
+}
+
+export interface EnquiryInteraction {
+  id: string;
+  enquiry_id: string;
+  stage_name: string;
+  counselor_id: string;
+  remarks: string;
+  call_status: string;
+  probability_updated: number;
+  call_recording_url?: string;
+  timestamp: string;
+}
+
+export interface DialerSettings {
+  id: string;
+  is_enabled: boolean;
+  provider: string;
+  api_key_configured: boolean;
+}
+
+export const DEFAULT_MASTER_DEPARTMENTS: MasterDepartment[] = [
+  { id: 'dept-cse', dept_code: 'CSE', dept_name: 'Computer Science & Engineering', tags_json: JSON.stringify(['Engineering', 'IT', 'Software', 'AI', 'UG', 'PG']), head_of_dept: 'Dr. Balwinder Singh', established_year: 2005, is_active: true },
+  { id: 'dept-agri', dept_code: 'AGRI', dept_name: 'Agriculture & Horticulture Sciences', tags_json: JSON.stringify(['Agriculture', 'Agronomy', 'Soil Science', 'Horticulture', 'UG']), head_of_dept: 'Dr. Harbhajan Randhawa', established_year: 2012, is_active: true },
+  { id: 'dept-ce', dept_code: 'CE', dept_name: 'Civil Engineering & Infrastructure', tags_json: JSON.stringify(['Engineering', 'Civil', 'Structures', 'UG']), head_of_dept: 'Prof. Gurmeet Mann', established_year: 2007, is_active: true },
+  { id: 'dept-me', dept_code: 'ME', dept_name: 'Mechanical & Automation Engineering', tags_json: JSON.stringify(['Engineering', 'Mechanical', 'Robotics', 'Automotive', 'UG']), head_of_dept: 'Dr. Paramjit Dhillon', established_year: 2006, is_active: true },
+  { id: 'dept-mgmt', dept_code: 'MGMT', dept_name: 'Management Studies & Commerce', tags_json: JSON.stringify(['Management', 'MBA', 'BBA', 'Finance', 'Marketing', 'PG', 'UG']), head_of_dept: 'Prof. Simran Walia', established_year: 2008, is_active: true },
+  { id: 'dept-pharm', dept_code: 'PHARM', dept_name: 'Pharmaceutical Sciences & Healthcare', tags_json: JSON.stringify(['Pharmacy', 'Healthcare', 'B.Pharm', 'PCI', 'UG']), head_of_dept: 'Dr. Sandeep Kahlon', established_year: 2015, is_active: true },
+  { id: 'dept-applied', dept_code: 'APP_SCI', dept_name: 'Applied Sciences & Humanities', tags_json: JSON.stringify(['Applied Sciences', 'Physics', 'Mathematics', 'Chemistry', 'Foundation']), head_of_dept: 'Dr. Ramesh Chandra', established_year: 2005, is_active: true },
+];
+
+export const DEFAULT_MASTER_INSTITUTION_TYPES: MasterInstitutionType[] = [
+  { code: 'ENG_COLLEGE', name: 'Engineering & Technology College', regulatory_authority: 'AICTE / MRSPTU', description: 'Technical institution imparting engineering and applied computer science degrees' },
+  { code: 'AGRI_INST', name: 'Faculty of Agricultural Sciences', regulatory_authority: 'ICAR / MRSPTU', description: 'Agricultural institute with experimental farms and horticulture labs' },
+  { code: 'AUTO_INST', name: 'Autonomous Technical Campus', regulatory_authority: 'UGC Section 2(f) & 12(B)', description: 'Autonomous degree-granting constituent college' },
+  { code: 'MGMT_INST', name: 'Business School & Management College', regulatory_authority: 'AICTE / AIU', description: 'Postgraduate management and commerce school' },
+  { code: 'PHARM_COLLEGE', name: 'College of Pharmacy', regulatory_authority: 'PCI (Pharmacy Council of India)', description: 'Pharmaceutical degree and clinical research campus' },
+];
+
+export const DEFAULT_MASTER_EMPLOYEE_STATUSES: MasterEmployeeStatus[] = [
+  { status_code: 'ACTIVE', status_name: 'Active Staff Member', description: 'Currently on active rolls with assigned academic and administrative load', requires_dates: false },
+  { status_code: 'RESIGNED', status_name: 'Resigned & In Notice', description: 'Resignation tendered, serving mandatory notice period', requires_dates: true },
+  { status_code: 'TERMINATED', status_name: 'Statutorily Terminated', description: 'Relieved from services by executive directorate order', requires_dates: true },
+  { status_code: 'AOL', status_name: 'Absent Out of Leave (AOL)', description: 'Unannounced continuous absence exceeding statutory limit without prior sanctioned leave', requires_dates: true },
+  { status_code: 'DEACTIVATED', status_name: 'Deactivated / Relieved', description: 'Past employee with service record archived and portal login disabled', requires_dates: true },
+];
+
+export const DEFAULT_MASTER_DESIGNATION_CHANGES: MasterDesignationChange[] = [
+  { type_code: 'PROMOTION', name: 'Executive Promotion', category: 'promotion' },
+  { type_code: 'DEMOTION', name: 'Disciplinary Demotion', category: 'demotion' },
+  { type_code: 'ADDITIONAL_ROLE', name: 'Additional Portfolio / Charge', category: 'additional_role' },
+  { type_code: 'ROLE_SWITCH', name: 'Departmental Role Switch', category: 'role_switch' },
+];
+
+export const DEFAULT_MASTER_ERP_STATUSES: MasterERPStatus[] = [
+  { status_code: 'ENQUIRY', status_name: 'Initial Enquiry', stage: 'enquiry' },
+  { status_code: 'PROSPECT', status_name: 'Follow-up Prospect', stage: 'prospect' },
+  { status_code: 'REGISTRATION_PAID', status_name: 'Registration Token Paid', stage: 'registration_paid' },
+  { status_code: 'STUDENT', status_name: 'Admitted Regular Student', stage: 'student' },
+];
+
+export const DEFAULT_PARTNERS: PartnerEntity[] = [
+  {
+    id: 'prt-001',
+    user_id: 'usr-partner-01',
+    partner_type: 'Private Limited',
+    firm_name: 'Infosys BPM & Campus Talent Services',
+    pan_number: 'AAACI1234F',
+    gst_number: '03AAACI1234F1Z5',
+    tan_number: 'BLRI12345A',
+    email: 'campus.hiring@infosys.com',
+    phone: '+91 80 2852 0261',
+    address: 'Electronics City, Hosur Road, Bengaluru, Karnataka 560100',
+    is_active: true,
+    created_at: '2025-01-15T10:00:00Z',
+    custom_meta_json: JSON.stringify({ tier: 'Tier-1 Recruiter', mou_active: true, hired_count: 42 }),
+  },
+  {
+    id: 'prt-002',
+    user_id: 'usr-partner-02',
+    partner_type: 'Partnership Firm',
+    firm_name: 'Punjab AgriTech & Smart Farming Solutions',
+    pan_number: 'AABFP9876K',
+    gst_number: '03AABFP9876K1ZA',
+    tan_number: 'CHDP98765B',
+    email: 'partnerships@punjabagritech.in',
+    phone: '+91 172 509 8812',
+    address: 'Sector 82, JLPL Industrial Area, Mohali, Punjab 160055',
+    is_active: true,
+    created_at: '2025-02-01T11:30:00Z',
+    custom_meta_json: JSON.stringify({ tier: 'Core Agriculture Partner', internships_offered: 15 }),
+  },
+];
+
+export const DEFAULT_PARTNER_CONTACTS: PartnerContact[] = [
+  { id: 'prt-ct-01', partner_id: 'prt-001', contact_name: 'Suresh Narayanan', designation: 'Director of University Relations', email: 'suresh.n@infosys.com', phone: '+91 98450 11223', is_default: true },
+  { id: 'prt-ct-02', partner_id: 'prt-001', contact_name: 'Priyanka Sen', designation: 'Technical Recruitment Lead', email: 'priyanka.sen@infosys.com', phone: '+91 98450 44556', is_default: false },
+  { id: 'prt-ct-03', partner_id: 'prt-002', contact_name: 'Jaspreet Singh Dhillon', designation: 'Managing Partner', email: 'jaspreet@punjabagritech.in', phone: '+91 98140 77889', is_default: true },
+];
+
+export const DEFAULT_PARTNER_BANKS: PartnerBankAccount[] = [
+  { id: 'prt-bk-01', partner_id: 'prt-001', bank_name: 'HDFC Bank Ltd', account_number: '50200012345678', ifsc_code: 'HDFC0000053', branch_name: 'Electronics City Branch', is_default: true },
+  { id: 'prt-bk-02', partner_id: 'prt-002', bank_name: 'State Bank of India', account_number: '30491827364', ifsc_code: 'SBIN0001234', branch_name: 'Mohali Phase 7 Branch', is_default: true },
+];
+
+export const DEFAULT_PARTNER_JOBS: PartnerJobPosting[] = [
+  { id: 'job-01', partner_id: 'prt-001', title: 'Associate Software Engineer - Cloud & React', type: 'full_time', stipend_salary: '₹ 6.5 LPA CTC', eligible_departments: 'CSE,ECE', min_cgpa: 7.0, description: 'Campus hiring for graduate software engineers. Core JavaScript, React, and Python microservices.', status: 'open', created_at: '2025-08-01T10:00:00Z' },
+  { id: 'job-02', partner_id: 'prt-002', title: 'Precision Agronomy & Crop Sensor Intern', type: 'internship', stipend_salary: '₹ 25,000 / month', eligible_departments: 'AGRI', min_cgpa: 6.5, description: 'Hands-on agricultural telemetry, drone crop health analysis, and soil moisture sensor calibration in Malwa region.', status: 'open', created_at: '2025-08-10T12:00:00Z' },
+];
+
+export const DEFAULT_STAFF_BASIC: StaffBasicInfo[] = [
+  {
+    id: 'stf-bas-01',
+    staff_id: 'stf-001',
+    employee_id: 'FAC-CSE-014',
+    full_name: 'Prof. Sunita Rao',
+    father_name: 'Sh. Ram Nath Rao',
+    dob: '1985-04-12',
+    gender: 'female',
+    date_of_joining: '2020-07-15',
+    category: 'fresher',
+    primary_designation: 'Assistant Professor',
+    department_id: 'CSE',
+    employee_status: 'ACTIVE',
+    login_enabled: true,
+    must_change_password: false,
+    custom_attr_1: 'Research Coordinator',
+    custom_meta_json: JSON.stringify({ biometrics_enrolled: true, room_no: 'B-204' }),
+  },
+  {
+    id: 'stf-bas-02',
+    staff_id: 'stf-002',
+    employee_id: 'FAC-HOD-001',
+    full_name: 'Dr. Balwinder Singh',
+    father_name: 'S. Gurbachan Singh',
+    dob: '1976-11-20',
+    gender: 'male',
+    date_of_joining: '2014-08-01',
+    category: 'rejoiner',
+    primary_designation: 'Head of Department',
+    department_id: 'CSE',
+    employee_status: 'ACTIVE',
+    login_enabled: true,
+    must_change_password: false,
+    custom_attr_1: 'Senate Member',
+    custom_meta_json: JSON.stringify({ biometrics_enrolled: true, room_no: 'HOD-CSE' }),
+  },
+  {
+    id: 'stf-bas-03',
+    staff_id: 'stf-003',
+    employee_id: 'FAC-CE-009',
+    full_name: 'Er. Manjit Kaur',
+    father_name: 'S. Sukhdev Singh',
+    dob: '1988-06-18',
+    gender: 'female',
+    date_of_joining: '2019-01-10',
+    date_of_resigning: '2025-09-01',
+    last_working_date: '2025-10-31',
+    category: 'fresher',
+    primary_designation: 'Assistant Professor',
+    department_id: 'CE',
+    employee_status: 'RESIGNED',
+    login_enabled: true,
+    must_change_password: false,
+    custom_attr_1: 'Notice Period (60 Days)',
+    custom_meta_json: JSON.stringify({ handover_pending: true }),
+  },
+  {
+    id: 'stf-bas-04',
+    staff_id: 'stf-004',
+    employee_id: 'FAC-ME-003',
+    full_name: 'Prof. Rajesh Verma',
+    father_name: 'Sh. Kishori Lal Verma',
+    dob: '1982-03-25',
+    gender: 'male',
+    date_of_joining: '2017-09-01',
+    date_of_resigning: '2025-08-15',
+    category: 'rejoiner',
+    primary_designation: 'Associate Professor',
+    department_id: 'ME',
+    employee_status: 'AOL',
+    login_enabled: false,
+    must_change_password: true,
+    custom_attr_1: 'Show Cause Issued',
+    custom_meta_json: JSON.stringify({ unauthorized_absence_days: 45 }),
+  },
+];
+
+export const DEFAULT_STAFF_ADDITIONAL: StaffAdditionalInfo[] = [
+  {
+    id: 'stf-add-01',
+    staff_id: 'stf-001',
+    emergency_phone: '+91 98141 55667',
+    blood_group: 'B+',
+    marital_status: 'Married',
+    nationality: 'Indian',
+    pf_uan: '100918273645',
+    esi_number: '1100223344',
+    custom_meta_json: JSON.stringify({ aadhar_verified: true }),
+  },
+  {
+    id: 'stf-add-02',
+    staff_id: 'stf-002',
+    emergency_phone: '+91 98720 99881',
+    blood_group: 'O+',
+    marital_status: 'Married',
+    nationality: 'Indian',
+    pf_uan: '100123456789',
+    custom_meta_json: JSON.stringify({ aadhar_verified: true }),
+  },
+];
+
+export const DEFAULT_STAFF_ADDRESSES: StaffAddress[] = [
+  {
+    id: 'addr-01',
+    staff_id: 'stf-001',
+    address_type: 'current',
+    address_line: 'House No. 412, Phase 3B2',
+    city: 'Mohali',
+    state_gst: '03',
+    pincode: '160059',
+    is_default: true,
+  },
+  {
+    id: 'addr-02',
+    staff_id: 'stf-001',
+    address_type: 'permanent',
+    address_line: 'Civil Lines, Near Mall Road',
+    city: 'Bathinda',
+    state_gst: '03',
+    pincode: '151001',
+    is_default: false,
+  },
+  {
+    id: 'addr-03',
+    staff_id: 'stf-002',
+    address_type: 'current',
+    address_line: 'Flat 12-B, Faculty Enclave, MRSPTU Campus',
+    city: 'Bathinda',
+    state_gst: '03',
+    pincode: '151001',
+    is_default: true,
+  },
+];
+
+export const DEFAULT_STAFF_BANKS: StaffBankAccount[] = [
+  {
+    id: 'bank-01',
+    staff_id: 'stf-001',
+    bank_name: 'HDFC Bank Ltd',
+    account_number: '50100234918201',
+    ifsc_code: 'HDFC0000213',
+    branch_name: 'Phase 7 Mohali',
+    is_default: true,
+  },
+  {
+    id: 'bank-02',
+    staff_id: 'stf-001',
+    bank_name: 'State Bank of India',
+    account_number: '31298471209',
+    ifsc_code: 'SBIN0000612',
+    branch_name: 'Main Branch Bathinda',
+    is_default: false,
+  },
+  {
+    id: 'bank-03',
+    staff_id: 'stf-002',
+    bank_name: 'Punjab National Bank',
+    account_number: '0192002100098172',
+    ifsc_code: 'PUNB0019200',
+    branch_name: 'University Campus Branch',
+    is_default: true,
+  },
+];
+
+export const DEFAULT_STAFF_QUALIFICATIONS: StaffQualification[] = [
+  {
+    id: 'qual-01',
+    staff_id: 'stf-001',
+    qualification_title: 'Master of Technology (M.Tech) in Computer Science',
+    institution: 'Punjab Technical University (PTU), Jalandhar',
+    year_of_passing: 2012,
+    percentage_or_cgpa: 8.6,
+    is_highest: true,
+  },
+  {
+    id: 'qual-02',
+    staff_id: 'stf-001',
+    qualification_title: 'Bachelor of Technology (B.Tech) in Computer Science & Engineering',
+    institution: 'Guru Nanak Dev Engineering College, Ludhiana',
+    year_of_passing: 2008,
+    percentage_or_cgpa: 78.4,
+    is_highest: false,
+  },
+  {
+    id: 'qual-03',
+    staff_id: 'stf-002',
+    qualification_title: 'Doctor of Philosophy (Ph.D) in Artificial Intelligence',
+    institution: 'IIT Roorkee',
+    year_of_passing: 2016,
+    percentage_or_cgpa: 9.4,
+    is_highest: true,
+  },
+];
+
+export const DEFAULT_STAFF_CERTIFICATIONS: StaffCertification[] = [
+  {
+    id: 'cert-01',
+    staff_id: 'stf-001',
+    certification_name: 'AWS Certified Solutions Architect - Associate',
+    issuing_body: 'Amazon Web Services',
+    issue_year: 2023,
+    credential_id: 'AWS-CSA-991823',
+  },
+  {
+    id: 'cert-02',
+    staff_id: 'stf-001',
+    certification_name: 'AICTE-NPTEL Deep Learning Specialization',
+    issuing_body: 'IIT Madras & SWAYAM',
+    issue_year: 2022,
+    credential_id: 'NPTEL22CS891',
+  },
+];
+
+export const DEFAULT_STAFF_EXPERIENCE: StaffExperience[] = [
+  {
+    id: 'exp-01',
+    staff_id: 'stf-001',
+    organization_name: 'Thapar Institute of Engineering and Technology, Patiala',
+    designation: 'Senior Lecturer',
+    start_date: '2015-08-01',
+    end_date: '2020-06-30',
+    is_latest: true,
+  },
+  {
+    id: 'exp-02',
+    staff_id: 'stf-001',
+    organization_name: 'Rayat Bahra Group of Institutes',
+    designation: 'Lecturer',
+    start_date: '2012-07-15',
+    end_date: '2015-07-31',
+    is_latest: false,
+  },
+];
+
+export const DEFAULT_STAFF_ORG_JOURNEY: StaffOrgJourneyEvent[] = [
+  {
+    id: 'soj-01',
+    staff_id: 'stf-001',
+    event_type: 'joining',
+    effective_date: '2020-07-15',
+    new_designation: 'Assistant Professor',
+    actor_id: 'usr-admin-01',
+    remarks: 'Initial appointment in CSE Department following selection committee review.',
+    created_at: '2020-07-15T10:00:00Z',
+  },
+  {
+    id: 'soj-02',
+    staff_id: 'stf-001',
+    event_type: 'promotion',
+    effective_date: '2023-08-01',
+    old_designation: 'Assistant Professor (Grade I)',
+    new_designation: 'Assistant Professor (Senior Scale)',
+    actor_id: 'usr-super-01',
+    remarks: 'Merit-based CAS promotion approved by Governing Body.',
+    created_at: '2023-08-01T11:30:00Z',
+  },
+  {
+    id: 'soj-03',
+    staff_id: 'stf-003',
+    event_type: 'resignation',
+    effective_date: '2025-09-01',
+    actor_id: 'usr-admin-01',
+    remarks: 'Tendered personal resignation. 60 days notice period initiated. Last working date: 2025-10-31.',
+    created_at: '2025-09-01T14:00:00Z',
+  },
+];
+
+export const DEFAULT_PARTNER_APPLICATIONS: PartnerApplication[] = [
+  {
+    id: 'app-01',
+    posting_id: 'job-01',
+    student_id: 'stu-rec-aryan',
+    student_name: 'Aryan Sharma',
+    cgpa: 8.85,
+    status: 'shortlisted',
+    remarks: 'Strong DSA and React fundamentals. Cleared round 1 technical screen.',
+    applied_at: '2025-08-15T10:30:00Z',
+  },
+  {
+    id: 'app-02',
+    posting_id: 'job-01',
+    student_id: 'stu-rec-priya',
+    student_name: 'Priya Patel',
+    cgpa: 9.12,
+    status: 'applied',
+    remarks: 'Final year CSE, high GPA and academic excellence.',
+    applied_at: '2025-08-16T14:10:00Z',
+  },
+];
+
+export const DEFAULT_ENQUIRIES: EnquiryRecord[] = [
+  {
+    id: 'enq-001',
+    enquiry_no: 'ENQ-2025-0101',
+    student_name: 'Amanat Kaur',
+    gender: 'female',
+    father_name: 'Sardar Kuldeep Singh',
+    mobile: '+91 98761 22334',
+    email: 'amanat.kaur@gmail.com',
+    selected_course: 'B.Tech Computer Science & Engineering',
+    course_fee: 90000,
+    admission_probability: 85,
+    status: 'enquiry',
+    assigned_counselor_id: 'usr-counselor-01',
+    assigned_counselor_name: 'Harleen Kaur',
+    created_at: '2025-09-15T10:00:00Z',
+    custom_meta_json: JSON.stringify({ school: 'St. Xavier Bathinda', pcm_percentage: 88.5 }),
+  },
+  {
+    id: 'enq-002',
+    enquiry_no: 'ENQ-2025-0102',
+    student_name: 'Gurkirat Singh Brar',
+    gender: 'male',
+    father_name: 'Sardar Jagjit Singh',
+    mobile: '+91 98144 55667',
+    email: 'gurkirat.brar@yahoo.com',
+    selected_course: 'B.Sc (Hons) Agriculture',
+    course_fee: 75000,
+    admission_probability: 60,
+    status: 'prospect',
+    assigned_counselor_id: 'usr-counselor-01',
+    assigned_counselor_name: 'Harleen Kaur',
+    created_at: '2025-09-18T14:30:00Z',
+    custom_meta_json: JSON.stringify({ district: 'Muktsar Sahib', land_holding_acres: 12 }),
+  },
+  {
+    id: 'enq-003',
+    enquiry_no: 'ENQ-2025-0103',
+    student_name: 'Navjot Sharma',
+    gender: 'female',
+    father_name: 'Sh. Rajesh Sharma',
+    mobile: '+91 98882 11990',
+    email: 'navjot.sharma99@outlook.com',
+    selected_course: 'B.Tech Civil Engineering',
+    course_fee: 85000,
+    admission_probability: 95,
+    status: 'registration_paid',
+    assigned_counselor_id: 'usr-counselor-01',
+    assigned_counselor_name: 'Harleen Kaur',
+    created_at: '2025-09-20T11:00:00Z',
+    custom_meta_json: JSON.stringify({ token_receipt: 'REC-TOK-2025-8812', token_amount: 10000 }),
+  },
+];
+
+export const DEFAULT_ENQUIRY_INTERACTIONS: EnquiryInteraction[] = [
+  {
+    id: 'ei-001',
+    enquiry_id: 'enq-001',
+    stage_name: 'Initial Telephonic Counseling',
+    counselor_id: 'usr-counselor-01',
+    remarks: 'Spoke with candidate and father. Explained MRSPTU curriculum, faculty profile, and 100% placement track record.',
+    call_status: 'Connected / Highly Interested',
+    probability_updated: 85,
+    call_recording_url: '/recordings/counseling_call_enq001_simulated.mp3',
+    timestamp: '2025-09-16T11:30:00Z',
+  },
+  {
+    id: 'ei-002',
+    enquiry_id: 'enq-002',
+    stage_name: 'Scholarship & Fee Structure Inquiry',
+    counselor_id: 'usr-counselor-01',
+    remarks: 'Discussed rural quota and post-matric scholarship eligibility. Candidate comparing with PAU Ludhiana.',
+    call_status: 'Callback Requested',
+    probability_updated: 60,
+    call_recording_url: '/recordings/counseling_call_enq002_simulated.mp3',
+    timestamp: '2025-09-19T15:00:00Z',
+  },
+];
+
+export const DEFAULT_BULK_BATCHES: BulkUploadBatch[] = [
+  {
+    id: 'batch-001',
+    upload_date: '2025-09-10T09:00:00Z',
+    filename: 'bathinda_schools_class12_pcm.csv',
+    total_rows: 150,
+    fresh_count: 128,
+    duplicate_count: 14,
+    wrong_count: 8,
+    source_label: 'Bathinda District School Fair',
+    uploaded_by: 'Harleen Kaur',
   },
 ];
 
@@ -281,7 +1002,7 @@ export interface Student {
   admission_year: number;
   admission_status: 'inquiry' | 'registered' | 'draft' | 'submitted' | 'pending' | 'verified' | 'fee_pending' | 'provisionally_admitted' | 'approved' | 'enrolled' | 'rejected';
   admission_remarks?: string;
-  fees_status: 'paid' | 'due' | 'overdue' | 'cancelled';
+  fees_status: 'paid' | 'due' | 'overdue' | 'cancelled' | 'partial';
   attendance_percentage: number;
   total_classes: number;
   attended_classes: number;
@@ -492,6 +1213,31 @@ class DatabaseStore {
   public master_degrees: MasterDegree[] = [];
   public master_document_types: MasterDocumentType[] = [];
   public staff_academic_journey: StaffAcademicJourney[] = [];
+  public master_departments: MasterDepartment[] = [];
+  public master_institution_types: MasterInstitutionType[] = [];
+  public master_employee_statuses: MasterEmployeeStatus[] = [];
+  public master_designation_changes: MasterDesignationChange[] = [];
+  public master_erp_statuses: MasterERPStatus[] = [];
+
+  public staff_basic_info: StaffBasicInfo[] = [];
+  public staff_additional_info: StaffAdditionalInfo[] = [];
+  public staff_addresses: StaffAddress[] = [];
+  public staff_bank_accounts: StaffBankAccount[] = [];
+  public staff_qualifications: StaffQualification[] = [];
+  public staff_certifications: StaffCertification[] = [];
+  public staff_experience: StaffExperience[] = [];
+  public staff_org_journey: StaffOrgJourneyEvent[] = [];
+
+  public partners: PartnerEntity[] = [];
+  public partner_contacts: PartnerContact[] = [];
+  public partner_bank_accounts: PartnerBankAccount[] = [];
+  public partner_job_postings: PartnerJobPosting[] = [];
+  public partner_applications: PartnerApplication[] = [];
+
+  public bulk_upload_batches: BulkUploadBatch[] = [];
+  public enquiries: EnquiryRecord[] = [];
+  public enquiry_interactions: EnquiryInteraction[] = [];
+  public dialer_settings: DialerSettings = { id: 'default', is_enabled: true, provider: 'exotel', api_key_configured: true };
 
   public mode: 'mariadb' | 'sqlite' = 'sqlite';
   private dbPath: string = process.env.DB_PATH || path.join(process.cwd(), 'database', 'educore.sqlite');
@@ -1380,6 +2126,72 @@ class DatabaseStore {
         scopus_publications INTEGER, sci_publications INTEGER, patents_count INTEGER,
         past_institutions_summary TEXT, verified INTEGER, created_at TEXT
       );
+      CREATE TABLE IF NOT EXISTS master_departments (
+        id TEXT PRIMARY KEY, dept_code TEXT UNIQUE, dept_name TEXT, tags_json TEXT, head_of_dept TEXT, established_year INTEGER, is_active INTEGER
+      );
+      CREATE TABLE IF NOT EXISTS master_institution_types (
+        code TEXT PRIMARY KEY, name TEXT, regulatory_authority TEXT, description TEXT
+      );
+      CREATE TABLE IF NOT EXISTS master_employee_statuses (
+        status_code TEXT PRIMARY KEY, status_name TEXT, description TEXT, requires_dates INTEGER
+      );
+      CREATE TABLE IF NOT EXISTS master_designation_changes (
+        type_code TEXT PRIMARY KEY, name TEXT, category TEXT
+      );
+      CREATE TABLE IF NOT EXISTS master_erp_statuses (
+        status_code TEXT PRIMARY KEY, status_name TEXT, stage TEXT
+      );
+      CREATE TABLE IF NOT EXISTS staff_basic_info (
+        id TEXT PRIMARY KEY, staff_id TEXT UNIQUE, employee_id TEXT UNIQUE, full_name TEXT, father_name TEXT, dob TEXT, gender TEXT, date_of_joining TEXT, date_of_resigning TEXT, last_working_date TEXT, category TEXT, primary_designation TEXT, department_id TEXT, employee_status TEXT, login_enabled INTEGER, must_change_password INTEGER, custom_attr_1 TEXT, custom_attr_2 TEXT, custom_attr_3 TEXT, custom_attr_4 TEXT, custom_meta_json TEXT
+      );
+      CREATE TABLE IF NOT EXISTS staff_additional_info (
+        id TEXT PRIMARY KEY, staff_id TEXT UNIQUE, emergency_phone TEXT, blood_group TEXT, marital_status TEXT, nationality TEXT, pf_uan TEXT, esi_number TEXT, custom_meta_json TEXT
+      );
+      CREATE TABLE IF NOT EXISTS staff_addresses (
+        id TEXT PRIMARY KEY, staff_id TEXT, address_type TEXT, address_line TEXT, city TEXT, state_gst TEXT, pincode TEXT, is_default INTEGER
+      );
+      CREATE TABLE IF NOT EXISTS staff_bank_accounts (
+        id TEXT PRIMARY KEY, staff_id TEXT, bank_name TEXT, account_number TEXT, ifsc_code TEXT, branch_name TEXT, is_default INTEGER
+      );
+      CREATE TABLE IF NOT EXISTS staff_qualifications (
+        id TEXT PRIMARY KEY, staff_id TEXT, qualification_title TEXT, institution TEXT, year_of_passing INTEGER, percentage_or_cgpa REAL, is_highest INTEGER
+      );
+      CREATE TABLE IF NOT EXISTS staff_certifications (
+        id TEXT PRIMARY KEY, staff_id TEXT, certification_name TEXT, issuing_body TEXT, issue_year INTEGER, credential_id TEXT
+      );
+      CREATE TABLE IF NOT EXISTS staff_experience (
+        id TEXT PRIMARY KEY, staff_id TEXT, organization_name TEXT, designation TEXT, start_date TEXT, end_date TEXT, is_latest INTEGER
+      );
+      CREATE TABLE IF NOT EXISTS staff_org_journey (
+        id TEXT PRIMARY KEY, staff_id TEXT, event_type TEXT, effective_date TEXT, old_designation TEXT, new_designation TEXT, actor_id TEXT, remarks TEXT, created_at TEXT
+      );
+      CREATE TABLE IF NOT EXISTS partners (
+        id TEXT PRIMARY KEY, user_id TEXT, partner_type TEXT, firm_name TEXT, pan_number TEXT, gst_number TEXT, tan_number TEXT, email TEXT, phone TEXT, address TEXT, is_active INTEGER, created_at TEXT, custom_meta_json TEXT
+      );
+      CREATE TABLE IF NOT EXISTS partner_contacts (
+        id TEXT PRIMARY KEY, partner_id TEXT, contact_name TEXT, designation TEXT, email TEXT, phone TEXT, is_default INTEGER
+      );
+      CREATE TABLE IF NOT EXISTS partner_bank_accounts (
+        id TEXT PRIMARY KEY, partner_id TEXT, bank_name TEXT, account_number TEXT, ifsc_code TEXT, branch_name TEXT, is_default INTEGER
+      );
+      CREATE TABLE IF NOT EXISTS partner_job_postings (
+        id TEXT PRIMARY KEY, partner_id TEXT, title TEXT, type TEXT, stipend_salary TEXT, eligible_departments TEXT, min_cgpa REAL, description TEXT, status TEXT, created_at TEXT
+      );
+      CREATE TABLE IF NOT EXISTS partner_applications (
+        id TEXT PRIMARY KEY, posting_id TEXT, student_id TEXT, student_name TEXT, cgpa REAL, status TEXT, remarks TEXT, applied_at TEXT
+      );
+      CREATE TABLE IF NOT EXISTS bulk_upload_batches (
+        id TEXT PRIMARY KEY, upload_date TEXT, filename TEXT, total_rows INTEGER, fresh_count INTEGER, duplicate_count INTEGER, wrong_count INTEGER, source_label TEXT, uploaded_by TEXT
+      );
+      CREATE TABLE IF NOT EXISTS enquiries (
+        id TEXT PRIMARY KEY, enquiry_no TEXT UNIQUE, student_name TEXT, gender TEXT, father_name TEXT, mobile TEXT, email TEXT, selected_course TEXT, course_fee REAL, admission_probability REAL, status TEXT, assigned_counselor_id TEXT, assigned_counselor_name TEXT, batch_id TEXT, created_at TEXT, custom_meta_json TEXT
+      );
+      CREATE TABLE IF NOT EXISTS enquiry_interactions (
+        id TEXT PRIMARY KEY, enquiry_id TEXT, stage_name TEXT, counselor_id TEXT, remarks TEXT, call_status TEXT, probability_updated REAL, call_recording_url TEXT, timestamp TEXT
+      );
+      CREATE TABLE IF NOT EXISTS dialer_settings (
+        id TEXT PRIMARY KEY, is_enabled INTEGER, provider TEXT, api_key_configured INTEGER
+      );
     `);
 
     // Safe column additions for existing SQLite files
@@ -1505,12 +2317,110 @@ class DatabaseStore {
           this.staff_academic_journey = [];
         }
 
+        try {
+          this.master_departments = readTable('master_departments').map(d => ({ ...d, is_active: Boolean(d.is_active) }));
+        } catch { this.master_departments = []; }
+        try {
+          this.master_institution_types = readTable('master_institution_types');
+        } catch { this.master_institution_types = []; }
+        try {
+          this.master_employee_statuses = readTable('master_employee_statuses').map(s => ({ ...s, requires_dates: Boolean(s.requires_dates) }));
+        } catch { this.master_employee_statuses = []; }
+        try {
+          this.master_designation_changes = readTable('master_designation_changes');
+        } catch { this.master_designation_changes = []; }
+        try {
+          this.master_erp_statuses = readTable('master_erp_statuses');
+        } catch { this.master_erp_statuses = []; }
+
+        try {
+          this.staff_basic_info = readTable('staff_basic_info').map(s => ({ ...s, login_enabled: Boolean(s.login_enabled), must_change_password: Boolean(s.must_change_password) }));
+        } catch { this.staff_basic_info = []; }
+        try {
+          this.staff_additional_info = readTable('staff_additional_info');
+        } catch { this.staff_additional_info = []; }
+        try {
+          this.staff_addresses = readTable('staff_addresses').map(a => ({ ...a, is_default: Boolean(a.is_default) }));
+        } catch { this.staff_addresses = []; }
+        try {
+          this.staff_bank_accounts = readTable('staff_bank_accounts').map(b => ({ ...b, is_default: Boolean(b.is_default) }));
+        } catch { this.staff_bank_accounts = []; }
+        try {
+          this.staff_qualifications = readTable('staff_qualifications').map(q => ({ ...q, is_highest: Boolean(q.is_highest) }));
+        } catch { this.staff_qualifications = []; }
+        try {
+          this.staff_certifications = readTable('staff_certifications');
+        } catch { this.staff_certifications = []; }
+        try {
+          this.staff_experience = readTable('staff_experience').map(e => ({ ...e, is_latest: Boolean(e.is_latest) }));
+        } catch { this.staff_experience = []; }
+        try {
+          this.staff_org_journey = readTable('staff_org_journey');
+        } catch { this.staff_org_journey = []; }
+
+        try {
+          this.partners = readTable('partners').map(p => ({ ...p, is_active: Boolean(p.is_active) }));
+        } catch { this.partners = []; }
+        try {
+          this.partner_contacts = readTable('partner_contacts').map(c => ({ ...c, is_default: Boolean(c.is_default) }));
+        } catch { this.partner_contacts = []; }
+        try {
+          this.partner_bank_accounts = readTable('partner_bank_accounts').map(b => ({ ...b, is_default: Boolean(b.is_default) }));
+        } catch { this.partner_bank_accounts = []; }
+        try {
+          this.partner_job_postings = readTable('partner_job_postings');
+        } catch { this.partner_job_postings = []; }
+        try {
+          this.partner_applications = readTable('partner_applications');
+        } catch { this.partner_applications = []; }
+
+        try {
+          this.bulk_upload_batches = readTable('bulk_upload_batches');
+        } catch { this.bulk_upload_batches = []; }
+        try {
+          this.enquiries = readTable('enquiries');
+        } catch { this.enquiries = []; }
+        try {
+          this.enquiry_interactions = readTable('enquiry_interactions');
+        } catch { this.enquiry_interactions = []; }
+        try {
+          const ds = readTable('dialer_settings');
+          if (ds.length > 0) {
+            this.dialer_settings = { ...ds[0], is_enabled: Boolean(ds[0].is_enabled), api_key_configured: Boolean(ds[0].api_key_configured) };
+          }
+        } catch {}
+
         if (this.master_states.length === 0) this.master_states = [...DEFAULT_MASTER_STATES];
         if (this.master_user_types.length === 0) this.master_user_types = [...DEFAULT_MASTER_USER_TYPES];
         if (this.master_degrees.length === 0) this.master_degrees = [...DEFAULT_MASTER_DEGREES];
         if (this.master_document_types.length === 0) this.master_document_types = [...DEFAULT_MASTER_DOCUMENT_TYPES];
         if (this.staff_academic_journey.length === 0) this.staff_academic_journey = [...DEFAULT_STAFF_ACADEMIC_JOURNEY];
         if (this.audit_logs.length === 0) this.audit_logs = [...DEFAULT_AUDIT_LOGS];
+
+        if (this.master_departments.length === 0) this.master_departments = [...DEFAULT_MASTER_DEPARTMENTS];
+        if (this.master_institution_types.length === 0) this.master_institution_types = [...DEFAULT_MASTER_INSTITUTION_TYPES];
+        if (this.master_employee_statuses.length === 0) this.master_employee_statuses = [...DEFAULT_MASTER_EMPLOYEE_STATUSES];
+        if (this.master_designation_changes.length === 0) this.master_designation_changes = [...DEFAULT_MASTER_DESIGNATION_CHANGES];
+        if (this.master_erp_statuses.length === 0) this.master_erp_statuses = [...DEFAULT_MASTER_ERP_STATUSES];
+
+        if (this.staff_basic_info.length === 0) this.staff_basic_info = [...DEFAULT_STAFF_BASIC];
+        if (this.staff_additional_info.length === 0) this.staff_additional_info = [...DEFAULT_STAFF_ADDITIONAL];
+        if (this.staff_addresses.length === 0) this.staff_addresses = [...DEFAULT_STAFF_ADDRESSES];
+        if (this.staff_bank_accounts.length === 0) this.staff_bank_accounts = [...DEFAULT_STAFF_BANKS];
+        if (this.staff_qualifications.length === 0) this.staff_qualifications = [...DEFAULT_STAFF_QUALIFICATIONS];
+        if (this.staff_certifications.length === 0) this.staff_certifications = [...DEFAULT_STAFF_CERTIFICATIONS];
+        if (this.staff_experience.length === 0) this.staff_experience = [...DEFAULT_STAFF_EXPERIENCE];
+        if (this.staff_org_journey.length === 0) this.staff_org_journey = [...DEFAULT_STAFF_ORG_JOURNEY];
+
+        if (this.partners.length === 0) this.partners = [...DEFAULT_PARTNERS];
+        if (this.partner_contacts.length === 0) this.partner_contacts = [...DEFAULT_PARTNER_CONTACTS];
+        if (this.partner_bank_accounts.length === 0) this.partner_bank_accounts = [...DEFAULT_PARTNER_BANKS];
+        if (this.partner_job_postings.length === 0) this.partner_job_postings = [...DEFAULT_PARTNER_JOBS];
+        if (this.partner_applications.length === 0) this.partner_applications = [...DEFAULT_PARTNER_APPLICATIONS];
+
+        if (this.bulk_upload_batches.length === 0) this.bulk_upload_batches = [...DEFAULT_BULK_BATCHES];
+        if (this.enquiries.length === 0) this.enquiries = [...DEFAULT_ENQUIRIES];
+        if (this.enquiry_interactions.length === 0) this.enquiry_interactions = [...DEFAULT_ENQUIRY_INTERACTIONS];
 
         // Ensure all demo students have active accounts in SQLite mode
         const demoAccounts = [
@@ -1550,6 +2460,7 @@ class DatabaseStore {
           { username: 'counselor01', email: 'counselor@educore.edu', name: 'Harleen Kaur (Head Counselor / Admission Cell)', role: 'counselor' as const, dept: 'Admission & Counseling Cell', desig: 'Head Counselor & Admission Cell Convener', empId: 'ADM-CNS-002', pass: 'counselor123', uid: '6001-03-BFGI-0002' },
           { username: 'hod_cse', email: 'hod.cse@educore.edu', name: 'Dr. Balwinder Singh (HOD Computer Science)', role: 'hod' as const, dept: 'Computer Science & Engineering', desig: 'Head of Department', empId: 'FAC-HOD-001', pass: 'hod123', uid: '3001-03-BFGI-0001' },
           { username: 'accounts01', email: 'accounts@educore.edu', name: 'Manmohan Sharma (Chief Accounts Officer)', role: 'accounts' as const, dept: 'Finance & Accounts Section', desig: 'Chief Accounts Officer', empId: 'ACC-OFF-005', pass: 'accounts123', uid: '5001-03-BFGI-0005' },
+          { username: 'partner01', email: 'partner@educore.edu', name: 'Infosys Campus Relations Lead', role: 'partner' as const, dept: 'Corporate Relations', desig: 'Campus Hiring Director', empId: 'PRT-INF-001', pass: 'partner123', uid: '7001-03-BFGI-0001' },
         ];
 
         for (const stf of demoStaffAccounts) {
@@ -1681,6 +2592,28 @@ class DatabaseStore {
       clearAndInsert('master_degrees', this.master_degrees, ['degree_code', 'degree_name', 'level', 'duration_years', 'total_semesters', 'statutory_body']);
       clearAndInsert('master_document_types', this.master_document_types, ['doc_type_code', 'title', 'mandatory_for', 'max_file_size_mb', 'allowed_mime_types']);
       clearAndInsert('staff_academic_journey', this.staff_academic_journey, ['id', 'staff_id', 'staff_name', 'qualification_level', 'degree_name', 'awarding_university', 'year_of_passing', 'specialization', 'scopus_publications', 'sci_publications', 'patents_count', 'past_institutions_summary', 'verified', 'created_at']);
+      clearAndInsert('master_departments', this.master_departments, ['id', 'dept_code', 'dept_name', 'tags_json', 'head_of_dept', 'established_year', 'is_active']);
+      clearAndInsert('master_institution_types', this.master_institution_types, ['code', 'name', 'regulatory_authority', 'description']);
+      clearAndInsert('master_employee_statuses', this.master_employee_statuses, ['status_code', 'status_name', 'description', 'requires_dates']);
+      clearAndInsert('master_designation_changes', this.master_designation_changes, ['type_code', 'name', 'category']);
+      clearAndInsert('master_erp_statuses', this.master_erp_statuses, ['status_code', 'status_name', 'stage']);
+      clearAndInsert('staff_basic_info', this.staff_basic_info, ['id', 'staff_id', 'employee_id', 'full_name', 'father_name', 'dob', 'gender', 'date_of_joining', 'date_of_resigning', 'last_working_date', 'category', 'primary_designation', 'department_id', 'employee_status', 'login_enabled', 'must_change_password', 'custom_attr_1', 'custom_attr_2', 'custom_attr_3', 'custom_attr_4', 'custom_meta_json']);
+      clearAndInsert('staff_additional_info', this.staff_additional_info, ['id', 'staff_id', 'emergency_phone', 'blood_group', 'marital_status', 'nationality', 'pf_uan', 'esi_number', 'custom_meta_json']);
+      clearAndInsert('staff_addresses', this.staff_addresses, ['id', 'staff_id', 'address_type', 'address_line', 'city', 'state_gst', 'pincode', 'is_default']);
+      clearAndInsert('staff_bank_accounts', this.staff_bank_accounts, ['id', 'staff_id', 'bank_name', 'account_number', 'ifsc_code', 'branch_name', 'is_default']);
+      clearAndInsert('staff_qualifications', this.staff_qualifications, ['id', 'staff_id', 'qualification_title', 'institution', 'year_of_passing', 'percentage_or_cgpa', 'is_highest']);
+      clearAndInsert('staff_certifications', this.staff_certifications, ['id', 'staff_id', 'certification_name', 'issuing_body', 'issue_year', 'credential_id']);
+      clearAndInsert('staff_experience', this.staff_experience, ['id', 'staff_id', 'organization_name', 'designation', 'start_date', 'end_date', 'is_latest']);
+      clearAndInsert('staff_org_journey', this.staff_org_journey, ['id', 'staff_id', 'event_type', 'effective_date', 'old_designation', 'new_designation', 'actor_id', 'remarks', 'created_at']);
+      clearAndInsert('partners', this.partners, ['id', 'user_id', 'partner_type', 'firm_name', 'pan_number', 'gst_number', 'tan_number', 'email', 'phone', 'address', 'is_active', 'created_at', 'custom_meta_json']);
+      clearAndInsert('partner_contacts', this.partner_contacts, ['id', 'partner_id', 'contact_name', 'designation', 'email', 'phone', 'is_default']);
+      clearAndInsert('partner_bank_accounts', this.partner_bank_accounts, ['id', 'partner_id', 'bank_name', 'account_number', 'ifsc_code', 'branch_name', 'is_default']);
+      clearAndInsert('partner_job_postings', this.partner_job_postings, ['id', 'partner_id', 'title', 'type', 'stipend_salary', 'eligible_departments', 'min_cgpa', 'description', 'status', 'created_at']);
+      clearAndInsert('partner_applications', this.partner_applications, ['id', 'posting_id', 'student_id', 'student_name', 'cgpa', 'status', 'remarks', 'applied_at']);
+      clearAndInsert('bulk_upload_batches', this.bulk_upload_batches, ['id', 'upload_date', 'filename', 'total_rows', 'fresh_count', 'duplicate_count', 'wrong_count', 'source_label', 'uploaded_by']);
+      clearAndInsert('enquiries', this.enquiries, ['id', 'enquiry_no', 'student_name', 'gender', 'father_name', 'mobile', 'email', 'selected_course', 'course_fee', 'admission_probability', 'status', 'assigned_counselor_id', 'assigned_counselor_name', 'batch_id', 'created_at', 'custom_meta_json']);
+      clearAndInsert('enquiry_interactions', this.enquiry_interactions, ['id', 'enquiry_id', 'stage_name', 'counselor_id', 'remarks', 'call_status', 'probability_updated', 'call_recording_url', 'timestamp']);
+      clearAndInsert('dialer_settings', [this.dialer_settings], ['id', 'is_enabled', 'provider', 'api_key_configured']);
 
       this.sqlDb.run('COMMIT;');
 
@@ -2205,6 +3138,760 @@ class DatabaseStore {
     });
 
     return target;
+  }
+
+  // ==========================================
+  // ENTERPRISE MASTER TABLES & TAGGING OPERATIONS
+  // ==========================================
+  public async getMasterDepartments(): Promise<MasterDepartment[]> {
+    return [...this.master_departments];
+  }
+
+  public async addMasterDepartment(dept: Omit<MasterDepartment, 'id'>): Promise<MasterDepartment> {
+    const newDept: MasterDepartment = {
+      id: `dept-${dept.dept_code.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+      ...dept,
+    };
+    this.master_departments.push(newDept);
+    this.save();
+    return newDept;
+  }
+
+  public async updateMasterDepartment(id: string, updates: Partial<MasterDepartment>): Promise<MasterDepartment | null> {
+    const idx = this.master_departments.findIndex(d => d.id === id || d.dept_code === id);
+    if (idx === -1) return null;
+    this.master_departments[idx] = { ...this.master_departments[idx], ...updates };
+    this.save();
+    return this.master_departments[idx];
+  }
+
+  public async getMasterInstitutionTypes(): Promise<MasterInstitutionType[]> {
+    return [...this.master_institution_types];
+  }
+
+  public async getMasterEmployeeStatuses(): Promise<MasterEmployeeStatus[]> {
+    return [...this.master_employee_statuses];
+  }
+
+  public async getMasterDesignationChanges(): Promise<MasterDesignationChange[]> {
+    return [...this.master_designation_changes];
+  }
+
+  public async getMasterERPStatuses(): Promise<MasterERPStatus[]> {
+    return [...this.master_erp_statuses];
+  }
+
+  // ==========================================
+  // MULTI-TABLE STAFF MANAGEMENT & ORG JOURNEY
+  // ==========================================
+  public async getStaffList(filters?: { department?: string; status?: string; search?: string }): Promise<any[]> {
+    let list = this.staff_basic_info.map(b => {
+      const addr = this.staff_addresses.find(a => a.staff_id === b.staff_id && a.is_default) || this.staff_addresses.find(a => a.staff_id === b.staff_id);
+      const bank = this.staff_bank_accounts.find(ba => ba.staff_id === b.staff_id && ba.is_default) || this.staff_bank_accounts.find(ba => ba.staff_id === b.staff_id);
+      const qual = this.staff_qualifications.find(q => q.staff_id === b.staff_id && q.is_highest) || this.staff_qualifications.find(q => q.staff_id === b.staff_id);
+      const exp = this.staff_experience.find(e => e.staff_id === b.staff_id && e.is_latest) || this.staff_experience.find(e => e.staff_id === b.staff_id);
+      const user = this.users.find(u => u.employee_id === b.employee_id || u.username === b.staff_id);
+      return {
+        ...b,
+        default_address: addr || null,
+        default_bank: bank || null,
+        highest_qualification: qual || null,
+        latest_experience: exp || null,
+        user_account: user ? { id: user.id, username: user.username, email: user.email, enterprise_uid: user.enterprise_uid, must_change_password: user.must_change_password } : null,
+      };
+    });
+
+    if (filters?.department) {
+      list = list.filter(s => s.department_id.toLowerCase() === filters.department!.toLowerCase());
+    }
+    if (filters?.status) {
+      list = list.filter(s => s.employee_status.toLowerCase() === filters.status!.toLowerCase());
+    }
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      list = list.filter(s =>
+        s.full_name.toLowerCase().includes(q) ||
+        s.employee_id.toLowerCase().includes(q) ||
+        s.primary_designation.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }
+
+  public async getStaffFullProfile(staffId: string): Promise<any | null> {
+    const basic = this.staff_basic_info.find(s => s.staff_id === staffId || s.id === staffId || s.employee_id === staffId);
+    if (!basic) return null;
+
+    const actualStaffId = basic.staff_id;
+    const additional = this.staff_additional_info.find(a => a.staff_id === actualStaffId) || null;
+    const addresses = this.staff_addresses.filter(a => a.staff_id === actualStaffId);
+    const bankAccounts = this.staff_bank_accounts.filter(b => b.staff_id === actualStaffId);
+    const qualifications = this.staff_qualifications.filter(q => q.staff_id === actualStaffId);
+    const certifications = this.staff_certifications.filter(c => c.staff_id === actualStaffId);
+    const experience = this.staff_experience.filter(e => e.staff_id === actualStaffId);
+    const orgJourney = this.staff_org_journey.filter(j => j.staff_id === actualStaffId).sort((a, b) => b.effective_date.localeCompare(a.effective_date));
+    const user = this.users.find(u => u.employee_id === basic.employee_id);
+
+    return {
+      basic,
+      additional,
+      addresses,
+      bankAccounts,
+      qualifications,
+      certifications,
+      experience,
+      orgJourney,
+      user: user ? {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        enterprise_uid: user.enterprise_uid,
+        is_active: user.is_active,
+        must_change_password: user.must_change_password,
+      } : null,
+    };
+  }
+
+  public async createStaff(payload: {
+    basic: Omit<StaffBasicInfo, 'id'>;
+    additional?: Partial<StaffAdditionalInfo>;
+    address?: Omit<StaffAddress, 'id' | 'staff_id'>;
+    bankAccount?: Omit<StaffBankAccount, 'id' | 'staff_id'>;
+    qualification?: Omit<StaffQualification, 'id' | 'staff_id'>;
+    actor_id?: string;
+  }): Promise<any> {
+    const id = `stf-bas-${Date.now()}`;
+    const staffId = payload.basic.staff_id || `stf-${Date.now().toString().slice(-4)}`;
+    const basic: StaffBasicInfo = {
+      id,
+      ...payload.basic,
+      staff_id: staffId,
+    };
+    this.staff_basic_info.push(basic);
+
+    if (payload.additional) {
+      this.staff_additional_info.push({
+        id: `stf-add-${Date.now()}`,
+        staff_id: staffId,
+        ...payload.additional,
+      });
+    }
+
+    if (payload.address) {
+      this.staff_addresses.push({
+        id: `addr-${Date.now()}`,
+        staff_id: staffId,
+        ...payload.address,
+        is_default: true,
+      });
+    }
+
+    if (payload.bankAccount) {
+      this.staff_bank_accounts.push({
+        id: `bank-${Date.now()}`,
+        staff_id: staffId,
+        ...payload.bankAccount,
+        is_default: true,
+      });
+    }
+
+    if (payload.qualification) {
+      this.staff_qualifications.push({
+        id: `qual-${Date.now()}`,
+        staff_id: staffId,
+        ...payload.qualification,
+        is_highest: true,
+      });
+    }
+
+    // Initial org journey event
+    this.staff_org_journey.push({
+      id: `soj-${Date.now()}`,
+      staff_id: staffId,
+      event_type: 'joining',
+      effective_date: basic.date_of_joining,
+      new_designation: basic.primary_designation,
+      actor_id: payload.actor_id || 'usr-admin-01',
+      remarks: `Initial onboarding of ${basic.full_name} (${basic.employee_id}).`,
+      created_at: new Date().toISOString(),
+    });
+
+    // Auto-create or link user account
+    const existingUser = this.users.find(u => u.employee_id === basic.employee_id);
+    if (!existingUser) {
+      const tempPass = 'staff123';
+      const hash = bcrypt.hashSync(tempPass, 10);
+      this.users.push({
+        id: `usr-staff-${Date.now().toString().slice(-4)}`,
+        username: basic.employee_id.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+        email: `${basic.employee_id.toLowerCase().replace(/[^a-z0-9]/g, '')}@educore.edu`,
+        password_hash: hash,
+        role: 'staff',
+        full_name: basic.full_name,
+        department: basic.department_id,
+        designation: basic.primary_designation,
+        employee_id: basic.employee_id,
+        enterprise_uid: generateEnterpriseUID('staff', '03', 'BFGI'),
+        is_active: basic.login_enabled,
+        must_change_password: true,
+        created_at: new Date().toISOString(),
+      });
+    }
+
+    this.save();
+    return this.getStaffFullProfile(staffId);
+  }
+
+  public async updateStaffBasic(staffId: string, updates: Partial<StaffBasicInfo>, actorId: string = 'usr-admin-01'): Promise<StaffBasicInfo | null> {
+    const idx = this.staff_basic_info.findIndex(s => s.staff_id === staffId || s.id === staffId);
+    if (idx === -1) return null;
+
+    const old = this.staff_basic_info[idx];
+    const updated = { ...old, ...updates };
+
+    // Lifecycle transition detection
+    if (updates.employee_status && updates.employee_status !== old.employee_status) {
+      const eventType = updates.employee_status.toLowerCase();
+      this.staff_org_journey.push({
+        id: `soj-${Date.now()}`,
+        staff_id: old.staff_id,
+        event_type: eventType,
+        effective_date: updates.date_of_resigning || new Date().toISOString().slice(0, 10),
+        old_designation: old.primary_designation,
+        new_designation: updated.primary_designation,
+        actor_id: actorId,
+        remarks: `Status transitioned from ${old.employee_status} to ${updates.employee_status}. Effective: ${updates.date_of_resigning || 'Immediate'}. Last working: ${updates.last_working_date || 'N/A'}.`,
+        created_at: new Date().toISOString(),
+      });
+
+      // If deactivated or terminated, automatically disable login
+      if (['DEACTIVATED', 'TERMINATED'].includes(updates.employee_status)) {
+        updated.login_enabled = false;
+        const u = this.users.find(usr => usr.employee_id === old.employee_id);
+        if (u) u.is_active = false;
+      }
+    }
+
+    // Designation change detection
+    if (updates.primary_designation && updates.primary_designation !== old.primary_designation) {
+      this.staff_org_journey.push({
+        id: `soj-${Date.now()}`,
+        staff_id: old.staff_id,
+        event_type: 'role_switch',
+        effective_date: new Date().toISOString().slice(0, 10),
+        old_designation: old.primary_designation,
+        new_designation: updates.primary_designation,
+        actor_id: actorId,
+        remarks: `Designation upgraded/changed to ${updates.primary_designation}.`,
+        created_at: new Date().toISOString(),
+      });
+    }
+
+    this.staff_basic_info[idx] = updated;
+    this.save();
+    return updated;
+  }
+
+  public async setStaffLoginStatus(staffId: string, enabled: boolean, actorId: string = 'usr-admin-01'): Promise<{ success: boolean; login_enabled: boolean; otpDispatched: boolean }> {
+    const basic = this.staff_basic_info.find(s => s.staff_id === staffId || s.id === staffId);
+    if (!basic) throw new Error('Staff record not found.');
+
+    basic.login_enabled = enabled;
+    const user = this.users.find(u => u.employee_id === basic.employee_id);
+    if (user) {
+      user.is_active = enabled;
+    }
+
+    await this.createAuditLog({
+      actor_id: actorId,
+      actor_name: 'Administrator',
+      actor_role: 'admin',
+      action: enabled ? 'STAFF_LOGIN_ENABLED' : 'STAFF_LOGIN_DISABLED',
+      target_type: 'staff',
+      target_id: basic.staff_id,
+      details: `Login access for ${basic.full_name} (${basic.employee_id}) was ${enabled ? 'ENABLED' : 'DISABLED'}. Security OTP notification dispatched.`,
+      severity: 'warn',
+    });
+
+    this.save();
+    return { success: true, login_enabled: enabled, otpDispatched: true };
+  }
+
+  public async resetStaffPasswordByAdmin(
+    staffId: string,
+    tempPassword?: string,
+    actorId: string = 'usr-admin-01'
+  ): Promise<{ success: boolean; message: string; tempPasswordIssued: string; must_change_password: boolean }> {
+    const basic = this.staff_basic_info.find(s => s.staff_id === staffId || s.id === staffId);
+    if (!basic) throw new Error('Staff member not found.');
+
+    const user = this.users.find(u => u.employee_id === basic.employee_id);
+    if (!user) throw new Error('User account not found for this staff member.');
+
+    const issuedPass = tempPassword || `Edu@${Math.floor(100000 + Math.random() * 900000)}`;
+    const hash = bcrypt.hashSync(issuedPass, 10);
+    user.password_hash = hash;
+    user.must_change_password = true;
+    basic.must_change_password = true;
+
+    await this.createAuditLog({
+      actor_id: actorId,
+      actor_name: 'Administrator',
+      actor_role: 'admin',
+      action: 'ADMIN_ASSISTED_PASSWORD_RESET',
+      target_type: 'user',
+      target_id: user.id,
+      details: `Admin issued temporary password for staff ${basic.full_name} (${basic.employee_id}). Mandatory change on next login enforced.`,
+      severity: 'critical',
+    });
+
+    this.save();
+    return {
+      success: true,
+      message: 'Temporary password generated and dispatched. User must change password upon next login.',
+      tempPasswordIssued: issuedPass,
+      must_change_password: true,
+    };
+  }
+
+  public async addStaffAddress(addr: Omit<StaffAddress, 'id'>): Promise<StaffAddress> {
+    if (addr.is_default) {
+      this.staff_addresses.filter(a => a.staff_id === addr.staff_id).forEach(a => { a.is_default = false; });
+    }
+    const newAddr: StaffAddress = { id: `addr-${Date.now()}`, ...addr };
+    this.staff_addresses.push(newAddr);
+    this.save();
+    return newAddr;
+  }
+
+  public async addStaffBankAccount(bank: Omit<StaffBankAccount, 'id'>): Promise<StaffBankAccount> {
+    if (bank.is_default) {
+      this.staff_bank_accounts.filter(b => b.staff_id === bank.staff_id).forEach(b => { b.is_default = false; });
+    }
+    const newBank: StaffBankAccount = { id: `bank-${Date.now()}`, ...bank };
+    this.staff_bank_accounts.push(newBank);
+    this.save();
+    return newBank;
+  }
+
+  public async addStaffQualification(qual: Omit<StaffQualification, 'id'>): Promise<StaffQualification> {
+    if (qual.is_highest) {
+      this.staff_qualifications.filter(q => q.staff_id === qual.staff_id).forEach(q => { q.is_highest = false; });
+    }
+    const newQual: StaffQualification = { id: `qual-${Date.now()}`, ...qual };
+    this.staff_qualifications.push(newQual);
+    this.save();
+    return newQual;
+  }
+
+  public async addStaffCertification(cert: Omit<StaffCertification, 'id'>): Promise<StaffCertification> {
+    const newCert: StaffCertification = { id: `cert-${Date.now()}`, ...cert };
+    this.staff_certifications.push(newCert);
+    this.save();
+    return newCert;
+  }
+
+  public async addStaffExperience(exp: Omit<StaffExperience, 'id'>): Promise<StaffExperience> {
+    if (exp.is_latest) {
+      this.staff_experience.filter(e => e.staff_id === exp.staff_id).forEach(e => { e.is_latest = false; });
+    }
+    const newExp: StaffExperience = { id: `exp-${Date.now()}`, ...exp };
+    this.staff_experience.push(newExp);
+    this.save();
+    return newExp;
+  }
+
+  public async addStaffOrgJourneyEvent(event: Omit<StaffOrgJourneyEvent, 'id' | 'created_at'>): Promise<StaffOrgJourneyEvent> {
+    const newEvent: StaffOrgJourneyEvent = {
+      id: `soj-${Date.now()}`,
+      ...event,
+      created_at: new Date().toISOString(),
+    };
+    this.staff_org_journey.push(newEvent);
+    this.save();
+    return newEvent;
+  }
+
+  // ==========================================
+  // CORPORATE HIRING PARTNER PORTAL OPERATIONS
+  // ==========================================
+  public async getPartners(): Promise<any[]> {
+    return this.partners.map(p => {
+      const contacts = this.partner_contacts.filter(c => c.partner_id === p.id);
+      const banks = this.partner_bank_accounts.filter(b => b.partner_id === p.id);
+      const defaultContact = contacts.find(c => c.is_default) || contacts[0];
+      const defaultBank = banks.find(b => b.is_default) || banks[0];
+      const activeJobs = this.partner_job_postings.filter(j => j.partner_id === p.id && j.status === 'open').length;
+      return {
+        ...p,
+        contacts,
+        bank_accounts: banks,
+        default_contact: defaultContact || null,
+        default_bank: defaultBank || null,
+        active_jobs_count: activeJobs,
+      };
+    });
+  }
+
+  public async getPartnerById(id: string): Promise<any | null> {
+    const partner = this.partners.find(p => p.id === id || p.user_id === id);
+    if (!partner) return null;
+    const contacts = this.partner_contacts.filter(c => c.partner_id === partner.id);
+    const bankAccounts = this.partner_bank_accounts.filter(b => b.partner_id === partner.id);
+    const jobPostings = this.partner_job_postings.filter(j => j.partner_id === partner.id);
+    return {
+      ...partner,
+      contacts,
+      bankAccounts,
+      jobPostings,
+    };
+  }
+
+  public async createPartner(payload: {
+    partner: Omit<PartnerEntity, 'id' | 'created_at'>;
+    contact?: Omit<PartnerContact, 'id' | 'partner_id'>;
+    bank?: Omit<PartnerBankAccount, 'id' | 'partner_id'>;
+  }): Promise<any> {
+    const partnerId = `prt-${Date.now().toString().slice(-4)}`;
+    const newPartner: PartnerEntity = {
+      id: partnerId,
+      ...payload.partner,
+      created_at: new Date().toISOString(),
+    };
+    this.partners.push(newPartner);
+
+    if (payload.contact) {
+      this.partner_contacts.push({
+        id: `prt-ct-${Date.now()}`,
+        partner_id: partnerId,
+        ...payload.contact,
+        is_default: true,
+      });
+    }
+
+    if (payload.bank) {
+      this.partner_bank_accounts.push({
+        id: `prt-bk-${Date.now()}`,
+        partner_id: partnerId,
+        ...payload.bank,
+        is_default: true,
+      });
+    }
+
+    this.save();
+    return this.getPartnerById(partnerId);
+  }
+
+  public async updatePartner(id: string, updates: Partial<PartnerEntity>): Promise<PartnerEntity | null> {
+    const idx = this.partners.findIndex(p => p.id === id);
+    if (idx === -1) return null;
+    this.partners[idx] = { ...this.partners[idx], ...updates };
+    this.save();
+    return this.partners[idx];
+  }
+
+  public async getPartnerJobPostings(partnerId?: string): Promise<any[]> {
+    let jobs = [...this.partner_job_postings];
+    if (partnerId) {
+      jobs = jobs.filter(j => j.partner_id === partnerId);
+    }
+    return jobs.map(j => {
+      const partner = this.partners.find(p => p.id === j.partner_id);
+      const apps = this.partner_applications.filter(a => a.posting_id === j.id);
+      return {
+        ...j,
+        partner_name: partner?.firm_name || 'Corporate Partner',
+        applications_count: apps.length,
+      };
+    });
+  }
+
+  public async createPartnerJobPosting(data: Omit<PartnerJobPosting, 'id' | 'created_at'>): Promise<PartnerJobPosting> {
+    const newJob: PartnerJobPosting = {
+      id: `job-${Date.now().toString().slice(-4)}`,
+      ...data,
+      created_at: new Date().toISOString(),
+    };
+    this.partner_job_postings.push(newJob);
+    this.save();
+    return newJob;
+  }
+
+  public async getPartnerApplications(postingId?: string): Promise<PartnerApplication[]> {
+    if (postingId) {
+      return this.partner_applications.filter(a => a.posting_id === postingId);
+    }
+    return [...this.partner_applications];
+  }
+
+  public async applyForPartnerJob(data: Omit<PartnerApplication, 'id' | 'applied_at'>): Promise<PartnerApplication> {
+    const newApp: PartnerApplication = {
+      id: `app-${Date.now().toString().slice(-4)}`,
+      ...data,
+      applied_at: new Date().toISOString(),
+    };
+    this.partner_applications.push(newApp);
+    this.save();
+    return newApp;
+  }
+
+  public async updatePartnerApplicationStatus(id: string, status: string, remarks?: string): Promise<PartnerApplication | null> {
+    const idx = this.partner_applications.findIndex(a => a.id === id);
+    if (idx === -1) return null;
+    this.partner_applications[idx].status = status;
+    if (remarks) this.partner_applications[idx].remarks = remarks;
+    this.save();
+    return this.partner_applications[idx];
+  }
+
+  public async getVerifiedStudentTalentPool(minCgpa: number = 6.0, dept?: string): Promise<any[]> {
+    return this.students
+      .filter(s => ['enrolled', 'approved', 'submitted', 'provisionally_admitted'].includes(s.admission_status))
+      .map(s => {
+        const course = this.courses.find(c => c.id === s.course_id);
+        const approxGpa = s.attendance_percentage > 85 ? 8.9 : s.attendance_percentage > 75 ? 7.8 : 6.8;
+        return {
+          id: s.id,
+          student_id: s.student_id,
+          full_name: `${s.first_name} ${s.last_name}`,
+          gender: s.gender,
+          course_name: course?.name || 'B.Tech CSE',
+          department: course?.department || 'CSE',
+          current_semester: s.current_semester,
+          cgpa: approxGpa,
+          tenth_percentage: s.tenth_percentage || 80,
+          twelfth_percentage: s.twelfth_percentage || 82,
+          attendance_percentage: s.attendance_percentage,
+          documents_verified: Boolean(s.tenth_doc_verified && s.twelfth_doc_verified && s.aadhaar_doc_verified),
+        };
+      })
+      .filter(s => s.cgpa >= minCgpa && (!dept || s.department.toLowerCase() === dept.toLowerCase()));
+  }
+
+  // ==========================================
+  // PRE-ADMISSION CRM, ENQUIRIES & BULK IMPORTER
+  // ==========================================
+  public async getEnquiries(filters?: { status?: string; counselor_id?: string; search?: string }): Promise<any[]> {
+    let list = this.enquiries.map(e => {
+      const interactions = this.enquiry_interactions.filter(i => i.enquiry_id === e.id).sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+      return {
+        ...e,
+        latest_interaction: interactions[0] || null,
+        interactions_count: interactions.length,
+      };
+    });
+
+    if (filters?.status) {
+      list = list.filter(e => e.status.toLowerCase() === filters.status!.toLowerCase());
+    }
+    if (filters?.counselor_id) {
+      list = list.filter(e => e.assigned_counselor_id === filters.counselor_id);
+    }
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      list = list.filter(e =>
+        e.student_name.toLowerCase().includes(q) ||
+        e.mobile.includes(q) ||
+        e.enquiry_no.toLowerCase().includes(q) ||
+        e.selected_course.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }
+
+  public async getEnquiryById(id: string): Promise<any | null> {
+    const enq = this.enquiries.find(e => e.id === id || e.enquiry_no === id);
+    if (!enq) return null;
+    const interactions = this.enquiry_interactions.filter(i => i.enquiry_id === enq.id).sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+    return {
+      ...enq,
+      interactions,
+    };
+  }
+
+  public async createEnquiry(data: Omit<EnquiryRecord, 'id' | 'enquiry_no' | 'created_at'>): Promise<EnquiryRecord> {
+    const seq = Math.floor(100 + Math.random() * 900);
+    const newEnq: EnquiryRecord = {
+      id: `enq-${Date.now()}`,
+      enquiry_no: `ENQ-${new Date().getFullYear()}-${seq}`,
+      ...data,
+      created_at: new Date().toISOString(),
+    };
+    this.enquiries.push(newEnq);
+    this.save();
+    return newEnq;
+  }
+
+  public async updateEnquiry(id: string, updates: Partial<EnquiryRecord>): Promise<EnquiryRecord | null> {
+    const idx = this.enquiries.findIndex(e => e.id === id);
+    if (idx === -1) return null;
+    this.enquiries[idx] = { ...this.enquiries[idx], ...updates };
+    this.save();
+    return this.enquiries[idx];
+  }
+
+  public async addEnquiryInteraction(data: Omit<EnquiryInteraction, 'id' | 'timestamp'>): Promise<EnquiryInteraction> {
+    const newInt: EnquiryInteraction = {
+      id: `ei-${Date.now()}`,
+      ...data,
+      timestamp: new Date().toISOString(),
+    };
+    this.enquiry_interactions.push(newInt);
+
+    // Update parent enquiry admission probability
+    const enq = this.enquiries.find(e => e.id === data.enquiry_id);
+    if (enq) {
+      enq.admission_probability = data.probability_updated;
+      if (enq.status === 'enquiry') enq.status = 'prospect';
+    }
+
+    this.save();
+    return newInt;
+  }
+
+  public async convertEnquiryToStudent(
+    enquiryId: string,
+    paymentDetails: {
+      amount: number;
+      payment_mode: 'online_upi' | 'net_banking' | 'credit_card' | 'debit_card' | 'cash';
+      transaction_ref: string;
+      course_id?: string;
+      actor_id?: string;
+    }
+  ): Promise<{ success: boolean; student: Student; user: User; receiptNo: string }> {
+    const enq = this.enquiries.find(e => e.id === enquiryId);
+    if (!enq) throw new Error('Enquiry record not found.');
+
+    const targetCourse = this.courses.find(c => c.id === paymentDetails.course_id || c.name.toLowerCase().includes(enq.selected_course.toLowerCase())) || this.courses[0];
+    const targetSession = this.sessions.find(s => s.is_current) || this.sessions[0];
+
+    const studentUid = generateEnterpriseUID('student', '03', 'BFGI');
+    const studentSeq = Math.floor(100 + Math.random() * 900);
+    const newStudentId = `STU-${new Date().getFullYear()}-${studentSeq}`;
+    const newUserId = `usr-stu-${Date.now().toString().slice(-4)}`;
+    const receiptNo = `REC-TOK-${Date.now().toString().slice(-6)}`;
+
+    // 1. Create User account for student
+    const defaultPasswordHash = bcrypt.hashSync('student123', 10);
+    const newUser: User = {
+      id: newUserId,
+      username: `stu_${newStudentId.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+      email: enq.email,
+      password_hash: defaultPasswordHash,
+      role: 'student',
+      full_name: enq.student_name,
+      department: targetCourse.department,
+      designation: 'Enrolled Student',
+      enterprise_uid: studentUid,
+      is_active: true,
+      created_at: new Date().toISOString(),
+    };
+    this.users.push(newUser);
+
+    // 2. Create Student record
+    const [firstName, ...lastParts] = enq.student_name.split(' ');
+    const newStudent: Student = {
+      id: `stu-rec-${Date.now()}`,
+      user_id: newUserId,
+      student_id: newStudentId,
+      first_name: firstName || enq.student_name,
+      last_name: lastParts.join(' ') || 'Singh',
+      gender: (['male', 'female'].includes(enq.gender.toLowerCase()) ? enq.gender.toLowerCase() : 'prefer_not_to_say') as any,
+      dob: '2004-05-15',
+      email: enq.email,
+      phone: enq.mobile,
+      guardian_name: enq.father_name,
+      guardian_relation: 'parent',
+      guardian_phone: enq.mobile,
+      course_id: targetCourse.id,
+      session_id: targetSession.id,
+      current_semester: 1,
+      admission_year: new Date().getFullYear(),
+      admission_status: 'provisionally_admitted',
+      fees_status: 'partial',
+      attendance_percentage: 100,
+      total_classes: 0,
+      attended_classes: 0,
+      token_fee_receipt: receiptNo,
+      token_fee_amount: paymentDetails.amount,
+      token_fee_mode: paymentDetails.payment_mode,
+      token_fee_date: new Date().toISOString().slice(0, 10),
+      intake_step: 4,
+      admitted_by: paymentDetails.actor_id || 'usr-admin-01',
+      admission_remarks: `Converted from Enquiry #${enq.enquiry_no} upon ₹${paymentDetails.amount} registration fee clearance. Course UID: ${studentUid}.`,
+      created_at: new Date().toISOString(),
+    };
+    this.students.push(newStudent);
+
+    // 3. Record Token Fee in Payments
+    this.payments.push({
+      id: `pay-${Date.now()}`,
+      receipt_no: receiptNo,
+      student_id: newStudent.id,
+      amount_paid: paymentDetails.amount,
+      payment_mode: paymentDetails.payment_mode,
+      transaction_reference: paymentDetails.transaction_ref,
+      payment_date: new Date().toISOString(),
+      status: 'success',
+      notes: `Registration token payment for admission to ${targetCourse.name}. Course UID: ${studentUid}`,
+      collected_by: paymentDetails.actor_id || 'usr-admin-01',
+    });
+
+    // 4. Update Enquiry status
+    enq.status = 'student';
+    enq.admission_probability = 100;
+
+    // 5. Interaction remark
+    this.enquiry_interactions.push({
+      id: `ei-${Date.now()}`,
+      enquiry_id: enq.id,
+      stage_name: 'Admitted & Converted to Student Master',
+      counselor_id: paymentDetails.actor_id || 'usr-counselor-01',
+      remarks: `Paid token fee ₹${paymentDetails.amount} (${receiptNo}). Admitted to ${targetCourse.name} with canonical Course UID ${studentUid}.`,
+      call_status: 'Converted to Student',
+      probability_updated: 100,
+      timestamp: new Date().toISOString(),
+    });
+
+    // 6. Audit log
+    await this.createAuditLog({
+      actor_id: paymentDetails.actor_id || 'usr-admin-01',
+      actor_name: 'Admissions Desk',
+      actor_role: 'admin',
+      action: 'ENQUIRY_CONVERTED_TO_STUDENT',
+      target_type: 'student',
+      target_id: newStudent.id,
+      details: `Enquiry #${enq.enquiry_no} (${enq.student_name}) successfully converted into admitted student #${newStudentId} with Course UID ${studentUid}.`,
+      severity: 'info',
+    });
+
+    this.save();
+    return { success: true, student: newStudent, user: newUser, receiptNo };
+  }
+
+  public async createBulkBatch(data: Omit<BulkUploadBatch, 'id' | 'upload_date'>): Promise<BulkUploadBatch> {
+    const newBatch: BulkUploadBatch = {
+      id: `batch-${Date.now()}`,
+      upload_date: new Date().toISOString(),
+      ...data,
+    };
+    this.bulk_upload_batches.unshift(newBatch);
+    this.save();
+    return newBatch;
+  }
+
+  public async getBulkBatches(): Promise<BulkUploadBatch[]> {
+    return [...this.bulk_upload_batches];
+  }
+
+  public async getDialerSettings(): Promise<DialerSettings> {
+    return { ...this.dialer_settings };
+  }
+
+  public async updateDialerSettings(updates: Partial<DialerSettings>): Promise<DialerSettings> {
+    this.dialer_settings = { ...this.dialer_settings, ...updates };
+    this.save();
+    return { ...this.dialer_settings };
   }
 
   // --- STUDENT OPERATIONS ---
@@ -3859,6 +5546,31 @@ class DatabaseStore {
     this.master_document_types = [...DEFAULT_MASTER_DOCUMENT_TYPES];
     this.staff_academic_journey = [...DEFAULT_STAFF_ACADEMIC_JOURNEY];
     this.audit_logs = [...DEFAULT_AUDIT_LOGS];
+
+    this.master_departments = [...DEFAULT_MASTER_DEPARTMENTS];
+    this.master_institution_types = [...DEFAULT_MASTER_INSTITUTION_TYPES];
+    this.master_employee_statuses = [...DEFAULT_MASTER_EMPLOYEE_STATUSES];
+    this.master_designation_changes = [...DEFAULT_MASTER_DESIGNATION_CHANGES];
+    this.master_erp_statuses = [...DEFAULT_MASTER_ERP_STATUSES];
+
+    this.staff_basic_info = [...DEFAULT_STAFF_BASIC];
+    this.staff_additional_info = [...DEFAULT_STAFF_ADDITIONAL];
+    this.staff_addresses = [...DEFAULT_STAFF_ADDRESSES];
+    this.staff_bank_accounts = [...DEFAULT_STAFF_BANKS];
+    this.staff_qualifications = [...DEFAULT_STAFF_QUALIFICATIONS];
+    this.staff_certifications = [...DEFAULT_STAFF_CERTIFICATIONS];
+    this.staff_experience = [...DEFAULT_STAFF_EXPERIENCE];
+    this.staff_org_journey = [...DEFAULT_STAFF_ORG_JOURNEY];
+
+    this.partners = [...DEFAULT_PARTNERS];
+    this.partner_contacts = [...DEFAULT_PARTNER_CONTACTS];
+    this.partner_bank_accounts = [...DEFAULT_PARTNER_BANKS];
+    this.partner_job_postings = [...DEFAULT_PARTNER_JOBS];
+    this.partner_applications = [...DEFAULT_PARTNER_APPLICATIONS];
+
+    this.bulk_upload_batches = [...DEFAULT_BULK_BATCHES];
+    this.enquiries = [...DEFAULT_ENQUIRIES];
+    this.enquiry_interactions = [...DEFAULT_ENQUIRY_INTERACTIONS];
 
     // Ensure all seed users have enterprise_uid
     for (const u of this.users) {

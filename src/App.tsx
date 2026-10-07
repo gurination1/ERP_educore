@@ -32,6 +32,10 @@ import { TelephonyCallDock, TelephonyCandidate } from './components/TelephonyCal
 import { StudentDocumentsView } from './components/StudentDocumentsView';
 import { TeacherDocumentsView } from './components/TeacherDocumentsView';
 import { StudentQuizLMSView } from './components/StudentQuizLMSView';
+import { StaffManagementView } from './components/StaffManagementView';
+import { PartnerPortalView } from './components/PartnerPortalView';
+import { BulkImportView } from './components/BulkImportView';
+import { EnquiriesView } from './components/EnquiriesView';
 
 interface LayoutProps {
   currentUser: User | null;
@@ -97,6 +101,14 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
         return 'teacher-documents';
       case '/student-quiz-lms':
         return 'student-quiz-lms';
+      case '/staff-management':
+        return 'staff-management';
+      case '/partner-portal':
+        return 'partner-portal';
+      case '/bulk-import':
+        return 'bulk-import';
+      case '/enquiries':
+        return 'enquiries';
       case '/dashboard':
       default:
         return (currentUser?.role === 'admin' || currentUser?.role === 'super_admin')
@@ -981,6 +993,82 @@ function MainApp() {
                 onSearchChange={setSearchQuery}
               >
                 <StudentQuizLMSView currentUser={currentUser} />
+              </AuthenticatedLayout>
+            )
+          }
+        />
+
+        <Route
+          path="/staff-management"
+          element={
+            !currentUser ? (
+              <Navigate to="/" replace />
+            ) : (
+              <AuthenticatedLayout
+                currentUser={currentUser}
+                onLogout={handleLogout}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              >
+                <StaffManagementView currentUser={currentUser} />
+              </AuthenticatedLayout>
+            )
+          }
+        />
+
+        <Route
+          path="/partner-portal"
+          element={
+            !currentUser ? (
+              <Navigate to="/" replace />
+            ) : (
+              <AuthenticatedLayout
+                currentUser={currentUser}
+                onLogout={handleLogout}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              >
+                <PartnerPortalView currentUser={currentUser} />
+              </AuthenticatedLayout>
+            )
+          }
+        />
+
+        <Route
+          path="/bulk-import"
+          element={
+            !currentUser ? (
+              <Navigate to="/" replace />
+            ) : (
+              <AuthenticatedLayout
+                currentUser={currentUser}
+                onLogout={handleLogout}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              >
+                <BulkImportView currentUser={currentUser} onNavigateToCRM={() => navigate('/enquiries')} />
+              </AuthenticatedLayout>
+            )
+          }
+        />
+
+        <Route
+          path="/enquiries"
+          element={
+            !currentUser ? (
+              <Navigate to="/" replace />
+            ) : (
+              <AuthenticatedLayout
+                currentUser={currentUser}
+                onLogout={handleLogout}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              >
+                <EnquiriesView
+                  currentUser={currentUser}
+                  onNavigateToBulkImport={() => navigate('/bulk-import')}
+                  onNavigateToManageStudents={() => navigate('/manage-students')}
+                />
               </AuthenticatedLayout>
             )
           }

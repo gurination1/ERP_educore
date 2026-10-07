@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts' | 'super_admin';
+export type UserRole = 'student' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts' | 'super_admin' | 'partner';
 
 export interface User {
   id: string;
@@ -12,6 +12,7 @@ export interface User {
   designation?: string;
   employee_id?: string;
   enterprise_uid?: string;
+  must_change_password?: boolean;
   created_at?: string;
 }
 
@@ -45,6 +46,251 @@ export interface MasterDocumentType {
   mandatory_for: 'all' | 'punjab_quota' | 'scholarship_pms' | 'hosteller';
   max_file_size_mb: number;
   allowed_mime_types: string;
+}
+
+export interface MasterDepartment {
+  id: string;
+  dept_code: string;
+  dept_name: string;
+  tags: string[];
+  head_of_dept?: string;
+  established_year?: number;
+  is_active: boolean;
+}
+
+export interface MasterInstitutionType {
+  code: string;
+  name: string;
+  regulatory_authority: string;
+  description: string;
+}
+
+export interface MasterEmployeeStatus {
+  status_code: string;
+  status_name: string;
+  description: string;
+  requires_dates: boolean;
+}
+
+export interface MasterDesignationChange {
+  type_code: string;
+  name: string;
+  category: 'promotion' | 'demotion' | 'additional_role' | 'role_switch';
+}
+
+export interface MasterERPStatus {
+  status_code: string;
+  status_name: string;
+  stage: 'enquiry' | 'prospect' | 'registration_paid' | 'student';
+}
+
+export interface StaffBasicInfo {
+  id: string;
+  staff_id: string;
+  employee_id: string;
+  full_name: string;
+  father_name: string;
+  dob: string;
+  gender: string;
+  date_of_joining: string;
+  date_of_resigning?: string;
+  last_working_date?: string;
+  category: 'fresher' | 'rejoiner';
+  primary_designation: string;
+  department_id: string;
+  employee_status: 'ACTIVE' | 'RESIGNED' | 'TERMINATED' | 'AOL' | 'DEACTIVATED';
+  login_enabled: boolean;
+  must_change_password: boolean;
+  custom_attr_1?: string;
+  custom_attr_2?: string;
+  custom_attr_3?: string;
+  custom_attr_4?: string;
+  custom_meta_json?: string;
+}
+
+export interface StaffAdditionalInfo {
+  id: string;
+  staff_id: string;
+  emergency_phone?: string;
+  blood_group?: string;
+  marital_status?: string;
+  nationality?: string;
+  pf_uan?: string;
+  esi_number?: string;
+  custom_meta_json?: string;
+}
+
+export interface StaffAddress {
+  id: string;
+  staff_id: string;
+  address_type: 'current' | 'permanent' | 'correspondence';
+  address_line: string;
+  city: string;
+  state_gst: string;
+  pincode: string;
+  is_default: boolean;
+}
+
+export interface StaffBankAccount {
+  id: string;
+  staff_id: string;
+  bank_name: string;
+  account_number: string;
+  ifsc_code: string;
+  branch_name: string;
+  is_default: boolean;
+}
+
+export interface StaffQualification {
+  id: string;
+  staff_id: string;
+  qualification_title: string;
+  institution: string;
+  year_of_passing: number;
+  percentage_or_cgpa: number;
+  is_highest: boolean;
+}
+
+export interface StaffCertification {
+  id: string;
+  staff_id: string;
+  certification_name: string;
+  issuing_body: string;
+  issue_year: number;
+  credential_id?: string;
+}
+
+export interface StaffExperience {
+  id: string;
+  staff_id: string;
+  organization_name: string;
+  designation: string;
+  start_date: string;
+  end_date: string;
+  is_latest: boolean;
+}
+
+export interface StaffOrgJourneyEvent {
+  id: string;
+  staff_id: string;
+  event_type: 'joining' | 'rejoining' | 'promotion' | 'demotion' | 'additional_role' | 'role_switch' | 'resignation' | 'termination' | 'aol' | 'deactivation';
+  effective_date: string;
+  old_designation?: string;
+  new_designation?: string;
+  actor_id: string;
+  remarks: string;
+  created_at: string;
+}
+
+export interface PartnerProfile {
+  id: string;
+  user_id?: string;
+  partner_type: 'Sole Proprietorship' | 'Partnership Firm' | 'Private Limited' | 'Public Limited' | 'NGO' | 'MNC';
+  firm_name: string;
+  pan_number: string;
+  gst_number: string;
+  tan_number?: string;
+  email: string;
+  phone: string;
+  address: string;
+  is_active: boolean;
+  created_at: string;
+  custom_meta_json?: string;
+}
+
+export interface PartnerContact {
+  id: string;
+  partner_id: string;
+  contact_name: string;
+  designation: string;
+  email: string;
+  phone: string;
+  is_default: boolean;
+}
+
+export interface PartnerBankAccount {
+  id: string;
+  partner_id: string;
+  bank_name: string;
+  account_number: string;
+  ifsc_code: string;
+  branch_name: string;
+  is_default: boolean;
+}
+
+export interface PartnerJobPosting {
+  id: string;
+  partner_id: string;
+  partner_name?: string;
+  title: string;
+  type: 'internship' | 'full_time';
+  stipend_salary: string;
+  eligible_departments: string[];
+  min_cgpa: number;
+  description: string;
+  status: 'open' | 'closed';
+  created_at: string;
+}
+
+export interface PartnerApplication {
+  id: string;
+  posting_id: string;
+  student_id: string;
+  student_name: string;
+  cgpa: number;
+  status: 'applied' | 'shortlisted' | 'selected' | 'rejected';
+  remarks?: string;
+  applied_at: string;
+}
+
+export interface BulkUploadBatch {
+  id: string;
+  upload_date: string;
+  filename: string;
+  total_rows: number;
+  fresh_count: number;
+  duplicate_count: number;
+  wrong_count: number;
+  source_label: string;
+  uploaded_by: string;
+}
+
+export interface EnquiryRecord {
+  id: string;
+  enquiry_no: string;
+  student_name: string;
+  gender: string;
+  father_name: string;
+  mobile: string;
+  email: string;
+  selected_course: string;
+  course_fee: number;
+  admission_probability: number;
+  status: 'enquiry' | 'prospect' | 'registration_paid' | 'student';
+  assigned_counselor_id?: string;
+  assigned_counselor_name?: string;
+  batch_id?: string;
+  created_at: string;
+  custom_meta_json?: string;
+}
+
+export interface EnquiryInteraction {
+  id: string;
+  enquiry_id: string;
+  stage_name: string;
+  counselor_id: string;
+  counselor_name?: string;
+  remarks: string;
+  call_status: string;
+  probability_updated: number;
+  call_recording_url?: string;
+  timestamp: string;
+}
+
+export interface DialerSettings {
+  is_enabled: boolean;
+  provider: 'exotel' | 'twilio' | 'message94';
+  api_key_configured: boolean;
 }
 
 export interface StaffAcademicJourney {
@@ -313,6 +559,10 @@ export type ActiveScreen =
   | 'student-documents' // Student Regulatory Documents Vault
   | 'teacher-documents' // Faculty / Teachers Credentials Vault
   | 'student-quiz-lms'  // Student Quiz & LMS Assessment Engine
+  | 'partner-portal'    // Corporate Partner & Internship Portal
+  | 'staff-management'  // Multi-Table Staff Management & Org Journey
+  | 'bulk-import'       // Flexible Bulk CSV/Excel Column Mapper
+  | 'enquiries'         // Pre-Admission CRM & Auto-Dialer
   | 'audit-trail'
   | 'academic-journey'
   | 'master-tables';

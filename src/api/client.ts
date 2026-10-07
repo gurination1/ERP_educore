@@ -237,10 +237,98 @@ export const api = {
   addStaffAcademicJourney: (staffId: string, data: any) =>
     apiRequest(`/api/staff/${staffId}/academic-journey`, { method: 'POST', body: JSON.stringify(data) }),
 
-  // Password Recovery Matrix (Email, SMS OTP TRAI DLT, Admin override)
+  // Password Recovery Matrix (Email, SMS OTP TRAI DLT, WhatsApp Verified OTP, Admin ticket)
   getForgotPasswordPolicy: () => apiRequest('/api/auth/forgot-password/policy'),
   requestSmsOtp: (identifier: string) =>
     apiRequest('/api/auth/forgot-password/sms-otp', { method: 'POST', body: JSON.stringify({ identifier }) }),
   verifySmsOtp: (data: { otpSessionToken: string; otp: string; newPassword: string }) =>
     apiRequest('/api/auth/verify-sms-otp', { method: 'POST', body: JSON.stringify(data) }),
+  requestWhatsAppOtp: (identifier: string) =>
+    apiRequest('/api/auth/forgot-password/whatsapp-otp', { method: 'POST', body: JSON.stringify({ identifier }) }),
+  requestAdminPasswordTicket: (identifier: string, remarks?: string) =>
+    apiRequest('/api/auth/forgot-password/admin-request', { method: 'POST', body: JSON.stringify({ identifier, remarks }) }),
+  forceChangePassword: (newPassword: string) =>
+    apiRequest('/api/auth/force-change-password', { method: 'POST', body: JSON.stringify({ newPassword }) }),
+
+  // Enterprise Multi-Table Staff Management & Org Journey
+  getStaff: (params: Record<string, any> = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiRequest(`/api/staff?${query}`);
+  },
+  getStaffProfile: (staffId: string) => apiRequest(`/api/staff/${staffId}`),
+  createStaff: (payload: any) =>
+    apiRequest('/api/staff', { method: 'POST', body: JSON.stringify(payload) }),
+  updateStaffBasic: (staffId: string, updates: any) =>
+    apiRequest(`/api/staff/${staffId}/basic`, { method: 'PUT', body: JSON.stringify(updates) }),
+  toggleStaffLogin: (staffId: string, enabled: boolean) =>
+    apiRequest(`/api/staff/${staffId}/login-status`, { method: 'PATCH', body: JSON.stringify({ enabled }) }),
+  adminResetStaffPassword: (staffId: string, tempPassword?: string) =>
+    apiRequest(`/api/staff/${staffId}/admin-reset-password`, { method: 'POST', body: JSON.stringify({ tempPassword }) }),
+  addStaffAddress: (staffId: string, data: any) =>
+    apiRequest(`/api/staff/${staffId}/addresses`, { method: 'POST', body: JSON.stringify(data) }),
+  addStaffBank: (staffId: string, data: any) =>
+    apiRequest(`/api/staff/${staffId}/bank-accounts`, { method: 'POST', body: JSON.stringify(data) }),
+  addStaffQualification: (staffId: string, data: any) =>
+    apiRequest(`/api/staff/${staffId}/qualifications`, { method: 'POST', body: JSON.stringify(data) }),
+  addStaffCertification: (staffId: string, data: any) =>
+    apiRequest(`/api/staff/${staffId}/certifications`, { method: 'POST', body: JSON.stringify(data) }),
+  addStaffExperience: (staffId: string, data: any) =>
+    apiRequest(`/api/staff/${staffId}/experience`, { method: 'POST', body: JSON.stringify(data) }),
+  addStaffOrgJourney: (staffId: string, data: any) =>
+    apiRequest(`/api/staff/${staffId}/org-journey`, { method: 'POST', body: JSON.stringify(data) }),
+
+  // Corporate Partner Portal & Student Talent Pool
+  getPartners: () => apiRequest('/api/partners'),
+  getPartner: (id: string) => apiRequest(`/api/partners/${id}`),
+  createPartner: (payload: any) =>
+    apiRequest('/api/partners', { method: 'POST', body: JSON.stringify(payload) }),
+  updatePartner: (id: string, updates: any) =>
+    apiRequest(`/api/partners/${id}`, { method: 'PUT', body: JSON.stringify(updates) }),
+  getPartnerJobs: () => apiRequest('/api/partners/jobs/all'),
+  createPartnerJob: (partnerId: string, jobData: any) =>
+    apiRequest(`/api/partners/${partnerId}/jobs`, { method: 'POST', body: JSON.stringify(jobData) }),
+  getPartnerApplications: (jobId: string) =>
+    apiRequest(`/api/partners/jobs/${jobId}/applications`),
+  applyPartnerJob: (jobId: string, data: any) =>
+    apiRequest(`/api/partners/jobs/${jobId}/apply`, { method: 'POST', body: JSON.stringify(data) }),
+  updatePartnerApplication: (appId: string, status: string, remarks?: string) =>
+    apiRequest(`/api/partners/applications/${appId}`, { method: 'PATCH', body: JSON.stringify({ status, remarks }) }),
+  getTalentPool: (minCgpa?: number, department?: string) => {
+    const params = new URLSearchParams();
+    if (minCgpa) params.append('minCgpa', String(minCgpa));
+    if (department) params.append('department', department);
+    return apiRequest(`/api/partners/talent-pool?${params.toString()}`);
+  },
+
+  // Pre-Admission CRM, Auto-Dialer & Bulk Column Importer
+  getEnquiries: (params: Record<string, any> = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiRequest(`/api/enquiries?${query}`);
+  },
+  getEnquiry: (id: string) => apiRequest(`/api/enquiries/${id}`),
+  createEnquiry: (data: any) =>
+    apiRequest('/api/enquiries', { method: 'POST', body: JSON.stringify(data) }),
+  updateEnquiry: (id: string, data: any) =>
+    apiRequest(`/api/enquiries/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  addEnquiryInteraction: (id: string, data: any) =>
+    apiRequest(`/api/enquiries/${id}/interactions`, { method: 'POST', body: JSON.stringify(data) }),
+  dialEnquiry: (id: string) =>
+    apiRequest(`/api/enquiries/${id}/dial`, { method: 'POST' }),
+  convertEnquiryToStudent: (id: string, paymentData: any) =>
+    apiRequest(`/api/enquiries/${id}/convert-to-student`, { method: 'POST', body: JSON.stringify(paymentData) }),
+  validateBulkEnquiries: (rawRows: any[], columnMapping: Record<string, string>) =>
+    apiRequest('/api/enquiries/bulk/validate', { method: 'POST', body: JSON.stringify({ rawRows, columnMapping }) }),
+  commitBulkEnquiries: (payload: any) =>
+    apiRequest('/api/enquiries/bulk/commit', { method: 'POST', body: JSON.stringify(payload) }),
+  getBulkBatches: () => apiRequest('/api/enquiries/bulk/batches'),
+  getDialerSettings: () => apiRequest('/api/enquiries/dialer/settings'),
+  updateDialerSettings: (settings: any) =>
+    apiRequest('/api/enquiries/dialer/settings', { method: 'POST', body: JSON.stringify(settings) }),
+
+  // Enterprise Master Tables
+  getEnterpriseMaster: () => apiRequest('/api/master/enterprise'),
+  addMasterDepartment: (dept: any) =>
+    apiRequest('/api/master/departments', { method: 'POST', body: JSON.stringify(dept) }),
+  updateMasterDepartment: (id: string, updates: any) =>
+    apiRequest(`/api/master/departments/${id}`, { method: 'PUT', body: JSON.stringify(updates) }),
 };

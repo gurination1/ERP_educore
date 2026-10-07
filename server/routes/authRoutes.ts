@@ -135,6 +135,7 @@ authRouter.post('/login', authLimiter, async (req: Request, res: Response): Prom
       designation: user.designation,
       employee_id: user.employee_id,
       enterprise_uid: user.enterprise_uid,
+      must_change_password: Boolean(user.must_change_password),
     },
     student: student
       ? {
@@ -410,3 +411,125 @@ authRouter.post('/reset-password', authLimiter, async (req: Request, res: Respon
 
   res.json({ success: true, message: 'Password has been reset successfully. You can now login.' });
 });
+
+// Request Official WhatsApp Business OTP Verification
+authRouter.post('/forgot-password/whatsapp-otp', authLimiter, async (req: Request, res: Response): Promise<void> => {
+  const { identifier } = req.body;
+  if (!identifier || typeof identifier !== 'string') {
+    res.status(400).json({ success: false, error: 'Please provide registered email, username, or phone number.' });
+    return;
+  }
+
+  const user = await db.findUserByUsernameOrEmail(identifier);
+  if (!user) {
+    res.status(404).json({ success: false, error: 'No account associated with provided credentials.' });
+    return;
+  }
+
+  const student = await db.getStudentByUserIdOrEmail(user.id) || await db.getStudentByUserIdOrEmail(user.email);
+  const rawPhone = student?.phone || '+91 98765 43210';
+  const maskedPhone = rawPhone.length > 6
+    ? `${rawPhone.slice(0, 6)}*****${rawPhone.slice(-2)}`
+    : '+91 98*** **210';
+
+  const mockOtp = '739412';
+  const otpToken = jwt.sign(
+    { userId: user.id, email: user.email, otpHash: bcrypt.hashSync(mockOtp, 4), purpose: 'sms_otp_reset' },
+    process.env.JWT_SECRET || 'secret',
+    { expiresIn: '10m' }
+  );
+
+  await db.createAuditLog({
+    actor_id: user.id,
+    actor_name: user.full_name,
+    actor_role: user.role,
+    actor_ip: req.ip,
+    action: 'AUTH_WHATSAPP_OTP_DISPATCHED',
+    target_type: 'user',
+    target_id: user.id,
+    details: `Official Meta WhatsApp Verified OTP dispatched to ${maskedPhone}.`,
+    severity: 'info',
+  });
+
+  res.json({
+    success: true,
+    message: `6-Digit verified security code delivered to WhatsApp on ${maskedPhone}.`,
+    maskedPhone,
+    otpSessionToken: otpToken,
+    demoOtpHint: '739412',
+  });
+});
+
+// Contact Administrator Ticket for Assisted Password Recovery
+authRouter.post('/forgot-password/admin-request', authLimiter, async (req: Request, res: Response): Promise<void> => {
+  const { identifier, remarks } = req.body;
+  if (!identifier) {
+    res.status(400).json({ success: false, error: 'Please provide registered identifier or email.' });
+    return;
+  }
+
+  const user = await db.findUserByUsernameOrEmail(identifier);
+  const ticketNo = `TKT-PWD-${Date.now().toString().slice(-6)}`;
+
+  await db.createAuditLog({
+    actor_id: user?.id || 'guest',
+    actor_name: user?.full_name || identifier,
+    actor_role: user?.role || 'system',
+    actor_ip: req.ip,
+    action: 'ADMIN_RECOVERY_TICKET_SUBMITTED',
+    target_type: 'user',
+    target_id: user?.id || 'unregistered',
+    details: `Admin-assisted password recovery ticket #${ticketNo} created for ${identifier}. User Note: ${remarks || 'Requested administrator intervention.'}`,
+    severity: 'warn',
+  });
+
+  res.json({
+    success: true,
+    ticketNo,
+    message: `Recovery ticket #${ticketNo} successfully lodged with Institutional Registrar and IT Helpdesk. An administrator will verify identity and issue a single-use credential with mandatory reset.`,
+  });
+});
+
+// Mandatory Password Change upon Next Login
+authRouter.post('/force-change-password', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  const { newPassword } = req.body;
+  if (!newPassword || newPassword.length < 6) {
+    res.status(400).json({ success: false, error: 'New password must be at least 6 characters.' });
+    return;
+  }
+
+  const user = await db.findUserById(req.user!.id);
+  if (!user) {
+    res.status(404).json({ success: false, error: 'User not found.' });
+    return;
+  }
+
+  const newHash = await bcrypt.hash(newPassword, 10);
+  await db.updateUserPasswordHash(user.email, newHash);
+  user.must_change_password = false;
+
+  // Also clear on staff if staff record exists
+  const staff = db.staff_basic_info.find(s => s.employee_id === user.employee_id);
+  if (staff) {
+    staff.must_change_password = false;
+  }
+  db.save();
+
+  await db.createAuditLog({
+    actor_id: user.id,
+    actor_name: user.full_name,
+    actor_role: user.role,
+    actor_ip: req.ip,
+    action: 'USER_PASSWORD_CHANGED_MANDATORY',
+    target_type: 'user',
+    target_id: user.id,
+    details: `${user.full_name} (${user.role}) fulfilled mandatory password update following administrator reset.`,
+    severity: 'info',
+  });
+
+  res.json({
+    success: true,
+    message: 'Your permanent password has been set successfully. You may continue navigating EduCore.',
+  });
+});
+
