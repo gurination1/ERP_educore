@@ -61,7 +61,7 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function waitForServerReady(retries = 30) {
+async function waitForServerReady(retries = 60) {
   for (let i = 0; i < retries; i++) {
     try {
       const res = await request('GET', '/api/health');

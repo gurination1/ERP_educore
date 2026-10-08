@@ -198,11 +198,11 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-50 select-none font-sans" ref={navRef}>
-      {/* TIER 1: Prestigious Institutional Identity Banner (Deep Navy #00236f) */}
-      <div className="bg-[#00236f] text-white px-3 sm:px-6 py-2 border-b border-blue-950 flex flex-wrap items-center justify-between gap-3 text-xs">
+      {/* TIER 1: Prestigious Institutional Identity Banner (Cupertino Frosted Navy #00236f) */}
+      <div className="bg-[#00236f]/95 backdrop-blur-2xl text-white px-3 sm:px-6 py-2 border-b border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
         {/* Left: Crest + Bilingual Institution Typography */}
         <div className="flex items-center gap-2.5 shrink-0">
-          <div className="w-8 h-8 rounded-full bg-white/10 border border-amber-400/40 flex items-center justify-center text-amber-300 font-black text-[11px] shadow-inner">
+          <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md border border-white/20 ring-1 ring-white/10 flex items-center justify-center text-amber-300 font-black text-[11px] shadow-sm">
             BFGI
           </div>
           <button
@@ -213,10 +213,10 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="text-[10px] sm:text-[11px] font-semibold text-amber-300/95 tracking-wide leading-tight">
               ਬਾਬਾ ਫ਼ਰੀਦ ਗਰੁੱਪ ਆਫ਼ ਇੰਸਟੀਚਿਊਟਸ (ਬਠਿੰਡਾ, ਪੰਜਾਬ)
             </span>
-            <span className="font-black text-xs sm:text-sm tracking-tight text-white uppercase leading-tight mt-0.5">
+            <span className="font-extrabold text-xs sm:text-sm tracking-tight text-white uppercase leading-tight mt-0.5">
               BABA FARID GROUP OF INSTITUTIONS
             </span>
-            <span className="text-[9px] sm:text-[10px] font-medium text-slate-300 leading-tight hidden sm:inline">
+            <span className="text-[9px] sm:text-[10px] font-medium text-slate-300/80 leading-tight hidden sm:inline">
               Autonomous Campus ERP • PUP Patiala • MRSPTU • PU Affiliated
             </span>
           </button>
@@ -224,36 +224,36 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right: Operational Controls, Canonical Digit UID & Utilities */}
         <div className="flex items-center gap-2 shrink-0">
-          {/* Quick Search */}
+          {/* Quick Search - iOS Spotlight Pill */}
           <div className="hidden xl:flex items-center w-36 relative">
             <input
               type="text"
               value={searchQuery}
               onChange={e => onSearchChange(e.target.value)}
               placeholder="Search... ⌘K"
-              className="w-full h-6.5 pl-2 pr-6 bg-blue-950/70 hover:bg-blue-950 focus:bg-[#001744] text-[11px] font-medium text-white placeholder:text-blue-300/50 rounded border border-blue-400/30 focus:outline-none focus:ring-1 focus:ring-amber-400 transition-all"
+              className="w-full h-7 pl-3 pr-7 bg-white/10 backdrop-blur-md hover:bg-white/15 focus:bg-white/20 text-white placeholder:text-white/50 text-[11px] font-medium rounded-full border border-white/20 focus:outline-none focus:ring-1 focus:ring-amber-400/80 transition-all"
             />
-            <span className="absolute right-1.5 top-1.5 text-[8px] font-mono font-semibold text-blue-300/60">
+            <span className="absolute right-2 top-1.5 text-[8px] font-mono font-semibold text-white/50">
               ⌘K
             </span>
           </div>
 
-          {/* Pure Digit Canonical UID Copy Badge */}
+          {/* Pure Digit Canonical UID Dynamic Island Pill */}
           <button
             type="button"
             onClick={handleCopyUid}
             title="Click to copy canonical 10-digit UID"
-            className="flex items-center gap-1.5 h-6.5 px-2 bg-blue-950/80 hover:bg-blue-900 border border-blue-400/40 rounded font-mono text-[10px] text-white transition cursor-pointer"
+            className="flex items-center gap-1.5 h-7 px-3 bg-white/10 backdrop-blur-md hover:bg-white/15 border border-white/20 rounded-full font-mono text-[10px] text-white transition-all shadow-inner cursor-pointer"
           >
             <span className="text-amber-400 font-bold">UID</span>
             <span className="font-bold tracking-tight text-white">{displayUid}</span>
-            <span className="text-blue-300 text-[9px]">
+            <span className="text-white/60 text-[9px]">
               {copiedUid ? '✓' : 'Copy'}
             </span>
           </button>
 
           {/* Role Pill */}
-          <span className="hidden sm:inline-flex h-6.5 items-center px-2 rounded text-[9px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/40 uppercase tracking-wider">
+          <span className="hidden sm:inline-flex h-7 items-center px-2.5 rounded-full text-[9px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30 uppercase tracking-wider">
             {currentUser?.role === 'super_admin'
               ? 'Apex Provost'
               : currentUser?.role?.replace(/_/g, ' ') || 'Guest'}
@@ -264,9 +264,9 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onToggleTelephony}
-              className={`hidden md:inline-flex h-6.5 items-center px-2 rounded text-[10px] font-semibold transition border cursor-pointer ${
+              className={`hidden md:inline-flex h-7 items-center px-3 rounded-full text-[10px] font-semibold transition border backdrop-blur-md cursor-pointer ${
                 isTelephonyOpen
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50'
+                  ? 'bg-emerald-500/25 text-emerald-200 border-emerald-400/50'
                   : 'bg-white/10 text-slate-200 border-white/20 hover:bg-white/20'
               }`}
             >
@@ -279,7 +279,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onOpenCopilot}
-              className="h-6.5 px-2 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold rounded text-[10px] transition cursor-pointer"
+              className="h-7 px-3 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold rounded-full text-[10px] shadow-sm transition-all cursor-pointer"
             >
               AI Copilot
             </button>
@@ -290,7 +290,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onLogout}
-              className="h-6.5 px-1.5 text-[10px] font-semibold text-slate-300 hover:text-rose-300 transition cursor-pointer"
+              className="h-7 px-2 text-[10px] font-semibold text-slate-300 hover:text-rose-300 transition-colors cursor-pointer"
             >
               Sign Out
             </button>
@@ -300,7 +300,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-1 text-white hover:bg-blue-900 rounded cursor-pointer"
+            className="lg:hidden p-1.5 text-white hover:bg-white/10 rounded-full cursor-pointer"
             aria-label="Toggle Navigation Menu"
           >
             {mobileMenuOpen ? '✕' : '☰'}
@@ -308,10 +308,10 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* TIER 2: Dedicated MRSTU-Style Horizontal Navigation Strip (White Background, Vertical Dividers, Flush Dropdowns) */}
-      <div className="w-full bg-white border-b border-slate-300 shadow-2xs">
-        <div className="max-w-7xl mx-auto px-2 sm:px-6 flex items-center h-[38px]">
-          <nav className="hidden lg:flex items-stretch h-full border-l border-slate-200">
+      {/* TIER 2: Dedicated MRSTU Horizontal Navigation Ribbon - iPhoneish Pill Segmented Style */}
+      <div className="w-full bg-white/80 backdrop-blur-2xl border-b border-black/[0.06] shadow-[0_2px_12px_-4px_rgba(0,0,0,0.03)]">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 flex items-center h-[42px]">
+          <nav className="hidden lg:flex items-center gap-1">
             {menuSections.map(sec => {
               const isDrawerOpen = openDrawer === sec.id;
               const hasChildren = Boolean(sec.items && sec.items.length > 0);
@@ -332,21 +332,21 @@ export const Header: React.FC<HeaderProps> = ({
                         sec.action();
                       }
                     }}
-                    className={`h-full px-3.5 text-[11px] font-bold tracking-wider uppercase flex items-center gap-1.5 transition-colors cursor-pointer border-r border-slate-200 select-none ${
+                    className={`px-3 py-1.5 rounded-full text-[11.5px] font-semibold tracking-tight transition-all duration-150 flex items-center gap-1 cursor-pointer select-none ${
                       sec.isActive || isDrawerOpen
-                        ? 'bg-[#00236f] text-white'
-                        : 'text-slate-800 hover:bg-[#00236f] hover:text-white'
+                        ? 'bg-[#00236f] text-white shadow-sm ring-1 ring-black/5'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/90'
                     }`}
                   >
                     <span>{sec.label}</span>
                     {hasChildren && (
-                      <span className="text-[8px] opacity-70 ml-0.5">
-                        {isDrawerOpen ? '▴' : '▾'}
+                      <span className={`text-[8px] transition-transform duration-150 ${isDrawerOpen ? 'rotate-180 opacity-90' : 'opacity-60'}`}>
+                        ▾
                       </span>
                     )}
                   </button>
 
-                  {/* MRSTU-Style Vertical Dropdown Section (Opens Vertically Under Hovered/Clicked Item) */}
+                  {/* MRSTU-Style Vertical Popover Card (Opens Vertically Under Hovered/Clicked Item - iPhone / macOS Style) */}
                   {hasChildren && isDrawerOpen && (
                     <div
                       onMouseEnter={() => {
@@ -356,12 +356,12 @@ export const Header: React.FC<HeaderProps> = ({
                         }
                       }}
                       onMouseLeave={handleMouseLeave}
-                      className="absolute top-full left-0 min-w-[260px] bg-[#00236f] text-white border-t-2 border-[#ea580c] shadow-2xl z-50 py-1 rounded-b-md animate-fadeIn"
+                      className="absolute top-full left-0 mt-1 min-w-[260px] bg-white/95 backdrop-blur-3xl border border-slate-200/80 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.18),0_0_0_1px_rgba(0,0,0,0.04)] rounded-2xl p-1.5 z-50 animate-fadeIn"
                     >
-                      <div className="px-3.5 py-1.5 text-[9px] font-bold text-amber-300 border-b border-blue-900 uppercase tracking-wider">
+                      <div className="px-3 pt-2 pb-1 text-[9px] font-bold text-slate-400 tracking-wider uppercase border-b border-slate-100/80">
                         {sec.label} Directory
                       </div>
-                      <div className="py-0.5">
+                      <div className="py-1 space-y-0.5">
                         {sec.items!.map((item: any) => (
                           <button
                             key={item.id || item.label}
@@ -374,13 +374,14 @@ export const Header: React.FC<HeaderProps> = ({
                               }
                               setOpenDrawer(null);
                             }}
-                            className={`w-full px-3.5 py-2 text-[11px] font-medium flex items-center justify-between cursor-pointer transition text-left border-b border-blue-950/60 last:border-b-0 ${
+                            className={`w-full px-3 py-2 rounded-xl text-[11px] font-medium transition-all text-left flex items-center justify-between cursor-pointer ${
                               activeScreen === item.id
-                                ? 'bg-[#001744] text-amber-300 font-bold pl-4'
-                                : 'text-slate-200 hover:bg-[#001744] hover:text-amber-300 hover:pl-4'
+                                ? 'bg-blue-50/90 text-[#00236f] font-bold'
+                                : 'text-slate-700 hover:bg-slate-100/80 hover:text-[#00236f]'
                             }`}
                           >
                             <span>{item.label}</span>
+                            <span className="text-[10px] text-slate-400 opacity-60">›</span>
                           </button>
                         ))}
                       </div>
@@ -394,11 +395,11 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* SUB-TIER: Razor-Sharp Institutional Notice Ticker (Height: 20px) - Zero Hardcoded MRSPTU */}
-      <div className="bg-[#00236f] text-slate-200 h-[20px] flex items-center px-3 sm:px-6 text-[10px] border-b border-black/10">
+      <div className="bg-[#001744]/95 backdrop-blur-md text-slate-200 h-[22px] flex items-center px-3 sm:px-6 text-[10px] border-b border-white/5">
         <div className="max-w-7xl w-full mx-auto flex items-center justify-between gap-3 overflow-hidden">
           {/* Alert Tag */}
-          <div className="flex items-center gap-1 shrink-0 z-10 bg-[#00236f] pr-2">
-            <span className="bg-[#ea580c] text-white font-extrabold text-[8px] uppercase tracking-wider px-1.5 py-0.2 rounded">
+          <div className="flex items-center gap-1 shrink-0 z-10 pr-2">
+            <span className="bg-[#ea580c] text-white font-extrabold text-[8px] uppercase tracking-wider px-2 py-0.5 rounded-full shadow-xs">
               CAMPUS GAZETTE
             </span>
           </div>

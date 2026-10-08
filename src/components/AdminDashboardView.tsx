@@ -109,21 +109,21 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             Institutional Operations Console
           </h2>
           <span className="text-[10px] text-slate-300 font-semibold">•</span>
-          <span className="bg-orange-50 text-[#ea580c] border border-orange-200 font-mono text-[9px] font-bold px-2 py-0.5 rounded-full">
+          <span className="bg-orange-50 text-[#ea580c] border border-orange-200/80 font-mono text-[9px] font-bold px-2.5 py-0.5 rounded-full shadow-2xs">
             UID: 4001-01-03-01
           </span>
-          <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-semibold px-2 py-0.5 rounded-full hidden sm:inline-flex">
+          <span className="bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-[9px] font-semibold px-2.5 py-0.5 rounded-full hidden sm:inline-flex shadow-2xs">
             Relational DB Engine Live
           </span>
         </div>
 
-        {/* Quick Filter Selectors */}
+        {/* Quick Filter Selectors - Cupertino Pill Style */}
         <div className="flex items-center gap-1.5">
           <select
             id="admin-filter-course"
             value={selectedCourse}
             onChange={e => setSelectedCourse(e.target.value)}
-            className="h-7 px-2.5 bg-white border border-slate-200 text-slate-700 rounded-lg font-medium text-[11px] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#00236f] shadow-2xs"
+            className="h-7 px-3 bg-white/90 backdrop-blur-md border border-slate-200/80 text-slate-700 rounded-full font-semibold text-[11px] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#00236f] shadow-2xs hover:border-slate-300 transition-all"
           >
             <option value="All Courses">All Academic Courses</option>
             <option value="B.Tech CS">B.Tech CSE</option>
@@ -136,7 +136,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             id="admin-filter-semester"
             value={selectedSemester}
             onChange={e => setSelectedSemester(e.target.value)}
-            className="h-7 px-2.5 bg-white border border-slate-200 text-slate-700 rounded-lg font-medium text-[11px] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#00236f] shadow-2xs"
+            className="h-7 px-3 bg-white/90 backdrop-blur-md border border-slate-200/80 text-slate-700 rounded-full font-semibold text-[11px] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#00236f] shadow-2xs hover:border-slate-300 transition-all"
           >
             <option value="Current Semester">Current Term (Sem 4)</option>
             <option value="Semester 1">Semester 1</option>
@@ -147,15 +147,15 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         </div>
       </div>
 
-      {/* Sleek Operations Quick-Access Ribbon (Zero Bulky Boxes, Minimal Vertical Space ~32px) */}
-      <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 text-xs">
+      {/* Sleek Operations Quick-Access Ribbon (Cupertino Segmented Pill Ribbon) */}
+      <div className="flex items-center gap-1.5 overflow-x-auto py-1 px-1 bg-slate-100/60 backdrop-blur-md rounded-2xl border border-slate-200/50 shadow-inner text-xs">
         <button
           type="button"
           onClick={() => onNavigate('staff-management')}
-          className="h-7 px-3 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-md text-slate-800 font-semibold text-[11px] flex items-center gap-1.5 transition-all shadow-2xs hover:border-blue-400 cursor-pointer shrink-0"
+          className="h-7.5 px-3 bg-white hover:bg-slate-50 border border-slate-200/60 rounded-xl text-slate-800 font-semibold text-[11px] flex items-center gap-1.5 transition-all shadow-2xs hover:shadow-xs hover:border-blue-400 cursor-pointer shrink-0"
         >
           <span className="text-[#00236f] font-bold">Staff HRMS</span>
-          <span className="bg-blue-50 text-[#00236f] text-[9px] font-bold px-1.5 py-0.2 rounded font-mono">
+          <span className="bg-blue-50 text-[#00236f] text-[9px] font-bold px-2 py-0.5 rounded-full font-mono">
             {staffCount}
           </span>
         </button>
@@ -163,10 +163,10 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         <button
           type="button"
           onClick={() => onNavigate('enquiries')}
-          className="h-7 px-3 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-md text-slate-800 font-semibold text-[11px] flex items-center gap-1.5 transition-all shadow-2xs hover:border-orange-400 cursor-pointer shrink-0"
+          className="h-7.5 px-3 bg-white hover:bg-slate-50 border border-slate-200/60 rounded-xl text-slate-800 font-semibold text-[11px] flex items-center gap-1.5 transition-all shadow-2xs hover:shadow-xs hover:border-orange-400 cursor-pointer shrink-0"
         >
           <span className="text-[#ea580c] font-bold">Leads Radar</span>
-          <span className="bg-orange-50 text-[#ea580c] text-[9px] font-bold px-1.5 py-0.2 rounded font-mono">
+          <span className="bg-orange-50 text-[#ea580c] text-[9px] font-bold px-2 py-0.5 rounded-full font-mono">
             {enquiryCount}
           </span>
         </button>
@@ -174,7 +174,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         <button
           type="button"
           onClick={() => onNavigate('bulk-import')}
-          className="h-7 px-3 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-md text-slate-800 font-semibold text-[11px] flex items-center gap-1.5 transition-all shadow-2xs hover:border-blue-400 cursor-pointer shrink-0"
+          className="h-7.5 px-3 bg-white hover:bg-slate-50 border border-slate-200/60 rounded-xl text-slate-800 font-semibold text-[11px] flex items-center gap-1.5 transition-all shadow-2xs hover:shadow-xs hover:border-blue-400 cursor-pointer shrink-0"
         >
           <span className="text-slate-800 font-bold">Bulk CSV Mapper</span>
           <span className="text-[9px] text-slate-400 font-mono">3-Tier</span>
@@ -183,10 +183,10 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         <button
           type="button"
           onClick={() => onNavigate('partner-portal')}
-          className="h-7 px-3 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-md text-slate-800 font-semibold text-[11px] flex items-center gap-1.5 transition-all shadow-2xs hover:border-orange-400 cursor-pointer shrink-0"
+          className="h-7.5 px-3 bg-white hover:bg-slate-50 border border-slate-200/60 rounded-xl text-slate-800 font-semibold text-[11px] flex items-center gap-1.5 transition-all shadow-2xs hover:shadow-xs hover:border-orange-400 cursor-pointer shrink-0"
         >
           <span className="text-[#ea580c] font-bold">Hiring Partners</span>
-          <span className="bg-orange-50 text-[#ea580c] text-[9px] font-bold px-1.5 py-0.2 rounded font-mono">
+          <span className="bg-orange-50 text-[#ea580c] text-[9px] font-bold px-2 py-0.5 rounded-full font-mono">
             {partnerCount}
           </span>
         </button>
@@ -194,7 +194,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         <button
           type="button"
           onClick={() => onNavigate('manage-students')}
-          className="h-7 px-3 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-md text-slate-800 font-semibold text-[11px] flex items-center gap-1.5 transition-all shadow-2xs hover:border-blue-400 cursor-pointer shrink-0"
+          className="h-7.5 px-3 bg-white hover:bg-slate-50 border border-slate-200/60 rounded-xl text-slate-800 font-semibold text-[11px] flex items-center gap-1.5 transition-all shadow-2xs hover:shadow-xs hover:border-blue-400 cursor-pointer shrink-0"
         >
           <span className="text-slate-800 font-bold">Student Registry</span>
           <span className="text-[9px] text-slate-400 font-mono">KYC</span>
@@ -203,24 +203,24 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         <button
           type="button"
           onClick={() => onNavigate('fee-ledger')}
-          className="h-7 px-3 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-md text-slate-800 font-semibold text-[11px] flex items-center gap-1.5 transition-all shadow-2xs hover:border-blue-400 cursor-pointer shrink-0"
+          className="h-7.5 px-3 bg-white hover:bg-slate-50 border border-slate-200/60 rounded-xl text-slate-800 font-semibold text-[11px] flex items-center gap-1.5 transition-all shadow-2xs hover:shadow-xs hover:border-blue-400 cursor-pointer shrink-0"
         >
           <span className="text-[#00236f] font-bold">Fee Ledger</span>
           <span className="text-[9px] text-emerald-600 font-mono font-bold">Reconciled</span>
         </button>
       </div>
 
-      {/* Unified High-Density Operations & Financial Metrics Bar (Zero Nested Boxes, Single Cohesive Container) */}
-      <div className="bg-white border border-slate-200/90 rounded-lg p-2.5 shadow-2xs">
+      {/* Unified High-Density Operations & Financial Metrics Bar (Apple Health / iOS Widget Style) */}
+      <div className="bg-white/90 backdrop-blur-2xl border border-slate-200/80 rounded-2xl p-3.5 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)]">
         <div className="grid grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100 gap-y-2">
           {/* Metric 1: Total Fee Collection */}
           <div className="px-2.5 py-0.5">
             <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
               <span>Total Fee Collection</span>
-              <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded text-[9px] font-bold">REALIZED</span>
+              <span className="text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2 py-0.2 rounded-full text-[9px] font-bold">REALIZED</span>
             </div>
-            <div className="mt-1 flex items-baseline gap-2">
-              <span className="text-lg font-black text-[#00236f] tracking-tight">{kpiData.totalCollectedFormatted}</span>
+            <div className="mt-1.5 flex items-baseline gap-2">
+              <span className="text-2xl font-black text-[#00236f] tracking-tight">{kpiData.totalCollectedFormatted}</span>
               <span className="text-[10px] font-semibold text-emerald-600">{kpiData.totalCollectedGrowth}</span>
             </div>
           </div>
@@ -229,10 +229,10 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           <div className="px-2.5 py-0.5 sm:pl-3">
             <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
               <span>Pending Dues Alert</span>
-              <span className="text-rose-700 bg-rose-50 px-1.5 py-0.2 rounded text-[9px] font-bold">OVERDUE</span>
+              <span className="text-rose-700 bg-rose-50 border border-rose-200/60 px-2 py-0.2 rounded-full text-[9px] font-bold">OVERDUE</span>
             </div>
-            <div className="mt-1 flex items-baseline gap-2">
-              <span className="text-lg font-black text-rose-600 tracking-tight">{kpiData.pendingDuesFormatted}</span>
+            <div className="mt-1.5 flex items-baseline gap-2">
+              <span className="text-2xl font-black text-rose-600 tracking-tight">{kpiData.pendingDuesFormatted}</span>
               <span className="text-[10px] font-semibold text-rose-600">{kpiData.pendingDuesAlert}</span>
             </div>
           </div>
@@ -241,10 +241,10 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           <div className="px-2.5 py-0.5 sm:pl-3">
             <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
               <span>Pending Approvals</span>
-              <span className="text-[#ea580c] bg-orange-50 px-1.5 py-0.2 rounded text-[9px] font-bold">ACTION</span>
+              <span className="text-[#ea580c] bg-orange-50 border border-orange-200/60 px-2 py-0.2 rounded-full text-[9px] font-bold">ACTION</span>
             </div>
-            <div className="mt-1 flex items-baseline gap-2">
-              <span className="text-lg font-black text-[#ea580c] tracking-tight">{kpiData.pendingApprovals}</span>
+            <div className="mt-1.5 flex items-baseline gap-2">
+              <span className="text-2xl font-black text-[#ea580c] tracking-tight">{kpiData.pendingApprovals}</span>
               <span className="text-[10px] text-slate-500">{kpiData.pendingApprovalsLabel}</span>
             </div>
           </div>
@@ -253,26 +253,26 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           <div className="px-2.5 py-0.5 sm:pl-3">
             <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
               <span>Enrolled Students</span>
-              <span className="text-[#00236f] bg-blue-50 px-1.5 py-0.2 rounded text-[9px] font-bold">ACTIVE</span>
+              <span className="text-[#00236f] bg-blue-50 border border-blue-200/60 px-2 py-0.2 rounded-full text-[9px] font-bold">ACTIVE</span>
             </div>
-            <div className="mt-1 flex items-baseline gap-2">
-              <span className="text-lg font-black text-[#00236f] tracking-tight">{kpiData.totalStudents}</span>
+            <div className="mt-1.5 flex items-baseline gap-2">
+              <span className="text-2xl font-black text-[#00236f] tracking-tight">{kpiData.totalStudents}</span>
               <span className="text-[10px] text-slate-500">{kpiData.totalStudentsLabel}</span>
             </div>
           </div>
         </div>
 
-        {/* Integrated Inline Department Filter Strip (Zero Extra Card Box) */}
-        <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-2 overflow-x-auto text-[10px]">
+        {/* Integrated Inline Department Filter Strip (iOS Tag Pills) */}
+        <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2 overflow-x-auto text-[10px]">
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className="font-bold text-slate-400 uppercase tracking-wider text-[9px]">Department Clusters:</span>
-            <span className="px-2 py-0.2 bg-blue-50 text-[#00236f] rounded font-medium text-[9px]">CSE · AI & Software</span>
-            <span className="px-2 py-0.2 bg-emerald-50 text-emerald-800 rounded font-medium text-[9px]">AGRI · Agronomy</span>
-            <span className="px-2 py-0.2 bg-amber-50 text-amber-900 rounded font-medium text-[9px]">CE · Civil</span>
-            <span className="px-2 py-0.2 bg-purple-50 text-purple-900 rounded font-medium text-[9px]">ME · Robotics</span>
-            <span className="px-2 py-0.2 bg-cyan-50 text-cyan-900 rounded font-medium text-[9px]">MGMT · Finance</span>
-            <span className="px-2 py-0.2 bg-rose-50 text-rose-900 rounded font-medium text-[9px]">PHARM · Health</span>
-            <span className="px-2 py-0.2 bg-slate-100 text-slate-700 rounded font-medium text-[9px]">APP_SCI · Physics</span>
+            <span className="font-bold text-slate-400 uppercase tracking-wider text-[9px]">Clusters:</span>
+            <span className="px-2.5 py-0.5 bg-blue-50/80 border border-blue-200/60 text-[#00236f] rounded-full font-semibold text-[9.5px]">CSE · AI & Software</span>
+            <span className="px-2.5 py-0.5 bg-emerald-50/80 border border-emerald-200/60 text-emerald-800 rounded-full font-semibold text-[9.5px]">AGRI · Agronomy</span>
+            <span className="px-2.5 py-0.5 bg-amber-50/80 border border-amber-200/60 text-amber-900 rounded-full font-semibold text-[9.5px]">CE · Civil</span>
+            <span className="px-2.5 py-0.5 bg-purple-50/80 border border-purple-200/60 text-purple-900 rounded-full font-semibold text-[9.5px]">ME · Robotics</span>
+            <span className="px-2.5 py-0.5 bg-cyan-50/80 border border-cyan-200/60 text-cyan-900 rounded-full font-semibold text-[9.5px]">MGMT · Finance</span>
+            <span className="px-2.5 py-0.5 bg-rose-50/80 border border-rose-200/60 text-rose-900 rounded-full font-semibold text-[9.5px]">PHARM · Health</span>
+            <span className="px-2.5 py-0.5 bg-slate-100 border border-slate-200/80 text-slate-700 rounded-full font-semibold text-[9.5px]">APP_SCI · Physics</span>
           </div>
           <span className="text-emerald-700 text-[9px] font-mono font-semibold hidden md:inline">
             7 Clusters Active • Relational Schema Sync
@@ -285,7 +285,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         {/* Fees Collected Trend Bar Chart (7 cols) */}
         <div
           id="fees-trend-chart-card"
-          className="lg:col-span-7 bg-white apple-glass-card rounded-xl p-3.5 border border-slate-200/80 shadow-2xs flex flex-col justify-between"
+          className="lg:col-span-7 bg-white/95 backdrop-blur-xl rounded-2xl p-3.5 border border-slate-200/80 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] flex flex-col justify-between"
         >
           <div>
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
@@ -295,7 +295,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   Monthly institutional collections & revenue realization
                 </p>
               </div>
-              <span className="px-2 py-0.5 bg-slate-100 border border-slate-200 rounded text-[9px] font-mono text-slate-700">
+              <span className="px-2.5 py-0.5 bg-slate-100 border border-slate-200/70 rounded-full text-[9px] font-mono font-semibold text-slate-700">
                 JAN - JUN 2026
               </span>
             </div>
@@ -304,12 +304,12 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             <div className="mt-3 h-44 flex items-end justify-between gap-3 px-2 pt-4 pb-2 border-b border-slate-100">
               {trendData.map((item, idx) => (
                 <div key={idx} className="flex-1 flex flex-col items-center gap-1 group h-full justify-end">
-                  <span className="text-[9px] font-mono font-bold text-[#00236f] opacity-0 group-hover:opacity-100 transition whitespace-nowrap bg-blue-100 px-1 rounded">
+                  <span className="text-[9px] font-mono font-bold text-[#00236f] opacity-0 group-hover:opacity-100 transition whitespace-nowrap bg-blue-100 px-1 rounded-md">
                     {item.amount}
                   </span>
                   <div
                     style={{ height: `${item.percentage}%` }}
-                    className={`w-full max-w-[42px] rounded-t transition-all ${
+                    className={`w-full max-w-[42px] rounded-t-lg transition-all ${
                       item.isHighest ? 'bg-[#ea580c]' : 'bg-[#00236f] hover:bg-[#00236f]/80'
                     }`}
                   />
@@ -333,14 +333,14 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         </div>
 
         {/* Defaulter Fee Alert List (5 cols) */}
-        <div className="lg:col-span-5 bg-white apple-glass-card rounded-xl p-3.5 border border-slate-200/80 shadow-2xs flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-white/95 backdrop-blur-xl rounded-2xl p-3.5 border border-slate-200/80 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <div>
                 <h3 className="text-xs font-bold text-rose-800 uppercase">Critical Defaulter Alerts</h3>
                 <p className="text-[10px] text-slate-500">Students with outstanding semester fees</p>
               </div>
-              <span className="px-1.5 py-0.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-full text-[9px] font-bold">
+              <span className="px-2 py-0.5 bg-rose-50 text-rose-700 border border-rose-200/80 rounded-full text-[9px] font-bold">
                 {defaulters.length} Overdue
               </span>
             </div>
@@ -354,7 +354,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   </div>
                   <div className="text-right">
                     <span className="font-mono font-bold text-rose-700 block">{d.dueAmountFormatted}</span>
-                    <span className="text-[8px] px-1.5 py-0.2 rounded-full font-bold bg-rose-50 text-rose-800 border border-rose-200">
+                    <span className="text-[8px] px-2 py-0.2 rounded-full font-bold bg-rose-50 text-rose-800 border border-rose-200/80">
                       {d.status}
                     </span>
                   </div>
@@ -366,13 +366,13 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           <div className="mt-3 pt-2 border-t border-slate-100 flex justify-end gap-2">
             <button
               onClick={onOpenEmailReminders}
-              className="px-2.5 py-1 bg-white border border-[#00236f] text-[#00236f] hover:bg-blue-50 rounded-lg font-bold text-[10px] cursor-pointer"
+              className="px-3 py-1 bg-white border border-[#00236f]/60 text-[#00236f] hover:bg-blue-50 rounded-full font-bold text-[10px] cursor-pointer transition shadow-2xs"
             >
               Dispatch Reminders
             </button>
             <button
               onClick={() => setShowAINotice(true)}
-              className="px-3 py-1 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-lg font-bold text-[10px] cursor-pointer"
+              className="px-3.5 py-1 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-full font-bold text-[10px] cursor-pointer transition shadow-2xs"
             >
               AI Fee Notice Draft &rarr;
             </button>
