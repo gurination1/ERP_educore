@@ -147,182 +147,136 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         </div>
       </div>
 
-      {/* Enterprise Architecture Quick Jump Bento Grid (High Density 6-Col) */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+      {/* Sleek Operations Quick-Access Ribbon (Zero Bulky Boxes, Minimal Vertical Space ~32px) */}
+      <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 text-xs">
         <button
           type="button"
           onClick={() => onNavigate('staff-management')}
-          className="p-2.5 bg-white apple-glass-card hover:bg-slate-50 border border-slate-200/80 hover:border-blue-300 rounded-xl text-left transition-all shadow-2xs group cursor-pointer"
+          className="h-7 px-3 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-md text-slate-800 font-semibold text-[11px] flex items-center gap-1.5 transition-all shadow-2xs hover:border-blue-400 cursor-pointer shrink-0"
         >
-          <span className="text-[9px] font-bold text-[#ea580c] block uppercase tracking-wider">Staff Master</span>
-          <strong className="text-xs text-[#00236f] block mt-0.5 font-bold">Staff HRMS</strong>
-          <span className="text-[10px] text-slate-500 block">Multi-Table Dossier</span>
+          <span className="text-[#00236f] font-bold">Staff HRMS</span>
+          <span className="bg-blue-50 text-[#00236f] text-[9px] font-bold px-1.5 py-0.2 rounded font-mono">
+            {staffCount}
+          </span>
         </button>
 
         <button
           type="button"
           onClick={() => onNavigate('enquiries')}
-          className="p-2.5 bg-white apple-glass-card hover:bg-slate-50 border border-slate-200/80 hover:border-orange-300 rounded-xl text-left transition-all shadow-2xs group cursor-pointer"
+          className="h-7 px-3 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-md text-slate-800 font-semibold text-[11px] flex items-center gap-1.5 transition-all shadow-2xs hover:border-orange-400 cursor-pointer shrink-0"
         >
-          <span className="text-[9px] font-bold text-[#ea580c] block uppercase tracking-wider">Admissions CRM</span>
-          <strong className="text-xs text-[#00236f] block mt-0.5 font-bold">Leads Radar</strong>
-          <span className="text-[10px] text-slate-500 block">{enquiryCount} Active Leads</span>
+          <span className="text-[#ea580c] font-bold">Leads Radar</span>
+          <span className="bg-orange-50 text-[#ea580c] text-[9px] font-bold px-1.5 py-0.2 rounded font-mono">
+            {enquiryCount}
+          </span>
         </button>
 
         <button
           type="button"
           onClick={() => onNavigate('bulk-import')}
-          className="p-2.5 bg-white apple-glass-card hover:bg-slate-50 border border-slate-200/80 hover:border-blue-300 rounded-xl text-left transition-all shadow-2xs group cursor-pointer"
+          className="h-7 px-3 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-md text-slate-800 font-semibold text-[11px] flex items-center gap-1.5 transition-all shadow-2xs hover:border-blue-400 cursor-pointer shrink-0"
         >
-          <span className="text-[9px] font-bold text-[#00236f] block uppercase tracking-wider">CSV Engine</span>
-          <strong className="text-xs text-[#00236f] block mt-0.5 font-bold">Bulk Mapper</strong>
-          <span className="text-[10px] text-slate-500 block">3-Tier Verification</span>
+          <span className="text-slate-800 font-bold">Bulk CSV Mapper</span>
+          <span className="text-[9px] text-slate-400 font-mono">3-Tier</span>
         </button>
 
         <button
           type="button"
           onClick={() => onNavigate('partner-portal')}
-          className="p-2.5 bg-white apple-glass-card hover:bg-slate-50 border border-slate-200/80 hover:border-orange-300 rounded-xl text-left transition-all shadow-2xs group cursor-pointer"
+          className="h-7 px-3 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-md text-slate-800 font-semibold text-[11px] flex items-center gap-1.5 transition-all shadow-2xs hover:border-orange-400 cursor-pointer shrink-0"
         >
-          <span className="text-[9px] font-bold text-[#ea580c] block uppercase tracking-wider">Corporate</span>
-          <strong className="text-xs text-[#00236f] block mt-0.5 font-bold">Hiring Partners</strong>
-          <span className="text-[10px] text-slate-500 block">{partnerCount} Firms Connected</span>
+          <span className="text-[#ea580c] font-bold">Hiring Partners</span>
+          <span className="bg-orange-50 text-[#ea580c] text-[9px] font-bold px-1.5 py-0.2 rounded font-mono">
+            {partnerCount}
+          </span>
         </button>
 
         <button
           type="button"
           onClick={() => onNavigate('manage-students')}
-          className="p-2.5 bg-white apple-glass-card hover:bg-slate-50 border border-slate-200/80 hover:border-blue-300 rounded-xl text-left transition-all shadow-2xs group cursor-pointer"
+          className="h-7 px-3 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-md text-slate-800 font-semibold text-[11px] flex items-center gap-1.5 transition-all shadow-2xs hover:border-blue-400 cursor-pointer shrink-0"
         >
-          <span className="text-[9px] font-bold text-[#00236f] block uppercase tracking-wider">Students</span>
-          <strong className="text-xs text-[#00236f] block mt-0.5 font-bold">Student Registry</strong>
-          <span className="text-[10px] text-slate-500 block">Enrollment & Domicile</span>
+          <span className="text-slate-800 font-bold">Student Registry</span>
+          <span className="text-[9px] text-slate-400 font-mono">KYC</span>
         </button>
 
         <button
           type="button"
           onClick={() => onNavigate('fee-ledger')}
-          className="p-2.5 bg-white apple-glass-card hover:bg-slate-50 border border-slate-200/80 hover:border-orange-300 rounded-xl text-left transition-all shadow-2xs group cursor-pointer"
+          className="h-7 px-3 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-md text-slate-800 font-semibold text-[11px] flex items-center gap-1.5 transition-all shadow-2xs hover:border-blue-400 cursor-pointer shrink-0"
         >
-          <span className="text-[9px] font-bold text-[#ea580c] block uppercase tracking-wider">Finance</span>
-          <strong className="text-xs text-[#00236f] block mt-0.5 font-bold">Fee Ledger</strong>
-          <span className="text-[10px] text-slate-500 block">Billing & Receipts</span>
+          <span className="text-[#00236f] font-bold">Fee Ledger</span>
+          <span className="text-[9px] text-emerald-600 font-mono font-bold">Reconciled</span>
         </button>
       </div>
 
-      {/* Operational Master & Tagging Status Strip */}
-      <div className="bg-white/95 apple-glass-card rounded-xl p-2.5 border border-slate-200/80 shadow-2xs space-y-1.5">
-        <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-[#00236f] tracking-tight text-[11px]">Department Tagging Matrix</span>
-            <span className="text-[10px] text-slate-400">7 Active</span>
+      {/* Unified High-Density Operations & Financial Metrics Bar (Zero Nested Boxes, Single Cohesive Container) */}
+      <div className="bg-white border border-slate-200/90 rounded-lg p-2.5 shadow-2xs">
+        <div className="grid grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100 gap-y-2">
+          {/* Metric 1: Total Fee Collection */}
+          <div className="px-2.5 py-0.5">
+            <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              <span>Total Fee Collection</span>
+              <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded text-[9px] font-bold">REALIZED</span>
+            </div>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span className="text-lg font-black text-[#00236f] tracking-tight">{kpiData.totalCollectedFormatted}</span>
+              <span className="text-[10px] font-semibold text-emerald-600">{kpiData.totalCollectedGrowth}</span>
+            </div>
           </div>
-          <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.2 rounded-full font-mono text-[9px] font-bold">
-            Relational DB Engine Active
-          </span>
-        </div>
 
-        <div className="flex flex-wrap gap-1.5">
-          <span className="px-2.5 py-0.5 bg-blue-50/80 border border-blue-200/80 text-[#00236f] rounded-full text-[10px] font-semibold">
-            CSE · AI & Software
-          </span>
-          <span className="px-2.5 py-0.5 bg-emerald-50/80 border border-emerald-200/80 text-emerald-800 rounded-full text-[10px] font-semibold">
-            AGRI · Agronomy & Soil
-          </span>
-          <span className="px-2.5 py-0.5 bg-amber-50/80 border border-amber-200/80 text-amber-900 rounded-full text-[10px] font-semibold">
-            CE · Civil & Surveying
-          </span>
-          <span className="px-2.5 py-0.5 bg-purple-50/80 border border-purple-200/80 text-purple-900 rounded-full text-[10px] font-semibold">
-            ME · Mechanical & Robotics
-          </span>
-          <span className="px-2.5 py-0.5 bg-cyan-50/80 border border-cyan-200/80 text-cyan-900 rounded-full text-[10px] font-semibold">
-            MGMT · Business & Finance
-          </span>
-          <span className="px-2.5 py-0.5 bg-rose-50/80 border border-rose-200/80 text-rose-900 rounded-full text-[10px] font-semibold">
-            PHARM · Pharmacy & Health
-          </span>
-          <span className="px-2.5 py-0.5 bg-slate-100 border border-slate-200 text-slate-800 rounded-full text-[10px] font-semibold">
-            APP_SCI · Physics & Math
-          </span>
-        </div>
-      </div>
-
-      {/* 4 Financial & Operational KPI Cards (Sleek Compact Strip) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-        {/* KPI 1: Total Collected */}
-        <div className="bg-white apple-glass-card rounded-xl p-3 border border-slate-200/80 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-shadow">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-              Total Fee Collection
-            </span>
-            <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.2 rounded-full text-[9px] font-semibold">
-              Collected
-            </span>
+          {/* Metric 2: Pending Dues Alert */}
+          <div className="px-2.5 py-0.5 sm:pl-3">
+            <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              <span>Pending Dues Alert</span>
+              <span className="text-rose-700 bg-rose-50 px-1.5 py-0.2 rounded text-[9px] font-bold">OVERDUE</span>
+            </div>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span className="text-lg font-black text-rose-600 tracking-tight">{kpiData.pendingDuesFormatted}</span>
+              <span className="text-[10px] font-semibold text-rose-600">{kpiData.pendingDuesAlert}</span>
+            </div>
           </div>
-          <div className="mt-2">
-            <h3 className="text-xl font-extrabold text-[#00236f] tracking-tight">
-              {kpiData.totalCollectedFormatted}
-            </h3>
-            <p className="text-[10px] font-semibold text-emerald-600 mt-0.5">
-              {kpiData.totalCollectedGrowth}
-            </p>
+
+          {/* Metric 3: Pending Approvals */}
+          <div className="px-2.5 py-0.5 sm:pl-3">
+            <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              <span>Pending Approvals</span>
+              <span className="text-[#ea580c] bg-orange-50 px-1.5 py-0.2 rounded text-[9px] font-bold">ACTION</span>
+            </div>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span className="text-lg font-black text-[#ea580c] tracking-tight">{kpiData.pendingApprovals}</span>
+              <span className="text-[10px] text-slate-500">{kpiData.pendingApprovalsLabel}</span>
+            </div>
+          </div>
+
+          {/* Metric 4: Enrolled Students */}
+          <div className="px-2.5 py-0.5 sm:pl-3">
+            <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              <span>Enrolled Students</span>
+              <span className="text-[#00236f] bg-blue-50 px-1.5 py-0.2 rounded text-[9px] font-bold">ACTIVE</span>
+            </div>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span className="text-lg font-black text-[#00236f] tracking-tight">{kpiData.totalStudents}</span>
+              <span className="text-[10px] text-slate-500">{kpiData.totalStudentsLabel}</span>
+            </div>
           </div>
         </div>
 
-        {/* KPI 2: Pending Dues */}
-        <div className="bg-white apple-glass-card rounded-xl p-3 border border-rose-200/80 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-shadow">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-              Pending Dues Alert
-            </span>
-            <span className="bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.2 rounded-full text-[9px] font-semibold">
-              Outstanding
-            </span>
+        {/* Integrated Inline Department Filter Strip (Zero Extra Card Box) */}
+        <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-2 overflow-x-auto text-[10px]">
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="font-bold text-slate-400 uppercase tracking-wider text-[9px]">Department Clusters:</span>
+            <span className="px-2 py-0.2 bg-blue-50 text-[#00236f] rounded font-medium text-[9px]">CSE · AI & Software</span>
+            <span className="px-2 py-0.2 bg-emerald-50 text-emerald-800 rounded font-medium text-[9px]">AGRI · Agronomy</span>
+            <span className="px-2 py-0.2 bg-amber-50 text-amber-900 rounded font-medium text-[9px]">CE · Civil</span>
+            <span className="px-2 py-0.2 bg-purple-50 text-purple-900 rounded font-medium text-[9px]">ME · Robotics</span>
+            <span className="px-2 py-0.2 bg-cyan-50 text-cyan-900 rounded font-medium text-[9px]">MGMT · Finance</span>
+            <span className="px-2 py-0.2 bg-rose-50 text-rose-900 rounded font-medium text-[9px]">PHARM · Health</span>
+            <span className="px-2 py-0.2 bg-slate-100 text-slate-700 rounded font-medium text-[9px]">APP_SCI · Physics</span>
           </div>
-          <div className="mt-2">
-            <h3 className="text-xl font-extrabold text-rose-600 tracking-tight">
-              {kpiData.pendingDuesFormatted}
-            </h3>
-            <p className="text-[10px] font-semibold text-rose-600 mt-0.5">
-              {kpiData.pendingDuesAlert}
-            </p>
-          </div>
-        </div>
-
-        {/* KPI 3: Pending Approvals */}
-        <div className="bg-white apple-glass-card rounded-xl p-3 border border-orange-200/80 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-shadow">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-              Pending Approvals
-            </span>
-            <span className="bg-orange-50 text-[#ea580c] border border-orange-200 px-2 py-0.2 rounded-full text-[9px] font-semibold">
-              Action Required
-            </span>
-          </div>
-          <div className="mt-2">
-            <h3 className="text-xl font-extrabold text-[#ea580c] tracking-tight">
-              {kpiData.pendingApprovals}
-            </h3>
-            <p className="text-[10px] text-slate-500 mt-0.5">{kpiData.pendingApprovalsLabel}</p>
-          </div>
-        </div>
-
-        {/* KPI 4: Total Students */}
-        <div className="bg-white apple-glass-card rounded-xl p-3 border border-slate-200/80 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-shadow">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-              Enrolled Students
-            </span>
-            <span className="bg-blue-50 text-[#00236f] border border-blue-200 px-2 py-0.2 rounded-full text-[9px] font-semibold">
-              Active Roll
-            </span>
-          </div>
-          <div className="mt-2">
-            <h3 className="text-xl font-extrabold text-[#00236f] tracking-tight">
-              {kpiData.totalStudents}
-            </h3>
-            <p className="text-[10px] text-slate-500 mt-0.5">{kpiData.totalStudentsLabel}</p>
-          </div>
+          <span className="text-emerald-700 text-[9px] font-mono font-semibold hidden md:inline">
+            7 Clusters Active • Relational Schema Sync
+          </span>
         </div>
       </div>
 

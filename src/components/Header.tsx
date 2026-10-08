@@ -198,123 +198,42 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-50 select-none font-sans" ref={navRef}>
-      {/* Sleek Horizontal Navbar (Height: 44px) - Glassmorphism, Zero Boxed Clutter */}
-      <div className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-3 sm:px-6 h-[44px] flex items-center justify-between gap-3 text-xs">
-        {/* Left: Campus Identity (Pure Typography, No Box Container) */}
-        <div className="flex items-center gap-2 shrink-0">
+      {/* TIER 1: Prestigious Institutional Identity Banner (Deep Navy #00236f) */}
+      <div className="bg-[#00236f] text-white px-3 sm:px-6 py-2 border-b border-blue-950 flex flex-wrap items-center justify-between gap-3 text-xs">
+        {/* Left: Crest + Bilingual Institution Typography */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          <div className="w-8 h-8 rounded-full bg-white/10 border border-amber-400/40 flex items-center justify-center text-amber-300 font-black text-[11px] shadow-inner">
+            BFGI
+          </div>
           <button
             type="button"
             onClick={() => onNavigate(dashboardTarget)}
-            className="flex items-center gap-2 text-left group cursor-pointer focus:outline-none"
+            className="flex flex-col text-left group cursor-pointer focus:outline-none"
           >
-            <span className="font-extrabold text-sm tracking-tight text-[#00236f]">
-              BFGI
+            <span className="text-[10px] sm:text-[11px] font-semibold text-amber-300/95 tracking-wide leading-tight">
+              ਬਾਬਾ ਫ਼ਰੀਦ ਗਰੁੱਪ ਆਫ਼ ਇੰਸਟੀਚਿਊਟਸ (ਬਠਿੰਡਾ, ਪੰਜਾਬ)
             </span>
-            <span className="text-slate-300 font-light text-xs">|</span>
-            <div className="flex flex-col leading-none">
-              <span className="font-bold text-[11px] tracking-tight text-slate-800">
-                EduCore ERP
-              </span>
-              <span className="text-[9px] font-medium text-slate-400 mt-0.5 hidden sm:inline">
-                PUP Patiala • MRSPTU • PU
-              </span>
-            </div>
+            <span className="font-black text-xs sm:text-sm tracking-tight text-white uppercase leading-tight mt-0.5">
+              BABA FARID GROUP OF INSTITUTIONS
+            </span>
+            <span className="text-[9px] sm:text-[10px] font-medium text-slate-300 leading-tight hidden sm:inline">
+              Autonomous Campus ERP • PUP Patiala • MRSPTU • PU Affiliated
+            </span>
           </button>
         </div>
 
-        {/* Center: Sleek Horizontal Strip of Text Items (Hover & Click Dropdowns) */}
-        <nav className="hidden lg:flex items-center h-full gap-0.5">
-          {menuSections.map(sec => {
-            const isDrawerOpen = openDrawer === sec.id;
-            const hasChildren = Boolean(sec.items && sec.items.length > 0);
-
-            return (
-              <div
-                key={sec.id}
-                className="relative h-full flex items-center"
-                onMouseEnter={() => hasChildren && handleMouseEnter(sec.id)}
-                onMouseLeave={handleMouseLeave}
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (hasChildren) {
-                      setOpenDrawer(isDrawerOpen ? null : sec.id);
-                    } else if (sec.action) {
-                      sec.action();
-                    }
-                  }}
-                  className={`h-full px-2.5 text-[11.5px] flex items-center gap-1 transition-colors cursor-pointer border-b-2 ${
-                    sec.isActive || isDrawerOpen
-                      ? 'border-[#ea580c] text-[#00236f] font-bold'
-                      : 'border-transparent text-slate-600 hover:text-[#00236f] hover:border-slate-300 font-medium'
-                  }`}
-                >
-                  <span>{sec.label}</span>
-                  {hasChildren && (
-                    <span className="text-[8px] opacity-60 ml-0.5">
-                      {isDrawerOpen ? '▴' : '▾'}
-                    </span>
-                  )}
-                </button>
-
-                {/* Sleek Vertical Dropdown Strip */}
-                {hasChildren && isDrawerOpen && (
-                  <div
-                    onMouseEnter={() => {
-                      if (closeTimerRef.current) {
-                        clearTimeout(closeTimerRef.current);
-                        closeTimerRef.current = null;
-                      }
-                    }}
-                    onMouseLeave={handleMouseLeave}
-                    className="absolute top-full left-0 w-60 bg-white/98 backdrop-blur-xl border border-slate-200/90 shadow-xl rounded-b-md py-1 z-50 text-slate-800 animate-fadeIn"
-                  >
-                    <div className="px-3 py-1 text-[9px] font-bold text-slate-400 border-b border-slate-100 uppercase tracking-wider">
-                      {sec.label} Options
-                    </div>
-                    <div className="py-0.5">
-                      {sec.items!.map((item: any) => (
-                        <button
-                          key={item.id || item.label}
-                          type="button"
-                          onClick={() => {
-                            if (item.action) {
-                              item.action();
-                            } else if (item.id) {
-                              onNavigate(item.id);
-                            }
-                            setOpenDrawer(null);
-                          }}
-                          className={`w-full px-3 py-1.5 text-[11px] font-medium flex items-center justify-between cursor-pointer transition text-left ${
-                            activeScreen === item.id
-                              ? 'bg-blue-50 text-[#00236f] font-bold'
-                              : 'text-slate-700 hover:bg-slate-50 hover:text-[#00236f]'
-                          }`}
-                        >
-                          <span>{item.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </nav>
-
-        {/* Right: Operational Controls & Digit-Only UID */}
+        {/* Right: Operational Controls, Canonical Digit UID & Utilities */}
         <div className="flex items-center gap-2 shrink-0">
           {/* Quick Search */}
-          <div className="hidden xl:flex items-center w-40 relative">
+          <div className="hidden xl:flex items-center w-36 relative">
             <input
               type="text"
               value={searchQuery}
               onChange={e => onSearchChange(e.target.value)}
               placeholder="Search... ⌘K"
-              className="w-full h-6 pl-2 pr-6 bg-slate-100/80 hover:bg-slate-100 focus:bg-white text-[11px] font-medium text-slate-800 rounded border border-slate-200/70 focus:outline-none focus:ring-1 focus:ring-[#00236f] transition-all"
+              className="w-full h-6.5 pl-2 pr-6 bg-blue-950/70 hover:bg-blue-950 focus:bg-[#001744] text-[11px] font-medium text-white placeholder:text-blue-300/50 rounded border border-blue-400/30 focus:outline-none focus:ring-1 focus:ring-amber-400 transition-all"
             />
-            <span className="absolute right-1.5 top-1 text-[8px] font-mono font-semibold text-slate-400">
+            <span className="absolute right-1.5 top-1.5 text-[8px] font-mono font-semibold text-blue-300/60">
               ⌘K
             </span>
           </div>
@@ -324,17 +243,17 @@ export const Header: React.FC<HeaderProps> = ({
             type="button"
             onClick={handleCopyUid}
             title="Click to copy canonical 10-digit UID"
-            className="flex items-center gap-1.5 h-6 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 rounded font-mono text-[10px] text-slate-700 transition cursor-pointer"
+            className="flex items-center gap-1.5 h-6.5 px-2 bg-blue-950/80 hover:bg-blue-900 border border-blue-400/40 rounded font-mono text-[10px] text-white transition cursor-pointer"
           >
-            <span className="text-[#ea580c] font-bold">UID</span>
-            <span className="font-bold text-slate-900 tracking-tight">{displayUid}</span>
-            <span className="text-slate-400 text-[9px]">
+            <span className="text-amber-400 font-bold">UID</span>
+            <span className="font-bold tracking-tight text-white">{displayUid}</span>
+            <span className="text-blue-300 text-[9px]">
               {copiedUid ? '✓' : 'Copy'}
             </span>
           </button>
 
           {/* Role Pill */}
-          <span className="hidden sm:inline-flex h-6 items-center px-2 rounded text-[9px] font-bold bg-blue-50 text-[#00236f] border border-blue-200/60 uppercase tracking-wider">
+          <span className="hidden sm:inline-flex h-6.5 items-center px-2 rounded text-[9px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/40 uppercase tracking-wider">
             {currentUser?.role === 'super_admin'
               ? 'Apex Provost'
               : currentUser?.role?.replace(/_/g, ' ') || 'Guest'}
@@ -345,10 +264,10 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onToggleTelephony}
-              className={`hidden md:inline-flex h-6 items-center px-2 rounded text-[10px] font-semibold transition border cursor-pointer ${
+              className={`hidden md:inline-flex h-6.5 items-center px-2 rounded text-[10px] font-semibold transition border cursor-pointer ${
                 isTelephonyOpen
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50'
+                  : 'bg-white/10 text-slate-200 border-white/20 hover:bg-white/20'
               }`}
             >
               Telephony
@@ -360,7 +279,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onOpenCopilot}
-              className="h-6 px-2 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold rounded text-[10px] transition cursor-pointer"
+              className="h-6.5 px-2 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold rounded text-[10px] transition cursor-pointer"
             >
               AI Copilot
             </button>
@@ -371,7 +290,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onLogout}
-              className="h-6 px-1.5 text-[10px] font-semibold text-slate-500 hover:text-red-600 transition cursor-pointer"
+              className="h-6.5 px-1.5 text-[10px] font-semibold text-slate-300 hover:text-rose-300 transition cursor-pointer"
             >
               Sign Out
             </button>
@@ -381,11 +300,96 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-1 text-slate-700 hover:bg-slate-100 cursor-pointer"
+            className="lg:hidden p-1 text-white hover:bg-blue-900 rounded cursor-pointer"
             aria-label="Toggle Navigation Menu"
           >
             {mobileMenuOpen ? '✕' : '☰'}
           </button>
+        </div>
+      </div>
+
+      {/* TIER 2: Dedicated MRSTU-Style Horizontal Navigation Strip (White Background, Vertical Dividers, Flush Dropdowns) */}
+      <div className="w-full bg-white border-b border-slate-300 shadow-2xs">
+        <div className="max-w-7xl mx-auto px-2 sm:px-6 flex items-center h-[38px]">
+          <nav className="hidden lg:flex items-stretch h-full border-l border-slate-200">
+            {menuSections.map(sec => {
+              const isDrawerOpen = openDrawer === sec.id;
+              const hasChildren = Boolean(sec.items && sec.items.length > 0);
+
+              return (
+                <div
+                  key={sec.id}
+                  className="relative h-full flex items-center"
+                  onMouseEnter={() => hasChildren && handleMouseEnter(sec.id)}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (hasChildren) {
+                        setOpenDrawer(isDrawerOpen ? null : sec.id);
+                      } else if (sec.action) {
+                        sec.action();
+                      }
+                    }}
+                    className={`h-full px-3.5 text-[11px] font-bold tracking-wider uppercase flex items-center gap-1.5 transition-colors cursor-pointer border-r border-slate-200 select-none ${
+                      sec.isActive || isDrawerOpen
+                        ? 'bg-[#00236f] text-white'
+                        : 'text-slate-800 hover:bg-[#00236f] hover:text-white'
+                    }`}
+                  >
+                    <span>{sec.label}</span>
+                    {hasChildren && (
+                      <span className="text-[8px] opacity-70 ml-0.5">
+                        {isDrawerOpen ? '▴' : '▾'}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* MRSTU-Style Vertical Dropdown Section (Opens Vertically Under Hovered/Clicked Item) */}
+                  {hasChildren && isDrawerOpen && (
+                    <div
+                      onMouseEnter={() => {
+                        if (closeTimerRef.current) {
+                          clearTimeout(closeTimerRef.current);
+                          closeTimerRef.current = null;
+                        }
+                      }}
+                      onMouseLeave={handleMouseLeave}
+                      className="absolute top-full left-0 min-w-[260px] bg-[#00236f] text-white border-t-2 border-[#ea580c] shadow-2xl z-50 py-1 rounded-b-md animate-fadeIn"
+                    >
+                      <div className="px-3.5 py-1.5 text-[9px] font-bold text-amber-300 border-b border-blue-900 uppercase tracking-wider">
+                        {sec.label} Directory
+                      </div>
+                      <div className="py-0.5">
+                        {sec.items!.map((item: any) => (
+                          <button
+                            key={item.id || item.label}
+                            type="button"
+                            onClick={() => {
+                              if (item.action) {
+                                item.action();
+                              } else if (item.id) {
+                                onNavigate(item.id);
+                              }
+                              setOpenDrawer(null);
+                            }}
+                            className={`w-full px-3.5 py-2 text-[11px] font-medium flex items-center justify-between cursor-pointer transition text-left border-b border-blue-950/60 last:border-b-0 ${
+                              activeScreen === item.id
+                                ? 'bg-[#001744] text-amber-300 font-bold pl-4'
+                                : 'text-slate-200 hover:bg-[#001744] hover:text-amber-300 hover:pl-4'
+                            }`}
+                          >
+                            <span>{item.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </nav>
         </div>
       </div>
 
