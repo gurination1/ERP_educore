@@ -101,9 +101,12 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   const handleMouseLeave = () => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+    }
     closeTimerRef.current = setTimeout(() => {
       setOpenDrawer(null);
-    }, 180);
+    }, 350);
   };
 
   useEffect(() => {
@@ -358,17 +361,18 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* TIER 2: Ultra-Sleek Horizontal Text Strip Navigation (University Portal & Apple Ribbon Style - No Clunky Boxes) */}
+      {/* TIER 2: Ultra-Sleek Apple Horizontal Ribbon & Mega Navigation Strip */}
       <div className="w-full bg-white/95 backdrop-blur-2xl border-b border-slate-200/80 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.03)] relative z-40">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 flex items-center h-11 justify-between">
-          <div className="flex items-center gap-2 h-full">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 flex items-center h-11 justify-between gap-3">
+          {/* Left: Universal Back Pill + Main Navigation Hubs */}
+          <div className="flex items-center gap-1.5 h-full overflow-x-auto no-scrollbar py-1">
             {/* Apple-Grade Universal Back Button (Visible when on any sub-screen) */}
             {canGoBack && onGoBack && (
               <button
                 type="button"
                 onClick={onGoBack}
                 title="Navigate Back to Previous Screen (Alt + ←)"
-                className="h-7.5 px-3 bg-slate-100 hover:bg-slate-200/90 active:bg-slate-300 text-[#00236f] rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer border border-slate-200/90 group mr-2 shrink-0 select-none shadow-2xs"
+                className="h-8 px-3 bg-slate-100 hover:bg-slate-200/90 active:bg-slate-300 text-[#00236f] rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer border border-slate-200/90 group mr-1.5 shrink-0 select-none shadow-2xs"
               >
                 <span className="text-sm font-black group-hover:-translate-x-0.5 transition-transform leading-none">‹</span>
                 <span>Back</span>
@@ -376,8 +380,8 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             )}
 
-            {/* Continuous Horizontal Strip of Text Options */}
-            <nav className="hidden lg:flex items-center gap-1 h-full">
+            {/* Continuous Horizontal Strip of Text Options (Responsive: Scrollable on mobile, Mega Flyout on Desktop) */}
+            <nav className="flex items-center gap-1 h-full shrink-0">
               {menuSections.map(sec => {
                 const isDrawerOpen = openDrawer === sec.id;
                 const hasChildren = Boolean(sec.items && sec.items.length > 0);
@@ -392,31 +396,35 @@ export const Header: React.FC<HeaderProps> = ({
                     <button
                       type="button"
                       onClick={() => {
+                        if (closeTimerRef.current) {
+                          clearTimeout(closeTimerRef.current);
+                          closeTimerRef.current = null;
+                        }
                         if (hasChildren) {
                           setOpenDrawer(isDrawerOpen ? null : sec.id);
                         } else if (sec.action) {
                           sec.action();
                         }
                       }}
-                      className={`h-full px-3.5 text-xs font-semibold tracking-tight transition-colors flex items-center gap-1.5 cursor-pointer select-none relative ${
+                      className={`h-8 sm:h-full px-2.5 sm:px-3 text-xs font-semibold tracking-tight transition-colors flex items-center gap-1 cursor-pointer select-none relative rounded-lg sm:rounded-none ${
                         sec.isActive || isDrawerOpen
-                          ? 'text-[#00236f] font-bold'
-                          : 'text-slate-600 hover:text-[#00236f]'
+                          ? 'text-[#00236f] font-bold bg-slate-100 sm:bg-transparent'
+                          : 'text-slate-600 hover:text-[#00236f] hover:bg-slate-50 sm:hover:bg-transparent'
                       }`}
                     >
-                      <span>{sec.label}</span>
+                      <span className="whitespace-nowrap">{sec.label}</span>
                       {hasChildren && (
                         <span className={`text-[9px] transition-transform duration-200 ${isDrawerOpen ? 'rotate-180 text-[#00236f]' : 'text-slate-400'}`}>
                           ▾
                         </span>
                       )}
-                      {/* Active / Open Subtle Bottom Indicator Bar */}
+                      {/* Active / Open Subtle Bottom Indicator Bar (Desktop) */}
                       {(sec.isActive || isDrawerOpen) && (
-                        <span className="absolute bottom-0 left-2.5 right-2.5 h-[2.5px] bg-[#00236f] rounded-full" />
+                        <span className="hidden sm:block absolute bottom-0 left-2 right-2 h-[2.5px] bg-[#00236f] rounded-full" />
                       )}
                     </button>
 
-                    {/* Smooth Vertical Section / Flyout Card (Opens Under Hovered Text Item) */}
+                    {/* Apple-Grade Multi-Column Frosted Flyout Card (Opens Under Hovered/Clicked Item) */}
                     {hasChildren && isDrawerOpen && (
                       <div
                         onMouseEnter={() => {
@@ -426,13 +434,23 @@ export const Header: React.FC<HeaderProps> = ({
                           }
                         }}
                         onMouseLeave={handleMouseLeave}
-                        className="absolute top-full left-0 mt-1 min-w-[280px] bg-white border border-slate-200/90 shadow-[0_20px_40px_-8px_rgba(0,0,0,0.18),0_0_0_1px_rgba(0,0,0,0.06)] rounded-2xl p-2 z-50 animate-fadeIn select-none"
+                        className={`absolute top-full mt-1.5 bg-white/98 backdrop-blur-2xl border border-slate-200/90 shadow-[0_20px_45px_-10px_rgba(0,35,111,0.18),0_0_0_1px_rgba(0,35,111,0.04)] rounded-2xl p-3 z-50 animate-fadeIn select-none ${
+                          sec.items!.length > 4 ? 'w-[420px] sm:w-[480px]' : 'min-w-[280px] sm:min-w-[320px]'
+                        } ${sec.id === 'governance' || sec.id === 'partners' ? 'right-0 left-auto' : 'left-0'}`}
                       >
-                        <div className="px-3 pt-2 pb-1.5 text-[11px] font-bold text-slate-400 tracking-wider uppercase border-b border-slate-100 flex items-center justify-between">
-                          <span>{sec.label} Section</span>
-                          <span className="text-[10px] font-mono text-slate-400">PUP • MRSPTU • PU</span>
+                        {/* Section Header with Tripartite Branding */}
+                        <div className="px-3 pt-1.5 pb-2 text-[11px] font-bold text-slate-500 tracking-wider uppercase border-b border-slate-100 flex items-center justify-between">
+                          <span className="flex items-center gap-1.5 text-[#00236f] font-black">
+                            <span className="w-2 h-2 rounded-full bg-[#ea580c]" />
+                            {sec.label} Console
+                          </span>
+                          <span className="text-[10px] font-mono text-slate-400 font-semibold">
+                            PUP • MRSPTU • PU
+                          </span>
                         </div>
-                        <div className="py-1 space-y-0.5">
+
+                        {/* Interactive Action Grid */}
+                        <div className={`py-2 ${sec.items!.length > 4 ? 'grid grid-cols-1 sm:grid-cols-2 gap-1.5' : 'space-y-1'}`}>
                           {sec.items!.map((item: any) => (
                             <button
                               key={item.id || item.label}
@@ -445,16 +463,29 @@ export const Header: React.FC<HeaderProps> = ({
                                 }
                                 setOpenDrawer(null);
                               }}
-                              className={`w-full px-3 py-2 rounded-xl text-xs font-semibold transition-all text-left flex items-center justify-between cursor-pointer ${
+                              className={`w-full px-3 py-2 rounded-xl text-xs font-semibold transition-all text-left flex items-center justify-between cursor-pointer group ${
                                 activeScreen === item.id
                                   ? 'bg-[#00236f] text-white shadow-xs'
                                   : 'text-slate-700 hover:bg-slate-100/90 hover:text-[#00236f]'
                               }`}
                             >
-                              <span>{item.label}</span>
-                              <span className={`text-xs ${activeScreen === item.id ? 'text-white/80' : 'text-slate-400'}`}>›</span>
+                              <div className="flex items-center gap-2 min-w-0 pr-2">
+                                <span className={`text-[10px] shrink-0 font-bold ${activeScreen === item.id ? 'text-amber-300' : 'text-slate-400 group-hover:text-[#00236f]'}`}>
+                                  •
+                                </span>
+                                <span className="truncate">{item.label}</span>
+                              </div>
+                              <span className={`text-xs shrink-0 transition-transform group-hover:translate-x-0.5 ${activeScreen === item.id ? 'text-white/80' : 'text-slate-400'}`}>
+                                ›
+                              </span>
                             </button>
                           ))}
+                        </div>
+
+                        {/* Card Footer Quick Note */}
+                        <div className="pt-2 mt-1 border-t border-slate-100 px-3 flex items-center justify-between text-[10px] text-slate-400">
+                          <span>Statutory Ordinance 7.4 Active</span>
+                          <span className="font-semibold text-slate-500">Autonomous Campus</span>
                         </div>
                       </div>
                     )}
@@ -462,6 +493,31 @@ export const Header: React.FC<HeaderProps> = ({
                 );
               })}
             </nav>
+          </div>
+
+          {/* Right: Institutional Session Term & Live Gateway Indicators (Fills Desktop Void) */}
+          <div className="hidden md:flex items-center gap-2 shrink-0 select-none">
+            {/* Term Badge */}
+            <div className="flex items-center gap-1.5 h-7 px-2.5 bg-slate-100/80 border border-slate-200 rounded-full text-[11px] font-semibold text-slate-700">
+              <span className="text-[#00236f] font-bold">AY 2026-27</span>
+              <span className="text-slate-400">•</span>
+              <span className="text-slate-600">Jan–Jun Term</span>
+            </div>
+
+            {/* University Tag */}
+            <div className="hidden xl:flex items-center gap-1 h-7 px-2.5 bg-amber-500/10 border border-amber-500/20 rounded-full text-[10px] font-bold text-amber-900">
+              <span className="text-amber-600 font-extrabold">UGC</span>
+              <span>MRSPTU • PUP • PU</span>
+            </div>
+
+            {/* Real-Time Engine Heartbeat */}
+            <div className="flex items-center gap-1.5 h-7 px-2.5 bg-emerald-50 border border-emerald-200 rounded-full text-[10px] font-bold text-emerald-800">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span>Online (120Hz)</span>
+            </div>
           </div>
         </div>
       </div>
@@ -517,49 +573,109 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Mobile Drawer (Accordion Style) */}
+      {/* Mobile Drawer (High-End iOS Sheet Modal Style - Zero Disconnect) */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white/98 backdrop-blur-xl border-b border-slate-200 p-3 space-y-2 animate-fadeIn text-xs shadow-lg max-h-[80vh] overflow-y-auto">
-          {menuSections.map(sec => (
-            <div key={sec.id} className="border-b border-slate-100 pb-1.5">
-              {sec.items ? (
-                <div>
-                  <div className="font-bold text-[#00236f] uppercase text-[10px] py-1">
-                    {sec.label}
-                  </div>
-                  <div className="pl-2 space-y-1">
-                    {sec.items.map((item: any) => (
-                      <button
-                        key={item.id || item.label}
-                        type="button"
-                        onClick={() => {
-                          if (item.action) item.action();
-                          else if (item.id) onNavigate(item.id);
-                          setMobileMenuOpen(false);
-                        }}
-                        className="w-full text-left py-1 text-[11px] text-slate-700 hover:text-[#00236f]"
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
+        <div className="fixed inset-0 top-0 z-50 bg-[#00236f]/60 backdrop-blur-xl flex flex-col justify-end animate-fadeIn">
+          {/* Backdrop Dismiss Area */}
+          <div className="flex-1" onClick={() => setMobileMenuOpen(false)} />
+
+          {/* iOS Bottom / Slide-Up Control Sheet */}
+          <div className="bg-white rounded-t-3xl border-t border-slate-200 shadow-2xl p-4 sm:p-6 max-h-[85vh] overflow-y-auto space-y-4">
+            {/* Grabber Handle */}
+            <div className="w-12 h-1 bg-slate-300 rounded-full mx-auto -mt-1 mb-2" />
+
+            {/* Header with User Info & Close */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <div className="text-xs font-bold text-[#00236f] uppercase tracking-wider">
+                  BABA FARID GROUP OF INSTITUTIONS
                 </div>
-              ) : (
+                <div className="text-sm font-extrabold text-slate-900 mt-0.5">
+                  {(currentUser?.full_name || currentUser?.username || 'User').replace(/\s*\(\d+\)\s*$/, '')}
+                </div>
+                <div className="text-[11px] font-semibold text-amber-600">
+                  {getInstitutionalRoleTitle(currentUser)} • UID: {displayUid}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-sm cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Fast Navigation Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {menuSections.map(sec => (
+                <div key={sec.id} className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3">
+                  <div className="flex items-center justify-between font-bold text-[#00236f] text-xs uppercase tracking-wider mb-2">
+                    <span>{sec.label}</span>
+                    {sec.items && <span className="text-[10px] text-slate-400 font-normal">{sec.items.length} items</span>}
+                  </div>
+
+                  {sec.items ? (
+                    <div className="space-y-1">
+                      {sec.items.map((item: any) => (
+                        <button
+                          key={item.id || item.label}
+                          type="button"
+                          onClick={() => {
+                            if (item.action) item.action();
+                            else if (item.id) onNavigate(item.id);
+                            setMobileMenuOpen(false);
+                          }}
+                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition flex items-center justify-between ${
+                            activeScreen === item.id
+                              ? 'bg-[#00236f] text-white font-bold'
+                              : 'text-slate-700 hover:bg-slate-200/70 hover:text-[#00236f]'
+                          }`}
+                        >
+                          <span className="truncate">{item.label}</span>
+                          <span className="text-[10px] opacity-60">›</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (sec.action) sec.action();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="w-full text-left px-2.5 py-2 rounded-lg text-xs font-bold bg-[#00236f] text-white flex items-center justify-between"
+                    >
+                      <span>Open {sec.label}</span>
+                      <span>›</span>
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Footer Actions */}
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+              {onLogout && (
                 <button
                   type="button"
                   onClick={() => {
-                    if (sec.action) sec.action();
                     setMobileMenuOpen(false);
+                    onLogout();
                   }}
-                  className="w-full text-left font-bold text-slate-800 hover:text-[#00236f] py-1"
+                  className="px-4 py-2 bg-rose-50 text-rose-700 hover:bg-rose-100 font-bold rounded-xl text-xs transition cursor-pointer"
                 >
-                  {sec.label}
+                  Sign Out
                 </button>
               )}
+              <div className="text-[10px] font-mono text-slate-400">
+                PUP Patiala • MRSPTU • PU Affiliated
+              </div>
             </div>
-          ))}
+          </div>
         </div>
       )}
     </header>
   );
 };
+

@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { db } from '../db';
-import { authenticateToken, AuthRequest } from '../middleware/auth';
+import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
 import { Student } from '../../src/types';
 
 export const examRouter = Router();
@@ -299,7 +299,7 @@ examRouter.post('/reappear-form', authenticateToken, async (req: AuthRequest, re
 });
 
 // 6. Dean / HOD Attendance Condonation Action (Instant Gate Unblock)
-examRouter.post('/condone-attendance', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+examRouter.post('/condone-attendance', authenticateToken, requireRole('admin', 'staff', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { studentId, orderNo = `ORD-COE-COND-${Date.now().toString().slice(-5)}`, reason = 'Authorized under University Ordinance 7.4 on Sports / Medical Representation' } = req.body;
   const allStudents = await db.getStudents();
   const student = findStudent(allStudents, studentId);
@@ -333,7 +333,7 @@ examRouter.post('/condone-attendance', authenticateToken, async (req: AuthReques
 });
 
 // 7. Instant Fee Clearance Simulation for Testing
-examRouter.post('/clear-fee-dues', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+examRouter.post('/clear-fee-dues', authenticateToken, requireRole('admin', 'accounts'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { studentId } = req.body;
   const allStudents = await db.getStudents();
   const student = findStudent(allStudents, studentId);
