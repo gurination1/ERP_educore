@@ -85,7 +85,7 @@ export const Header: React.FC<HeaderProps> = ({
   const menuSections = [
     {
       id: 'dashboard',
-      label: 'Dashboard',
+      label: 'Home',
       action: () => {
         onNavigate(dashboardTarget);
         setOpenDrawer(null);
@@ -94,48 +94,50 @@ export const Header: React.FC<HeaderProps> = ({
     },
     {
       id: 'academics',
-      label: 'Academics',
-      action: () => {
-        onNavigate('academics');
-        setOpenDrawer(null);
-      },
-      isActive: activeScreen === 'academics',
+      label: 'Examination & Academics',
+      items: [
+        { id: 'academics' as ActiveScreen, label: 'CBCS Syllabi & Datesheet', badge: 'MRSPTU' },
+        { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz LMS & Exams', badge: 'Active' },
+        { id: 'academics' as ActiveScreen, label: 'Evaluation & Sessional Scheme' },
+      ],
+      isActive: ['academics', 'student-quiz-lms'].includes(activeScreen as any),
     },
     {
       id: 'students',
       label: 'Student Lifecycle',
       items: [
-        { id: 'manage-students' as ActiveScreen, label: 'Student Directory', badge: 'Master' },
-        { id: 'student-documents' as ActiveScreen, label: 'Document Vault', badge: 'Verified' },
-        { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz & LMS', badge: 'Exams' },
-        { id: 'fee-ledger' as ActiveScreen, label: 'Fee Ledger', badge: 'Accounts' },
-        { id: 'grievances' as ActiveScreen, label: 'Grievance Cell' },
+        { id: 'manage-students' as ActiveScreen, label: 'Student Master Directory', badge: 'Master' },
+        { id: 'student-documents' as ActiveScreen, label: 'Document Vault (85% Domicile)', badge: 'Verified' },
+        { id: 'fee-ledger' as ActiveScreen, label: 'Tuition Assessment & Ledger', badge: 'Finance' },
+        { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships' },
+        { id: 'grievances' as ActiveScreen, label: 'Statutory Grievance Cell' },
       ],
-      isActive: ['manage-students', 'student-documents', 'student-quiz-lms', 'fee-ledger', 'grievances'].includes(activeScreen as any),
+      isActive: ['manage-students', 'student-documents', 'fee-ledger', 'scholarships', 'grievances'].includes(activeScreen as any),
     },
     {
       id: 'crm',
       label: 'Admissions CRM',
       items: [
-        { id: 'enquiries' as ActiveScreen, label: 'Pre-Admission Leads', badge: 'Radar' },
-        { id: 'bulk-import' as ActiveScreen, label: 'Bulk CSV Mapper', badge: '3-Tier' },
-        ...(isCounselor ? [{ id: 'admissions' as ActiveScreen, label: 'Admission Desk' }] : []),
+        { id: 'enquiries' as ActiveScreen, label: 'Pre-Admission Leads Radar', badge: 'Radar' },
+        { id: 'bulk-import' as ActiveScreen, label: '3-Tier Bulk CSV Mapper', badge: 'Verify' },
+        ...(isCounselor ? [{ id: 'admissions' as ActiveScreen, label: 'Admissions Counter Desk' }] : []),
+        { id: 'form-builder' as ActiveScreen, label: 'Application Form Builder' },
       ],
-      isActive: ['enquiries', 'bulk-import', 'admissions'].includes(activeScreen as any),
+      isActive: ['enquiries', 'bulk-import', 'admissions', 'form-builder'].includes(activeScreen as any),
     },
     {
       id: 'staff',
-      label: 'Staff & HR',
+      label: 'Staff & HRMS',
       items: [
-        { id: 'staff-management' as ActiveScreen, label: 'Staff HRMS Directory', badge: 'Profiles' },
+        { id: 'staff-management' as ActiveScreen, label: 'Faculty & HRMS Directory', badge: 'Roster' },
         ...(isFaculty ? [{ id: 'teacher-documents' as ActiveScreen, label: 'Faculty Dossier Vault', badge: 'Verified' }] : []),
-        { id: 'staff-academic-journey' as any, label: 'CAS Research Dossier', action: onOpenStaffJourney },
+        { id: 'staff-academic-journey' as any, label: 'CAS Research Publications', action: onOpenStaffJourney },
       ],
       isActive: ['staff-management', 'teacher-documents'].includes(activeScreen as any),
     },
     {
       id: 'partners',
-      label: 'Hiring Partners',
+      label: 'Placements & Partners',
       action: () => {
         onNavigate('partner-portal');
         setOpenDrawer(null);
@@ -146,141 +148,84 @@ export const Header: React.FC<HeaderProps> = ({
       ? [
           {
             id: 'governance',
-            label: 'Governance',
+            label: 'Governance & Audits',
             items: [
               { id: 'master-tables' as any, label: 'Institutional Master Tables', badge: 'Canonical', action: onOpenMasterTables },
               { id: 'audit-trail' as any, label: 'Cryptographic Audit Trail', badge: 'Logs', action: onOpenAuditLogs },
               { id: 'user-management' as ActiveScreen, label: 'User Accounts & Roles' },
-              { id: 'scholarships' as ActiveScreen, label: 'Scholarship Matrix' },
-              { id: 'form-builder' as ActiveScreen, label: 'Dynamic Form Builder' },
               { id: 'reports' as ActiveScreen, label: 'Institutional MIS Reports' },
             ],
-            isActive: ['user-management', 'scholarships', 'form-builder', 'reports'].includes(activeScreen as any),
+            isActive: ['user-management', 'reports'].includes(activeScreen as any),
           },
         ]
       : []),
   ];
 
   return (
-    <header className="sticky top-0 z-50 select-none font-sans transition-all duration-200 apple-glass-nav">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3" ref={navRef}>
-        
-        {/* Left: Brand Identity */}
-        <div className="flex items-center gap-3 shrink-0">
+    <header className="sticky top-0 z-50 select-none font-sans shadow-md" ref={navRef}>
+      {/* TIER 1: Sleek Masthead (Height: 40px) */}
+      <div className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-3 sm:px-6 h-10 flex items-center justify-between gap-3 text-xs">
+        {/* Left: University & Campus Identity */}
+        <div className="flex items-center gap-2.5 shrink-0">
           <button
             type="button"
             onClick={() => onNavigate(dashboardTarget)}
-            className="flex items-center gap-2.5 text-left group cursor-pointer focus:outline-none"
+            className="flex items-center gap-2 text-left group cursor-pointer focus:outline-none"
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#00236f] to-[#001744] flex items-center justify-center text-white font-extrabold text-xs shadow-sm ring-1 ring-black/5 group-hover:scale-105 transition-transform">
-              <span className="tracking-tighter">EC</span>
+            <div className="w-7 h-7 rounded-lg bg-[#00236f] flex items-center justify-center text-white font-extrabold text-[11px] shadow-xs ring-1 ring-black/5 group-hover:scale-105 transition-transform">
+              <span className="tracking-tighter">BFGI</span>
             </div>
             <div className="flex flex-col">
-              <span className="font-extrabold text-[13px] tracking-tight text-[#00236f] leading-none">
-                EduCore
-              </span>
-              <span className="text-[10px] font-semibold text-slate-500 tracking-tight leading-tight mt-0.5">
-                BFGI Enterprise
+              <div className="flex items-center gap-1.5 leading-none">
+                <span className="font-extrabold text-xs tracking-tight text-[#00236f]">
+                  EduCore Enterprise
+                </span>
+                <span className="text-[10px] text-slate-400 font-semibold">•</span>
+                <span className="text-[10px] font-semibold text-slate-600 tracking-tight">
+                  MRSPTU Affiliated
+                </span>
+              </div>
+              <span className="text-[9px] font-medium text-slate-400 leading-tight">
+                Baba Farid Group of Institutions • Punjab (03)
               </span>
             </div>
           </button>
-
-          <span className="hidden xl:inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wide bg-orange-50 text-[#ea580c] border border-orange-200/60 font-mono">
-            PUNJAB • 03
-          </span>
         </div>
 
-        {/* Center: Apple-style Segmented Navigation Bar */}
-        <nav className="hidden lg:flex items-center gap-1 bg-slate-100/70 p-1 rounded-full border border-slate-200/70 shadow-xs">
-          {menuSections.map(sec => {
-            const isDrawerOpen = openDrawer === sec.id;
-            const hasChildren = Boolean(sec.items && sec.items.length > 0);
+        {/* Center: High-Density Search Input */}
+        <div className="hidden md:flex items-center flex-1 max-w-sm mx-4">
+          <div className="w-full relative">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => onSearchChange(e.target.value)}
+              placeholder="Search student UID, marks, fees, circulars... ⌘K"
+              className="w-full h-7 pl-3 pr-8 bg-slate-100/90 hover:bg-slate-100 focus:bg-white text-[11px] font-medium text-slate-800 rounded-lg border border-slate-200/70 focus:outline-none focus:ring-1 focus:ring-[#00236f] transition-all"
+            />
+            <span className="absolute right-2 top-1.5 text-[9px] font-mono font-semibold text-slate-400">
+              ⌘K
+            </span>
+          </div>
+        </div>
 
-            return (
-              <div key={sec.id} className="relative">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (hasChildren) {
-                      setOpenDrawer(isDrawerOpen ? null : sec.id);
-                    } else if (sec.action) {
-                      sec.action();
-                    }
-                  }}
-                  className={`px-3 py-1 rounded-full font-medium transition-all text-[11px] tracking-tight flex items-center gap-1 cursor-pointer ${
-                    sec.isActive || isDrawerOpen
-                      ? 'bg-white text-[#00236f] font-bold shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                  }`}
-                >
-                  <span>{sec.label}</span>
-                  {hasChildren && (
-                    <span className="text-[8px] text-slate-400 ml-0.5 font-bold">
-                      {isDrawerOpen ? '▴' : '▾'}
-                    </span>
-                  )}
-                </button>
-
-                {/* Glassmorphic Dropdown Drawer */}
-                {hasChildren && isDrawerOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-72 apple-glass-dropdown rounded-2xl p-1.5 z-50 animate-fadeIn">
-                    <div className="px-3 py-1.5 text-[9px] font-bold text-slate-400 border-b border-slate-100 uppercase tracking-wider">
-                      {sec.label} Hub
-                    </div>
-
-                    <div className="py-1 space-y-0.5">
-                      {sec.items!.map((item: any) => (
-                        <button
-                          key={item.id || item.label}
-                          type="button"
-                          onClick={() => {
-                            if (item.action) {
-                              item.action();
-                            } else if (item.id) {
-                              onNavigate(item.id);
-                            }
-                            setOpenDrawer(null);
-                          }}
-                          className={`w-full px-3 py-2 rounded-xl text-[11px] font-medium flex items-center justify-between cursor-pointer transition text-left ${
-                            activeScreen === item.id
-                              ? 'bg-blue-50 text-[#00236f] font-bold'
-                              : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-900'
-                          }`}
-                        >
-                          <span>{item.label}</span>
-                          {item.badge && (
-                            <span className="bg-[#ea580c] text-white px-2 py-0.5 rounded-full text-[8px] font-mono font-bold tracking-tight shadow-2xs">
-                              {item.badge}
-                            </span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </nav>
-
-        {/* Right: User Utility & Actions */}
+        {/* Right: Operational Controls & Canonical UID */}
         <div className="flex items-center gap-2 shrink-0">
-          {/* Canonical UID Copy Pill */}
+          {/* Canonical UID Copy Badge */}
           <button
             type="button"
             onClick={handleCopyUid}
             title="Click to copy canonical Enterprise UID"
-            className="flex items-center gap-1.5 px-3 py-1 bg-white/90 hover:bg-white border border-slate-200/80 rounded-full font-mono text-[10px] text-slate-700 transition shadow-2xs cursor-pointer"
+            className="flex items-center gap-1.5 h-6 px-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md font-mono text-[10px] text-slate-700 transition cursor-pointer"
           >
             <span className="text-[#ea580c] font-bold">UID</span>
             <span className="font-semibold text-slate-900">{displayUid}</span>
             <span className="text-slate-400 text-[9px]">
-              {copiedUid ? '✓ Copied' : 'Copy'}
+              {copiedUid ? '✓' : 'Copy'}
             </span>
           </button>
 
           {/* Role Pill */}
-          <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#00236f] text-white shadow-2xs tracking-wide uppercase">
+          <span className="hidden sm:inline-flex h-6 items-center px-2 rounded text-[9px] font-bold bg-[#00236f] text-white tracking-wider uppercase">
             {currentUser?.role === 'super_admin'
               ? 'Apex Provost'
               : currentUser?.role?.replace(/_/g, ' ') || 'Guest'}
@@ -291,7 +236,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onToggleTelephony}
-              className={`hidden md:inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold transition border cursor-pointer ${
+              className={`hidden lg:inline-flex h-6 items-center px-2 rounded text-[10px] font-bold transition border cursor-pointer ${
                 isTelephonyOpen
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
                   : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
@@ -306,7 +251,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onOpenCopilot}
-              className="px-3 py-1 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold rounded-full text-[10px] transition shadow-xs cursor-pointer flex items-center gap-1"
+              className="h-6 px-2.5 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold rounded text-[10px] transition shadow-xs cursor-pointer flex items-center gap-1"
             >
               <span>AI Copilot</span>
             </button>
@@ -317,7 +262,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onLogout}
-              className="px-2.5 py-1 rounded-full text-[10px] font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+              className="h-6 px-2 rounded text-[10px] font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
             >
               Sign Out
             </button>
@@ -327,7 +272,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-1.5 rounded-lg text-slate-700 hover:bg-slate-100 cursor-pointer"
+            className="lg:hidden p-1 rounded text-slate-700 hover:bg-slate-100 cursor-pointer"
             aria-label="Toggle Navigation Menu"
           >
             {mobileMenuOpen ? '✕' : '☰'}
@@ -335,9 +280,141 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Mobile Drawer Menu (Responsive Website Navigation) */}
+      {/* TIER 2: MRSPTU-Style Horizontal Examination Navigation Bar (Height: 34px) */}
+      <nav className="mrsptu-nav-bar hidden lg:flex items-center px-4 sm:px-6 h-8 text-[11px] font-medium">
+        <div className="max-w-7xl w-full mx-auto flex items-center justify-between">
+          <div className="flex items-center space-x-0.5">
+            {menuSections.map(sec => {
+              const isDrawerOpen = openDrawer === sec.id;
+              const hasChildren = Boolean(sec.items && sec.items.length > 0);
+
+              return (
+                <div key={sec.id} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (hasChildren) {
+                        setOpenDrawer(isDrawerOpen ? null : sec.id);
+                      } else if (sec.action) {
+                        sec.action();
+                      }
+                    }}
+                    className={`mrsptu-nav-item h-8 px-3.5 flex items-center gap-1 font-semibold tracking-tight cursor-pointer ${
+                      sec.isActive ? 'active' : ''
+                    }`}
+                  >
+                    <span>{sec.label}</span>
+                    {hasChildren && (
+                      <span className="text-[8px] opacity-70 ml-0.5">
+                        {isDrawerOpen ? '▴' : '▾'}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Glassmorphic Dropdown Drawer */}
+                  {hasChildren && isDrawerOpen && (
+                    <div className="absolute top-full left-0 w-64 apple-glass-dropdown rounded-b-xl rounded-tr-xl p-1.5 z-50 animate-fadeIn text-slate-800">
+                      <div className="px-3 py-1 text-[9px] font-bold text-slate-400 border-b border-slate-100 uppercase tracking-wider">
+                        {sec.label}
+                      </div>
+
+                      <div className="py-1 space-y-0.5">
+                        {sec.items!.map((item: any) => (
+                          <button
+                            key={item.id || item.label}
+                            type="button"
+                            onClick={() => {
+                              if (item.action) {
+                                item.action();
+                              } else if (item.id) {
+                                onNavigate(item.id);
+                              }
+                              setOpenDrawer(null);
+                            }}
+                            className={`w-full px-3 py-1.5 rounded-lg text-[11px] font-medium flex items-center justify-between cursor-pointer transition text-left ${
+                              activeScreen === item.id
+                                ? 'bg-blue-50 text-[#00236f] font-bold'
+                                : 'text-slate-700 hover:bg-slate-100/90 hover:text-black'
+                            }`}
+                          >
+                            <span>{item.label}</span>
+                            {item.badge && (
+                              <span className="bg-[#ea580c] text-white px-1.5 py-0.2 rounded text-[8px] font-mono font-bold tracking-tight">
+                                {item.badge}
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Right Status Pill */}
+          <div className="hidden xl:flex items-center gap-2 text-white/80 text-[10px] font-mono">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block" />
+            <span>MRSPTU Examination Portal • CBCS 2025-26</span>
+          </div>
+        </div>
+      </nav>
+
+      {/* TIER 3: Institutional Notice Ticker (Height: 24px - MRSPTU Marquee Upgrade) */}
+      <div className="mrsptu-ticker-container h-6 flex items-center px-3 sm:px-6 text-[10px]">
+        <div className="max-w-7xl w-full mx-auto flex items-center justify-between gap-3 overflow-hidden">
+          {/* Fixed Alert Tag */}
+          <div className="flex items-center gap-1.5 shrink-0 z-10 bg-[#001744] pr-2">
+            <span className="bg-[#ea580c] text-white font-extrabold text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded shadow-2xs">
+              MRSPTU GAZETTE
+            </span>
+          </div>
+
+          {/* Marquee Track */}
+          <div className="flex-1 overflow-hidden relative">
+            <div className="mrsptu-ticker-track text-slate-200">
+              <span className="mx-6 text-orange-200 font-semibold">
+                ★ Amendment – VII to Final Date sheet for semester examinations May-2026 released by Controller of Examinations
+              </span>
+              <span className="mx-6 text-slate-300">
+                • MRSPTU Convocation Merit List Published • Check Student Dossier Vault
+              </span>
+              <span className="mx-6 text-slate-300">
+                • CBCS Regulations 2025-26 Curricular Scheme & External Assessment Active
+              </span>
+              <span className="mx-6 text-emerald-300 font-semibold">
+                • Campus Placement Drive with Infosys & TCS Verified for 2026 Batch
+              </span>
+              <span className="mx-6 text-slate-300">
+                • Odd-Semester Tuition Clearance & Exam Hall Ticket Generation Open
+              </span>
+              {/* Duplicate track for seamless infinite scroll */}
+              <span className="mx-6 text-orange-200 font-semibold">
+                ★ Amendment – VII to Final Date sheet for semester examinations May-2026 released by Controller of Examinations
+              </span>
+              <span className="mx-6 text-slate-300">
+                • MRSPTU Convocation Merit List Published • Check Student Dossier Vault
+              </span>
+            </div>
+          </div>
+
+          {/* Quick Notice Action */}
+          <div className="shrink-0 z-10 bg-[#001744] pl-2 hidden sm:block">
+            <button
+              type="button"
+              onClick={() => onNavigate('academics')}
+              className="text-[#ea580c] hover:text-orange-300 font-bold text-[9px] uppercase tracking-wider hover:underline cursor-pointer"
+            >
+              [View Scheme &rarr;]
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden apple-glass-dropdown border-t border-slate-200/80 px-4 py-3 space-y-2 animate-fadeIn">
+        <div className="lg:hidden apple-glass-dropdown border-t border-slate-200/80 px-4 py-3 space-y-2 animate-fadeIn max-h-[80vh] overflow-y-auto">
           {menuSections.map(sec => (
             <div key={sec.id} className="py-1 border-b border-slate-100 last:border-b-0">
               {sec.action ? (

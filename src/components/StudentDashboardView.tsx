@@ -68,84 +68,80 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
   const latestReceipt = ledgerData?.payments?.[0]?.receipt_no || 'REC-2026-001';
 
   return (
-    <div id="student-dashboard-screen" className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 animate-fadeIn text-xs">
-      {/* Top Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#00236f] via-[#001f60] to-[#00133b] p-6 text-white shadow-xl border border-white/15">
-        <div className="absolute -right-16 -top-16 w-64 h-64 bg-[#ea580c]/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#ea580c] text-white shadow-xs">
-                Student Campus Portal
-              </span>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium bg-white/10 backdrop-blur-md border border-white/15 text-orange-200">
-                UID: {student.student_id || '1001-88-03-BFGI'}
-              </span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-              {studentName}
-            </h2>
-            <p className="text-xs text-blue-100/90 mt-1 font-medium">
-              {courseCode} • {semesterOrdinal} • MRSPTU Affiliated • Session {sessionName} • Punjab 85% Domicile Verified
-            </p>
-          </div>
+    <div id="student-dashboard-screen" className="space-y-3 animate-fadeIn text-xs">
+      {/* Sleek Student Identity Toolbar (Saves 140px vertical space) */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-slate-200/70">
+        <div className="flex items-center gap-2">
+          <h2 className="font-extrabold text-sm text-[#00236f] tracking-tight">
+            {studentName}
+          </h2>
+          <span className="text-[10px] text-slate-300 font-semibold">•</span>
+          <span className="text-[11px] font-semibold text-slate-700">
+            {courseCode} ({semesterOrdinal})
+          </span>
+          <span className="bg-orange-50 text-[#ea580c] border border-orange-200 font-mono text-[9px] font-bold px-2 py-0.5 rounded-full">
+            UID: {student.student_id || '1001-88-03-BFGI'}
+          </span>
+          <span className="text-[10px] text-slate-500 hidden md:inline-flex">
+            MRSPTU • Session {sessionName}
+          </span>
+        </div>
 
-          <div className="flex items-center gap-3">
-            <div className="bg-white/10 backdrop-blur-xl px-4 py-2 rounded-2xl border border-white/20 text-right">
-              <span className="text-[9px] tracking-wider text-slate-300 uppercase block font-semibold">Status</span>
-              <span className="text-xs text-emerald-300 font-bold flex items-center gap-1.5 justify-end">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block" />
-                Active Enrolled
-              </span>
-            </div>
-          </div>
+        <div className="flex items-center gap-2">
+          <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
+            Active Enrolled
+          </span>
+          <span className="bg-blue-50 text-[#00236f] border border-blue-200 text-[10px] font-semibold px-2.5 py-0.5 rounded-full hidden sm:inline-flex">
+            Punjab 85% Domicile Verified
+          </span>
         </div>
       </div>
 
       {/* Top Grid: Profile & Financial Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
         {/* Profile Card (4 cols) */}
-        <div className="lg:col-span-4 apple-glass-card rounded-2xl p-5 border border-black/[0.06] shadow-sm space-y-4">
-          <div className="flex items-center justify-between border-b border-black/[0.06] pb-3">
-            <span className="font-semibold text-[#00236f] tracking-tight">Academic Profile</span>
-            <span className="bg-[#00236f]/10 text-[#00236f] px-2.5 py-0.5 rounded-full font-mono text-[10px] font-semibold">
+        <div className="lg:col-span-4 bg-white apple-glass-card rounded-xl p-3.5 border border-slate-200/80 shadow-2xs space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            <span className="font-bold text-[#00236f] tracking-tight text-xs">Academic Profile</span>
+            <span className="bg-[#00236f]/10 text-[#00236f] px-2 py-0.2 rounded-full font-mono text-[9px] font-semibold">
               {student.roll_number ? `Roll: ${student.roll_number}` : 'Regular'}
             </span>
           </div>
 
-          <div className="space-y-2.5 text-[11px]">
-            <div className="flex justify-between border-b border-slate-100 pb-1.5">
-              <span className="text-slate-500 font-medium">Candidate Name:</span>
+          <div className="space-y-1.5 text-[11px]">
+            <div className="flex justify-between border-b border-slate-50 pb-1">
+              <span className="text-slate-500">Candidate Name:</span>
               <strong className="text-slate-900 font-semibold">{studentName}</strong>
             </div>
-            <div className="flex justify-between border-b border-slate-100 pb-1.5">
-              <span className="text-slate-500 font-medium">Degree & Branch:</span>
+            <div className="flex justify-between border-b border-slate-50 pb-1">
+              <span className="text-slate-500">Degree & Branch:</span>
               <strong className="text-slate-900 font-semibold">{courseCode}</strong>
             </div>
-            <div className="flex justify-between border-b border-slate-100 pb-1.5">
-              <span className="text-slate-500 font-medium">Current Semester:</span>
+            <div className="flex justify-between border-b border-slate-50 pb-1">
+              <span className="text-slate-500">Current Semester:</span>
               <strong className="text-slate-900 font-semibold">{semesterOrdinal}</strong>
             </div>
-            <div className="flex justify-between border-b border-slate-100 pb-1.5">
-              <span className="text-slate-500 font-medium">Institutional Email:</span>
+            <div className="flex justify-between border-b border-slate-50 pb-1">
+              <span className="text-slate-500">Institutional Email:</span>
               <strong className="font-mono text-slate-800 text-[10px]">{student.email || 'student@bfgi.edu.in'}</strong>
             </div>
-            <div className="flex justify-between pb-1">
-              <span className="text-slate-500 font-medium">Contact Number:</span>
+            <div className="flex justify-between">
+              <span className="text-slate-500">Contact Number:</span>
               <strong className="font-mono text-slate-800 text-[10px]">{student.mobile || '+91 98765 43210'}</strong>
             </div>
           </div>
 
-          <div className="pt-2 border-t border-black/[0.06] flex gap-2">
+          <div className="pt-2 border-t border-slate-100 flex gap-2">
             <button
               onClick={() => onNavigate('student-documents')}
-              className="flex-1 py-2 bg-slate-100/80 hover:bg-slate-200/80 text-[#00236f] rounded-xl font-semibold text-[11px] text-center transition-all cursor-pointer"
+              className="flex-1 py-1.5 bg-slate-100/90 hover:bg-slate-200 text-[#00236f] rounded-lg font-semibold text-[11px] text-center transition cursor-pointer"
             >
               Docs Vault
             </button>
             <button
               onClick={() => onNavigate('academics')}
-              className="flex-1 py-2 bg-slate-100/80 hover:bg-slate-200/80 text-[#00236f] rounded-xl font-semibold text-[11px] text-center transition-all cursor-pointer"
+              className="flex-1 py-1.5 bg-slate-100/90 hover:bg-slate-200 text-[#00236f] rounded-lg font-semibold text-[11px] text-center transition cursor-pointer"
             >
               Syllabus & Marks
             </button>
@@ -153,51 +149,51 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         </div>
 
         {/* Financial & Fee Due Summary Card (8 cols) */}
-        <div className="lg:col-span-8 apple-glass-card rounded-2xl p-5 border border-black/[0.06] shadow-sm flex flex-col justify-between">
+        <div className="lg:col-span-8 bg-white apple-glass-card rounded-xl p-3.5 border border-slate-200/80 shadow-2xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between border-b border-black/[0.06] pb-3">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <div>
-                <span className="font-semibold text-[#00236f] tracking-tight">Fee Assessment & Dues Ledger</span>
-                <p className="text-[11px] text-slate-500 mt-0.5">Semester tuition, laboratory, and statutory university assessment</p>
+                <span className="font-bold text-[#00236f] tracking-tight text-xs">Fee Assessment & Dues Ledger</span>
+                <p className="text-[10px] text-slate-500">Semester tuition, laboratory, and statutory university assessment</p>
               </div>
-              <span className={`px-2.5 py-1 rounded-full font-semibold text-[10px] ${
+              <span className={`px-2 py-0.5 rounded-full font-semibold text-[10px] ${
                 isFullyPaid ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
               }`}>
                 {isFullyPaid ? 'Zero Dues • Fully Settled' : 'Payment Pending'}
               </span>
             </div>
 
-            <div className="mt-4 flex flex-col sm:flex-row sm:items-baseline justify-between gap-3">
+            <div className="mt-3 flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
               <div>
                 <span className="text-slate-500 text-[10px] uppercase block font-semibold tracking-wider">Outstanding Semester Due:</span>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <strong className={`text-3xl font-extrabold tracking-tight ${isFullyPaid ? 'text-emerald-700' : 'text-slate-900'}`}>
+                <div className="flex items-baseline gap-2 mt-0.5">
+                  <strong className={`text-2xl font-extrabold tracking-tight ${isFullyPaid ? 'text-emerald-700' : 'text-slate-900'}`}>
                     {isLedgerLoading ? '₹ ...' : `₹ ${totalDue.toLocaleString('en-IN')}`}
                   </strong>
-                  <span className="text-xs text-slate-500 font-medium">
+                  <span className="text-[11px] text-slate-500 font-medium">
                     (Due Date: {nextDueDate})
                   </span>
                 </div>
               </div>
 
               {totalDiscount > 0 && (
-                <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-1.5 rounded-xl text-xs font-semibold">
+                <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-2.5 py-1 rounded-lg text-xs font-semibold">
                   Scholarship Applied: -₹ {totalDiscount.toLocaleString('en-IN')}
                 </div>
               )}
             </div>
 
             {/* Hall Ticket Release Banner */}
-            <div className="mt-4 p-3.5 rounded-xl border border-slate-200/80 bg-slate-50/70 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="mt-3 p-2.5 rounded-lg border border-slate-200 bg-slate-50/80 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
-                <strong className="text-[#00236f] font-semibold block">
+                <strong className="text-[#00236f] font-semibold block text-[11px]">
                   {isFullyPaid && !isDetained
                     ? 'MRSPTU Exam Hall Ticket Released'
                     : isDetained
                     ? 'Hall Ticket Withheld • Attendance Below 75%'
                     : 'Hall Ticket On Accounts Hold'}
                 </strong>
-                <span className="text-slate-600 text-[11px] mt-0.5 block">
+                <span className="text-slate-600 text-[10px] block">
                   {isFullyPaid && !isDetained
                     ? 'No-dues clearance and minimum attendance verified for semester finals.'
                     : isDetained
@@ -208,26 +204,26 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
               <button
                 type="button"
                 onClick={onOpenAdmitCardModal}
-                className="px-3.5 py-1.5 bg-[#00236f] hover:bg-[#00236f]/90 text-white rounded-xl font-semibold text-[11px] shrink-0 transition-all cursor-pointer shadow-xs"
+                className="px-2.5 py-1 bg-[#00236f] hover:bg-[#00236f]/90 text-white rounded-lg font-semibold text-[10px] shrink-0 transition cursor-pointer shadow-2xs"
               >
                 View Hall Ticket &rarr;
               </button>
             </div>
           </div>
 
-          <div className="mt-5 pt-3 border-t border-black/[0.06] flex flex-wrap gap-3">
+          <div className="mt-3 pt-2 border-t border-slate-100 flex flex-wrap gap-2">
             {totalDue > 0 ? (
               <button
                 id="student-pay-now-btn"
                 onClick={onOpenPayModal}
-                className="flex-1 py-2.5 px-4 bg-gradient-to-r from-[#ea580c] to-[#c2410c] hover:opacity-95 text-white rounded-xl font-semibold text-xs tracking-wide text-center transition-all cursor-pointer shadow-sm"
+                className="flex-1 py-2 px-3 bg-gradient-to-r from-[#ea580c] to-[#c2410c] hover:opacity-95 text-white rounded-lg font-bold text-xs tracking-wide text-center transition cursor-pointer shadow-2xs"
               >
                 Pay Outstanding Due: ₹{totalDue.toLocaleString('en-IN')}
               </button>
             ) : (
               <button
                 onClick={() => onOpenReceiptModal(latestReceipt)}
-                className="flex-1 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-xs tracking-wide text-center transition-all cursor-pointer shadow-sm"
+                className="flex-1 py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs tracking-wide text-center transition cursor-pointer shadow-2xs"
               >
                 Download Term Clearance Receipt
               </button>
@@ -235,7 +231,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
             <button
               id="student-view-ledger-btn"
               onClick={() => onNavigate('fee-ledger')}
-              className="py-2.5 px-4 bg-white border border-slate-200 text-[#00236f] hover:bg-slate-50 rounded-xl font-semibold text-xs transition-all cursor-pointer"
+              className="py-2 px-3 bg-white border border-slate-200 text-[#00236f] hover:bg-slate-50 rounded-lg font-semibold text-xs transition cursor-pointer"
             >
               Full Fee Ledger
             </button>
@@ -244,102 +240,102 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
       </div>
 
       {/* Bottom Grid: Quick Modules + Notices + Attendance */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {/* Quick Modules */}
-        <div className="apple-glass-card rounded-2xl p-5 border border-black/[0.06] shadow-sm space-y-3">
-          <span className="font-semibold text-[#00236f] tracking-tight block border-b border-black/[0.06] pb-2">
+        <div className="bg-white apple-glass-card rounded-xl p-3.5 border border-slate-200/80 shadow-2xs space-y-2">
+          <span className="font-bold text-[#00236f] tracking-tight text-xs block border-b border-slate-100 pb-1.5">
             Quick Academic Modules
           </span>
-          <div className="space-y-1.5 font-medium text-xs">
+          <div className="space-y-1 font-medium text-xs">
             <button
               onClick={() => onNavigate('student-quiz-lms')}
-              className="w-full p-2.5 bg-slate-50/80 hover:bg-blue-50/70 border border-slate-200/60 rounded-xl text-left flex justify-between items-center text-[#00236f] transition-all cursor-pointer"
+              className="w-full p-2 bg-slate-50/80 hover:bg-blue-50/70 border border-slate-200/60 rounded-lg text-left flex justify-between items-center text-[#00236f] transition cursor-pointer"
             >
-              <span className="font-semibold">CBT Quiz LMS Engine</span>
-              <span className="text-slate-400 font-normal text-[11px]">Active &rarr;</span>
+              <span className="font-semibold text-[11px]">CBT Quiz LMS Engine</span>
+              <span className="text-slate-400 font-normal text-[10px]">Active &rarr;</span>
             </button>
             <button
               onClick={() => onNavigate('student-documents')}
-              className="w-full p-2.5 bg-slate-50/80 hover:bg-blue-50/70 border border-slate-200/60 rounded-xl text-left flex justify-between items-center text-[#00236f] transition-all cursor-pointer"
+              className="w-full p-2 bg-slate-50/80 hover:bg-blue-50/70 border border-slate-200/60 rounded-lg text-left flex justify-between items-center text-[#00236f] transition cursor-pointer"
             >
-              <span className="font-semibold">Student Documents Vault</span>
-              <span className="text-slate-400 font-normal text-[11px]">85% Domicile &rarr;</span>
+              <span className="font-semibold text-[11px]">Student Documents Vault</span>
+              <span className="text-slate-400 font-normal text-[10px]">85% Domicile &rarr;</span>
             </button>
             <button
               onClick={() => onNavigate('scholarships')}
-              className="w-full p-2.5 bg-slate-50/80 hover:bg-blue-50/70 border border-slate-200/60 rounded-xl text-left flex justify-between items-center text-[#00236f] transition-all cursor-pointer"
+              className="w-full p-2 bg-slate-50/80 hover:bg-blue-50/70 border border-slate-200/60 rounded-lg text-left flex justify-between items-center text-[#00236f] transition cursor-pointer"
             >
-              <span className="font-semibold">Apply For Scholarship</span>
-              <span className="text-slate-400 font-normal text-[11px]">Merit & Post-Matric &rarr;</span>
+              <span className="font-semibold text-[11px]">Apply For Scholarship</span>
+              <span className="text-slate-400 font-normal text-[10px]">Merit & Post-Matric &rarr;</span>
             </button>
             <button
               onClick={() => onNavigate('academics')}
-              className="w-full p-2.5 bg-slate-50/80 hover:bg-blue-50/70 border border-slate-200/60 rounded-xl text-left flex justify-between items-center text-[#00236f] transition-all cursor-pointer"
+              className="w-full p-2 bg-slate-50/80 hover:bg-blue-50/70 border border-slate-200/60 rounded-lg text-left flex justify-between items-center text-[#00236f] transition cursor-pointer"
             >
-              <span className="font-semibold">Timetable & Syllabus</span>
-              <span className="text-slate-400 font-normal text-[11px]">CBCS Scheme &rarr;</span>
+              <span className="font-semibold text-[11px]">Timetable & Syllabus</span>
+              <span className="text-slate-400 font-normal text-[10px]">CBCS Scheme &rarr;</span>
             </button>
           </div>
         </div>
 
         {/* Notices */}
-        <div className="apple-glass-card rounded-2xl p-5 border border-black/[0.06] shadow-sm space-y-3">
-          <div className="flex justify-between items-center border-b border-black/[0.06] pb-2">
-            <span className="font-semibold text-[#00236f] tracking-tight">Campus Notices</span>
+        <div className="bg-white apple-glass-card rounded-xl p-3.5 border border-slate-200/80 shadow-2xs space-y-2">
+          <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
+            <span className="font-bold text-[#00236f] tracking-tight text-xs">Campus Notices</span>
             {notices.length > 3 && (
               <button
                 type="button"
                 onClick={() => setShowAllNotices(!showAllNotices)}
-                className="text-[11px] text-[#ea580c] font-semibold hover:underline cursor-pointer"
+                className="text-[10px] text-[#ea580c] font-semibold hover:underline cursor-pointer"
               >
                 {showAllNotices ? 'Show Less' : 'View All'}
               </button>
             )}
           </div>
-          <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+          <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
             {notices.slice(0, showAllNotices ? 15 : 3).map((n, i) => (
-              <div key={i} className="p-2.5 bg-slate-50/80 border-l-3 border-[#ea580c] rounded-xl text-xs space-y-0.5">
-                <strong className="text-slate-900 block truncate font-semibold">{n.title}</strong>
-                <span className="text-slate-400 text-[10px] block">{n.notice_date}</span>
-                <p className="text-slate-600 line-clamp-1 text-[11px]">{n.summary}</p>
+              <div key={i} className="p-2 bg-slate-50/80 border-l-2 border-[#ea580c] rounded-lg text-xs space-y-0.5">
+                <strong className="text-slate-900 block truncate font-semibold text-[11px]">{n.title}</strong>
+                <span className="text-slate-400 text-[9px] block">{n.notice_date}</span>
+                <p className="text-slate-600 line-clamp-1 text-[10px]">{n.summary}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Attendance Summary */}
-        <div className="apple-glass-card rounded-2xl p-5 border border-black/[0.06] shadow-sm space-y-3">
-          <div className="flex justify-between items-center border-b border-black/[0.06] pb-2">
-            <span className="font-semibold text-[#00236f] tracking-tight">Attendance Monitor</span>
-            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
+        <div className="bg-white apple-glass-card rounded-xl p-3.5 border border-slate-200/80 shadow-2xs space-y-2">
+          <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
+            <span className="font-bold text-[#00236f] tracking-tight text-xs">Attendance Monitor</span>
+            <span className={`px-2 py-0.2 rounded-full text-[9px] font-semibold ${
               isDetained ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
             }`}>
               {isDetained ? 'Detention Risk' : 'Eligible'}
             </span>
           </div>
 
-          <div className="space-y-2 text-center py-2">
-            <span className="text-3xl font-extrabold text-[#00236f] tracking-tight block">{attendancePct}%</span>
-            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+          <div className="space-y-1.5 text-center py-1">
+            <span className="text-2xl font-black text-[#00236f] tracking-tight block">{attendancePct}%</span>
+            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
               <div
                 style={{ width: `${attendancePct}%` }}
                 className={`h-full rounded-full transition-all duration-500 ${attendancePct >= 75 ? 'bg-emerald-500' : 'bg-rose-500'}`}
-              ></div>
+              />
             </div>
-            <span className="text-[10px] text-slate-500 font-medium block">MRSPTU 75% Mandate Threshold</span>
+            <span className="text-[9px] text-slate-500 font-medium block">MRSPTU 75% Mandate Threshold</span>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 text-center border-t border-black/[0.06] pt-3 text-xs">
-            <div className="bg-slate-50/80 py-1.5 rounded-xl">
-              <span className="text-slate-400 text-[10px] block font-medium">Present</span>
+          <div className="grid grid-cols-3 gap-1.5 text-center border-t border-slate-100 pt-2 text-xs">
+            <div className="bg-slate-50/80 py-1 rounded-lg">
+              <span className="text-slate-400 text-[9px] block font-medium">Present</span>
               <strong className="text-emerald-700 font-semibold">{attendedClasses}</strong>
             </div>
-            <div className="bg-slate-50/80 py-1.5 rounded-xl">
-              <span className="text-slate-400 text-[10px] block font-medium">Absent</span>
+            <div className="bg-slate-50/80 py-1 rounded-lg">
+              <span className="text-slate-400 text-[9px] block font-medium">Absent</span>
               <strong className="text-rose-700 font-semibold">{absentClasses}</strong>
             </div>
-            <div className="bg-slate-50/80 py-1.5 rounded-xl">
-              <span className="text-slate-400 text-[10px] block font-medium">Total</span>
+            <div className="bg-slate-50/80 py-1 rounded-lg">
+              <span className="text-slate-400 text-[9px] block font-medium">Total</span>
               <strong className="text-slate-900 font-semibold">{totalClasses}</strong>
             </div>
           </div>

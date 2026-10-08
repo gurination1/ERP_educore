@@ -171,42 +171,35 @@ export const PartnerPortalView: React.FC<PartnerPortalViewProps> = ({ currentUse
   };
 
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 font-sans text-xs text-[#00236f]">
-      {/* Top Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#00236f] via-[#001f60] to-[#00133b] p-6 text-white shadow-xl border border-white/15">
-        <div className="absolute -right-16 -top-16 w-64 h-64 bg-[#ea580c]/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#ea580c] text-white shadow-xs">
-                Corporate Partners & T&P Cell
-              </span>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium bg-white/10 backdrop-blur-md border border-white/15 text-orange-200">
-                Industry Collaboration Hub
-              </span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-              Corporate Partners & Talent Share
-            </h2>
-            <p className="text-xs text-blue-100/90 mt-1 font-medium">
-              Statutory PAN/GST/TAN verified entities, campus openings, and verified student academic share.
-            </p>
-          </div>
+    <div className="space-y-3 font-sans text-xs text-[#00236f]">
+      {/* Sleek Action Toolbar (Saves 140px vertical space) */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-slate-200/70">
+        <div className="flex items-center gap-2">
+          <h2 className="font-extrabold text-sm text-[#00236f] tracking-tight">
+            Corporate Partners & Talent Share
+          </h2>
+          <span className="text-[10px] text-slate-300 font-semibold">•</span>
+          <span className="bg-orange-50 text-[#ea580c] border border-orange-200 font-mono text-[9px] font-bold px-2 py-0.5 rounded-full">
+            T&P Cell Hub
+          </span>
+          <span className="text-[10px] text-slate-500 hidden md:inline-flex">
+            Statutory PAN/GST/TAN verified entities & campus openings
+          </span>
+        </div>
 
-          <div className="flex items-center gap-2.5">
-            <button
-              onClick={() => setShowNewPartnerModal(true)}
-              className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 font-semibold px-4 py-2 rounded-xl text-xs transition cursor-pointer"
-            >
-              + Register Partner Firm
-            </button>
-            <button
-              onClick={() => setShowNewJobModal(true)}
-              className="bg-gradient-to-r from-[#ea580c] to-[#c2410c] hover:opacity-95 text-white font-semibold px-4 py-2 rounded-xl text-xs transition shadow-xs cursor-pointer"
-            >
-              + Post Job / Internship
-            </button>
-          </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowNewPartnerModal(true)}
+            className="h-7 px-3 bg-white hover:bg-slate-50 text-[#00236f] border border-slate-200 font-bold rounded-lg text-[11px] transition cursor-pointer shadow-2xs"
+          >
+            + Register Partner
+          </button>
+          <button
+            onClick={() => setShowNewJobModal(true)}
+            className="h-7 px-3 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold rounded-lg text-[11px] transition shadow-2xs cursor-pointer"
+          >
+            + Post Job / Internship
+          </button>
         </div>
       </div>
 

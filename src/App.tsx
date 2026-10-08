@@ -145,7 +145,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
         onOpenStaffJourney={() => setShowStaffJourney(true)}
       />
 
-      <main className="flex-1 min-w-0 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20">
+      <main className="flex-1 min-w-0 w-full max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4 pb-12">
         {children}
       </main>
 

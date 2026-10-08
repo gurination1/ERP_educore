@@ -328,23 +328,22 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
   };
 
   return (
-    <div id="academics-curriculum-screen" className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-extrabold text-[#191c1d] tracking-tight">
+    <div id="academics-curriculum-screen" className="space-y-3 animate-fadeIn text-xs">
+      {/* Page Header Toolbar */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-slate-200/70">
+        <div className="flex items-center gap-2">
+          <h2 className="font-extrabold text-sm text-[#00236f] tracking-tight">
             Academics & Course Curriculum
           </h2>
-          <p className="text-sm text-[#444651] mt-1">
-            Maharaja Ranjit Singh Punjab Technical University (MRSPTU) Choice Based Credit System (CBCS)
-          </p>
+          <span className="text-[10px] text-slate-300 font-semibold">•</span>
+          <span className="text-[11px] text-slate-600 font-medium">MRSPTU Choice Based Credit System (CBCS)</span>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-bold px-3 py-1.5 bg-[#ffedd5] text-[#00236f] rounded-lg border border-[#ea580c]">
-            Academic Session 2025-26
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-bold px-2.5 py-0.5 bg-[#ffedd5] text-[#00236f] rounded-full border border-[#ea580c]">
+            Session 2025-26
           </span>
-          <span className="text-xs font-bold px-3 py-1.5 bg-[#00236f]/10 text-[#00236f] rounded-lg">
+          <span className="text-[10px] font-bold px-2.5 py-0.5 bg-[#00236f]/10 text-[#00236f] rounded-full">
             Semester 4 (Regular)
           </span>
         </div>

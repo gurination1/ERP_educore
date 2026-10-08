@@ -101,231 +101,227 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   }, []);
 
   return (
-    <div id="admin-dashboard-screen" className="space-y-5 animate-fadeIn text-xs">
-      {/* Executive Hero Banner */}
-      <div className="bg-gradient-to-r from-[#00236f] via-[#001f5c] to-[#001744] text-white p-6 rounded-3xl shadow-md border border-white/10 relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="bg-[#ea580c] text-white px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider shadow-2xs">
-              Enterprise Console
-            </span>
-            <span className="font-mono text-[10px] text-orange-200 bg-white/10 px-2 py-0.5 rounded-full border border-white/10">
-              UID: 4001-01-03-BFGI • Punjab (03)
-            </span>
-          </div>
-          <h2 className="text-lg font-black uppercase tracking-tight text-white">
-            Institutional Operations & Governance
+    <div id="admin-dashboard-screen" className="space-y-3 animate-fadeIn text-xs">
+      {/* Sleek Operations Action Toolbar (Replaces bloated banner, saving 140px vertical space) */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-slate-200/70">
+        <div className="flex items-center gap-2">
+          <h2 className="font-extrabold text-sm text-[#00236f] tracking-tight">
+            Institutional Operations Console
           </h2>
-          <p className="text-xs text-blue-200/90 mt-1">
-            Multi-College Governance • Department Master • Staff HRMS • Admissions CRM • Corporate Partners
-          </p>
+          <span className="text-[10px] text-slate-300 font-semibold">•</span>
+          <span className="bg-orange-50 text-[#ea580c] border border-orange-200 font-mono text-[9px] font-bold px-2 py-0.5 rounded-full">
+            UID: 4001-01-03-BFGI
+          </span>
+          <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-semibold px-2 py-0.5 rounded-full hidden sm:inline-flex">
+            Relational DB Engine Live
+          </span>
         </div>
 
         {/* Quick Filter Selectors */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <select
             id="admin-filter-course"
             value={selectedCourse}
             onChange={e => setSelectedCourse(e.target.value)}
-            className="px-3 py-1.5 bg-white/15 backdrop-blur-md text-white border border-white/20 rounded-full font-semibold text-xs cursor-pointer focus:outline-none"
+            className="h-7 px-2.5 bg-white border border-slate-200 text-slate-700 rounded-lg font-medium text-[11px] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#00236f] shadow-2xs"
           >
-            <option value="All Courses" className="text-slate-900">All Courses</option>
-            <option value="B.Tech CS" className="text-slate-900">B.Tech CSE</option>
-            <option value="B.Tech ME" className="text-slate-900">B.Tech ME</option>
-            <option value="B.Sc Agri" className="text-slate-900">B.Sc Agriculture</option>
-            <option value="MBA Finance" className="text-slate-900">MBA Management</option>
+            <option value="All Courses">All Academic Courses</option>
+            <option value="B.Tech CS">B.Tech CSE</option>
+            <option value="B.Tech ME">B.Tech ME</option>
+            <option value="B.Sc Agri">B.Sc Agriculture</option>
+            <option value="MBA Finance">MBA Management</option>
           </select>
 
           <select
             id="admin-filter-semester"
             value={selectedSemester}
             onChange={e => setSelectedSemester(e.target.value)}
-            className="px-3 py-1.5 bg-white/15 backdrop-blur-md text-white border border-white/20 rounded-full font-semibold text-xs cursor-pointer focus:outline-none"
+            className="h-7 px-2.5 bg-white border border-slate-200 text-slate-700 rounded-lg font-medium text-[11px] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#00236f] shadow-2xs"
           >
-            <option value="Current Semester" className="text-slate-900">Current Semester</option>
-            <option value="Semester 1" className="text-slate-900">Semester 1</option>
-            <option value="Semester 2" className="text-slate-900">Semester 2</option>
-            <option value="Semester 3" className="text-slate-900">Semester 3</option>
-            <option value="Semester 4" className="text-slate-900">Semester 4</option>
+            <option value="Current Semester">Current Term (Sem 4)</option>
+            <option value="Semester 1">Semester 1</option>
+            <option value="Semester 2">Semester 2</option>
+            <option value="Semester 3">Semester 3</option>
+            <option value="Semester 4">Semester 4</option>
           </select>
         </div>
       </div>
 
-      {/* Enterprise Architecture Quick Jump Bento Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      {/* Enterprise Architecture Quick Jump Bento Grid (High Density 6-Col) */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
         <button
           type="button"
           onClick={() => onNavigate('staff-management')}
-          className="p-3.5 bg-white/90 apple-glass-card hover:bg-white border border-slate-200/80 hover:border-blue-300 rounded-2xl text-left transition-all shadow-xs hover:shadow-md group cursor-pointer"
+          className="p-2.5 bg-white apple-glass-card hover:bg-slate-50 border border-slate-200/80 hover:border-blue-300 rounded-xl text-left transition-all shadow-2xs group cursor-pointer"
         >
-          <span className="text-[10px] font-bold text-[#ea580c] block uppercase tracking-wider">Staff Master</span>
-          <strong className="text-xs text-[#00236f] block mt-1 font-extrabold">Staff HRMS</strong>
-          <span className="text-[10px] text-slate-500 block mt-0.5">Multi-Table Dossier</span>
+          <span className="text-[9px] font-bold text-[#ea580c] block uppercase tracking-wider">Staff Master</span>
+          <strong className="text-xs text-[#00236f] block mt-0.5 font-bold">Staff HRMS</strong>
+          <span className="text-[10px] text-slate-500 block">Multi-Table Dossier</span>
         </button>
 
         <button
           type="button"
           onClick={() => onNavigate('enquiries')}
-          className="p-3.5 bg-white/90 apple-glass-card hover:bg-white border border-slate-200/80 hover:border-orange-300 rounded-2xl text-left transition-all shadow-xs hover:shadow-md group cursor-pointer"
+          className="p-2.5 bg-white apple-glass-card hover:bg-slate-50 border border-slate-200/80 hover:border-orange-300 rounded-xl text-left transition-all shadow-2xs group cursor-pointer"
         >
-          <span className="text-[10px] font-bold text-[#ea580c] block uppercase tracking-wider">Admissions CRM</span>
-          <strong className="text-xs text-[#00236f] block mt-1 font-extrabold">Leads Radar</strong>
-          <span className="text-[10px] text-slate-500 block mt-0.5">{enquiryCount} Active Leads</span>
+          <span className="text-[9px] font-bold text-[#ea580c] block uppercase tracking-wider">Admissions CRM</span>
+          <strong className="text-xs text-[#00236f] block mt-0.5 font-bold">Leads Radar</strong>
+          <span className="text-[10px] text-slate-500 block">{enquiryCount} Active Leads</span>
         </button>
 
         <button
           type="button"
           onClick={() => onNavigate('bulk-import')}
-          className="p-3.5 bg-white/90 apple-glass-card hover:bg-white border border-slate-200/80 hover:border-blue-300 rounded-2xl text-left transition-all shadow-xs hover:shadow-md group cursor-pointer"
+          className="p-2.5 bg-white apple-glass-card hover:bg-slate-50 border border-slate-200/80 hover:border-blue-300 rounded-xl text-left transition-all shadow-2xs group cursor-pointer"
         >
-          <span className="text-[10px] font-bold text-[#00236f] block uppercase tracking-wider">CSV Engine</span>
-          <strong className="text-xs text-[#00236f] block mt-1 font-extrabold">Bulk Mapper</strong>
-          <span className="text-[10px] text-slate-500 block mt-0.5">3-Tier Verification</span>
+          <span className="text-[9px] font-bold text-[#00236f] block uppercase tracking-wider">CSV Engine</span>
+          <strong className="text-xs text-[#00236f] block mt-0.5 font-bold">Bulk Mapper</strong>
+          <span className="text-[10px] text-slate-500 block">3-Tier Verification</span>
         </button>
 
         <button
           type="button"
           onClick={() => onNavigate('partner-portal')}
-          className="p-3.5 bg-white/90 apple-glass-card hover:bg-white border border-slate-200/80 hover:border-orange-300 rounded-2xl text-left transition-all shadow-xs hover:shadow-md group cursor-pointer"
+          className="p-2.5 bg-white apple-glass-card hover:bg-slate-50 border border-slate-200/80 hover:border-orange-300 rounded-xl text-left transition-all shadow-2xs group cursor-pointer"
         >
-          <span className="text-[10px] font-bold text-[#ea580c] block uppercase tracking-wider">Corporate</span>
-          <strong className="text-xs text-[#00236f] block mt-1 font-extrabold">Hiring Partners</strong>
-          <span className="text-[10px] text-slate-500 block mt-0.5">{partnerCount} Firms Connected</span>
+          <span className="text-[9px] font-bold text-[#ea580c] block uppercase tracking-wider">Corporate</span>
+          <strong className="text-xs text-[#00236f] block mt-0.5 font-bold">Hiring Partners</strong>
+          <span className="text-[10px] text-slate-500 block">{partnerCount} Firms Connected</span>
         </button>
 
         <button
           type="button"
           onClick={() => onNavigate('manage-students')}
-          className="p-3.5 bg-white/90 apple-glass-card hover:bg-white border border-slate-200/80 hover:border-blue-300 rounded-2xl text-left transition-all shadow-xs hover:shadow-md group cursor-pointer"
+          className="p-2.5 bg-white apple-glass-card hover:bg-slate-50 border border-slate-200/80 hover:border-blue-300 rounded-xl text-left transition-all shadow-2xs group cursor-pointer"
         >
-          <span className="text-[10px] font-bold text-[#00236f] block uppercase tracking-wider">Students</span>
-          <strong className="text-xs text-[#00236f] block mt-1 font-extrabold">Student Registry</strong>
-          <span className="text-[10px] text-slate-500 block mt-0.5">Enrollment & Domicile</span>
+          <span className="text-[9px] font-bold text-[#00236f] block uppercase tracking-wider">Students</span>
+          <strong className="text-xs text-[#00236f] block mt-0.5 font-bold">Student Registry</strong>
+          <span className="text-[10px] text-slate-500 block">Enrollment & Domicile</span>
         </button>
 
         <button
           type="button"
           onClick={() => onNavigate('fee-ledger')}
-          className="p-3.5 bg-white/90 apple-glass-card hover:bg-white border border-slate-200/80 hover:border-orange-300 rounded-2xl text-left transition-all shadow-xs hover:shadow-md group cursor-pointer"
+          className="p-2.5 bg-white apple-glass-card hover:bg-slate-50 border border-slate-200/80 hover:border-orange-300 rounded-xl text-left transition-all shadow-2xs group cursor-pointer"
         >
-          <span className="text-[10px] font-bold text-[#ea580c] block uppercase tracking-wider">Finance</span>
-          <strong className="text-xs text-[#00236f] block mt-1 font-extrabold">Fee Ledger</strong>
-          <span className="text-[10px] text-slate-500 block mt-0.5">Billing & Receipts</span>
+          <span className="text-[9px] font-bold text-[#ea580c] block uppercase tracking-wider">Finance</span>
+          <strong className="text-xs text-[#00236f] block mt-0.5 font-bold">Fee Ledger</strong>
+          <span className="text-[10px] text-slate-500 block">Billing & Receipts</span>
         </button>
       </div>
 
       {/* Operational Master & Tagging Status Strip */}
-      <div className="bg-white/90 apple-glass-card rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-2.5">
-        <div className="flex justify-between items-center border-b border-slate-100 pb-2">
-          <div>
-            <span className="font-extrabold text-[#00236f] tracking-tight">Department Tagging Matrix & Statuses</span>
-            <span className="text-[11px] text-slate-500 ml-2">7 Tagged Departments Active</span>
+      <div className="bg-white/95 apple-glass-card rounded-xl p-2.5 border border-slate-200/80 shadow-2xs space-y-1.5">
+        <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-[#00236f] tracking-tight text-[11px]">Department Tagging Matrix</span>
+            <span className="text-[10px] text-slate-400">7 Active</span>
           </div>
-          <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full font-mono text-[10px] font-bold">
-            Relational Engine Active
+          <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.2 rounded-full font-mono text-[9px] font-bold">
+            Relational DB Engine Active
           </span>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <span className="px-3 py-1 bg-blue-50/80 border border-blue-200/80 text-[#00236f] rounded-full text-[10px] font-bold">
+        <div className="flex flex-wrap gap-1.5">
+          <span className="px-2.5 py-0.5 bg-blue-50/80 border border-blue-200/80 text-[#00236f] rounded-full text-[10px] font-semibold">
             CSE · AI & Software
           </span>
-          <span className="px-3 py-1 bg-emerald-50/80 border border-emerald-200/80 text-emerald-800 rounded-full text-[10px] font-bold">
+          <span className="px-2.5 py-0.5 bg-emerald-50/80 border border-emerald-200/80 text-emerald-800 rounded-full text-[10px] font-semibold">
             AGRI · Agronomy & Soil
           </span>
-          <span className="px-3 py-1 bg-amber-50/80 border border-amber-200/80 text-amber-900 rounded-full text-[10px] font-bold">
+          <span className="px-2.5 py-0.5 bg-amber-50/80 border border-amber-200/80 text-amber-900 rounded-full text-[10px] font-semibold">
             CE · Civil & Surveying
           </span>
-          <span className="px-3 py-1 bg-purple-50/80 border border-purple-200/80 text-purple-900 rounded-full text-[10px] font-bold">
+          <span className="px-2.5 py-0.5 bg-purple-50/80 border border-purple-200/80 text-purple-900 rounded-full text-[10px] font-semibold">
             ME · Mechanical & Robotics
           </span>
-          <span className="px-3 py-1 bg-cyan-50/80 border border-cyan-200/80 text-cyan-900 rounded-full text-[10px] font-bold">
+          <span className="px-2.5 py-0.5 bg-cyan-50/80 border border-cyan-200/80 text-cyan-900 rounded-full text-[10px] font-semibold">
             MGMT · Business & Finance
           </span>
-          <span className="px-3 py-1 bg-rose-50/80 border border-rose-200/80 text-rose-900 rounded-full text-[10px] font-bold">
+          <span className="px-2.5 py-0.5 bg-rose-50/80 border border-rose-200/80 text-rose-900 rounded-full text-[10px] font-semibold">
             PHARM · Pharmacy & Health
           </span>
-          <span className="px-3 py-1 bg-slate-100 border border-slate-200 text-slate-800 rounded-full text-[10px] font-bold">
+          <span className="px-2.5 py-0.5 bg-slate-100 border border-slate-200 text-slate-800 rounded-full text-[10px] font-semibold">
             APP_SCI · Physics & Math
           </span>
         </div>
       </div>
 
-      {/* 4 Financial & Operational KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* 4 Financial & Operational KPI Cards (Sleek Compact Strip) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
         {/* KPI 1: Total Collected */}
-        <div className="bg-white/90 apple-glass-card rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
+        <div className="bg-white apple-glass-card rounded-xl p-3 border border-slate-200/80 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-shadow">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
               Total Fee Collection
             </span>
-            <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full text-[9px] font-bold">
+            <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.2 rounded-full text-[9px] font-semibold">
               Collected
             </span>
           </div>
-          <div className="mt-3">
-            <h3 className="text-2xl font-black text-[#00236f] tracking-tight">
+          <div className="mt-2">
+            <h3 className="text-xl font-extrabold text-[#00236f] tracking-tight">
               {kpiData.totalCollectedFormatted}
             </h3>
-            <p className="text-[11px] font-bold text-emerald-600 mt-1">
+            <p className="text-[10px] font-semibold text-emerald-600 mt-0.5">
               {kpiData.totalCollectedGrowth}
             </p>
           </div>
         </div>
 
         {/* KPI 2: Pending Dues */}
-        <div className="bg-white/90 apple-glass-card rounded-2xl p-5 border border-rose-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
+        <div className="bg-white apple-glass-card rounded-xl p-3 border border-rose-200/80 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-shadow">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
               Pending Dues Alert
             </span>
-            <span className="bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-full text-[9px] font-bold">
+            <span className="bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.2 rounded-full text-[9px] font-semibold">
               Outstanding
             </span>
           </div>
-          <div className="mt-3">
-            <h3 className="text-2xl font-black text-rose-600 tracking-tight">
+          <div className="mt-2">
+            <h3 className="text-xl font-extrabold text-rose-600 tracking-tight">
               {kpiData.pendingDuesFormatted}
             </h3>
-            <p className="text-[11px] font-bold text-rose-600 mt-1">
+            <p className="text-[10px] font-semibold text-rose-600 mt-0.5">
               {kpiData.pendingDuesAlert}
             </p>
           </div>
         </div>
 
         {/* KPI 3: Pending Approvals */}
-        <div className="bg-white/90 apple-glass-card rounded-2xl p-5 border border-orange-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
+        <div className="bg-white apple-glass-card rounded-xl p-3 border border-orange-200/80 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-shadow">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
               Pending Approvals
             </span>
-            <span className="bg-orange-50 text-[#ea580c] border border-orange-200 px-2 py-0.5 rounded-full text-[9px] font-bold">
+            <span className="bg-orange-50 text-[#ea580c] border border-orange-200 px-2 py-0.2 rounded-full text-[9px] font-semibold">
               Action Required
             </span>
           </div>
-          <div className="mt-3">
-            <h3 className="text-2xl font-black text-[#ea580c] tracking-tight">
+          <div className="mt-2">
+            <h3 className="text-xl font-extrabold text-[#ea580c] tracking-tight">
               {kpiData.pendingApprovals}
             </h3>
-            <p className="text-[11px] text-slate-500 mt-1">{kpiData.pendingApprovalsLabel}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">{kpiData.pendingApprovalsLabel}</p>
           </div>
         </div>
 
         {/* KPI 4: Total Students */}
-        <div className="bg-white/90 apple-glass-card rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
+        <div className="bg-white apple-glass-card rounded-xl p-3 border border-slate-200/80 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-shadow">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
               Enrolled Students
             </span>
-            <span className="bg-blue-50 text-[#00236f] border border-blue-200 px-2 py-0.5 rounded-full text-[9px] font-bold">
+            <span className="bg-blue-50 text-[#00236f] border border-blue-200 px-2 py-0.2 rounded-full text-[9px] font-semibold">
               Active Roll
             </span>
           </div>
-          <div className="mt-3">
-            <h3 className="text-2xl font-black text-[#00236f] tracking-tight">
+          <div className="mt-2">
+            <h3 className="text-xl font-extrabold text-[#00236f] tracking-tight">
               {kpiData.totalStudents}
             </h3>
-            <p className="text-[11px] text-slate-500 mt-1">{kpiData.totalStudentsLabel}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">{kpiData.totalStudentsLabel}</p>
           </div>
         </div>
       </div>
@@ -335,23 +331,23 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         {/* Fees Collected Trend Bar Chart (7 cols) */}
         <div
           id="fees-trend-chart-card"
-          className="lg:col-span-7 bg-white rounded p-4 border border-[#00236f]/20 shadow-xs flex flex-col justify-between"
+          className="lg:col-span-7 bg-white apple-glass-card rounded-xl p-3.5 border border-slate-200/80 shadow-2xs flex flex-col justify-between"
         >
           <div>
-            <div className="flex items-center justify-between border-b pb-2">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <div>
                 <h3 className="text-xs font-bold text-[#00236f] uppercase">Fees Collected Trend (Lakhs INR)</h3>
-                <p className="text-[10px] text-gray-500">
+                <p className="text-[10px] text-slate-500">
                   Monthly institutional collections & revenue realization
                 </p>
               </div>
-              <span className="px-2 py-0.5 bg-gray-100 border rounded text-[9px] font-mono text-gray-700">
+              <span className="px-2 py-0.5 bg-slate-100 border border-slate-200 rounded text-[9px] font-mono text-slate-700">
                 JAN - JUN 2026
               </span>
             </div>
 
             {/* Bar Visualization */}
-            <div className="mt-4 h-48 flex items-end justify-between gap-3 px-2 pt-4 pb-2 border-b border-gray-200">
+            <div className="mt-3 h-44 flex items-end justify-between gap-3 px-2 pt-4 pb-2 border-b border-slate-100">
               {trendData.map((item, idx) => (
                 <div key={idx} className="flex-1 flex flex-col items-center gap-1 group h-full justify-end">
                   <span className="text-[9px] font-mono font-bold text-[#00236f] opacity-0 group-hover:opacity-100 transition whitespace-nowrap bg-blue-100 px-1 rounded">
@@ -362,48 +358,50 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                     className={`w-full max-w-[42px] rounded-t transition-all ${
                       item.isHighest ? 'bg-[#ea580c]' : 'bg-[#00236f] hover:bg-[#00236f]/80'
                     }`}
-                  ></div>
-                  <span className="text-[9px] font-mono text-gray-600 mt-1">{item.month}</span>
+                  />
+                  <span className="text-[9px] font-bold text-slate-600 uppercase mt-1">
+                    {item.month}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="mt-3 pt-2 flex items-center justify-between text-[10px] text-gray-500">
-            <span>Orange indicates peak collection month (June Sem End)</span>
+          <div className="mt-2 pt-1 flex justify-between items-center text-[10px] text-slate-500">
+            <span>Semester Term Collections: <strong className="text-slate-800">Verified Relational Ledger</strong></span>
             <button
               onClick={() => onNavigate('fee-ledger')}
-              className="text-[#00236f] font-bold hover:underline"
+              className="text-[#ea580c] font-bold hover:underline"
             >
-              [VIEW COMPLETE FEE AUDIT LEDGER &rarr;]
+              Inspect Fee Ledger &rarr;
             </button>
           </div>
         </div>
 
-        {/* Critical Defaulters Table (5 cols) */}
-        <div className="lg:col-span-5 bg-white rounded p-4 border border-[#00236f]/20 shadow-xs flex flex-col justify-between">
+        {/* Defaulter Fee Alert List (5 cols) */}
+        <div className="lg:col-span-5 bg-white apple-glass-card rounded-xl p-3.5 border border-slate-200/80 shadow-2xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between border-b pb-2">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <div>
                 <h3 className="text-xs font-bold text-rose-800 uppercase">Critical Defaulter Alerts</h3>
-                <p className="text-[10px] text-gray-500">Students with outstanding semester fees</p>
+                <p className="text-[10px] text-slate-500">Students with outstanding semester fees</p>
               </div>
-              <span className="px-1.5 py-0.5 bg-rose-100 text-rose-800 rounded text-[9px] font-bold">
-                [{defaulters.length} OVERDUE]
+              <span className="px-1.5 py-0.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-full text-[9px] font-bold">
+                {defaulters.length} Overdue
               </span>
             </div>
 
-            <div className="divide-y divide-gray-100 mt-2 space-y-1">
+            <div className="divide-y divide-slate-100 mt-1 space-y-0.5">
               {defaulters.map(d => (
-                <div key={d.id} className="py-2 flex items-center justify-between text-[10px]">
+                <div key={d.id} className="py-1.5 flex items-center justify-between text-[10px]">
                   <div>
-                    <strong className="text-gray-900 block">{d.studentName}</strong>
-                    <span className="text-gray-500 text-[9px]">{d.courseInfo}</span>
+                    <strong className="text-slate-900 block font-semibold">{d.studentName}</strong>
+                    <span className="text-slate-500 text-[9px]">{d.courseInfo}</span>
                   </div>
                   <div className="text-right">
                     <span className="font-mono font-bold text-rose-700 block">{d.dueAmountFormatted}</span>
-                    <span className="text-[8px] px-1 py-0.5 rounded font-bold bg-rose-50 text-rose-800 border border-rose-200">
-                      [{d.status}]
+                    <span className="text-[8px] px-1.5 py-0.2 rounded-full font-bold bg-rose-50 text-rose-800 border border-rose-200">
+                      {d.status}
                     </span>
                   </div>
                 </div>
@@ -411,18 +409,18 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             </div>
           </div>
 
-          <div className="mt-3 pt-2 border-t flex justify-end gap-2">
+          <div className="mt-3 pt-2 border-t border-slate-100 flex justify-end gap-2">
             <button
               onClick={onOpenEmailReminders}
-              className="px-2.5 py-1 bg-white border border-[#00236f] text-[#00236f] hover:bg-blue-50 rounded font-bold text-[10px]"
+              className="px-2.5 py-1 bg-white border border-[#00236f] text-[#00236f] hover:bg-blue-50 rounded-lg font-bold text-[10px] cursor-pointer"
             >
-              [DISPATCH REMINDERS]
+              Dispatch Reminders
             </button>
             <button
               onClick={() => setShowAINotice(true)}
-              className="px-3 py-1 bg-[#ea580c] hover:bg-[#ea580c]/90 text-white rounded font-bold text-[10px]"
+              className="px-3 py-1 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-lg font-bold text-[10px] cursor-pointer"
             >
-              [AI NOTICE GENERATOR]
+              AI Fee Notice Draft &rarr;
             </button>
           </div>
         </div>
