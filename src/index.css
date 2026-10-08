@@ -145,13 +145,15 @@
   100% { transform: translateX(-50%); }
 }
 
-.mrsptu-ticker-track {
+.mrsptu-ticker-track,
+.campus-ticker-track {
   display: flex;
   width: max-content;
   animation: tickerMarquee 45s linear infinite;
 }
 
-.mrsptu-ticker-track:hover {
+.mrsptu-ticker-track:hover,
+.campus-ticker-track:hover {
   animation-play-state: paused;
 }
 

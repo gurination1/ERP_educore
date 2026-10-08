@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api, getStoredToken } from '../api/client';
 import { StudentProfile } from '../types';
 
@@ -11,6 +12,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
   onSelectStudent,
   onOpenEmailReminders,
 }) => {
+  const navigate = useNavigate();
   const [students, setStudents] = useState<StudentProfile[]>([]);
   const [totalCount, setTotalCount] = useState(97);
   const [currentPage, setCurrentPage] = useState(1);
@@ -132,13 +134,13 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
             type="button"
             onClick={() => {
               if (window.history.state && typeof window.history.state.idx === 'number' && window.history.state.idx > 0) {
-                window.history.back();
+                navigate(-1);
               } else {
-                window.location.href = '/dashboard';
+                navigate('/dashboard');
               }
             }}
             className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-base transition-all cursor-pointer border border-slate-200/80 shadow-2xs shrink-0"
-            title="Return to Previous (Alt + ←)"
+            title="Return to Previous Screen (Alt + ←)"
           >
             ‹
           </button>
@@ -337,7 +339,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
                         <td className="py-3.5 px-4">
                           <div className="flex items-center gap-2.5">
                             <div
-                              className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${getAvatarBadgeColor(
+                              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${getAvatarBadgeColor(
                                 fullName
                               )}`}
                             >
@@ -350,7 +352,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
                         <td className="py-3.5 px-4 text-[#757682]">{sessionName}</td>
                         <td className="py-3.5 px-4">
                           <span
-                            className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold capitalize ${
+                            className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${
                               s.fees_status === 'paid'
                                 ? 'bg-[#ffedd5] text-[#00236f]'
                                 : s.fees_status === 'due'
@@ -364,10 +366,10 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
                         <td className="py-3.5 px-4 text-right">
                           <button
                             onClick={() => onSelectStudent(s)}
-                            className="text-[#00236f] hover:text-[#1e3a8a] font-bold inline-flex items-center gap-0.5 text-xs hover:underline cursor-pointer"
+                            className="text-[#00236f] hover:text-[#1e3a8a] font-bold inline-flex items-center gap-1 text-xs hover:underline cursor-pointer"
                           >
                             <span>View</span>
-                            <span className="font-bold text-[10px]">→</span>
+                            <span className="font-bold text-xs">→</span>
                           </button>
                         </td>
                       </tr>
@@ -385,11 +387,11 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
               {Math.min(currentPage * 5, totalCount)} of {totalCount} results
             </span>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <button
                 disabled={currentPage <= 1}
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                className="px-2.5 py-1 border border-[#e1e3e4] rounded bg-white hover:bg-[#f3f4f5] disabled:opacity-40 transition-colors font-medium cursor-pointer"
+                className="h-8 px-3 border border-[#e1e3e4] rounded-lg bg-white hover:bg-[#f3f4f5] disabled:opacity-40 transition-colors font-medium text-xs cursor-pointer"
               >
                 Previous
               </button>
@@ -410,7 +412,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
                     <button
                       key={p}
                       onClick={() => setCurrentPage(p)}
-                      className={`w-7 h-7 rounded text-xs font-bold transition-colors cursor-pointer ${
+                      className={`w-8 h-8 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                         currentPage === p
                           ? 'bg-[#00236f] text-white'
                           : 'border border-[#e1e3e4] bg-white text-[#191c1d] hover:bg-[#f3f4f5]'
@@ -424,7 +426,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
               <button
                 disabled={currentPage >= totalPages}
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                className="px-2.5 py-1 border border-[#e1e3e4] rounded bg-white hover:bg-[#f3f4f5] disabled:opacity-40 transition-colors font-medium cursor-pointer"
+                className="h-8 px-3 border border-[#e1e3e4] rounded-lg bg-white hover:bg-[#f3f4f5] disabled:opacity-40 transition-colors font-medium text-xs cursor-pointer"
               >
                 Next
               </button>

@@ -750,6 +750,19 @@ studentRouter.post('/:id/promote', authenticateToken, requireRole('admin'), asyn
     });
   }
 
+  // 4. Record statutory cryptographic audit trail with historical term baseline
+  await db.createAuditLog({
+    actor_id: req.user?.id || 'usr-admin-01',
+    actor_name: req.user?.full_name || 'Dean / Campus Administrator',
+    actor_role: req.user?.role || 'admin',
+    actor_ip: (req.headers['x-forwarded-for'] as string) || req.ip || '127.0.0.1',
+    action: 'STUDENT_PROMOTION',
+    target_type: 'student',
+    target_id: student.id,
+    details: `Promoted student ${student.first_name} ${student.last_name} (${student.student_id}) from Semester ${student.current_semester} to Semester ${newSemester}. Archiving term baseline: Attendance ${student.attendance_percentage || 0}% (${student.attended_classes || 0}/${student.total_classes || 0} sessions). Statutory Semester ${newSemester} tuition fee ₹${tuitionAmount.toLocaleString('en-IN')} assessed under multi-university ordinance.`,
+    severity: 'info',
+  });
+
   const updatedStudent = await db.getStudentById(student.id);
 
   res.json({

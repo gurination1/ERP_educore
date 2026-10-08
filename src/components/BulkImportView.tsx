@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { safeGoBack } from '../utils/navigation';
 import { User } from '../types';
 import { api } from '../api/client';
 
@@ -202,15 +203,9 @@ Navkiran Gill,9872011223,navkiran.gill@gmail.com,B.Tech CSE,S. Harnek Singh,fema
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => {
-              if (window.history.state && typeof window.history.state.idx === 'number' && window.history.state.idx > 0) {
-                window.history.back();
-              } else {
-                window.location.href = '/dashboard';
-              }
-            }}
-            className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-[#00236f] flex items-center justify-center font-bold text-sm transition-all cursor-pointer border border-slate-200/80 shrink-0"
-            title="Return to Previous (Alt + ←)"
+            onClick={() => safeGoBack()}
+            className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-[#00236f] flex items-center justify-center font-bold text-sm transition-all cursor-pointer border border-slate-200/80 shrink-0"
+            title="Return to Previous Screen (Alt + ←)"
           >
             ‹
           </button>

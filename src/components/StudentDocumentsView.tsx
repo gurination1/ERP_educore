@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { safeGoBack } from '../utils/navigation';
 import { User, DocumentRecord } from '../types';
 
 interface StudentDocumentsViewProps {
@@ -184,15 +185,9 @@ export const StudentDocumentsView: React.FC<StudentDocumentsViewProps> = ({ curr
         <div className="flex items-center gap-2.5">
           <button
             type="button"
-            onClick={() => {
-              if (window.history.state && typeof window.history.state.idx === 'number' && window.history.state.idx > 0) {
-                window.history.back();
-              } else {
-                window.location.href = '/dashboard';
-              }
-            }}
-            className="w-6 h-6 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition-all cursor-pointer border border-slate-200/80 shrink-0"
-            title="Return to Previous (Alt + ←)"
+            onClick={() => safeGoBack()}
+            className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition-all cursor-pointer border border-slate-200/80 shrink-0"
+            title="Return to Previous Screen (Alt + ←)"
           >
             ‹
           </button>

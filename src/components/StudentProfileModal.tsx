@@ -84,7 +84,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors border border-slate-200/80"
+              className="h-8 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors border border-slate-200/80"
               title="Return to Student Master Directory"
             >
               <span className="font-bold text-sm leading-none">‹</span>
@@ -93,10 +93,10 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="w-7 h-7 rounded-full flex items-center justify-center text-[#757682] hover:bg-[#edeeef] cursor-pointer"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-[#757682] hover:bg-[#edeeef] cursor-pointer border border-transparent hover:border-slate-200"
               title="Close Profile"
             >
-              <span className="font-bold text-[10px]">✕</span>
+              <span className="font-bold text-xs">✕</span>
             </button>
           </div>
         </div>
@@ -108,49 +108,49 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
             {/* Student Info Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 bg-[#f8f9fa] rounded-xl border border-[#edeeef]">
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#757682] block">
+                <span className="text-xs uppercase font-bold text-[#757682] block">
                   Course
                 </span>
-                <span className="font-bold text-[#191c1d] mt-0.5 block">
+                <span className="font-bold text-[#191c1d] mt-0.5 block text-xs">
                   {student.course?.name || student.course?.code || 'B.Tech'}
                 </span>
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#757682] block">
+                <span className="text-xs uppercase font-bold text-[#757682] block">
                   Current Semester
                 </span>
-                <span className="font-bold text-[#191c1d] mt-0.5 block">
+                <span className="font-bold text-[#191c1d] mt-0.5 block text-xs">
                   Semester {student.current_semester}
                 </span>
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#757682] block">
+                <span className="text-xs uppercase font-bold text-[#757682] block">
                   Session
                 </span>
-                <span className="font-bold text-[#191c1d] mt-0.5 block">
+                <span className="font-bold text-[#191c1d] mt-0.5 block text-xs">
                   {student.session?.name || '2025-26'}
                 </span>
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#757682] block">
+                <span className="text-xs uppercase font-bold text-[#757682] block">
                   Email
                 </span>
-                <span className="font-medium text-[#191c1d] mt-0.5 block truncate">
+                <span className="font-medium text-[#191c1d] mt-0.5 block truncate text-xs">
                   {student.email}
                 </span>
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#757682] block">
+                <span className="text-xs uppercase font-bold text-[#757682] block">
                   Phone
                 </span>
-                <span className="font-medium text-[#191c1d] mt-0.5 block">{student.phone}</span>
+                <span className="font-medium text-[#191c1d] mt-0.5 block text-xs">{student.phone}</span>
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#757682] block">
+                <span className="text-xs uppercase font-bold text-[#757682] block">
                   Fees Status
                 </span>
                 <span
-                  className={`inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                  className={`inline-block mt-0.5 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase ${
                     student.fees_status === 'paid'
                       ? 'bg-[#ffedd5] text-[#00236f]'
                       : student.fees_status === 'due'
@@ -165,40 +165,40 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
 
             {/* Guardian Info */}
             <div className="p-3 bg-[#ffffff] rounded-lg border border-[#e1e3e4]">
-              <span className="font-bold text-[#191c1d] block mb-1">Guardian Contact:</span>
-              <p className="text-[#444651]">
+              <span className="font-bold text-[#191c1d] block mb-1 text-xs">Guardian Contact:</span>
+              <p className="text-[#444651] text-xs">
                 {student.guardian_name} ({student.guardian_relation}) • {student.guardian_phone}
               </p>
             </div>
 
             {/* Fee Items Table */}
             <div>
-              <h4 className="font-bold text-[#191c1d] mb-2 uppercase text-[11px] tracking-wider text-[#757682]">
+              <h4 className="font-bold text-[#191c1d] mb-2 uppercase text-xs tracking-wider text-[#757682]">
                 Assessed Fee Heads
               </h4>
               <div className="border border-[#e1e3e4] rounded-lg overflow-hidden">
                 <table className="w-full text-left border-collapse text-xs">
-                  <thead className="bg-[#f8f9fa] border-b border-[#e1e3e4] text-[10px] text-[#757682] uppercase font-bold">
+                  <thead className="bg-[#f8f9fa] border-b border-[#e1e3e4] text-xs text-[#757682] uppercase font-bold">
                     <tr>
-                      <th className="py-2 px-3">Head</th>
-                      <th className="py-2 px-3">Amount</th>
-                      <th className="py-2 px-3">Paid</th>
-                      <th className="py-2 px-3">Due</th>
-                      <th className="py-2 px-3">Status</th>
+                      <th className="py-2.5 px-3">Head</th>
+                      <th className="py-2.5 px-3">Amount</th>
+                      <th className="py-2.5 px-3">Paid</th>
+                      <th className="py-2.5 px-3">Due</th>
+                      <th className="py-2.5 px-3">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#f3f4f5]">
                     {profileData?.fees?.map((f: any) => (
                       <tr key={f.id}>
-                        <td className="py-2 px-3 font-semibold text-[#191c1d]">
+                        <td className="py-2.5 px-3 font-semibold text-[#191c1d]">
                           {f.fee_head?.title || 'Academic Fee'}
                         </td>
-                        <td className="py-2 px-3 font-semibold">₹ {f.amount.toLocaleString('en-IN')}</td>
-                        <td className="py-2 px-3 text-[#00236f]">₹ {f.paid_amount.toLocaleString('en-IN')}</td>
-                        <td className="py-2 px-3 text-[#ba1a1a] font-bold">
+                        <td className="py-2.5 px-3 font-semibold">₹ {f.amount.toLocaleString('en-IN')}</td>
+                        <td className="py-2.5 px-3 text-[#00236f]">₹ {f.paid_amount.toLocaleString('en-IN')}</td>
+                        <td className="py-2.5 px-3 text-[#ba1a1a] font-bold">
                           ₹ {f.due_amount.toLocaleString('en-IN')}
                         </td>
-                        <td className="py-2 px-3 uppercase font-bold text-[10px]">
+                        <td className="py-2.5 px-3 uppercase font-bold text-xs">
                           {f.status}
                         </td>
                       </tr>
@@ -210,7 +210,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
 
             {promoteMsg && (
               <div className="p-3 bg-[#ffedd5] border border-[#ea580c] rounded-lg text-[#00236f] text-xs font-semibold flex items-center gap-2">
-                <span className="font-bold text-[10px]">✓</span>
+                <span className="font-bold text-xs">✓</span>
                 <span>{promoteMsg}</span>
               </div>
             )}

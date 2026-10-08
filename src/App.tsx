@@ -218,48 +218,46 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
       <main className="flex-1 min-w-0 w-full max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4 pb-12">
         {/* Cupertino Breadcrumb & Universal Back Ribbon */}
         {canGoBack && (
-          <nav aria-label="Breadcrumb Navigation" className="mb-3.5 flex flex-wrap items-center justify-between gap-2.5 px-3.5 py-2 bg-white/80 backdrop-blur-xl border border-slate-200/70 rounded-2xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] text-xs text-slate-600">
-            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+          <nav aria-label="Breadcrumb Navigation" className="mb-3.5 flex flex-wrap items-center justify-between gap-2.5 px-4 py-2.5 bg-white/85 backdrop-blur-xl border border-slate-200/80 rounded-2xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] text-xs text-slate-600">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
               {/* Apple-grade Back Pill */}
               <button
                 type="button"
                 onClick={handleGoBack}
                 title="Return to previous screen (Alt + ←)"
-                className="h-6 px-2.5 bg-slate-100 hover:bg-slate-200/90 text-slate-800 rounded-full font-bold text-[11px] flex items-center gap-1 transition-all cursor-pointer shadow-2xs hover:shadow-xs group border border-slate-200/80 mr-1 shrink-0"
+                className="h-7 px-3 bg-slate-100 hover:bg-slate-200/90 active:bg-slate-300 text-slate-800 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs hover:shadow-xs group border border-slate-200/80 mr-1 shrink-0"
               >
                 <span className="text-sm font-black text-[#00236f] group-hover:-translate-x-0.5 transition-transform leading-none">‹</span>
                 <span>Back</span>
+                <span className="hidden md:inline text-[10px] text-slate-400 font-mono ml-0.5">Alt+‹</span>
               </button>
 
               {/* Breadcrumb Steps */}
               <button
                 type="button"
                 onClick={() => navigate('/dashboard')}
-                className="hover:text-[#00236f] font-medium transition-colors cursor-pointer flex items-center gap-1 text-[11.5px]"
+                className="hover:text-[#00236f] font-semibold transition-colors cursor-pointer flex items-center gap-1 text-xs"
               >
                 <span>Console</span>
               </button>
 
-              <span className="text-slate-300 font-bold select-none text-[10px]">›</span>
+              <span className="text-slate-300 font-bold select-none text-xs">›</span>
 
-              <span className="text-slate-500 font-medium text-[11.5px]">
+              <span className="text-slate-500 font-medium text-xs">
                 {breadcrumb.category}
               </span>
 
-              <span className="text-slate-300 font-bold select-none text-[10px]">›</span>
+              <span className="text-slate-300 font-bold select-none text-xs">›</span>
 
-              <span className="font-bold text-[#00236f] truncate max-w-[220px] sm:max-w-md text-[11.5px]">
+              <span className="font-bold text-[#00236f] truncate max-w-[240px] sm:max-w-md text-xs">
                 {breadcrumb.title}
               </span>
             </div>
 
             {/* Right Institutional Pill */}
-            <div className="hidden sm:flex items-center gap-2 shrink-0 text-[10px]">
-              <span className="font-semibold text-slate-400 bg-slate-100/80 px-2 py-0.5 rounded-full border border-slate-200/60 font-mono">
-                Alt + ‹ to return
-              </span>
-              <span className="font-semibold text-[#00236f] bg-blue-50/80 px-2 py-0.5 rounded-full border border-blue-100">
-                PUP Patiala • MRSPTU • PU
+            <div className="hidden sm:flex items-center gap-2 shrink-0 text-xs">
+              <span className="font-semibold text-[#00236f] bg-blue-50/90 px-2.5 py-0.5 rounded-full border border-blue-100">
+                PUP Patiala • MRSPTU • PU Affiliated
               </span>
             </div>
           </nav>
@@ -658,6 +656,8 @@ function MainApp() {
           element={
             !currentUser ? (
               <Navigate to="/" replace />
+            ) : !['admin', 'super_admin'].includes(currentUser.role) ? (
+              <Navigate to="/dashboard" replace />
             ) : (
               <AuthenticatedLayout
                 currentUser={currentUser}
@@ -694,6 +694,8 @@ function MainApp() {
           element={
             !currentUser ? (
               <Navigate to="/" replace />
+            ) : !['admin', 'super_admin', 'staff', 'accounts', 'hod'].includes(currentUser.role) ? (
+              <Navigate to="/dashboard" replace />
             ) : (
               <AuthenticatedLayout
                 currentUser={currentUser}
@@ -712,6 +714,8 @@ function MainApp() {
           element={
             !currentUser ? (
               <Navigate to="/" replace />
+            ) : !['admin', 'super_admin'].includes(currentUser.role) ? (
+              <Navigate to="/dashboard" replace />
             ) : (
               <AuthenticatedLayout
                 currentUser={currentUser}
@@ -817,6 +821,8 @@ function MainApp() {
           element={
             !currentUser ? (
               <Navigate to="/" replace />
+            ) : !['admin', 'super_admin', 'staff', 'hod'].includes(currentUser.role) ? (
+              <Navigate to="/dashboard" replace />
             ) : (
               <AuthenticatedLayout
                 currentUser={currentUser}
@@ -853,6 +859,8 @@ function MainApp() {
           element={
             !currentUser ? (
               <Navigate to="/" replace />
+            ) : !['admin', 'super_admin', 'hod'].includes(currentUser.role) ? (
+              <Navigate to="/dashboard" replace />
             ) : (
               <AuthenticatedLayout
                 currentUser={currentUser}
@@ -871,6 +879,8 @@ function MainApp() {
           element={
             !currentUser ? (
               <Navigate to="/" replace />
+            ) : !['admin', 'super_admin', 'partner'].includes(currentUser.role) ? (
+              <Navigate to="/dashboard" replace />
             ) : (
               <AuthenticatedLayout
                 currentUser={currentUser}
@@ -889,6 +899,8 @@ function MainApp() {
           element={
             !currentUser ? (
               <Navigate to="/" replace />
+            ) : !['admin', 'super_admin', 'staff', 'counselor'].includes(currentUser.role) ? (
+              <Navigate to="/dashboard" replace />
             ) : (
               <AuthenticatedLayout
                 currentUser={currentUser}
@@ -907,6 +919,8 @@ function MainApp() {
           element={
             !currentUser ? (
               <Navigate to="/" replace />
+            ) : !['admin', 'super_admin', 'staff', 'counselor'].includes(currentUser.role) ? (
+              <Navigate to="/dashboard" replace />
             ) : (
               <AuthenticatedLayout
                 currentUser={currentUser}
