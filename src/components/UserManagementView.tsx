@@ -419,7 +419,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
         <div
           className={`p-3.5 rounded-xl text-xs font-bold flex items-center justify-between gap-2 animate-fadeIn ${
             feedback.type === 'success'
-              ? 'bg-[#86f2e4]/30 border border-[#86f2e4] text-[#006a61]'
+              ? 'bg-[#ffedd5] border border-[#ea580c] text-[#00236f]'
               : 'bg-[#ffdad6]/50 border border-[#ba1a1a]/30 text-[#ba1a1a]'
           }`}
         >
@@ -446,8 +446,8 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
           <p className="text-[10px] text-[#757682] mt-0.5">Teaching & Lab</p>
         </div>
         <div className="bg-white p-3.5 rounded-xl border border-[#e1e3e4] shadow-xs">
-          <span className="text-[10px] uppercase font-bold text-[#006a61] block">Counselors</span>
-          <h4 className="text-2xl font-black text-[#006a61] mt-1">{counselorCount}</h4>
+          <span className="text-[10px] uppercase font-bold text-[#00236f] block">Counselors</span>
+          <h4 className="text-2xl font-black text-[#00236f] mt-1">{counselorCount}</h4>
           <p className="text-[10px] text-[#757682] mt-0.5">Admission Cell</p>
         </div>
         <div className="bg-white p-3.5 rounded-xl border border-[#e1e3e4] shadow-xs">
@@ -599,11 +599,11 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
                             isUserActive
-                              ? 'bg-[#86f2e4]/30 text-[#006a61]'
+                              ? 'bg-[#ffedd5] text-[#00236f]'
                               : 'bg-[#ffdad6] text-[#ba1a1a]'
                           }`}
                         >
-                          <span className={`w-1.5 h-1.5 rounded-full ${isUserActive ? 'bg-[#006a61]' : 'bg-[#ba1a1a]'}`}></span>
+                          <span className={`w-1.5 h-1.5 rounded-full ${isUserActive ? 'bg-[#ea580c]' : 'bg-[#ba1a1a]'}`}></span>
                           <span>{isUserActive ? 'Active' : 'Suspended'}</span>
                         </span>
                       </td>
@@ -627,7 +627,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                           </button>
                           <button
                             onClick={() => openResetPasswordModal(user)}
-                            className="p-1 text-[#006a61] hover:bg-teal-50 rounded border border-transparent hover:border-teal-200 cursor-pointer"
+                            className="p-1 text-[#00236f] hover:bg-teal-50 rounded border border-transparent hover:border-teal-200 cursor-pointer"
                             title="Override & Reset Password"
                           >
                             
@@ -638,7 +638,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                             className={`p-1 rounded border border-transparent cursor-pointer disabled:opacity-30 ${
                               isUserActive
                                 ? 'text-[#ba1a1a] hover:bg-red-50 hover:border-red-200'
-                                : 'text-[#006a61] hover:bg-teal-50 hover:border-teal-200'
+                                : 'text-[#00236f] hover:bg-teal-50 hover:border-teal-200'
                             }`}
                             title={isUserActive ? 'Suspend Account' : 'Reactivate Account'}
                           >
@@ -813,7 +813,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                   required
                   value={hireForm.password}
                   onChange={e => setHireForm(prev => ({ ...prev, password: e.target.value }))}
-                  className="w-full p-2 bg-[#f3f4f5] rounded-lg border border-[#e1e3e4] focus:border-[#00236f] focus:outline-none font-mono font-bold text-[#006a61]"
+                  className="w-full p-2 bg-[#f3f4f5] rounded-lg border border-[#e1e3e4] focus:border-[#00236f] focus:outline-none font-mono font-bold text-[#00236f]"
                 />
               </div>
 
@@ -987,7 +987,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                   required
                   value={newPassword}
                   onChange={e => setNewPassword(e.target.value)}
-                  className="w-full p-2.5 bg-[#f3f4f5] rounded-lg border border-[#e1e3e4] focus:border-[#00236f] focus:outline-none font-mono font-bold text-[#006a61] text-sm"
+                  className="w-full p-2.5 bg-[#f3f4f5] rounded-lg border border-[#e1e3e4] focus:border-[#00236f] focus:outline-none font-mono font-bold text-[#00236f] text-sm"
                 />
               </div>
 
@@ -1064,7 +1064,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                 <div className="flex items-center justify-between">
                   <span className="text-[#757682] text-[11px]">Temporary Password:</span>
                   <div className="flex items-center gap-1.5">
-                    <span className="font-mono font-bold text-[#006a61]">{credentialsSlip.temporaryPassword}</span>
+                    <span className="font-mono font-bold text-[#00236f]">{credentialsSlip.temporaryPassword}</span>
                     <button
                       onClick={() => handleCopy(credentialsSlip.temporaryPassword, 'slip_pwd')}
                       className="text-[#00236f] hover:underline cursor-pointer"

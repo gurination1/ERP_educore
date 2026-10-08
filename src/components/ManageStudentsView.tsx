@@ -113,7 +113,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
   const getAvatarBadgeColor = (name: string) => {
     const colors = [
       'bg-[#00236f] text-white',
-      'bg-[#006a61] text-white',
+      'bg-[#ea580c] text-white',
       'bg-[#6366f1] text-white',
       'bg-[#d97706] text-white',
       'bg-[#059669] text-white',
@@ -270,7 +270,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
             </div>
             <div className="mt-3">
               <h3 className="text-3xl font-extrabold text-[#191c1d] tracking-tight">{totalCount.toLocaleString('en-IN')}</h3>
-              <p className="text-xs font-semibold text-[#006a61] mt-1 flex items-center gap-1">
+              <p className="text-xs font-semibold text-[#00236f] mt-1 flex items-center gap-1">
                 
                 <span>+12% this semester</span>
               </p>
@@ -336,7 +336,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
                           <span
                             className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold capitalize ${
                               s.fees_status === 'paid'
-                                ? 'bg-[#86f2e4]/40 text-[#006a61]'
+                                ? 'bg-[#ffedd5] text-[#00236f]'
                                 : s.fees_status === 'due'
                                 ? 'bg-[#fef3c7] text-[#b45309]'
                                 : 'bg-[#ffdad6] text-[#ba1a1a]'

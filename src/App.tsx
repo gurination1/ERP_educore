@@ -340,7 +340,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
               </div>
               <div>
                 <h1 className="text-xs font-extrabold text-[#191c1d] leading-none">EduCore Mobile</h1>
-                <span className="text-[8px] font-mono font-semibold text-[#006a61]">
+                <span className="text-[8px] font-mono font-semibold text-[#00236f]">
                   {currentUser?.enterprise_uid || '1001-03-BFGI-260088'}
                 </span>
               </div>
@@ -611,11 +611,16 @@ function MainApp() {
 
   if (isInitializing) {
     return (
-      <div className="min-h-screen bg-[#0a1428] flex flex-col items-center justify-center text-white space-y-4">
-        <div className="w-12 h-12 border-4 border-[#86f2e4] border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-sm font-semibold tracking-wider text-[#86f2e4] uppercase">
-          Initializing EduCore ERP...
-        </p>
+      <div className="min-h-screen bg-[#001744] flex flex-col items-center justify-center text-white space-y-3 font-sans">
+        <div className="w-10 h-10 border-4 border-[#ea580c] border-t-transparent rounded-full animate-spin"></div>
+        <div className="text-center">
+          <p className="text-[12px] font-black tracking-widest text-white uppercase">
+            EDUCORE ENTERPRISE ERP
+          </p>
+          <p className="text-[10px] font-mono text-[#ea580c] uppercase mt-0.5">
+            [BFGI CAMPUS PORTAL • INITIALIZING CANONICAL SESSION]
+          </p>
+        </div>
       </div>
     );
   }
@@ -889,8 +894,8 @@ function MainApp() {
                   <div className="bg-white rounded-xl p-6 border border-[#e1e3e4] shadow-xs space-y-4 text-xs">
                     <h3 className="text-sm font-bold text-[#191c1d] border-b border-[#f3f4f5] pb-2 flex items-center justify-between">
                       <span>Institutional Infrastructure & Node.js/MariaDB Stack</span>
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#006a61] bg-[#86f2e4]/30 px-2 py-0.5 rounded">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#006a61]"></span>
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#00236f] bg-[#ffedd5] px-2 py-0.5 rounded">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#ea580c]"></span>
                         {dbStatus?.activeEngine || 'SQL Database Engine Connected'}
                       </span>
                     </h3>
@@ -907,7 +912,7 @@ function MainApp() {
                       </div>
                       <div>
                         <span className="text-[#757682] block">Active Session:</span>
-                        <strong className="text-[#006a61]">2025-26 (Fall Admissions)</strong>
+                        <strong className="text-[#00236f]">2025-26 (Fall Admissions)</strong>
                       </div>
                       <div>
                         <span className="text-[#757682] block">Storage Location:</span>

@@ -47,7 +47,7 @@ export const EmailRemindersModal: React.FC<EmailRemindersModalProps> = ({ onClos
         </div>
 
         {sentResult && (
-          <div className="p-3 bg-[#86f2e4]/30 border border-[#86f2e4] text-[#006a61] rounded-lg text-xs font-semibold">
+          <div className="p-3 bg-[#ffedd5] border border-[#ea580c] text-[#00236f] rounded-lg text-xs font-semibold">
             {sentResult}
           </div>
         )}

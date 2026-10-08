@@ -280,7 +280,7 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
           {isLoading ? (
             <div className="p-6 text-center text-xs text-[#757682]">Loading student fee breakdown...</div>
           ) : feeItems.length === 0 ? (
-            <div className="p-6 text-center text-xs text-[#006a61] bg-[#86f2e4]/20 rounded-xl border border-[#86f2e4]">
+            <div className="p-6 text-center text-xs text-[#00236f] bg-[#ffedd5] rounded-xl border border-[#ea580c]">
               🎉 No pending fee dues! All fee heads for this student are fully settled.
             </div>
           ) : (

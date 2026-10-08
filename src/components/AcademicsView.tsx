@@ -341,7 +341,7 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="text-xs font-bold px-3 py-1.5 bg-[#86f2e4]/30 text-[#006a61] rounded-lg border border-[#86f2e4]">
+          <span className="text-xs font-bold px-3 py-1.5 bg-[#ffedd5] text-[#00236f] rounded-lg border border-[#ea580c]">
             Academic Session 2025-26
           </span>
           <span className="text-xs font-bold px-3 py-1.5 bg-[#00236f]/10 text-[#00236f] rounded-lg">
@@ -352,7 +352,7 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
 
       {/* Download Alert Toast */}
       {downloadSuccess && (
-        <div className="p-3.5 bg-[#86f2e4]/20 border border-[#86f2e4] text-[#006a61] rounded-xl text-xs font-bold flex items-center gap-2">
+        <div className="p-3.5 bg-[#ffedd5] border border-[#ea580c] text-[#00236f] rounded-xl text-xs font-bold flex items-center gap-2">
           <span className="font-bold text-[10px]">✓</span>
           <span>{downloadSuccess}</span>
         </div>
@@ -376,7 +376,7 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
         </div>
 
         <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
-          <div className="flex items-center gap-2.5 text-[#006a61]">
+          <div className="flex items-center gap-2.5 text-[#00236f]">
             
             <h4 className="text-xs font-bold uppercase tracking-wider text-[#757682]">
               Evaluation Ratio

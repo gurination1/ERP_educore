@@ -118,7 +118,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
 
       {/* Export feedback toast */}
       {exportMessage && (
-        <div className="p-3.5 bg-[#86f2e4]/20 border border-[#86f2e4] text-[#006a61] rounded-xl text-xs font-bold flex items-center gap-2">
+        <div className="p-3.5 bg-[#ffedd5] border border-[#ea580c] text-[#00236f] rounded-xl text-xs font-bold flex items-center gap-2">
           
           <span>{exportMessage}</span>
         </div>
@@ -133,7 +133,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
           <p className="text-2xl font-extrabold text-[#00236f] mt-1">
             {kpiData?.totalCollectedFormatted || '₹ 2.4 Cr'}
           </p>
-          <span className="text-xs text-[#006a61] font-semibold mt-1 block">
+          <span className="text-xs text-[#00236f] font-semibold mt-1 block">
             {kpiData?.totalCollectedGrowth || 'Reconciled in MariaDB'}
           </span>
         </div>
@@ -157,7 +157,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
           <p className="text-2xl font-extrabold text-[#191c1d] mt-1">
             {kpiData?.totalStudents || '1,432'}
           </p>
-          <span className="text-xs text-[#006a61] font-semibold mt-1 block">
+          <span className="text-xs text-[#00236f] font-semibold mt-1 block">
             Active Fall 2025 Roster
           </span>
         </div>
@@ -223,7 +223,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
                     <td className="p-3.5 text-[#444651]">{item.department}</td>
                     <td className="p-3.5 text-center font-bold text-[#191c1d]">{item.studentCount}</td>
                     <td className="p-3.5 text-center">
-                      <span className="px-2 py-0.5 bg-[#86f2e4]/30 text-[#006a61] rounded font-bold">
+                      <span className="px-2 py-0.5 bg-[#ffedd5] text-[#00236f] rounded font-bold">
                         {item.paidCount}
                       </span>
                     </td>
@@ -232,7 +232,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
                         {item.dueCount}
                       </span>
                     </td>
-                    <td className="p-3.5 text-right font-extrabold text-[#006a61]">
+                    <td className="p-3.5 text-right font-extrabold text-[#00236f]">
                       ₹ {item.totalCollected.toLocaleString('en-IN')}
                     </td>
                     <td className="p-3.5 text-right font-extrabold text-[#ba1a1a]">

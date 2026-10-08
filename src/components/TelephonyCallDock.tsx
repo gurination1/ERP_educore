@@ -618,7 +618,7 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
                 <button
                   type="submit"
                   disabled={savingDisposition}
-                  className="px-5 py-2 bg-[#006a61] hover:bg-[#004f48] text-white rounded-lg font-bold shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2 bg-[#ea580c] hover:bg-[#9a3412] text-white rounded-lg font-bold shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
                   {savingDisposition ? (
                     <>

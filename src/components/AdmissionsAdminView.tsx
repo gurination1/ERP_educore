@@ -420,7 +420,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
           {(currentUser?.role === 'admin' || currentUser?.role === 'super_admin') && (
             <button
               onClick={() => setIsDirectAdmitOpen(true)}
-              className="px-4 py-2 bg-[#006a61] hover:bg-[#004f48] text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 bg-[#ea580c] hover:bg-[#9a3412] text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
             >
               
               <span>Direct College Admission</span>
@@ -444,7 +444,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
       </div>
 
       {statusMessage && (
-        <div className="p-3.5 bg-[#86f2e4]/30 border border-[#86f2e4] text-[#006a61] rounded-xl text-xs font-bold flex items-center gap-2 animate-fadeIn">
+        <div className="p-3.5 bg-[#ffedd5] border border-[#ea580c] text-[#00236f] rounded-xl text-xs font-bold flex items-center gap-2 animate-fadeIn">
           <span className="font-bold text-[10px]">✓</span>
           <span>{statusMessage}</span>
         </div>
@@ -501,7 +501,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 {(followupStats?.overdue || 0) + (followupStats?.due_today || 0)} Urgent
               </span>
             ) : (
-              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#86f2e4] text-[#006a61]">
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#ffedd5] text-[#00236f]">
                 Active
               </span>
             )}
@@ -675,11 +675,11 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
             <div
               className="p-4 rounded-xl border bg-white border-[#e1e3e4] shadow-xs"
             >
-              <div className="flex items-center justify-between text-[#006a61]">
+              <div className="flex items-center justify-between text-[#00236f]">
                 <span className="text-[10px] uppercase font-bold tracking-wider">Admitted Converted</span>
                 <span className="font-bold text-[10px]">✓</span>
               </div>
-              <h4 className="text-3xl font-black text-[#006a61] mt-1.5">
+              <h4 className="text-3xl font-black text-[#00236f] mt-1.5">
                 {followupStats?.converted ?? 0}
               </h4>
               <p className="text-[10px] text-[#757682] mt-0.5">Converted to approved enrollments</p>
@@ -911,7 +911,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                                     notes: '',
                                   });
                                 }}
-                                className="px-2.5 py-1 bg-[#006a61] hover:bg-[#004f48] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                                className="px-2.5 py-1 bg-[#ea580c] hover:bg-[#9a3412] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
                                 title="Log Phone Call, Campus Visit or Parent Counseling Outcome"
                               >
                                 
@@ -974,8 +974,8 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
           <p className="text-[10px] text-[#757682] mt-0.5">Eligibility sanctioned</p>
         </div>
         <div className="bg-white p-3.5 rounded-xl border border-[#e1e3e4] shadow-xs">
-          <span className="text-[10px] uppercase font-bold text-[#006a61] block">Enrolled Active</span>
-          <h4 className="text-2xl font-black text-[#006a61] mt-1">{approvedCount}</h4>
+          <span className="text-[10px] uppercase font-bold text-[#00236f] block">Enrolled Active</span>
+          <h4 className="text-2xl font-black text-[#00236f] mt-1">{approvedCount}</h4>
           <p className="text-[10px] text-[#757682] mt-0.5">Accounts & ledgers</p>
         </div>
         <div className="bg-white p-3.5 rounded-xl border border-[#e1e3e4] shadow-xs">
@@ -1082,7 +1082,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                         <span
                           className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                             adm.admission_status === 'approved' || adm.admission_status === 'enrolled'
-                              ? 'bg-[#86f2e4]/40 text-[#006a61]'
+                              ? 'bg-[#ffedd5] text-[#00236f]'
                               : adm.admission_status === 'rejected'
                               ? 'bg-[#ffdad6] text-[#ba1a1a]'
                               : adm.admission_status === 'verified' || adm.admission_status === 'fee_pending'
@@ -1132,7 +1132,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                               <button
                                 disabled={actionLoadingId === adm.id}
                                 onClick={() => handleStatusUpdate(adm.id, 'approved', 'Admitted from Progressive Intake')}
-                                className="px-2.5 py-1 bg-[#006a61] hover:bg-[#004f48] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                                className="px-2.5 py-1 bg-[#ea580c] hover:bg-[#9a3412] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
                                 title="Institutional Admission Sanction & Account Provision"
                               >
                                 <span className="font-bold text-[10px]">✓</span>
@@ -1184,7 +1184,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                               <button
                                 disabled={actionLoadingId === adm.id}
                                 onClick={() => handleStatusUpdate(adm.id, 'approved', 'Institutional Admission Sanction')}
-                                className="px-2.5 py-1 bg-[#006a61] hover:bg-[#004f48] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                                className="px-2.5 py-1 bg-[#ea580c] hover:bg-[#9a3412] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
                                 title="Admit directly and provision student credentials"
                               >
                                 <span className="font-bold text-[10px]">✓</span>
@@ -1216,7 +1216,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                               <button
                                 disabled={actionLoadingId === adm.id}
                                 onClick={() => handleStatusUpdate(adm.id, 'approved', 'Admitted post Scrutiny Verification')}
-                                className="px-3 py-1 bg-[#006a61] hover:bg-[#004f48] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                                className="px-3 py-1 bg-[#ea580c] hover:bg-[#9a3412] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
                               >
                                 
                                 <span>Admit & Provision</span>
@@ -1236,7 +1236,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                             </button>
                           </div>
                         ) : adm.admission_status === 'approved' || adm.admission_status === 'enrolled' ? (
-                          <span className="text-[11px] font-bold text-[#006a61] inline-flex items-center gap-1">
+                          <span className="text-[11px] font-bold text-[#00236f] inline-flex items-center gap-1">
                             <span className="font-bold text-[10px]">✓</span>
                             <span>Enrolled & Active</span>
                           </span>
@@ -1580,7 +1580,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
               <div className="p-4 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl space-y-2">
                 <div className="flex justify-between font-bold text-[#191c1d]">
                   <span>Itemized Statutory Indian College Fee Structure:</span>
-                  <span className="text-[#006a61]">
+                  <span className="text-[#00236f]">
                     Total Initial Dues: ₹ {
                       (90000 + 5500 + 5000 + (directForm.residentialMode === 'hosteller' ? 38000 : directForm.residentialMode === 'bus_commuter' ? 14000 : 0)).toLocaleString('en-IN')
                     }
@@ -1619,7 +1619,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 <button
                   type="submit"
                   disabled={directSubmitting}
-                  className="px-6 py-2.5 bg-[#006a61] hover:bg-[#004f48] text-white rounded-lg text-xs font-bold shadow-xs disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+                  className="px-6 py-2.5 bg-[#ea580c] hover:bg-[#9a3412] text-white rounded-lg text-xs font-bold shadow-xs disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
                 >
                   
                   <span>{directSubmitting ? 'Enrolling & Generating...' : 'Confirm Admission & Provision Credentials'}</span>
@@ -1665,7 +1665,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 </div>
                 <div>
                   <span className="text-[#757682] block text-[11px]">Residential Status:</span>
-                  <span className="font-semibold text-[#006a61]">{credentialsSlip.residentialStatus || 'Day Scholar'}</span>
+                  <span className="font-semibold text-[#00236f]">{credentialsSlip.residentialStatus || 'Day Scholar'}</span>
                 </div>
               </div>
 
@@ -1722,7 +1722,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                     ))}
                     <div className="flex justify-between py-1.5 px-3 bg-[#f8f9fa] font-bold">
                       <span>Total Initial Due Amount:</span>
-                      <span className="text-[#006a61]">₹ {credentialsSlip.totalInitialDue?.toLocaleString('en-IN')}</span>
+                      <span className="text-[#00236f]">₹ {credentialsSlip.totalInitialDue?.toLocaleString('en-IN')}</span>
                     </div>
                   </div>
                 </div>
@@ -1789,7 +1789,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
               <div className="border border-[#e1e3e4] rounded-xl p-3.5 space-y-2 bg-[#fdfdfd]">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-[#191c1d] text-[11px] uppercase tracking-wider">Academic Marksheet Audit</span>
-                  <span className="px-2 py-0.5 bg-[#86f2e4]/30 text-[#006a61] font-bold text-[10px] rounded-full">
+                  <span className="px-2 py-0.5 bg-[#ffedd5] text-[#00236f] font-bold text-[10px] rounded-full">
                     Cutoff Met (≥50%)
                   </span>
                 </div>
@@ -2081,7 +2081,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 <button
                   type="submit"
                   disabled={followupSubmitting}
-                  className="px-5 py-2 bg-[#006a61] hover:bg-[#004f48] text-white rounded-lg font-bold shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2 bg-[#ea580c] hover:bg-[#9a3412] text-white rounded-lg font-bold shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
                   
                   <span>{followupSubmitting ? 'Saving...' : 'Save Interaction & Schedule Callback'}</span>

@@ -164,8 +164,8 @@ export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => 
     switch (st) {
       case 'resolved':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-[#006a61] border border-emerald-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#006a61]"></span>
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-[#00236f] border border-emerald-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#ea580c]"></span>
             Resolved
           </span>
         );
@@ -241,7 +241,7 @@ export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => 
       </div>
 
       {successMessage && (
-        <div className="p-4 bg-[#86f2e4]/30 border border-[#86f2e4] text-[#006a61] rounded-xl text-xs font-bold flex items-center gap-2 animate-fadeIn">
+        <div className="p-4 bg-[#ffedd5] border border-[#ea580c] text-[#00236f] rounded-xl text-xs font-bold flex items-center gap-2 animate-fadeIn">
           <span className="font-bold text-[10px]">✓</span>
           <span>{successMessage}</span>
         </div>
@@ -260,8 +260,8 @@ export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => 
           <p className="text-[11px] text-[#757682] mt-0.5">Committee investigation active</p>
         </div>
         <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
-          <span className="text-[10px] uppercase font-bold text-[#006a61]">Resolved & Closed</span>
-          <h4 className="text-2xl font-black text-[#006a61] mt-1">{resolvedCount}</h4>
+          <span className="text-[10px] uppercase font-bold text-[#00236f]">Resolved & Closed</span>
+          <h4 className="text-2xl font-black text-[#00236f] mt-1">{resolvedCount}</h4>
           <p className="text-[11px] text-[#757682] mt-0.5">Official remarks issued</p>
         </div>
         <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
@@ -388,7 +388,7 @@ export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => 
               {/* Committee Remarks Display */}
               {g.admin_remarks && (
                 <div className="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-lg text-xs space-y-1">
-                  <div className="flex items-center gap-1.5 text-[#006a61] font-bold">
+                  <div className="flex items-center gap-1.5 text-[#00236f] font-bold">
                     
                     <span>Official SGRC Committee Resolution:</span>
                     {g.resolved_by && <span className="text-[10px] text-emerald-800">({g.resolved_by})</span>}
@@ -572,7 +572,7 @@ export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => 
                 <button
                   type="submit"
                   disabled={isSavingResolution}
-                  className="px-5 py-2 bg-[#006a61] hover:bg-[#004f48] text-white rounded-lg text-xs font-bold shadow-xs disabled:opacity-50 cursor-pointer"
+                  className="px-5 py-2 bg-[#ea580c] hover:bg-[#9a3412] text-white rounded-lg text-xs font-bold shadow-xs disabled:opacity-50 cursor-pointer"
                 >
                   {isSavingResolution ? 'Recording Resolution...' : 'Commit SGRC Decision'}
                 </button>

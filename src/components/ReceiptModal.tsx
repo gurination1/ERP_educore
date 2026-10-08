@@ -146,7 +146,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptNo, onClose }
                     <td className="py-3 uppercase text-[#757682]">
                       {receiptData.paymentMode || 'Online UPI'}
                     </td>
-                    <td className="py-3 text-right font-black text-sm text-[#006a61]">
+                    <td className="py-3 text-right font-black text-sm text-[#00236f]">
                       ₹ {(receiptData.amount || 45000).toLocaleString('en-IN')}
                     </td>
                   </tr>
@@ -154,9 +154,9 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptNo, onClose }
               </table>
 
               {/* Total & Words */}
-              <div className="p-4 bg-[#86f2e4]/15 rounded-xl border border-[#86f2e4]/40 flex items-center justify-between">
+              <div className="p-4 bg-[#ffedd5] rounded-xl border border-[#ea580c]/40 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-[#006a61] block">
+                  <span className="text-[10px] uppercase font-bold text-[#00236f] block">
                     Amount in Words
                   </span>
                   <span className="text-xs font-semibold text-[#191c1d] italic">
@@ -164,7 +164,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptNo, onClose }
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] uppercase font-bold text-[#006a61] block">
+                  <span className="text-[10px] uppercase font-bold text-[#00236f] block">
                     Net Total Paid
                   </span>
                   <span className="text-xl font-black text-[#00236f]">
@@ -175,8 +175,8 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptNo, onClose }
 
               {/* Stamp & Signatory */}
               <div className="pt-8 flex items-center justify-between">
-                <div className="border border-dashed border-[#006a61] rounded-lg p-2.5 bg-[#86f2e4]/10 text-center">
-                  <span className="text-[10px] font-bold text-[#006a61] uppercase block">
+                <div className="border border-dashed border-[#ea580c] rounded-lg p-2.5 bg-[#ffedd5] text-center">
+                  <span className="text-[10px] font-bold text-[#00236f] uppercase block">
                     ✓ Digitally Signed & Verified
                   </span>
                   <span className="text-[9px] text-[#757682]">

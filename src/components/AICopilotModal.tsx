@@ -138,7 +138,7 @@ export const AICopilotModal: React.FC<AICopilotModalProps> = ({
               onClick={() => handleAsk()}
               className={`absolute right-2 top-2 px-3 py-1.5 text-white text-xs font-bold rounded-lg disabled:opacity-50 transition-all flex items-center gap-1 cursor-pointer ${
                 isStudent
-                  ? 'bg-[#006a61] hover:bg-[#004d40]'
+                  ? 'bg-[#ea580c] hover:bg-[#004d40]'
                   : 'bg-[#00236f] hover:bg-[#1a4bb0]'
               }`}
             >

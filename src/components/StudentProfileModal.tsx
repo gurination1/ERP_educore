@@ -136,7 +136,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                 <span
                   className={`inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
                     student.fees_status === 'paid'
-                      ? 'bg-[#86f2e4]/40 text-[#006a61]'
+                      ? 'bg-[#ffedd5] text-[#00236f]'
                       : student.fees_status === 'due'
                       ? 'bg-[#fef3c7] text-[#b45309]'
                       : 'bg-[#ffdad6] text-[#ba1a1a]'
@@ -178,7 +178,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                           {f.fee_head?.title || 'Academic Fee'}
                         </td>
                         <td className="py-2 px-3 font-semibold">₹ {f.amount.toLocaleString('en-IN')}</td>
-                        <td className="py-2 px-3 text-[#006a61]">₹ {f.paid_amount.toLocaleString('en-IN')}</td>
+                        <td className="py-2 px-3 text-[#00236f]">₹ {f.paid_amount.toLocaleString('en-IN')}</td>
                         <td className="py-2 px-3 text-[#ba1a1a] font-bold">
                           ₹ {f.due_amount.toLocaleString('en-IN')}
                         </td>
@@ -193,7 +193,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
             </div>
 
             {promoteMsg && (
-              <div className="p-3 bg-[#86f2e4]/20 border border-[#006a61] rounded-lg text-[#006a61] text-xs font-semibold flex items-center gap-2">
+              <div className="p-3 bg-[#ffedd5] border border-[#ea580c] rounded-lg text-[#00236f] text-xs font-semibold flex items-center gap-2">
                 <span className="font-bold text-[10px]">✓</span>
                 <span>{promoteMsg}</span>
               </div>
@@ -206,7 +206,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                     type="button"
                     onClick={handlePromote}
                     disabled={isPromoting || (profileData?.current_semester || student.current_semester) >= 8}
-                    className="px-3.5 py-2 bg-[#006a61] hover:bg-[#004f48] text-white font-bold rounded-lg text-xs flex items-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-xs"
+                    className="px-3.5 py-2 bg-[#ea580c] hover:bg-[#9a3412] text-white font-bold rounded-lg text-xs flex items-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-xs"
                     title="Advance student to next academic term and assess statutory tuition"
                   >
                     

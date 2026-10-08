@@ -240,7 +240,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                         </div>
                       </div>
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                        s.fees_status === 'paid' ? 'bg-[#86f2e4]/30 text-[#006a61]' : 'bg-[#fef3c7] text-[#b45309]'
+                        s.fees_status === 'paid' ? 'bg-[#ffedd5] text-[#00236f]' : 'bg-[#fef3c7] text-[#b45309]'
                       }`}>
                         {s.fees_status || 'due'}
                       </span>
@@ -320,13 +320,13 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
           </div>
 
           <div className="bg-white p-5 rounded-xl border border-[#e1e3e4] shadow-xs">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#006a61]">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#00236f]">
               Scholarships & Aid
             </span>
-            <h3 className="text-2xl font-extrabold text-[#006a61] mt-1">
+            <h3 className="text-2xl font-extrabold text-[#00236f] mt-1">
               ₹ {((ledgerData.ledger || []).reduce((acc: number, f: any) => acc + (f.discount_amount || 0), 0)).toLocaleString('en-IN')}
             </h3>
-            <p className="text-xs text-[#006a61] font-semibold mt-0.5">Approved fee concessions</p>
+            <p className="text-xs text-[#00236f] font-semibold mt-0.5">Approved fee concessions</p>
           </div>
 
           <div className="bg-white p-5 rounded-xl border border-[#e1e3e4] shadow-xs">
@@ -340,13 +340,13 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
           </div>
 
           <div className="bg-white p-5 rounded-xl border border-[#e1e3e4] shadow-xs">
-            <span className={`text-xs font-bold uppercase tracking-wider ${ledgerData.summary.totalDue <= 0 ? 'text-[#006a61]' : 'text-[#ba1a1a]'}`}>
+            <span className={`text-xs font-bold uppercase tracking-wider ${ledgerData.summary.totalDue <= 0 ? 'text-[#00236f]' : 'text-[#ba1a1a]'}`}>
               Net Outstanding Due
             </span>
-            <h3 className={`text-2xl font-extrabold mt-1 ${ledgerData.summary.totalDue <= 0 ? 'text-[#006a61]' : 'text-[#ba1a1a]'}`}>
+            <h3 className={`text-2xl font-extrabold mt-1 ${ledgerData.summary.totalDue <= 0 ? 'text-[#00236f]' : 'text-[#ba1a1a]'}`}>
               ₹ {ledgerData.summary.totalDue.toLocaleString('en-IN')}
             </h3>
-            <p className={`text-xs font-semibold mt-0.5 ${ledgerData.summary.totalDue <= 0 ? 'text-[#006a61]' : 'text-[#ba1a1a]'}`}>
+            <p className={`text-xs font-semibold mt-0.5 ${ledgerData.summary.totalDue <= 0 ? 'text-[#00236f]' : 'text-[#ba1a1a]'}`}>
               {ledgerData.summary.totalDue <= 0
                 ? 'Dues Cleared • Zero Balance'
                 : `Next Due: ${(ledgerData.ledger || []).filter((f: any) => f.due_amount > 0).sort((a: any, b: any) => a.due_date?.localeCompare(b.due_date))[0]?.due_date || 'Due Immediately'}`}
@@ -411,7 +411,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                     </td>
                     <td className="py-3.5 px-4">
                       {item.discount_amount > 0 ? (
-                        <span className="px-2 py-0.5 bg-[#86f2e4]/30 text-[#006a61] rounded text-[11px] font-bold inline-flex items-center gap-1">
+                        <span className="px-2 py-0.5 bg-[#ffedd5] text-[#00236f] rounded text-[11px] font-bold inline-flex items-center gap-1">
                           
                           <span>-₹ {item.discount_amount.toLocaleString('en-IN')}</span>
                         </span>
@@ -419,7 +419,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                         <span className="text-[#757682] font-mono">—</span>
                       )}
                     </td>
-                    <td className="py-3.5 px-4 text-[#006a61] font-semibold">
+                    <td className="py-3.5 px-4 text-[#00236f] font-semibold">
                       ₹ {item.paid_amount.toLocaleString('en-IN')}
                     </td>
                     <td className="py-3.5 px-4 text-[#ba1a1a] font-bold">
@@ -430,7 +430,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                       <span
                         className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                           item.status === 'paid'
-                            ? 'bg-[#86f2e4]/40 text-[#006a61]'
+                            ? 'bg-[#ffedd5] text-[#00236f]'
                             : item.status === 'due'
                             ? 'bg-[#fef3c7] text-[#b45309]'
                             : 'bg-[#ffdad6] text-[#ba1a1a]'
@@ -456,7 +456,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                       ) : (
                         <button
                           onClick={() => onOpenReceiptModal()}
-                          className="text-[#006a61] font-bold text-xs hover:underline inline-flex items-center gap-1"
+                          className="text-[#00236f] font-bold text-xs hover:underline inline-flex items-center gap-1"
                         >
                           
                           <span>Receipt</span>
@@ -511,11 +511,11 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                     <td className="py-3.5 px-4 uppercase text-[#444651] font-semibold">
                       {pay.payment_mode.replace('_', ' ')}
                     </td>
-                    <td className="py-3.5 px-4 font-bold text-[#006a61]">
+                    <td className="py-3.5 px-4 font-bold text-[#00236f]">
                       ₹ {pay.amount_paid.toLocaleString('en-IN')}
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="px-2 py-0.5 bg-[#86f2e4]/30 text-[#006a61] rounded text-[10px] font-bold">
+                      <span className="px-2 py-0.5 bg-[#ffedd5] text-[#00236f] rounded text-[10px] font-bold">
                         Success
                       </span>
                     </td>

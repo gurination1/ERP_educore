@@ -194,7 +194,7 @@ export const DynamicFormBuilderView: React.FC<DynamicFormBuilderViewProps> = ({ 
                 <button
                   type="button"
                   onClick={handleAddField}
-                  className="px-3 py-1 bg-[#86f2e4]/30 text-[#006a61] hover:bg-[#86f2e4]/50 rounded text-xs font-bold flex items-center gap-1"
+                  className="px-3 py-1 bg-[#ffedd5] text-[#00236f] hover:bg-[#ffedd5] rounded text-xs font-bold flex items-center gap-1"
                 >
                   <span className="font-bold text-[10px]">+</span>
                   <span>Add Field</span>
@@ -331,7 +331,7 @@ export const DynamicFormBuilderView: React.FC<DynamicFormBuilderViewProps> = ({ 
               <div className="border-b border-[#f3f4f5] pb-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 bg-[#86f2e4]/30 text-[#006a61] rounded text-xs font-bold">
+                    <span className="px-2.5 py-0.5 bg-[#ffedd5] text-[#00236f] rounded text-xs font-bold">
                       {selectedForm.form_code}
                     </span>
                     <h3 className="text-lg font-bold text-[#191c1d]">{selectedForm.title}</h3>
@@ -350,7 +350,7 @@ export const DynamicFormBuilderView: React.FC<DynamicFormBuilderViewProps> = ({ 
               </div>
 
               {submissionSuccess && (
-                <div className="mt-4 p-3.5 bg-[#86f2e4]/30 border border-[#86f2e4] text-[#006a61] rounded-xl text-xs font-bold flex items-center gap-2">
+                <div className="mt-4 p-3.5 bg-[#ffedd5] border border-[#ea580c] text-[#00236f] rounded-xl text-xs font-bold flex items-center gap-2">
                   <span className="font-bold text-[10px]">✓</span>
                   <span>{submissionSuccess}</span>
                 </div>

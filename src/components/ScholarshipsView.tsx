@@ -218,7 +218,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                   setAwardErrorMsg(null);
                   setIsAwardModalOpen(true);
                 }}
-                className="px-4 py-2 bg-[#006a61] hover:bg-[#005a52] text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-2 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
               >
                 
                 <span>Award Scholarship</span>
@@ -260,14 +260,14 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
       </div>
 
       {awardSuccessMsg && (
-        <div className="p-3.5 bg-[#86f2e4]/30 border border-[#86f2e4] text-[#006a61] rounded-xl text-xs font-bold flex items-center gap-2 animate-fadeIn">
+        <div className="p-3.5 bg-[#ffedd5] border border-[#ea580c] text-[#00236f] rounded-xl text-xs font-bold flex items-center gap-2 animate-fadeIn">
           <span className="font-bold text-[10px]">✓</span>
           <span>{awardSuccessMsg}</span>
         </div>
       )}
 
       {applySuccessMsg && (
-        <div className="p-3.5 bg-[#86f2e4]/30 border border-[#86f2e4] text-[#006a61] rounded-xl text-xs font-bold flex items-center gap-2">
+        <div className="p-3.5 bg-[#ffedd5] border border-[#ea580c] text-[#00236f] rounded-xl text-xs font-bold flex items-center gap-2">
           <span className="font-bold text-[10px]">✓</span>
           <span>{applySuccessMsg}</span>
         </div>
@@ -287,8 +287,8 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
             <p className="text-[11px] text-[#757682] mt-0.5">Requires committee review</p>
           </div>
           <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
-            <span className="text-[10px] uppercase font-bold text-[#006a61]">Approved Grants</span>
-            <h4 className="text-2xl font-black text-[#006a61] mt-1">{approvedCount}</h4>
+            <span className="text-[10px] uppercase font-bold text-[#00236f]">Approved Grants</span>
+            <h4 className="text-2xl font-black text-[#00236f] mt-1">{approvedCount}</h4>
             <p className="text-[11px] text-[#757682] mt-0.5">Fee waivers credited</p>
           </div>
           <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
@@ -327,14 +327,14 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
               <div className="mt-6 pt-4 border-t border-[#f3f4f5] flex items-center justify-between">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-[#757682] block">Award Amount</span>
-                  <span className="text-lg font-extrabold text-[#006a61]">
+                  <span className="text-lg font-extrabold text-[#00236f]">
                     ₹ {scheme.award_amount.toLocaleString('en-IN')}
                   </span>
                 </div>
 
                 {isActualAdmin ? (
                   <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-1 bg-[#86f2e4]/30 text-[#006a61] rounded-lg text-[11px] font-bold hidden sm:flex items-center gap-1">
+                    <span className="px-2.5 py-1 bg-[#ffedd5] text-[#00236f] rounded-lg text-[11px] font-bold hidden sm:flex items-center gap-1">
                       <span className="font-bold text-[10px]">✓</span>
                       <span>Active</span>
                     </span>
@@ -393,7 +393,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                     <td className="py-3.5 px-4 font-semibold text-[#191c1d]">
                       {app.studentName} ({app.studentId})
                     </td>
-                    <td className="py-3.5 px-4 font-bold text-[#006a61]">{app.previous_gpa}</td>
+                    <td className="py-3.5 px-4 font-bold text-[#00236f]">{app.previous_gpa}</td>
                     <td className="py-3.5 px-4 text-[#444651]">
                       ₹ {app.annual_family_income.toLocaleString('en-IN')}
                     </td>
@@ -401,7 +401,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                       <span
                         className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                           app.status === 'approved'
-                            ? 'bg-[#86f2e4]/40 text-[#006a61]'
+                            ? 'bg-[#ffedd5] text-[#00236f]'
                             : app.status === 'rejected'
                             ? 'bg-[#ffdad6] text-[#ba1a1a]'
                             : 'bg-[#fef3c7] text-[#b45309]'
@@ -450,7 +450,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
 
             <p className="text-xs text-[#757682]">
               Award Grant Amount:{' '}
-              <strong className="text-[#006a61]">
+              <strong className="text-[#00236f]">
                 ₹ {selectedScheme.award_amount.toLocaleString('en-IN')}
               </strong>
             </p>
@@ -574,7 +574,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
               <button
                 disabled={isReviewing}
                 onClick={() => handleReviewAction('approved')}
-                className="flex-1 py-2 bg-[#006a61] text-white hover:bg-[#005a52] font-bold rounded-lg text-xs transition-colors"
+                className="flex-1 py-2 bg-[#ea580c] text-white hover:bg-[#c2410c] font-bold rounded-lg text-xs transition-colors"
               >
                 Approve Grant
               </button>
@@ -630,7 +630,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                     required
                     value={newSchemeAmount}
                     onChange={e => setNewSchemeAmount(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-bold text-[#006a61]"
+                    className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-bold text-[#00236f]"
                   />
                 </div>
                 <div>
@@ -764,7 +764,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                   value={awardAmount}
                   onChange={e => setAwardAmount(e.target.value)}
                   placeholder="e.g. 45000"
-                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-bold text-[#006a61] focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-bold text-[#00236f] focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
                 >
                 </input>
               </div>
@@ -801,7 +801,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                 <button
                   type="submit"
                   disabled={isAwarding}
-                  className="px-5 py-2 bg-[#006a61] hover:bg-[#005a52] text-white font-bold rounded-lg shadow-xs flex items-center gap-1.5 disabled:opacity-50"
+                  className="px-5 py-2 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold rounded-lg shadow-xs flex items-center gap-1.5 disabled:opacity-50"
                 >
                   {isAwarding ? (
                     <span>Disbursing Aid...</span>
