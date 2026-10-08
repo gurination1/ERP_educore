@@ -563,6 +563,7 @@ export type ActiveScreen =
   | 'staff-management'  // Multi-Table Staff Management & Org Journey
   | 'bulk-import'       // Flexible Bulk CSV/Excel Column Mapper
   | 'enquiries'         // Pre-Admission CRM & Auto-Dialer
+  | 'examination'       // University Examination Portal (MRSPTU / PUP / PU)
   | 'audit-trail'
   | 'academic-journey'
   | 'master-tables';

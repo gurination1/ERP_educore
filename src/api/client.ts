@@ -205,6 +205,25 @@ export const api = {
   // MRSPTU Examination Admit Card
   getAdmitCard: (id: string = 'me') => apiRequest(`/api/students/${id}/admit-card`),
 
+  // Comprehensive University Examination Suite (MRSPTU / PUP / PU)
+  getExamMeta: () => apiRequest('/api/examination/meta'),
+  getExamDatesheets: (params: Record<string, any> = {}) => {
+    const q = new URLSearchParams(params).toString();
+    return apiRequest(`/api/examination/datesheets?${q}`);
+  },
+  getExamStudents: () => apiRequest('/api/examination/students'),
+  getExamStudentProfile: (identifier: string) => apiRequest(`/api/examination/student-profile/${identifier}`),
+  submitRegularExamForm: (data: any) =>
+    apiRequest('/api/examination/regular-form', { method: 'POST', body: JSON.stringify(data) }),
+  submitReappearExamForm: (data: any) =>
+    apiRequest('/api/examination/reappear-form', { method: 'POST', body: JSON.stringify(data) }),
+  condoneExamAttendance: (data: { studentId: string; orderNo?: string; reason?: string }) =>
+    apiRequest('/api/examination/condone-attendance', { method: 'POST', body: JSON.stringify(data) }),
+  clearExamFeeDues: (data: { studentId: string }) =>
+    apiRequest('/api/examination/clear-fee-dues', { method: 'POST', body: JSON.stringify(data) }),
+  getExamAdmitCard: (identifier: string) => apiRequest(`/api/examination/admit-card/${identifier}`),
+  getExamResults: (identifier: string) => apiRequest(`/api/examination/results/${identifier}`),
+
   // Analytical Reports
   getAdmissionsByCourseReport: () => apiRequest('/api/reports/admissions-by-course'),
 

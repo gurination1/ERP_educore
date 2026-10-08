@@ -22,6 +22,7 @@ import { staffRouter } from './server/routes/staffRoutes.ts';
 import { partnerRouter } from './server/routes/partnerRoutes.ts';
 import { enquiryRouter } from './server/routes/enquiryRoutes.ts';
 import { masterRouter } from './server/routes/masterRoutes.ts';
+import { examRouter } from './server/routes/examRoutes.ts';
 import { errorHandler } from './server/middleware/errorHandler.ts';
 
 dotenv.config();
@@ -75,6 +76,7 @@ async function startServer() {
   app.use('/api/partners', partnerRouter);
   app.use('/api/enquiries', enquiryRouter);
   app.use('/api/master', masterRouter);
+  app.use('/api/examination', examRouter);
   app.use('/api', auditRouter);
 
   // Centralized Error Handler for API

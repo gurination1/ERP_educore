@@ -36,6 +36,7 @@ import { StaffManagementView } from './components/StaffManagementView';
 import { PartnerPortalView } from './components/PartnerPortalView';
 import { BulkImportView } from './components/BulkImportView';
 import { EnquiriesView } from './components/EnquiriesView';
+import { UniversityExamPortalView } from './components/UniversityExamPortalView';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 interface LayoutProps {
@@ -105,6 +106,9 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
         return 'bulk-import';
       case '/enquiries':
         return 'enquiries';
+      case '/examination':
+      case '/examination-portal':
+        return 'examination';
       case '/dashboard':
       default:
         return (currentUser?.role === 'admin' || currentUser?.role === 'super_admin')
@@ -188,6 +192,9 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
         return { category: 'Admissions & CRM', title: 'Bulk CSV Lead Mapper' };
       case '/enquiries':
         return { category: 'Admissions & CRM', title: 'Admissions CRM & Inquiries Pipeline' };
+      case '/examination':
+      case '/examination-portal':
+        return { category: 'Academics & Examination', title: 'University Examination & Gate Clearance Portal' };
       default:
         return { category: 'Portal', title: 'Console Module' };
     }
@@ -684,6 +691,42 @@ function MainApp() {
                 onSearchChange={setSearchQuery}
               >
                 <AcademicsView currentUser={currentUser} />
+              </AuthenticatedLayout>
+            )
+          }
+        />
+
+        <Route
+          path="/examination"
+          element={
+            !currentUser ? (
+              <Navigate to="/" replace />
+            ) : (
+              <AuthenticatedLayout
+                currentUser={currentUser}
+                onLogout={handleLogout}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              >
+                <UniversityExamPortalView currentUser={currentUser} />
+              </AuthenticatedLayout>
+            )
+          }
+        />
+
+        <Route
+          path="/examination-portal"
+          element={
+            !currentUser ? (
+              <Navigate to="/" replace />
+            ) : (
+              <AuthenticatedLayout
+                currentUser={currentUser}
+                onLogout={handleLogout}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              >
+                <UniversityExamPortalView currentUser={currentUser} />
               </AuthenticatedLayout>
             )
           }
