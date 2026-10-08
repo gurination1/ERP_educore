@@ -39,21 +39,16 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
       <div className="bg-white rounded-2xl max-w-4xl w-full h-[80vh] shadow-2xl border border-[#e1e3e4] flex flex-col overflow-hidden animate-scaleUp">
         {/* Header */}
         <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#f8f9fa] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#00236f] text-white flex items-center justify-center shadow-sm">
-              
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-bold text-[#191c1d]">Tenant-Agnostic Master Relational System</h3>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-100 text-[#00236f] border border-blue-200">
+                UGC / UNIVERSITY CANONICAL
+              </span>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-[#191c1d]">Tenant-Agnostic Master Relational System</h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-100 text-[#00236f] border border-blue-200">
-                  UGC / MRSPTU CANONICAL
-                </span>
-              </div>
-              <p className="text-xs text-[#757682]">
-                Standardized master definitions consistent across technical institutions and university campuses.
-              </p>
-            </div>
+            <p className="text-xs text-[#757682]">
+              Standardized master definitions consistent across technical institutions and affiliated university campuses.
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -250,7 +245,7 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
 
         {/* Footer */}
         <div className="px-6 py-3 border-t border-[#e1e3e4] bg-[#f8f9fa] flex items-center justify-between text-xs text-[#757682]">
-          <span>Standard: {data?.universityStandard || 'MRSPTU / UGC CBCS Standard'}</span>
+          <span>Standard: {data?.universityStandard || 'UGC / University CBCS Standard'}</span>
           <span>Institution: {data?.institutionGstCode || 'Punjab (03)'}</span>
         </div>
       </div>

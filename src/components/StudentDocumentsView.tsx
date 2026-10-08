@@ -53,7 +53,7 @@ const INITIAL_STUDENT_DOCS: DocumentRecord[] = [
     status: 'verified',
     verified_by: 'Harleen Kaur (Admissions Cell)',
     verified_at: '2025-08-16T10:05:00Z',
-    remarks: 'MRSPTU minimum 45% PCM eligibility criterion met (got 86.2%).',
+    remarks: 'University minimum 45% PCM eligibility criterion met (got 86.2%).',
     sha256_hash: '4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a',
     uploaded_at: '2025-08-12T09:22:00Z',
   },
@@ -179,27 +179,21 @@ export const StudentDocumentsView: React.FC<StudentDocumentsViewProps> = ({ curr
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-      {/* Top Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-[#00236f] via-[#0b3896] to-[#00236f] text-white p-6 rounded-2xl shadow-md border border-white/10">
+      {/* Sleek Action Toolbar - Navy/Orange Theme, Space Efficient */}
+      <div className="bg-white border border-[#e1e3e4] rounded-lg p-3 shadow-xs flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[11px] font-mono text-cyan-200 mb-2 border border-white/10">
-            
-            <span>MRSPTU STATUTORY REPOSITORY • 256-BIT ENCRYPTED</span>
-          </div>
-          <h1 className="text-2xl font-black tracking-tight">Student Regulatory Documents Vault</h1>
-          <p className="text-xs text-blue-100 mt-1 max-w-2xl">
-            Centralized institutional repository for Punjab 85% domicile quota verification, board marksheets, UIDAI Aadhaar authentication, and scholarship eligibility audits.
-          </p>
+          <h1 className="text-sm font-black text-[#00236f] tracking-tight">Student Regulatory Documents Vault</h1>
+          <p className="text-[10px] text-[#757682]">Punjab 85% Domicile Quota, Board Marksheets & UIDAI Authentication</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="bg-white/10 px-4 py-2 rounded-xl text-center border border-white/10">
-            <span className="text-[10px] text-blue-200 block uppercase font-bold">Verified</span>
-            <span className="text-xl font-black text-emerald-300">{verifiedCount} / {documents.length}</span>
+        <div className="flex items-center gap-2">
+          <div className="bg-[#f0f4ff] border border-[#dce1ff] px-3 py-1 rounded-md text-center">
+            <span className="text-[9px] text-[#757682] block uppercase font-bold">Verified</span>
+            <span className="text-xs font-black text-[#00236f]">{verifiedCount} / {documents.length}</span>
           </div>
-          <div className="bg-white/10 px-4 py-2 rounded-xl text-center border border-white/10">
-            <span className="text-[10px] text-blue-200 block uppercase font-bold">Pending Review</span>
-            <span className="text-xl font-black text-amber-300">{pendingCount}</span>
+          <div className="bg-[#fff7ed] border border-[#ffedd5] px-3 py-1 rounded-md text-center">
+            <span className="text-[9px] text-[#ea580c] block uppercase font-bold">Pending Review</span>
+            <span className="text-xs font-black text-[#ea580c]">{pendingCount}</span>
           </div>
         </div>
       </div>

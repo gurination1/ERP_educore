@@ -286,7 +286,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
           username: selectedUser.username,
           temporaryPassword: res.temporaryPassword || newPassword,
           role: selectedUser.role,
-          employeeId: selectedUser.employee_id || 'EMP-ID',
+          employeeId: selectedUser.enterprise_uid || selectedUser.employee_id || 'UID',
           department: selectedUser.department,
           designation: selectedUser.designation,
         });

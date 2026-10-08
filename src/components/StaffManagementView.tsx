@@ -732,7 +732,7 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                 <label className="block font-semibold mb-0.5 text-gray-700">EMPLOYEE ID *:</label>
                 <input
                   type="text"
-                  placeholder="FAC-CSE-022"
+                  placeholder="2001-22-03-01"
                   value={newStaff.employee_id}
                   onChange={e => setNewStaff({ ...newStaff, employee_id: e.target.value })}
                   className="w-full border p-1.5 rounded text-[11px] font-mono"

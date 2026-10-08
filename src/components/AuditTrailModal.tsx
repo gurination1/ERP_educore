@@ -60,21 +60,16 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
       <div className="bg-white rounded-2xl max-w-5xl w-full h-[85vh] shadow-2xl border border-[#e1e3e4] flex flex-col overflow-hidden animate-scaleUp">
         {/* Modal Header */}
         <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#f8f9fa] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#00236f] text-white flex items-center justify-center shadow-sm">
-              
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-bold text-[#191c1d]">Universal Immutable Audit Trail</h3>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                APPEND-ONLY ENCRYPTED
+              </span>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-[#191c1d]">Universal Immutable Audit Trail</h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                  APPEND-ONLY ENCRYPTED
-                </span>
-              </div>
-              <p className="text-xs text-[#757682]">
-                Every action by Super Admin, Registrar, Faculty, and Accounts immutably logged with actor UID, IP, and diff.
-              </p>
-            </div>
+            <p className="text-xs text-[#757682]">
+              Every action by Super Admin, Registrar, Faculty, and Accounts immutably logged with actor UID, IP, and diff.
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -268,7 +263,7 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
         {/* Footer */}
         <div className="px-6 py-3 border-t border-[#e1e3e4] bg-[#f8f9fa] flex items-center justify-between text-xs text-[#757682]">
           <span>Logged Records: {filteredLogs.length} events</span>
-          <span>Standards: MRSPTU Security Ordinance & Punjab IT Act compliance</span>
+          <span>Standards: University Statutory Security Ordinance & Punjab IT Act compliance</span>
         </div>
       </div>
     </div>

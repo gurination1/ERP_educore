@@ -59,6 +59,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
   const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [showMasterTables, setShowMasterTables] = useState(false);
   const [showStaffJourney, setShowStaffJourney] = useState(false);
+  const [showAdmitCard, setShowAdmitCard] = useState(false);
   const [isTelephonyOpen, setIsTelephonyOpen] = useState(false);
   const [activeCandidate, setActiveCandidate] = useState<TelephonyCandidate | null>({
     id: 'cand-001',
@@ -143,6 +144,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
         onOpenAuditLogs={() => setShowAuditLogs(true)}
         onOpenMasterTables={() => setShowMasterTables(true)}
         onOpenStaffJourney={() => setShowStaffJourney(true)}
+        onOpenAdmitCard={() => setShowAdmitCard(true)}
       />
 
       <main className="flex-1 min-w-0 w-full max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4 pb-12">
@@ -168,6 +170,16 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
         onClose={() => setShowStaffJourney(false)}
         currentUser={currentUser}
       />
+      {showAdmitCard && (
+        <MRSPTUAdmitCardModal
+          studentId={currentUser?.role === 'student' ? (currentUser.id || 'me') : 'stu-rec-aryan'}
+          onClose={() => setShowAdmitCard(false)}
+          onOpenPayModal={() => {
+            setShowAdmitCard(false);
+            navigate('/fees');
+          }}
+        />
+      )}
       <TelephonyCallDock
         isOpen={isTelephonyOpen}
         onClose={() => setIsTelephonyOpen(false)}

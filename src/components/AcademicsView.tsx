@@ -266,7 +266,7 @@ export const AcademicsView: React.FC<AcademicsViewProps> = () => {
   const handleDownloadSyllabus = (course: CourseItem) => {
     const textContent = `
 ================================================================================
-MAHARAJA RANJIT SINGH PUNJAB TECHNICAL UNIVERSITY (MRSPTU), BATHINDA
+UNIVERSITY ACADEMIC COUNCIL & EXAMINATION BOARD (PUP / MRSPTU / PU)
 BABA FARID COLLEGE OF ENGINEERING & TECHNOLOGY (BFGI)
 DEPARTMENT OF ${course.department.toUpperCase()}
 OFFICIAL COURSE SYLLABUS & CURRICULUM SCHEME (CBCS 2025-26)
@@ -299,14 +299,14 @@ RECOMMENDED TEXTBOOKS & REFERENCE LITERATURE:
 ${course.textbooks.map((b, idx) => `  [${idx + 1}] ${b}`).join('\n')}
 
 --------------------------------------------------------------------------------
-EVALUATION SCHEME (MRSPTU STATUTORY CRITERIA):
+EVALUATION SCHEME (STATUTORY CBCS UNIVERSITY CRITERIA):
 --------------------------------------------------------------------------------
   1. Internal Continuous Assessment: 60 Marks (Passing Cutoff: 24/60)
      - Mid-Semester Test 1 (MST-1): 24 Marks
      - Mid-Semester Test 2 (MST-2): 24 Marks
      - Continuous Lab / Assignments / Attendance: 12 Marks
   2. External End-Semester University Examination: 40 Marks (Passing Cutoff: 16/40)
-  3. Minimum Attendance Requirement: 75% Mandatory (MRSPTU Ordinance 7.4)
+  3. Minimum Attendance Requirement: 75% Mandatory (Statutory Ordinance 7.4)
 
 Controller of Examinations & Academic Council
 EduCore ERP • Institutional Record Generated on ${new Date().toISOString().slice(0, 10)}
@@ -317,7 +317,7 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `MRSPTU_Syllabus_${course.code}_${new Date().getFullYear()}.txt`;
+    a.download = `University_Syllabus_${course.code}_${new Date().getFullYear()}.txt`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -336,7 +336,7 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
             Academics & Course Curriculum
           </h2>
           <span className="text-[10px] text-slate-300 font-semibold">•</span>
-          <span className="text-[11px] text-slate-600 font-medium">MRSPTU Choice Based Credit System (CBCS)</span>
+          <span className="text-[11px] text-slate-600 font-medium">Choice Based Credit System (CBCS)</span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -359,48 +359,39 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
 
       {/* Academic Highlights Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
-          <div className="flex items-center gap-2.5 text-[#00236f]">
-            
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[#757682]">
-              Degree Program
-            </h4>
-          </div>
-          <p className="text-base font-bold text-[#191c1d] mt-2">
+        <div className="p-4 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
+          <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#757682]">
+            Degree Program
+          </h4>
+          <p className="text-base font-bold text-[#191c1d] mt-1.5">
             B.Tech Computer Science & Engg.
           </p>
-          <span className="text-xs text-[#757682] mt-1 block">
-            4-Year Full-Time • AICTE & MRSPTU Affiliated
+          <span className="text-xs text-[#757682] mt-0.5 block">
+            4-Year Full-Time • AICTE & Multi-University Affiliated
           </span>
         </div>
 
-        <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
-          <div className="flex items-center gap-2.5 text-[#00236f]">
-            
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[#757682]">
-              Evaluation Ratio
-            </h4>
-          </div>
-          <p className="text-base font-bold text-[#191c1d] mt-2">
+        <div className="p-4 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
+          <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#757682]">
+            Evaluation Ratio
+          </h4>
+          <p className="text-base font-bold text-[#191c1d] mt-1.5">
             60% Internal • 40% University
           </p>
-          <span className="text-xs text-[#757682] mt-1 block">
+          <span className="text-xs text-[#757682] mt-0.5 block">
             MST-1 (24) + MST-2 (24) + Assessment (12)
           </span>
         </div>
 
-        <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
-          <div className="flex items-center gap-2.5 text-[#ba1a1a]">
-            
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[#757682]">
-              Statutory Attendance Rule
-            </h4>
-          </div>
-          <p className="text-base font-bold text-[#191c1d] mt-2">
+        <div className="p-4 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
+          <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#757682]">
+            Statutory Attendance Rule
+          </h4>
+          <p className="text-base font-bold text-[#191c1d] mt-1.5">
             75% Mandatory Cutoff
           </p>
-          <span className="text-xs text-[#757682] mt-1 block">
-            MRSPTU Ordinance 7.4 Hall Ticket Requirement
+          <span className="text-xs text-[#757682] mt-0.5 block">
+            Statutory Ordinance 7.4 Hall Ticket Requirement
           </span>
         </div>
       </div>
@@ -444,7 +435,7 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
                     4 Units • 45 Lecture Hours
                   </span>
                   <span className="bg-[#f8f9fa] px-2 py-1 rounded border border-[#edeeef]">
-                    MRSPTU CBCS Core Subject
+                    CBCS Core Subject
                   </span>
                 </div>
               </div>
@@ -455,17 +446,15 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
                   onClick={() => setSelectedCourse(course)}
                   className="text-xs font-bold text-[#00236f] hover:underline flex items-center gap-1 cursor-pointer"
                 >
-                  <span className="font-bold text-[10px]">[VIEW]</span>
-                  <span>View Detailed Syllabus</span>
+                  <span>View Detailed Syllabus →</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => handleDownloadSyllabus(course)}
-                  className="px-3 py-1.5 bg-[#f3f4f5] hover:bg-[#e1e3e4] text-[#191c1d] rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="px-3 py-1.5 bg-[#f3f4f5] hover:bg-[#e1e3e4] text-[#191c1d] rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
-                  <span className="font-bold text-[10px]">[DL]</span>
-                  <span>Download Syllabus</span>
+                  <span>Download (.txt)</span>
                 </button>
               </div>
             </div>
@@ -514,7 +503,7 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
               {/* Units Breakdown */}
               <div className="space-y-4">
                 <h4 className="font-bold text-[#191c1d] text-sm uppercase tracking-wider text-[#757682]">
-                  Curriculum Modules (MRSPTU)
+                  Curriculum Modules (CBCS)
                 </h4>
                 <div className="space-y-3">
                   {selectedCourse.units.map(unit => (
@@ -556,7 +545,7 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
             {/* Modal Footer */}
             <div className="p-4 bg-[#f8f9fa] border-t border-[#e1e3e4] flex items-center justify-between">
               <span className="text-xs text-[#757682]">
-                Official Syllabus Document • MRSPTU 2025-26
+                Official Syllabus Document • Statutory CBCS 2025-26
               </span>
               <div className="flex items-center gap-2">
                 <button

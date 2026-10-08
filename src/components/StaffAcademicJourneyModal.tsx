@@ -87,21 +87,16 @@ export const StaffAcademicJourneyModal: React.FC<StaffAcademicJourneyModalProps>
       <div className="bg-white rounded-2xl max-w-4xl w-full h-[80vh] shadow-2xl border border-[#e1e3e4] flex flex-col overflow-hidden animate-scaleUp">
         {/* Header */}
         <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#f8f9fa] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#00236f] text-white flex items-center justify-center shadow-sm">
-              
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-bold text-[#191c1d]">Staff Academic Journey & Research R&D Engine</h3>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#ffedd5] text-[#00236f] border border-[#fed7aa]">
+                SCOPUS / SCI INDEXED
+              </span>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-[#191c1d]">Staff Academic Journey & Research R&D Engine</h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-purple-100 text-purple-800 border border-purple-200">
-                  SCOPUS / SCI INDEXED
-                </span>
-              </div>
-              <p className="text-xs text-[#757682]">
-                Faculty doctoral qualifications, journal citations, patents, and institutional service books.
-              </p>
-            </div>
+            <p className="text-xs text-[#757682]">
+              Faculty doctoral qualifications, journal citations, patents, and institutional service books.
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -169,7 +164,7 @@ export const StaffAcademicJourneyModal: React.FC<StaffAcademicJourneyModalProps>
                     required
                     value={awardingUniversity}
                     onChange={e => setAwardingUniversity(e.target.value)}
-                    placeholder="e.g. MRSPTU Bathinda / IIT Roorkee"
+                    placeholder="e.g. Punjabi Univ Patiala / MRSPTU / IIT"
                     className="w-full px-2.5 py-1.5 border border-[#e1e3e4] rounded-lg bg-[#f8f9fa]"
                   />
                 </div>
@@ -273,7 +268,7 @@ export const StaffAcademicJourneyModal: React.FC<StaffAcademicJourneyModalProps>
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-purple-100 text-purple-800 border border-purple-200">
+                        <span className="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-[#ffedd5] text-[#00236f] border border-[#fed7aa]">
                           {j.qualification_level}
                         </span>
                         <h4 className="font-bold text-sm text-[#191c1d]">{j.staff_name}</h4>
@@ -306,7 +301,7 @@ export const StaffAcademicJourneyModal: React.FC<StaffAcademicJourneyModalProps>
                       <div className="text-[10px] text-[#757682]">SCI Indexed</div>
                     </div>
                     <div className="p-1.5 bg-[#f8f9fa] rounded-lg">
-                      <div className="font-bold text-purple-700">{j.patents_count}</div>
+                      <div className="font-bold text-[#ea580c]">{j.patents_count}</div>
                       <div className="text-[10px] text-[#757682]">Patents</div>
                     </div>
                   </div>

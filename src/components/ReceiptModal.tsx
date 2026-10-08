@@ -62,18 +62,15 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptNo, onClose }
         {/* Printable Receipt Paper Container */}
         <div id="printable-fee-receipt" className="p-8 space-y-6 text-[#191c1d] bg-white">
           {/* Header with College Crest */}
-          <div className="text-center border-b-2 border-[#00236f] pb-5">
-            <div className="w-12 h-12 rounded-xl bg-[#00236f] text-white flex items-center justify-center mx-auto mb-2 shadow-sm">
-              
-            </div>
+          <div className="text-center border-b-2 border-[#00236f] pb-4">
             <h2 className="text-lg font-black tracking-tight text-[#00236f] uppercase">
-              {receiptData?.institutionName || 'Baba Farid College of Engineering & Technology (BFGI)'}
+              {receiptData?.institutionName || 'Baba Farid Group of Institutions (BFGI)'}
             </h2>
             <p className="text-[11px] text-[#757682] mt-0.5">
-              {receiptData?.campusAddress || 'Muktsar Road, Deon, Bathinda, Punjab 151001 • Affiliated to MRSPTU Bathinda • AICTE Approved'}
+              {receiptData?.campusAddress || 'Muktsar Road, Deon, Bathinda, Punjab 151001 • Multi-University Affiliated (PUP • MRSPTU • PU) • AICTE Approved'}
             </p>
             <span className="inline-block mt-2 px-3 py-0.5 bg-[#dce1ff] text-[#00236f] rounded-full text-[10px] font-extrabold uppercase tracking-wider">
-              Official Electronic Fee Receipt (MRSPTU Affiliated)
+              Official Electronic Fee Receipt (University Statutory Standard)
             </span>
           </div>
 
@@ -112,7 +109,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptNo, onClose }
                 <div>
                   <span className="text-[#757682] text-[11px]">Enrollment Roll No:</span>
                   <p className="font-bold text-sm text-[#00236f]">
-                    {receiptData.studentId || 'STU-2023-088'}
+                    {receiptData.studentId || '1001-88-03-01'}
                   </p>
                 </div>
                 <div>

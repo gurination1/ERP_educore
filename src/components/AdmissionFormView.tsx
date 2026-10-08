@@ -309,7 +309,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
                   Official Admission & Credentials Slip
                 </h2>
                 <p className="text-xs text-[#757682]">
-                  Affiliated to I.K. Gujral Punjab Technical University (IKGPTU) / MRSPTU
+                  Multi-University Affiliated • PUP Patiala • MRSPTU • Panjab University
                 </p>
               </div>
             </div>
@@ -820,7 +820,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
 
             <div>
               <label className="block text-xs font-bold text-[#191c1d] mb-1.5">
-                Domicile Admission Quota (PTU / MRSPTU)
+                Domicile Admission Quota (Punjab State University Standard)
               </label>
               <select
                 value={formData.quota}

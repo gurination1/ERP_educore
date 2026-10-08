@@ -52,7 +52,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-orange-400 text-[10px] font-bold tracking-widest uppercase mb-3 shadow-sm">
             <span>EduCore Enterprise</span>
             <span className="w-1 h-1 rounded-full bg-orange-400"></span>
-            <span className="font-mono text-white/80">MRSPTU Affiliated</span>
+            <span className="font-mono text-white/80">PUP • MRSPTU • PU Affiliated</span>
           </div>
           <h1 className="text-2xl font-black tracking-tight text-white uppercase drop-shadow-sm">
             Baba Farid Group of Institutions
@@ -316,7 +316,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
           {/* Footer Note */}
           <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
             <span>Zero-Trust Session • Punjab Audit Log</span>
-            <span className="font-semibold text-slate-500">MRSPTU Regulatory Portal</span>
+            <span className="font-semibold text-slate-500">PUP • MRSPTU • PU Regulatory</span>
           </div>
         </div>
       </div>

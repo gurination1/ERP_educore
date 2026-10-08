@@ -108,32 +108,32 @@
   box-shadow: 0 16px 50px -10px rgba(0, 0, 0, 0.12), 0 4px 16px -2px rgba(0, 0, 0, 0.06) !important;
 }
 
-/* MRSPTU Examination Institutional Navigation */
-.mrsptu-nav-bar {
+/* University Examination Institutional Navigation */
+.mrsptu-nav-bar, .campus-nav-bar {
   background: #00236f !important;
   border-bottom: 2px solid #ea580c !important;
   box-shadow: 0 2px 8px rgba(0, 35, 111, 0.2) !important;
 }
 
-.mrsptu-nav-item {
+.mrsptu-nav-item, .campus-nav-item {
   position: relative;
   color: rgba(255, 255, 255, 0.92);
   transition: all 0.15s ease;
 }
 
-.mrsptu-nav-item:hover {
+.mrsptu-nav-item:hover, .campus-nav-item:hover {
   background: rgba(255, 255, 255, 0.14);
   color: #ffffff;
 }
 
-.mrsptu-nav-item.active {
+.mrsptu-nav-item.active, .campus-nav-item.active {
   background: #ea580c !important;
   color: #ffffff !important;
   font-weight: 700;
 }
 
-/* MRSPTU-Style Alert Marquee Ribbon */
-.mrsptu-ticker-container {
+/* Statutory Multi-University Alert Marquee Ribbon */
+.mrsptu-ticker-container, .campus-ticker-container {
   background: #001744;
   color: #ffffff;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);

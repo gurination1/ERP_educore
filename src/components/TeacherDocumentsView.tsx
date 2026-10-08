@@ -36,7 +36,7 @@ const INITIAL_TEACHER_DOCS: DocumentRecord[] = [
     status: 'verified',
     verified_by: 'Dr. Ramesh Chandra (Registrar)',
     verified_at: '2025-02-01T15:20:00Z',
-    remarks: 'AICTE Faculty ID 1-9482810 mapped to MRSPTU portal.',
+    remarks: 'AICTE Faculty ID 1-9482810 mapped to statutory university portal.',
     sha256_hash: 'a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0',
     uploaded_at: '2025-01-28T14:30:00Z',
   },
@@ -48,53 +48,53 @@ const INITIAL_TEACHER_DOCS: DocumentRecord[] = [
     owner_name: 'Prof. Sunita Rao',
     owner_role: 'staff',
     file_name: 'service_book_thapar_institute_relieving.pdf',
-    file_size_kb: 5120,
+    file_size_kb: 8900,
     mime_type: 'application/pdf',
     status: 'verified',
-    verified_by: 'Registrar Office',
-    verified_at: '2025-02-10T11:45:00Z',
-    remarks: '4 Years 6 Months prior Assistant Professor service verified for pay-scale fixation.',
-    sha256_hash: '9876543210fedcba9876543210fedcba9876543210fedcba9876543210fedcba',
-    uploaded_at: '2025-02-05T10:15:00Z',
+    verified_by: 'Registrar & Establishment Section',
+    verified_at: '2025-01-05T11:00:00Z',
+    remarks: 'Previous 4.5 years experience as Assistant Professor vetted for CAS promotion criteria.',
+    sha256_hash: '778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566',
+    uploaded_at: '2025-01-02T10:15:00Z',
   },
   {
     id: 'doc-fac-004',
     doc_type_code: 'DOC_SCOPUS_REPRINT',
-    title: 'Scopus / SCI First-Page Research Paper Reprints',
+    title: 'Q1 Scopus Journal First Page Reprint (IEEE Trans. Computers)',
     owner_id: 'usr-staff-01',
     owner_name: 'Prof. Sunita Rao',
     owner_role: 'staff',
-    file_name: 'ieee_trans_cloud_scopus_reprint_2024.pdf',
-    file_size_kb: 2840,
+    file_name: 'ieee_transactions_paper_vol42_2024.pdf',
+    file_size_kb: 2100,
     mime_type: 'application/pdf',
     status: 'verified',
-    verified_by: 'Dean R&D / Research Council',
-    verified_at: '2025-03-04T12:00:00Z',
-    remarks: 'IEEE Transactions on Cloud Computing (Impact Factor: 6.8). Eligible for annual research incentive.',
-    sha256_hash: '123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0',
-    uploaded_at: '2025-03-01T16:20:00Z',
+    verified_by: 'Dean Research & Consultancy',
+    verified_at: '2025-03-01T16:45:00Z',
+    remarks: 'Impact Factor 4.8. Indexed in Web of Science Core Collection & Scopus.',
+    sha256_hash: '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+    uploaded_at: '2025-02-28T12:00:00Z',
   },
   {
     id: 'doc-fac-005',
     doc_type_code: 'DOC_PATENT_DEED',
-    title: 'Indian Patent Office (IPO) Published Grant Deed',
+    title: 'Indian Patent Office (IPO) Published Patent Grant Deed',
     owner_id: 'usr-staff-01',
     owner_name: 'Prof. Sunita Rao',
     owner_role: 'staff',
-    file_name: 'ipo_patent_grant_202311048291_iot_energy.pdf',
-    file_size_kb: 3450,
+    file_name: 'ipo_patent_grant_202411039821.pdf',
+    file_size_kb: 3400,
     mime_type: 'application/pdf',
     status: 'verified',
-    verified_by: 'Dean R&D / Research Council',
-    verified_at: '2025-04-12T14:15:00Z',
-    remarks: 'Patent Application No. 202311048291. System for Automated Edge Computing Energy Optimization.',
+    verified_by: 'IPR Cell Convener & Provost',
+    verified_at: '2025-04-12T10:30:00Z',
+    remarks: 'Application #202411039821, Published in Official Patent Gazette #15/2024.',
     sha256_hash: 'abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789',
-    uploaded_at: '2025-04-10T11:00:00Z',
+    uploaded_at: '2025-04-10T14:15:00Z',
   },
   {
     id: 'doc-fac-006',
-    doc_type_code: 'DOC_FORM16',
-    title: 'Annual Form 16 & Income Tax Return Certificate',
+    doc_type_code: 'DOC_FORM_16',
+    title: 'Income Tax Form 16 (Part A & B) TDS Certificate',
     owner_id: 'usr-staff-01',
     owner_name: 'Prof. Sunita Rao',
     owner_role: 'staff',
@@ -138,10 +138,10 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
         owner_name: currentUser?.full_name || 'Prof. Sunita Rao',
         owner_role: 'staff',
         file_name: fileName.endsWith('.pdf') ? fileName : `${fileName}.pdf`,
-        file_size_kb: Math.floor(1200 + Math.random() * 3200),
+        file_size_kb: 1450,
         mime_type: 'application/pdf',
         status: 'pending',
-        remarks: 'Uploaded by faculty. Awaiting Dean R&D / Provost attestation.',
+        remarks: 'Directly submitted for Provost & R&D attestation.',
         sha256_hash: Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join(''),
         uploaded_at: new Date().toISOString(),
       };
@@ -175,30 +175,26 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
   });
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-      {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-purple-900 via-indigo-950 to-[#00236f] text-white p-6 rounded-2xl shadow-md border border-white/10">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[11px] font-mono text-purple-200 mb-2 border border-white/10">
-            
-            <span>AICTE • UGC • NBA • NAAC COMPLIANCE PORTFOLIO</span>
-          </div>
-          <h1 className="text-2xl font-black tracking-tight">Faculty & Teachers Credentials Vault</h1>
-          <p className="text-xs text-purple-100 mt-1 max-w-2xl">
-            Accreditation-grade digital locker storing verified Ph.D. degree awards, AICTE faculty identification, Scopus / SCI research publications, patents granted, and service books.
-          </p>
+    <div className="space-y-3 animate-fadeIn text-xs">
+      {/* Sleek Action Toolbar (Eliminates bloated purple hero banner) */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-slate-200/70">
+        <div className="flex items-center gap-2">
+          <h2 className="font-extrabold text-sm text-[#00236f] tracking-tight">
+            Faculty Credentials & Regulatory Portfolio
+          </h2>
+          <span className="text-[10px] text-slate-300 font-semibold">•</span>
+          <span className="bg-orange-50 text-[#ea580c] border border-orange-200 font-mono text-[9px] font-bold px-2 py-0.5 rounded-full">
+            AICTE • UGC • NBA • NAAC
+          </span>
         </div>
 
-        {/* Accreditation Readiness Pills */}
-        <div className="grid grid-cols-2 gap-2 text-center text-xs">
-          <div className="bg-white/10 p-2.5 rounded-xl border border-white/10">
-            <span className="text-[10px] text-purple-200 uppercase block font-bold">NAAC Criteria 3</span>
-            <span className="text-lg font-black text-amber-300">100% Attested</span>
-          </div>
-          <div className="bg-white/10 p-2.5 rounded-xl border border-white/10">
-            <span className="text-[10px] text-purple-200 uppercase block font-bold">NBA Criteria 5</span>
-            <span className="text-lg font-black text-emerald-300">SFR 1:15 Ready</span>
-          </div>
+        <div className="flex items-center gap-2">
+          <span className="bg-blue-50 text-[#00236f] border border-blue-200 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+            NAAC Criteria 3: 100% Attested
+          </span>
+          <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+            NBA Criteria 5: SFR 1:15 Ready
+          </span>
         </div>
       </div>
 
@@ -210,20 +206,22 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
       )}
 
       {/* Grid: Upload Box + Documents Roster */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {/* Left Column: Deposit New Faculty Asset */}
-        <div className="bg-white p-5 rounded-2xl border border-[#e1e3e4] shadow-xs space-y-4">
-          <div className="flex items-center gap-2 border-b border-[#f3f4f5] pb-3">
-            
+        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
             <div>
-              <h2 className="text-sm font-bold text-[#191c1d]">Deposit Faculty Credential</h2>
-              <p className="text-[10px] text-[#757682]">AICTE & University Affiliation Audit</p>
+              <h2 className="text-xs font-bold text-[#00236f]">Deposit Faculty Credential</h2>
+              <p className="text-[10px] text-slate-500">AICTE & University Affiliation Audit</p>
             </div>
+            <span className="bg-[#00236f]/10 text-[#00236f] px-2 py-0.5 rounded-full text-[9px] font-bold font-mono">
+              PORTFOLIO
+            </span>
           </div>
 
-          <form onSubmit={handleSimulatedUpload} className="space-y-3 text-xs">
+          <form onSubmit={handleSimulatedUpload} className="space-y-2.5 text-xs">
             <div>
-              <label className="block text-[11px] font-bold text-[#191c1d] uppercase mb-1">
+              <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1">
                 Credential Category *
               </label>
               <select
@@ -239,7 +237,7 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
                   };
                   setNewTitle(titleMap[e.target.value] || 'Faculty Research Asset');
                 }}
-                className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-medium"
+                className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#00236f]"
               >
                 <option value="DOC_CONFERENCE">International Conference Proceeding (IEEE/Springer)</option>
                 <option value="DOC_BOOK_CHAPTER">Book Chapter / Monograph (Scopus / ISBN)</option>
@@ -250,30 +248,29 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-[#191c1d] uppercase mb-1">
+              <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1">
                 Document / Paper Title
               </label>
               <input
                 type="text"
                 value={newTitle}
                 onChange={e => setNewTitle(e.target.value)}
-                className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
+                className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#00236f]"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-[#191c1d] uppercase mb-1">
+              <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1">
                 Proof Document File (PDF)
               </label>
-              <div className="border-2 border-dashed border-[#e1e3e4] rounded-xl p-4 text-center hover:bg-[#f8f9fa] transition-colors cursor-pointer">
-                
-                <p className="text-[11px] font-medium text-[#191c1d]">Drop attested PDF or research reprint</p>
+              <div className="border border-dashed border-slate-300 rounded-lg p-3 text-center bg-slate-50/60 hover:bg-slate-50 transition-colors cursor-pointer">
+                <p className="text-[10px] font-medium text-slate-700">Drop attested PDF or research reprint</p>
                 <input
                   type="text"
                   placeholder="e.g. ieee_cloud_paper_reprint.pdf"
                   value={fileName}
                   onChange={e => setFileName(e.target.value)}
-                  className="mt-2.5 w-full px-2.5 py-1.5 text-[11px] bg-white border border-[#e1e3e4] rounded-lg text-center font-mono"
+                  className="mt-2 w-full px-2 py-1 text-[10px] bg-white border border-slate-200 rounded-md text-center font-mono"
                 />
               </div>
             </div>
@@ -281,19 +278,18 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
             <button
               type="submit"
               disabled={isUploading}
-              className="w-full py-2.5 bg-gradient-to-r from-purple-800 to-indigo-900 hover:from-purple-900 hover:to-indigo-950 text-white rounded-lg font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="w-full py-2 bg-[#00236f] hover:bg-[#001744] text-white rounded-lg font-bold text-xs shadow-2xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
-              <span className="font-bold text-[10px]">✓</span>
               <span>{isUploading ? 'Securing & Anchoring...' : 'Deposit to Faculty Portfolio'}</span>
             </button>
           </form>
         </div>
 
         {/* Right Column: Faculty Dossier */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-3">
           {/* Category Filter Pills */}
-          <div className="bg-white p-3 rounded-xl border border-[#e1e3e4] shadow-xs flex items-center justify-between gap-3 text-xs overflow-x-auto">
-            <div className="flex items-center gap-1.5 shrink-0">
+          <div className="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-2xs flex items-center justify-between gap-2 text-xs overflow-x-auto">
+            <div className="flex items-center gap-1 shrink-0">
               {[
                 { id: 'all', label: 'All Dossiers' },
                 { id: 'DOC_PHD_DEGREE', label: 'Doctorate Degree' },
@@ -304,45 +300,45 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
                 <button
                   key={f.id}
                   onClick={() => setFilterType(f.id)}
-                  className={`px-3 py-1 rounded-lg font-bold text-xs transition-all cursor-pointer whitespace-nowrap ${
+                  className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer whitespace-nowrap ${
                     filterType === f.id
-                      ? 'bg-purple-800 text-white shadow-xs'
-                      : 'bg-[#f3f4f5] text-[#444651] hover:bg-[#e1e3e4]'
+                      ? 'bg-[#00236f] text-white shadow-2xs'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                 >
                   {f.label}
                 </button>
               ))}
             </div>
-            <span className="text-[11px] font-mono text-[#757682] shrink-0">
+            <span className="text-[10px] font-mono text-slate-500 shrink-0">
               {filteredDocs.length} credential(s)
             </span>
           </div>
 
           {/* Documents Grid */}
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {filteredDocs.map(doc => {
               const isVerified = doc.status === 'verified';
               return (
                 <div
                   key={doc.id}
-                  className="bg-white p-4 rounded-xl border border-[#e1e3e4] hover:border-purple-300 transition-all shadow-xs space-y-2.5"
+                  className="bg-white p-3 rounded-xl border border-slate-200/80 hover:border-blue-300 transition-all shadow-2xs space-y-2"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 border border-purple-200 flex items-center justify-center shrink-0">
-                        
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#00236f] border border-blue-200 flex items-center justify-center shrink-0 font-mono font-bold text-[10px]">
+                        DOC
                       </div>
                       <div>
-                        <h3 className="text-xs font-bold text-[#191c1d]">{doc.title}</h3>
-                        <p className="text-[10px] text-[#757682] font-mono mt-0.5">
+                        <h3 className="text-xs font-bold text-[#00236f]">{doc.title}</h3>
+                        <p className="text-[10px] text-slate-500 font-mono mt-0.5">
                           {doc.file_name} • {(doc.file_size_kb / 1024).toFixed(2)} MB • Code: {doc.doc_type_code}
                         </p>
                       </div>
                     </div>
 
                     <span
-                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
                         isVerified
                           ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                           : 'bg-amber-50 text-amber-700 border border-amber-200'
@@ -353,29 +349,29 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
                     </span>
                   </div>
 
-                  <div className="p-2.5 bg-[#f8f9fa] rounded-lg text-[11px] text-[#444651] space-y-1">
-                    <div className="flex items-center justify-between text-[10px] text-[#757682]">
+                  <div className="p-2 bg-slate-50/80 rounded-lg text-[10px] text-slate-700 space-y-0.5 border border-slate-100">
+                    <div className="flex items-center justify-between text-[10px] text-slate-500">
                       <span>Faculty Member: <strong>{doc.owner_name}</strong></span>
                       <span>Deposited: {new Date(doc.uploaded_at).toLocaleDateString()}</span>
                     </div>
-                    {doc.remarks && <p className="text-[#191c1d] italic">“{doc.remarks}”</p>}
+                    {doc.remarks && <p className="text-slate-800 italic">“{doc.remarks}”</p>}
                     {doc.verified_by && (
-                      <div className="text-[10px] text-purple-900 font-semibold flex items-center gap-1">
-                        <span className="font-bold text-[10px]">✓</span>
+                      <div className="text-[9px] text-[#00236f] font-semibold flex items-center gap-1">
+                        <span className="font-bold">✓</span>
                         <span>Attested by {doc.verified_by} on {new Date(doc.verified_at || '').toLocaleDateString()}</span>
                       </div>
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between pt-1 border-t border-[#f3f4f5] text-[10px]">
-                    <span className="font-mono text-[#757682] truncate max-w-[260px]">
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[10px]">
+                    <span className="font-mono text-slate-400 truncate max-w-[260px] text-[9px]">
                       SHA-256: {doc.sha256_hash.slice(0, 18)}...
                     </span>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => setSelectedDoc(doc)}
-                        className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-bold transition-colors cursor-pointer"
+                        className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[10px] font-bold transition-colors cursor-pointer"
                       >
                         Inspect
                       </button>
@@ -385,13 +381,13 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
                           <button
                             onClick={() => handleVerify(doc.id, 'verified')}
                             disabled={isVerified}
-                            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white rounded-md font-bold transition-colors cursor-pointer"
+                            className="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white rounded text-[10px] font-bold transition-colors cursor-pointer"
                           >
                             Provost Attest
                           </button>
                           <button
                             onClick={() => handleVerify(doc.id, 'rejected')}
-                            className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-md font-bold transition-colors cursor-pointer"
+                            className="px-2 py-0.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded text-[10px] font-bold transition-colors cursor-pointer"
                           >
                             Reject
                           </button>
@@ -408,60 +404,59 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
 
       {/* Inspect Modal */}
       {selectedDoc && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-purple-200 space-y-4 animate-in fade-in zoom-in duration-200">
-            <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl border border-slate-200 space-y-3 animate-scaleUp">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <div className="flex items-center gap-2">
-                <span className="font-bold text-[10px]">✓</span>
+                <span className="font-bold text-[#00236f] text-xs">DOC</span>
                 <div>
-                  <h3 className="text-sm font-bold text-[#191c1d]">{selectedDoc.title}</h3>
-                  <p className="text-[10px] text-[#757682] font-mono">{selectedDoc.file_name}</p>
+                  <h3 className="text-xs font-bold text-[#00236f]">{selectedDoc.title}</h3>
+                  <p className="text-[10px] text-slate-500 font-mono">{selectedDoc.file_name}</p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedDoc(null)}
-                className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[#f3f4f5] text-[#757682] cursor-pointer"
+                className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-500 cursor-pointer"
               >
                 <span className="font-bold text-[10px]">✕</span>
               </button>
             </div>
 
-            <div className="p-4 bg-purple-50/50 rounded-xl border border-purple-100 space-y-2 text-xs">
+            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5 text-xs">
               <div className="flex justify-between">
-                <span className="text-[#757682]">Credential Code:</span>
-                <span className="font-mono font-bold text-purple-900">{selectedDoc.doc_type_code}</span>
+                <span className="text-slate-500">Credential Code:</span>
+                <span className="font-mono font-bold text-[#00236f]">{selectedDoc.doc_type_code}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#757682]">Appointed Faculty:</span>
+                <span className="text-slate-500">Appointed Faculty:</span>
                 <span className="font-bold">{selectedDoc.owner_name} ({selectedDoc.owner_id})</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#757682]">Accreditation Status:</span>
+                <span className="text-slate-500">Accreditation Status:</span>
                 <span className="font-bold uppercase text-emerald-700">{selectedDoc.status}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#757682]">Digest:</span>
+                <span className="text-slate-500">Digest:</span>
                 <span className="font-mono text-[10px]">{selectedDoc.sha256_hash.slice(0, 24)}...</span>
               </div>
               {selectedDoc.remarks && (
-                <div className="pt-2 border-t border-purple-200">
-                  <span className="text-[#757682] block text-[10px] uppercase font-bold">Audit Remarks:</span>
-                  <p className="mt-0.5 text-[#191c1d] italic">“{selectedDoc.remarks}”</p>
+                <div className="pt-1.5 border-t border-slate-200">
+                  <span className="text-slate-500 block text-[9px] uppercase font-bold">Audit Remarks:</span>
+                  <p className="mt-0.5 text-slate-800 italic text-[11px]">“{selectedDoc.remarks}”</p>
                 </div>
               )}
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2">
+            <div className="flex items-center justify-end gap-2 pt-1">
               <button
                 onClick={() => alert(`Simulated downloading ${selectedDoc.file_name}`)}
-                className="px-4 py-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg text-xs font-bold text-[#444651] flex items-center gap-1 cursor-pointer"
+                className="px-3 py-1.5 border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-bold text-slate-700 flex items-center gap-1 cursor-pointer"
               >
-                <span className="font-bold text-[10px]">[DL]</span>
                 <span>Download Certified PDF</span>
               </button>
               <button
                 onClick={() => setSelectedDoc(null)}
-                className="px-4 py-2 bg-purple-800 text-white rounded-lg text-xs font-bold cursor-pointer"
+                className="px-4 py-1.5 bg-[#00236f] text-white rounded-lg text-xs font-bold cursor-pointer"
               >
                 Close
               </button>

@@ -185,7 +185,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
                     id="filter-search-input"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="e.g. Alice or STU-001"
+                    placeholder="e.g. Alice or 1001-88-03-01"
                     className="w-full pl-9 pr-3.5 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
                   />
                 </div>

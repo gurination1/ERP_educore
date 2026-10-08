@@ -83,7 +83,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
             UID: {(student.enterprise_uid || '1001-88-03-01').replace(/BFGI/g, '01')}
           </span>
           <span className="text-[10px] text-slate-500 hidden md:inline-flex">
-            MRSPTU • Session {sessionName}
+            Multi-Affiliated • Session {sessionName}
           </span>
         </div>
 
@@ -188,7 +188,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
               <div>
                 <strong className="text-[#00236f] font-semibold block text-[11px]">
                   {isFullyPaid && !isDetained
-                    ? 'MRSPTU Exam Hall Ticket Released'
+                    ? 'University Exam Hall Ticket Released'
                     : isDetained
                     ? 'Hall Ticket Withheld • Attendance Below 75%'
                     : 'Hall Ticket On Accounts Hold'}
@@ -295,7 +295,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
           <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
             {((notices && notices.length > 0) ? notices : [
               {
-                title: 'MRSPTU Final Semester Theory Examinations May-2026',
+                title: 'University Final Semester Theory Examinations May-2026',
                 notice_date: 'May 12, 2026',
                 summary: 'Official datesheet released by COE. CBCS external evaluation verified.',
               },
@@ -338,7 +338,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                 className={`h-full rounded-full transition-all duration-500 ${attendancePct >= 75 ? 'bg-emerald-500' : 'bg-rose-500'}`}
               />
             </div>
-            <span className="text-[9px] text-slate-500 font-medium block">MRSPTU 75% Mandate Threshold</span>
+            <span className="text-[9px] text-slate-500 font-medium block">Statutory 75% Mandate Threshold</span>
           </div>
 
           <div className="grid grid-cols-3 gap-1.5 text-center border-t border-slate-100 pt-2 text-xs">

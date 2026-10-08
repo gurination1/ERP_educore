@@ -140,38 +140,38 @@ async function runTestSuite() {
     
     // Login Super Admin via Enterprise UID
     const superLogin = await request('POST', '/api/auth/login', {
-      username: '9001-03-BFGI-000001',
+      username: '9001-01-03-01',
       password: 'super123',
     });
-    assert('Super Admin login via UID "9001-03-BFGI-000001" succeeds', superLogin.status === 200 && superLogin.data.success);
+    assert('Super Admin login via UID "9001-01-03-01" succeeds', superLogin.status === 200 && superLogin.data.success);
     const superToken = superLogin.data?.token;
     assert('Super Admin token issued with role super_admin', superLogin.data?.user?.role === 'super_admin');
-    assert('Super Admin payload contains canonical enterprise_uid', superLogin.data?.user?.enterprise_uid === '9001-03-BFGI-000001');
+    assert('Super Admin payload contains canonical enterprise_uid', superLogin.data?.user?.enterprise_uid === '9001-01-03-01');
 
     // Login Admin via Enterprise UID
     const adminLogin = await request('POST', '/api/auth/login', {
-      username: '4001-03-BFGI-0001',
+      username: '4001-01-03-01',
       password: 'admin123',
     });
-    assert('Admin login via UID "4001-03-BFGI-0001" succeeds', adminLogin.status === 200 && adminLogin.data.success);
+    assert('Admin login via UID "4001-01-03-01" succeeds', adminLogin.status === 200 && adminLogin.data.success);
     const adminToken = adminLogin.data?.token;
     assert('Admin user role is admin', adminLogin.data?.user?.role === 'admin');
 
     // Login Faculty via Enterprise UID
     const staffLogin = await request('POST', '/api/auth/login', {
-      username: '2001-03-BFGI-0014',
+      username: '2001-14-03-01',
       password: 'staff123',
     });
-    assert('Faculty login via UID "2001-03-BFGI-0014" succeeds', staffLogin.status === 200 && staffLogin.data.success);
+    assert('Faculty login via UID "2001-14-03-01" succeeds', staffLogin.status === 200 && staffLogin.data.success, JSON.stringify(staffLogin));
     const staffToken = staffLogin.data?.token;
-    assert('Faculty user role is staff', staffLogin.data?.user?.role === 'staff');
+    assert('Faculty user role is staff', staffLogin.data?.user?.role === 'staff', JSON.stringify(staffLogin.data?.user));
 
     // Login Student via Enterprise UID
     const studentLogin = await request('POST', '/api/auth/login', {
-      username: '1001-03-BFGI-260088',
+      username: '1001-88-03-01',
       password: 'student123',
     });
-    assert('Student login via UID "1001-03-BFGI-260088" succeeds', studentLogin.status === 200 && studentLogin.data.success);
+    assert('Student login via UID "1001-88-03-01" succeeds', studentLogin.status === 200 && studentLogin.data.success);
     const studentToken = studentLogin.data?.token;
     assert('Student user role is student', studentLogin.data?.user?.role === 'student');
 
@@ -328,7 +328,7 @@ async function runTestSuite() {
     assert('Admin provisions new staff member', newUserRes.status === 201 && newUserRes.data.success);
     const assignedUid = newUserRes.data?.user?.enterprise_uid;
     assert('Newly provisioned staff receives canonical Enterprise UID', Boolean(assignedUid));
-    const uidRegex = /^2001-03-BFGI-[0-9]{4,6}$/;
+    const uidRegex = /^2001-[0-9]{2}-03-01$/;
     assert(`Assigned UID matches canonical pattern: ${assignedUid}`, uidRegex.test(assignedUid));
 
     // -----------------------------------------------------------------

@@ -30,7 +30,7 @@ auditRouter.get('/master-data', async (req: Request, res: Response): Promise<voi
 
   res.json({
     success: true,
-    universityStandard: 'MRSPTU / UGC CBCS 10-Point Affiliation Standard',
+    universityStandard: 'PUP Patiala / MRSPTU / PU / UGC CBCS Standard',
     institutionGstCode: '03 (Punjab State Excise & GSTIN Compliant)',
     ...masterData,
   });

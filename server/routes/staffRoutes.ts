@@ -21,6 +21,85 @@ staffRouter.get('/', authenticateToken, async (req: AuthRequest, res: Response):
   }
 });
 
+const academicJourneySchema = z.object({
+  qualification_level: z.enum(['PhD', 'PostDoc', 'M.Tech', 'M.Sc', 'MBA', 'B.Tech', 'B.Sc']),
+  degree_name: z.string().min(2),
+  awarding_university: z.string().min(2),
+  year_of_passing: z.number().int().min(1960).max(2035),
+  specialization: z.string().min(2),
+  scopus_publications: z.number().int().min(0).default(0),
+  sci_publications: z.number().int().min(0).default(0),
+  patents_count: z.number().int().min(0).default(0),
+  past_institutions_summary: z.string().optional(),
+  verified: z.boolean().default(false),
+});
+
+// Staff Academic Journey Records (Scopus / SCI / Patents)
+staffRouter.get('/academic-journey', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  const list = await db.getStaffAcademicJourney();
+  res.json({
+    success: true,
+    count: list.length,
+    academicJourneys: list,
+  });
+});
+
+staffRouter.get('/:id/academic-journey', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const list = await db.getStaffAcademicJourney(id);
+  res.json({
+    success: true,
+    staffId: id,
+    count: list.length,
+    academicJourneys: list,
+  });
+});
+
+staffRouter.post('/:id/academic-journey', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const parseResult = academicJourneySchema.safeParse(req.body);
+  if (!parseResult.success) {
+    const errorMsg = parseResult.error.errors.map(e => e.message).join(', ');
+    res.status(400).json({ success: false, error: errorMsg });
+    return;
+  }
+
+  const staffUser = await db.findUserById(id);
+  const staffName = staffUser ? staffUser.full_name : 'Faculty Member';
+
+  const created = await db.addStaffAcademicJourney({
+    staff_id: id,
+    staff_name: staffName,
+    qualification_level: parseResult.data.qualification_level,
+    degree_name: parseResult.data.degree_name,
+    awarding_university: parseResult.data.awarding_university,
+    year_of_passing: parseResult.data.year_of_passing,
+    specialization: parseResult.data.specialization,
+    scopus_publications: parseResult.data.scopus_publications,
+    sci_publications: parseResult.data.sci_publications,
+    patents_count: parseResult.data.patents_count,
+    past_institutions_summary: parseResult.data.past_institutions_summary || '',
+    verified: parseResult.data.verified || false,
+  });
+
+  await db.createAuditLog({
+    actor_id: req.user!.id,
+    actor_name: req.user!.full_name,
+    actor_role: req.user!.role,
+    action: 'STAFF_DEGREE_RECORDED',
+    target_type: 'user',
+    target_id: id,
+    details: `Added ${created.qualification_level} record for ${staffName} (${created.specialization}).`,
+    severity: 'info',
+  });
+
+  res.status(201).json({
+    success: true,
+    message: 'Staff academic journey qualification recorded successfully.',
+    academicJourney: created,
+  });
+});
+
 // 2. Get full multi-table profile for a single staff member
 staffRouter.get('/:id', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {

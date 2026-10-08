@@ -45,24 +45,18 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
       <div className="bg-white rounded-2xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl border border-[#e1e3e4] space-y-6 my-6 animate-scaleUp print:p-0 print:border-none print:shadow-none print:m-0">
         {/* Modal Controls (Hidden in Print) */}
         <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3 print:hidden">
-          <div className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-lg bg-[#00236f] text-white flex items-center justify-center font-bold text-xs">
-              MR
-            </span>
-            <div>
-              <h3 className="text-sm font-bold text-[#191c1d]">MRSPTU Examination Portal</h3>
-              <p className="text-[11px] text-[#757682]">Roll Number Slip & Gate Clearance Verification</p>
-            </div>
+          <div>
+            <h3 className="text-sm font-bold text-[#191c1d]">University Examination Portal</h3>
+            <p className="text-[11px] text-[#757682]">Roll Number Slip & Gate Clearance Verification (PUP Patiala / MRSPTU / PU)</p>
           </div>
           <div className="flex items-center gap-2">
             {isEligible && (
               <button
                 type="button"
                 onClick={handlePrint}
-                className="px-3 py-1.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                className="px-3.5 py-1.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-xs"
               >
-                <span className="font-bold text-[10px]">[PRINT]</span>
-                <span>Print Slip</span>
+                Print Slip
               </button>
             )}
             <button
@@ -79,7 +73,7 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
         {isLoading ? (
           <div className="py-16 text-center space-y-3">
             <div className="w-10 h-10 border-3 border-[#00236f] border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="text-xs text-[#757682] font-semibold">Verifying MRSPTU No-Dues & Attendance Eligibility...</p>
+            <p className="text-xs text-[#757682] font-semibold">Verifying University No-Dues & 75% Attendance Eligibility...</p>
           </div>
         ) : errorMsg ? (
           <div className="py-8 text-center space-y-3">
@@ -99,7 +93,7 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
                 EXAMINATION ADMIT CARD WITHHELD
               </h3>
               <p className="text-xs text-[#444651] max-w-lg mx-auto">
-                In accordance with Maharaja Ranjit Singh Punjab Technical University statutory ordinances, your examination roll number slip is withheld due to pending institutional clearances:
+                In accordance with statutory university academic ordinances, your examination roll number slip is withheld due to pending institutional clearances:
               </p>
             </div>
 
@@ -134,23 +128,18 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
             )}
           </div>
         ) : (
-          /* OFFICIAL MRSPTU PRINTABLE HALL TICKET */
+          /* OFFICIAL UNIVERSITY PRINTABLE HALL TICKET */
           <div id="mrsptu-admit-card-slip" className="border-2 border-[#191c1d] p-6 rounded-xl space-y-5 bg-white text-[#191c1d]">
             {/* Header */}
             <div className="text-center space-y-1 border-b-2 border-[#191c1d] pb-4">
-              <div className="flex items-center justify-center gap-3">
-                <div className="w-12 h-12 rounded-full border-2 border-[#00236f] bg-[#00236f] text-white flex items-center justify-center font-serif font-black text-base shadow-xs">
-                  MR
-                </div>
-                <div>
-                  <h2 className="text-base sm:text-lg font-extrabold uppercase tracking-tight text-[#00236f]">
-                    {card.university}
-                  </h2>
-                  <p className="text-[10px] text-[#444651] font-semibold">{card.accreditation}</p>
-                  <p className="text-[11px] font-bold text-[#ba1a1a] uppercase tracking-wider mt-0.5">
-                    Admit Card / Roll Number Slip • {card.examSession}
-                  </p>
-                </div>
+              <div>
+                <h2 className="text-base sm:text-lg font-extrabold uppercase tracking-tight text-[#00236f]">
+                  {card.university || 'University Examination Council'}
+                </h2>
+                <p className="text-[10px] text-[#444651] font-semibold">{card.accreditation || 'Multi-University Affiliated • PUP Patiala / MRSPTU / PU'}</p>
+                <p className="text-[11px] font-bold text-[#ba1a1a] uppercase tracking-wider mt-0.5">
+                  Admit Card / Roll Number Slip • {card.examSession}
+                </p>
               </div>
             </div>
 

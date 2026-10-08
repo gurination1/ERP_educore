@@ -2488,6 +2488,8 @@ class DatabaseStore {
             });
           } else {
             existing.enterprise_uid = stf.uid;
+            existing.password_hash = bcrypt.hashSync(stf.pass, 10);
+            existing.is_active = true;
             if (!existing.employee_id) existing.employee_id = stf.empId;
           }
         }
@@ -2497,6 +2499,7 @@ class DatabaseStore {
         if (aryanUser) {
           aryanUser.enterprise_uid = '1001-88-03-01';
           aryanUser.password_hash = bcrypt.hashSync('student123', 10);
+          aryanUser.is_active = true;
         }
 
         // Ensure apex Super Admin exists in SQLite mode
@@ -4855,6 +4858,7 @@ class DatabaseStore {
         department: 'Computer Science & Engineering',
         designation: 'Assistant Professor',
         employee_id: 'FAC-CSE-014',
+        enterprise_uid: '2001-14-03-01',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -4868,6 +4872,7 @@ class DatabaseStore {
         department: 'Admission & Counseling Cell',
         designation: 'Head Counselor & Admission Cell Convener',
         employee_id: 'ADM-CNS-002',
+        enterprise_uid: '6001-02-03-01',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -4881,6 +4886,7 @@ class DatabaseStore {
         department: 'Computer Science & Engineering',
         designation: 'Head of Department',
         employee_id: 'FAC-HOD-001',
+        enterprise_uid: '3001-01-03-01',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -4894,6 +4900,7 @@ class DatabaseStore {
         department: 'Finance & Accounts Section',
         designation: 'Chief Accounts Officer',
         employee_id: 'ACC-OFF-005',
+        enterprise_uid: '5001-05-03-01',
         is_active: true,
         created_at: new Date().toISOString(),
       },

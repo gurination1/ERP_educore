@@ -203,7 +203,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
               
               <input
                 type="text"
-                placeholder="Search student by UID / Roll No (STU-008), Name (Rohan), Department, or Email..."
+                placeholder="Search student by Canonical UID (1001-88-03-01), Name (Aryan), Department, or Email..."
                 value={studentSearch}
                 onChange={e => {
                   setStudentSearch(e.target.value);
@@ -221,7 +221,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                       key={s.id}
                       onClick={() => {
                         setSelectedStudentId(s.id);
-                        setStudentSearch(`${s.first_name} ${s.last_name} (${s.student_id})`);
+                        setStudentSearch(`${s.first_name} ${s.last_name} (${s.enterprise_uid || s.student_id})`);
                         setIsSearchDropdownOpen(false);
                       }}
                       className="p-3 hover:bg-[#f0f4ff] cursor-pointer flex items-center justify-between transition-colors text-xs"
@@ -232,7 +232,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                         </div>
                         <div>
                           <p className="font-bold text-[#191c1d]">
-                            {s.first_name} {s.last_name} <span className="font-mono text-[#00236f] font-normal">({s.student_id})</span>
+                            {s.first_name} {s.last_name} <span className="font-mono text-[#00236f] font-normal">({s.enterprise_uid || s.student_id})</span>
                           </p>
                           <p className="text-[11px] text-[#757682]">
                             {s.course?.name || s.course?.code || 'B.Tech'} • Sem {s.current_semester || 1} • {s.email}
@@ -257,7 +257,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                 <div>
                   <span className="text-[10px] uppercase font-bold text-[#757682] block">Auditing Account</span>
                   <span className="font-bold text-[#00236f]">
-                    {activeStudentObj.name || `${activeStudentObj.first_name} ${activeStudentObj.last_name}`} ({activeStudentObj.studentId || activeStudentObj.student_id})
+                    {activeStudentObj.name || `${activeStudentObj.first_name} ${activeStudentObj.last_name}`} ({activeStudentObj.enterprise_uid || activeStudentObj.studentId || activeStudentObj.student_id})
                   </span>
                 </div>
               </div>
@@ -270,14 +270,14 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
               Quick Audit:
             </span>
             {[
-              { label: 'Aryan (CSE)', id: 'stu-rec-aryan', uid: 'STU-2023-088' },
-              { label: 'Rohan (Phys)', id: 'stu-008', uid: 'STU-008' },
-              { label: 'Priya (MBA)', id: 'stu-007', uid: 'STU-007' },
-              { label: 'Aarav (CS)', id: 'stu-006', uid: 'STU-006' },
-              { label: 'Neha (ME)', id: 'stu-009', uid: 'STU-009' },
-              { label: 'Aaditya (CS)', id: 'stu-001', uid: 'STU-2025-001' },
+              { label: 'Aryan (CSE)', id: 'stu-rec-aryan', uid: '1001-88-03-01' },
+              { label: 'Rohan (Phys)', id: 'stu-008', uid: '1001-08-03-01' },
+              { label: 'Priya (MBA)', id: 'stu-007', uid: '1001-07-03-01' },
+              { label: 'Aarav (CS)', id: 'stu-006', uid: '1001-06-03-01' },
+              { label: 'Neha (ME)', id: 'stu-009', uid: '1001-09-03-01' },
+              { label: 'Aaditya (CS)', id: 'stu-001', uid: '1001-01-03-01' },
             ].map(demo => {
-              const matched = studentList.find(s => s.student_id === demo.uid || s.id === demo.id);
+              const matched = studentList.find(s => s.id === demo.id || s.student_id === demo.uid || (s as any).enterprise_uid === demo.uid);
               const isActive = (matched && matched.id === activeStudentId) || (ledgerData?.student?.studentId === demo.uid);
               return (
                 <button

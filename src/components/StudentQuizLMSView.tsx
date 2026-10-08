@@ -8,7 +8,7 @@ interface StudentQuizLMSViewProps {
 const SAMPLE_QUIZZES: LMSQuiz[] = [
   {
     id: 'quiz-cs401',
-    title: 'MRSPTU Mid-Term Assessment: Design & Analysis of Algorithms',
+    title: 'University Mid-Term Assessment: Design & Analysis of Algorithms',
     courseCode: 'BTCS-401-18',
     semester: 4,
     durationMinutes: 15,
@@ -17,7 +17,7 @@ const SAMPLE_QUIZZES: LMSQuiz[] = [
     instructions: [
       'Each question carries specified marks. Negative marking of 0.25 marks applies for incorrect choices.',
       'Do not switch tabs during examination session; violations are flagged to proctoring log.',
-      'Scores are automatically converted into MRSPTU Internal Assessment (30% weightage).',
+      'Scores are automatically converted into CBCS Internal Assessment (30% weightage).',
     ],
     questions: [
       {
@@ -106,10 +106,10 @@ const SAMPLE_QUIZZES: LMSQuiz[] = [
 const LMS_RESOURCES = [
   {
     id: 'res-01',
-    title: 'MRSPTU Official Scheme & Syllabus (B.Tech CSE Batch 2023-27)',
+    title: 'University Scheme & Syllabus (B.Tech CSE Batch 2023-27)',
     subject: 'Academic Curriculum Ordinance',
     format: 'PDF (2.8 MB)',
-    lecturer: 'MRSPTU Academic Directorate',
+    lecturer: 'University Academic Directorate',
     downloadUrl: '#',
   },
   {
@@ -205,37 +205,31 @@ export const StudentQuizLMSView: React.FC<StudentQuizLMSViewProps> = ({ currentU
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-      {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-[#00236f] via-[#103e91] to-[#00236f] text-white p-6 rounded-2xl shadow-md border border-white/10">
+      {/* Sleek Action Toolbar - Navy/Orange Theme, Space Efficient */}
+      <div className="bg-white border border-[#e1e3e4] rounded-lg p-3 shadow-xs flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[11px] font-mono text-cyan-200 mb-2 border border-white/10">
-            
-            <span>MRSPTU CBCS ACADEMIC LMS & CONTINUOUS ASSESSMENT (CA)</span>
-          </div>
-          <h1 className="text-2xl font-black tracking-tight">Student Quiz & LMS Learning Portal</h1>
-          <p className="text-xs text-blue-100 mt-1 max-w-2xl">
-            Computer-Based Testing (CBT), formative self-assessments, automated grading engine, and university curriculum lecture courseware.
-          </p>
+          <h1 className="text-sm font-black text-[#00236f] tracking-tight">Student Quiz & LMS Learning Portal</h1>
+          <p className="text-[10px] text-[#757682]">CBCS Continuous Assessment (CA) & University Courseware</p>
         </div>
 
         {/* Tab switch */}
-        <div className="flex items-center gap-2 bg-black/20 p-1.5 rounded-xl border border-white/10">
+        <div className="flex items-center gap-1.5 bg-[#f8f9fa] p-1 rounded-lg border border-[#e1e3e4]">
           <button
             onClick={() => { setActiveTab('quizzes'); setActiveQuiz(null); }}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'quizzes'
-                ? 'bg-white text-[#00236f] shadow-xs'
-                : 'text-white/80 hover:text-white'
+                ? 'bg-[#00236f] text-white shadow-xs'
+                : 'text-[#757682] hover:text-[#191c1d]'
             }`}
           >
             Online Quizzes ({SAMPLE_QUIZZES.length})
           </button>
           <button
             onClick={() => { setActiveTab('lms_resources'); setActiveQuiz(null); }}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'lms_resources'
-                ? 'bg-white text-[#00236f] shadow-xs'
-                : 'text-white/80 hover:text-white'
+                ? 'bg-[#00236f] text-white shadow-xs'
+                : 'text-[#757682] hover:text-[#191c1d]'
             }`}
           >
             LMS Courseware ({LMS_RESOURCES.length})
@@ -293,16 +287,13 @@ export const StudentQuizLMSView: React.FC<StudentQuizLMSViewProps> = ({ currentU
                     : 'bg-gradient-to-r from-rose-50 to-amber-50 border-rose-300 text-rose-950'
                 }`}>
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      
-                      <div>
-                        <h3 className="text-lg font-black">
-                          {quizScore.passed ? 'Assessment Passed Successfully!' : 'Needs Revision'}
-                        </h3>
-                        <p className="text-xs">
-                          MRSPTU CBCS Internal Assessment Credit Synchronized.
-                        </p>
-                      </div>
+                    <div>
+                      <h3 className="text-lg font-black">
+                        {quizScore.passed ? 'Assessment Passed Successfully!' : 'Needs Revision'}
+                      </h3>
+                      <p className="text-xs">
+                        Statutory CBCS Internal Assessment Credit Synchronized.
+                      </p>
                     </div>
 
                     <div className="text-right">

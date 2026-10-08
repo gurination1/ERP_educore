@@ -269,7 +269,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
   const handleSaveSessionalMarks = () => {
     setFeedbackMessage({
       type: 'success',
-      text: `Internal sessional marks for ${selectedCourse} saved and locked for MRSPTU Dec/Jan evaluation audit!`,
+      text: `Internal sessional marks for ${selectedCourse} saved and locked for University evaluation audit!`,
     });
   };
 
@@ -312,7 +312,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
             <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-[#757682]">
               <span className="flex items-center gap-1">
                 
-                <span>ID: FAC-CSE-014</span>
+                <span>UID: {currentUser?.enterprise_uid || '2001-14-03-01'}</span>
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
@@ -370,52 +370,37 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
         <button
           type="button"
           onClick={() => onNavigate('teacher-documents')}
-          className="p-3.5 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-indigo-400 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs"
+          className="p-3 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-[#00236f]/40 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs cursor-pointer"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center group-hover:scale-105 transition-transform">
-              
-            </div>
-            <div>
-              <h4 className="text-xs font-bold text-[#191c1d]">Faculty Credentials Vault</h4>
-              <p className="text-[10px] text-[#757682]">AICTE ID, Ph.D. Awards, Scopus Papers</p>
-            </div>
+          <div>
+            <h4 className="text-xs font-bold text-[#191c1d] group-hover:text-[#00236f] transition-colors">Faculty Credentials Vault</h4>
+            <p className="text-[10px] text-[#757682]">AICTE ID, Ph.D. Awards, Scopus Papers</p>
           </div>
-          <span className="font-bold text-[10px]">→</span>
+          <span className="font-bold text-[11px] text-[#757682] group-hover:text-[#00236f] group-hover:translate-x-0.5 transition-all">→</span>
         </button>
 
         <button
           type="button"
           onClick={() => onNavigate('student-quiz-lms')}
-          className="p-3.5 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-purple-400 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs"
+          className="p-3 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-[#00236f]/40 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs cursor-pointer"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center group-hover:scale-105 transition-transform">
-              
-            </div>
-            <div>
-              <h4 className="text-xs font-bold text-[#191c1d]">LMS & CBT Assessment</h4>
-              <p className="text-[10px] text-[#757682]">Mid-Term CBT Quizzes & Question Banks</p>
-            </div>
+          <div>
+            <h4 className="text-xs font-bold text-[#191c1d] group-hover:text-[#00236f] transition-colors">LMS & CBT Assessment</h4>
+            <p className="text-[10px] text-[#757682]">Mid-Term CBT Quizzes & Question Banks</p>
           </div>
-          <span className="font-bold text-[10px]">→</span>
+          <span className="font-bold text-[11px] text-[#757682] group-hover:text-[#00236f] group-hover:translate-x-0.5 transition-all">→</span>
         </button>
 
         <button
           type="button"
           onClick={() => onNavigate('student-documents')}
-          className="p-3.5 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-emerald-400 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs"
+          className="p-3 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-[#00236f]/40 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs cursor-pointer"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center group-hover:scale-105 transition-transform">
-              
-            </div>
-            <div>
-              <h4 className="text-xs font-bold text-[#191c1d]">Student Document Vault</h4>
-              <p className="text-[10px] text-[#757682]">MRSPTU & 85% Domicile Verification</p>
-            </div>
+          <div>
+            <h4 className="text-xs font-bold text-[#191c1d] group-hover:text-[#00236f] transition-colors">Student Document Vault</h4>
+            <p className="text-[10px] text-[#757682]">Statutory & 85% Domicile Verification</p>
           </div>
-          <span className="font-bold text-[10px]">→</span>
+          <span className="font-bold text-[11px] text-[#757682] group-hover:text-[#00236f] group-hover:translate-x-0.5 transition-all">→</span>
         </button>
       </div>
 
@@ -658,7 +643,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                   </span>
                 </h3>
                 <p className="text-[11px] text-[#757682] mt-0.5">
-                  MRSPTU Ordinance 7.4 Rule: Students with projected attendance &lt; 75% are flagged for examination admit card detention.
+                  Statutory Ordinance 7.4 Rule: Students with projected attendance &lt; 75% are flagged for examination admit card detention.
                 </p>
               </div>
 
@@ -685,7 +670,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                       <th className="p-3.5 text-center">Current %</th>
                       <th className="p-3.5 text-center">Today's Lecture</th>
                       <th className="p-3.5 text-center">Projected %</th>
-                      <th className="p-3.5">MRSPTU Ordinance 7.4 Status</th>
+                      <th className="p-3.5">Statutory Ordinance Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#f3f4f5]">
@@ -861,13 +846,13 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
         </div>
       )}
 
-      {/* TAB 2: MID-SEMESTER TEST & SESSIONAL MARKS (MRSPTU 60 MARKS) */}
+      {/* TAB 2: MID-SEMESTER TEST & SESSIONAL MARKS (UNIVERSITY CBCS 60 MARKS) */}
       {activeTab === 'sessional' && (
         <div className="space-y-6">
           <div className="bg-white p-5 rounded-xl border border-[#e1e3e4] shadow-xs flex flex-wrap items-center justify-between gap-4">
             <div>
               <h3 className="text-sm font-bold text-[#191c1d]">
-                MRSPTU Continuous Assessment & Internal Sessional Grading (60 Marks)
+                University CBCS Continuous Assessment & Internal Sessional Grading (60 Marks)
               </h3>
               <p className="text-xs text-[#757682] mt-0.5">
                 Evaluation Scheme: MST-1 (24 Marks) + MST-2 (24 Marks) + Continuous Assignment & Attendance (12 Marks). Minimum passing internal cutoff: 24/60.

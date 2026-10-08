@@ -99,7 +99,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
             Institutional Analytical Reports & Audits
           </h2>
           <p className="text-sm text-[#444651] mt-1">
-            Departmental enrollment verification, fee reconciliation, and MRSPTU compliance
+            Departmental enrollment verification, fee reconciliation, and statutory university compliance
           </p>
         </div>
 
@@ -249,7 +249,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
       {/* Statutory Audit Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs space-y-2">
-          <h4 className="text-sm font-bold text-[#191c1d]">MRSPTU Exam Eligibility Audit</h4>
+          <h4 className="text-sm font-bold text-[#191c1d]">Statutory University Exam Eligibility Audit</h4>
           <p className="text-xs text-[#757682]">
             Mandatory check of 75% attendance cutoff under University Ordinance 7.4 and zero-dues clearance.
           </p>
