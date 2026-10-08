@@ -107,12 +107,12 @@ export function generateEnterpriseUID(
   };
 
   const selected = typeMap[userType] || { numeric: '1001', alpha: 'STU' };
-  const yearSuffix = new Date().getFullYear().toString().slice(-2);
-  const seq = sequenceNum
-    ? String(sequenceNum).padStart(4, '0')
-    : Math.floor(1000 + Math.random() * 9000).toString();
+  const seq = sequenceNum !== undefined
+    ? String(sequenceNum).padStart(2, '0').slice(-2)
+    : Math.floor(10 + Math.random() * 89).toString();
 
-  return `${selected.numeric}-${stateGst}-${instCode}-${yearSuffix}${seq}`;
+  // Canonical Architecture: [CollegeNumber: 4 digits]-[Serial: 2 digits]-[State GST: 2 digits]-[Institutional Code]
+  return `${selected.numeric}-${seq}-${stateGst}-${instCode}`;
 }
 
 export const DEFAULT_MASTER_STATES: MasterState[] = [
@@ -1839,16 +1839,17 @@ class DatabaseStore {
 
     // Ensure all demo student accounts exist in MariaDB users table & link to student profiles
     const demoStudentAccounts = [
-      { id: 'usr-stu-rohan', username: 'rohan', email: 'rohan.gupta@educore.edu', full_name: 'Rohan Gupta', student_id: 'stu-rec-rohan' },
-      { id: 'usr-stu-priya', username: 'priya', email: 'priya.patel@educore.edu', full_name: 'Priya Patel', student_id: 'stu-rec-priya' },
-      { id: 'usr-stu-aarav', username: 'aarav', email: 'aarav.sharma@educore.edu', full_name: 'Aarav Sharma', student_id: 'stu-rec-aarav' },
-      { id: 'usr-stu-neha', username: 'neha', email: 'neha.singh@educore.edu', full_name: 'Neha Singh', student_id: 'stu-rec-neha' },
+      { id: 'usr-stu-aryan', username: 'aryan', email: 'aryan.sharma@educore.edu', full_name: 'Aryan Sharma', student_id: 'stu-rec-aryan', enterprise_uid: '1001-88-03-BFGI' },
+      { id: 'usr-stu-rohan', username: 'rohan', email: 'rohan.gupta@educore.edu', full_name: 'Rohan Gupta', student_id: 'stu-rec-rohan', enterprise_uid: '1001-01-03-BFGI' },
+      { id: 'usr-stu-priya', username: 'priya', email: 'priya.patel@educore.edu', full_name: 'Priya Patel', student_id: 'stu-rec-priya', enterprise_uid: '1001-02-03-BFGI' },
+      { id: 'usr-stu-aarav', username: 'aarav', email: 'aarav.sharma@educore.edu', full_name: 'Aarav Sharma', student_id: 'stu-rec-aarav', enterprise_uid: '1001-03-03-BFGI' },
+      { id: 'usr-stu-neha', username: 'neha', email: 'neha.singh@educore.edu', full_name: 'Neha Singh', student_id: 'stu-rec-neha', enterprise_uid: '1001-04-03-BFGI' },
     ];
     const demoStudentHash = bcrypt.hashSync('student123', 10);
     for (const su of demoStudentAccounts) {
       await this.mariaPool.query(
-        'INSERT INTO users (id, username, email, password_hash, role, full_name, is_active, created_at) VALUES (?, ?, ?, ?, "student", ?, 1, NOW()) ON DUPLICATE KEY UPDATE username = VALUES(username), password_hash = VALUES(password_hash)',
-        [su.id, su.username, su.email, demoStudentHash, su.full_name]
+        'INSERT INTO users (id, username, email, password_hash, role, full_name, enterprise_uid, is_active, created_at) VALUES (?, ?, ?, ?, "student", ?, ?, 1, NOW()) ON DUPLICATE KEY UPDATE username = VALUES(username), password_hash = VALUES(password_hash), enterprise_uid = VALUES(enterprise_uid)',
+        [su.id, su.username, su.email, demoStudentHash, su.full_name, su.enterprise_uid]
       );
       await this.mariaPool.query(
         'UPDATE students SET user_id = ? WHERE id = ?',
@@ -1857,6 +1858,7 @@ class DatabaseStore {
     }
 
     // Ensure all demo staff & administrative accounts exist in MariaDB
+    const superHash = bcrypt.hashSync('super123', 10);
     const adminHash = bcrypt.hashSync('admin123', 10);
     const staffHash = bcrypt.hashSync('staff123', 10);
     const counselorHash = bcrypt.hashSync('counselor123', 10);
@@ -1865,18 +1867,19 @@ class DatabaseStore {
     const partnerHash = bcrypt.hashSync('partner123', 10);
 
     const demoStaffAccounts = [
-      { id: 'usr-admin-01', username: 'admin', email: 'admin@educore.edu', hash: adminHash, role: 'admin', full_name: 'Dr. Ramesh Chandra (Registrar & Academic Provost)', department: 'Registrar Office', designation: 'Registrar & Provost', employee_id: 'REG-PRO-001', enterprise_uid: '4001-03-BFGI-0001' },
-      { id: 'usr-staff-01', username: 'staff01', email: 'staff@educore.edu', hash: staffHash, role: 'staff', full_name: 'Prof. Sunita Rao (Staff / Faculty)', department: 'Computer Science & Engineering', designation: 'Assistant Professor', employee_id: 'FAC-CSE-014', enterprise_uid: '2001-03-BFGI-0014' },
-      { id: 'usr-counselor-01', username: 'counselor01', email: 'counselor@educore.edu', hash: counselorHash, role: 'counselor', full_name: 'Harleen Kaur (Head Counselor / Admission Cell)', department: 'Admission & Counseling Cell', designation: 'Head Counselor & Admission Cell Convener', employee_id: 'ADM-CNS-002', enterprise_uid: '6001-03-BFGI-0002' },
-      { id: 'usr-hod-01', username: 'hod_cse', email: 'hod.cse@educore.edu', hash: hodHash, role: 'hod', full_name: 'Dr. Balwinder Singh (HOD Computer Science)', department: 'Computer Science & Engineering', designation: 'Head of Department', employee_id: 'FAC-HOD-001', enterprise_uid: '3001-03-BFGI-0001' },
-      { id: 'usr-accounts-01', username: 'accounts01', email: 'accounts@educore.edu', hash: accountsHash, role: 'accounts', full_name: 'Manmohan Sharma (Chief Accounts Officer)', department: 'Finance & Accounts Section', designation: 'Chief Accounts Officer', employee_id: 'ACC-OFF-005', enterprise_uid: '5001-03-BFGI-0005' },
-      { id: 'usr-partner-01', username: 'partner01', email: 'partner@educore.edu', hash: partnerHash, role: 'partner', full_name: 'Infosys Campus Relations Lead', department: 'Corporate Relations', designation: 'Campus Hiring Director', employee_id: 'PRT-001', enterprise_uid: '7001-03-BFGI-0001' },
+      { id: 'usr-super-01', username: 'superadmin', email: 'superadmin@educore.edu', hash: superHash, role: 'super_admin', full_name: 'Prof. Dr. Amritpal Singh (Chief System Provost)', department: 'Executive Directorate & University Governance', designation: 'Chief System Provost & Chancellor Delegate', employee_id: 'PRO-SUP-001', enterprise_uid: '9001-01-03-BFGI' },
+      { id: 'usr-admin-01', username: 'admin', email: 'admin@educore.edu', hash: adminHash, role: 'admin', full_name: 'Dr. Ramesh Chandra (Registrar & Academic Provost)', department: 'Registrar Office', designation: 'Registrar & Provost', employee_id: 'REG-PRO-001', enterprise_uid: '4001-01-03-BFGI' },
+      { id: 'usr-staff-01', username: 'staff01', email: 'staff@educore.edu', hash: staffHash, role: 'staff', full_name: 'Prof. Sunita Rao (Staff / Faculty)', department: 'Computer Science & Engineering', designation: 'Assistant Professor', employee_id: 'FAC-CSE-014', enterprise_uid: '2001-14-03-BFGI' },
+      { id: 'usr-counselor-01', username: 'counselor01', email: 'counselor@educore.edu', hash: counselorHash, role: 'counselor', full_name: 'Harleen Kaur (Head Counselor / Admission Cell)', department: 'Admission & Counseling Cell', designation: 'Head Counselor & Admission Cell Convener', employee_id: 'ADM-CNS-002', enterprise_uid: '6001-02-03-BFGI' },
+      { id: 'usr-hod-01', username: 'hod_cse', email: 'hod.cse@educore.edu', hash: hodHash, role: 'hod', full_name: 'Dr. Balwinder Singh (HOD Computer Science)', department: 'Computer Science & Engineering', designation: 'Head of Department', employee_id: 'FAC-HOD-001', enterprise_uid: '3001-01-03-BFGI' },
+      { id: 'usr-accounts-01', username: 'accounts01', email: 'accounts@educore.edu', hash: accountsHash, role: 'accounts', full_name: 'Manmohan Sharma (Chief Accounts Officer)', department: 'Finance & Accounts Section', designation: 'Chief Accounts Officer', employee_id: 'ACC-OFF-005', enterprise_uid: '5001-05-03-BFGI' },
+      { id: 'usr-partner-01', username: 'partner01', email: 'partner@educore.edu', hash: partnerHash, role: 'partner', full_name: 'Infosys Campus Relations Lead', department: 'Corporate Relations', designation: 'Campus Hiring Director', employee_id: 'PRT-INF-001', enterprise_uid: '7001-01-03-BFGI' },
     ];
 
     for (const sa of demoStaffAccounts) {
       await this.mariaPool.query(
-        'INSERT INTO users (id, username, email, password_hash, role, full_name, is_active, department, designation, employee_id, created_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE username = VALUES(username), password_hash = VALUES(password_hash), role = VALUES(role), full_name = VALUES(full_name), department = VALUES(department), designation = VALUES(designation), employee_id = VALUES(employee_id)',
-        [sa.id, sa.username, sa.email, sa.hash, sa.role, sa.full_name, sa.department, sa.designation, sa.employee_id]
+        'INSERT INTO users (id, username, email, password_hash, role, full_name, is_active, department, designation, employee_id, enterprise_uid, created_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE username = VALUES(username), password_hash = VALUES(password_hash), role = VALUES(role), full_name = VALUES(full_name), department = VALUES(department), designation = VALUES(designation), employee_id = VALUES(employee_id), enterprise_uid = VALUES(enterprise_uid)',
+        [sa.id, sa.username, sa.email, sa.hash, sa.role, sa.full_name, sa.department, sa.designation, sa.employee_id, sa.enterprise_uid]
       );
     }
 
@@ -2457,12 +2460,12 @@ class DatabaseStore {
 
         // Ensure all demo staff & administrative accounts exist in SQLite mode
         const demoStaffAccounts = [
-          { username: 'admin', email: 'admin@educore.edu', name: 'Dr. Ramesh Chandra (Registrar & Provost)', role: 'admin' as const, dept: 'Registrar Office', desig: 'Registrar & Provost', empId: 'REG-PRO-001', pass: 'admin123', uid: '4001-03-BFGI-0001' },
-          { username: 'staff01', email: 'staff@educore.edu', name: 'Prof. Sunita Rao (Staff / Faculty)', role: 'staff' as const, dept: 'Computer Science & Engineering', desig: 'Assistant Professor', empId: 'FAC-CSE-014', pass: 'staff123', uid: '2001-03-BFGI-0014' },
-          { username: 'counselor01', email: 'counselor@educore.edu', name: 'Harleen Kaur (Head Counselor / Admission Cell)', role: 'counselor' as const, dept: 'Admission & Counseling Cell', desig: 'Head Counselor & Admission Cell Convener', empId: 'ADM-CNS-002', pass: 'counselor123', uid: '6001-03-BFGI-0002' },
-          { username: 'hod_cse', email: 'hod.cse@educore.edu', name: 'Dr. Balwinder Singh (HOD Computer Science)', role: 'hod' as const, dept: 'Computer Science & Engineering', desig: 'Head of Department', empId: 'FAC-HOD-001', pass: 'hod123', uid: '3001-03-BFGI-0001' },
-          { username: 'accounts01', email: 'accounts@educore.edu', name: 'Manmohan Sharma (Chief Accounts Officer)', role: 'accounts' as const, dept: 'Finance & Accounts Section', desig: 'Chief Accounts Officer', empId: 'ACC-OFF-005', pass: 'accounts123', uid: '5001-03-BFGI-0005' },
-          { username: 'partner01', email: 'partner@educore.edu', name: 'Infosys Campus Relations Lead', role: 'partner' as const, dept: 'Corporate Relations', desig: 'Campus Hiring Director', empId: 'PRT-INF-001', pass: 'partner123', uid: '7001-03-BFGI-0001' },
+          { username: 'admin', email: 'admin@educore.edu', name: 'Dr. Ramesh Chandra (Registrar & Provost)', role: 'admin' as const, dept: 'Registrar Office', desig: 'Registrar & Provost', empId: 'REG-PRO-001', pass: 'admin123', uid: '4001-01-03-BFGI' },
+          { username: 'staff01', email: 'staff@educore.edu', name: 'Prof. Sunita Rao (Staff / Faculty)', role: 'staff' as const, dept: 'Computer Science & Engineering', desig: 'Assistant Professor', empId: 'FAC-CSE-014', pass: 'staff123', uid: '2001-14-03-BFGI' },
+          { username: 'counselor01', email: 'counselor@educore.edu', name: 'Harleen Kaur (Head Counselor / Admission Cell)', role: 'counselor' as const, dept: 'Admission & Counseling Cell', desig: 'Head Counselor & Admission Cell Convener', empId: 'ADM-CNS-002', pass: 'counselor123', uid: '6001-02-03-BFGI' },
+          { username: 'hod_cse', email: 'hod.cse@educore.edu', name: 'Dr. Balwinder Singh (HOD Computer Science)', role: 'hod' as const, dept: 'Computer Science & Engineering', desig: 'Head of Department', empId: 'FAC-HOD-001', pass: 'hod123', uid: '3001-01-03-BFGI' },
+          { username: 'accounts01', email: 'accounts@educore.edu', name: 'Manmohan Sharma (Chief Accounts Officer)', role: 'accounts' as const, dept: 'Finance & Accounts Section', desig: 'Chief Accounts Officer', empId: 'ACC-OFF-005', pass: 'accounts123', uid: '5001-05-03-BFGI' },
+          { username: 'partner01', email: 'partner@educore.edu', name: 'Infosys Campus Relations Lead', role: 'partner' as const, dept: 'Corporate Relations', desig: 'Campus Hiring Director', empId: 'PRT-INF-001', pass: 'partner123', uid: '7001-01-03-BFGI' },
         ];
 
         for (const stf of demoStaffAccounts) {
@@ -2492,7 +2495,7 @@ class DatabaseStore {
         // Ensure canonical UID for demo student Aryan
         const aryanUser = this.users.find(u => u.username.toLowerCase() === 'aryan');
         if (aryanUser) {
-          aryanUser.enterprise_uid = '1001-03-BFGI-260088';
+          aryanUser.enterprise_uid = '1001-88-03-BFGI';
           aryanUser.password_hash = bcrypt.hashSync('student123', 10);
         }
 
@@ -2510,12 +2513,12 @@ class DatabaseStore {
             department: 'Executive Directorate & University Governance',
             designation: 'Chief System Provost & Chancellor Delegate',
             employee_id: 'PRO-SUP-001',
-            enterprise_uid: '9001-03-BFGI-000001',
+            enterprise_uid: '9001-01-03-BFGI',
             is_active: true,
             created_at: new Date().toISOString(),
           });
         } else {
-          superAdminExisting.enterprise_uid = '9001-03-BFGI-000001';
+          superAdminExisting.enterprise_uid = '9001-01-03-BFGI';
         }
 
         // Backfill enterprise_uid for all users if missing
@@ -2672,8 +2675,14 @@ class DatabaseStore {
     else if (val === 'counselor') effectiveVal = 'counselor01';
     else if (val === 'hod') effectiveVal = 'hod_cse';
     else if (val === 'accounts') effectiveVal = 'accounts01';
-    else if (val === 'super') effectiveVal = 'superadmin';
-    else if (val === 'partner' || val === 'prt-001' || val === 'prt-inf-001') effectiveVal = 'partner01';
+    else if (val === 'super' || val === 'superadmin' || val === '9001-01-03-bfgi' || val === '9001-03-bfgi-000001' || val === '9001-03-bfgi-0001') effectiveVal = 'superadmin';
+    else if (val === 'admin' || val === '4001-01-03-bfgi' || val === '4001-03-bfgi-0001') effectiveVal = 'admin';
+    else if (val === '2001-14-03-bfgi' || val === '2001-03-bfgi-0014') effectiveVal = 'staff01';
+    else if (val === '1001-88-03-bfgi' || val === '1001-03-bfgi-260088' || val === 'aryan') effectiveVal = 'aryan';
+    else if (val === 'partner' || val === 'prt-001' || val === 'prt-inf-001' || val === '7001-01-03-bfgi' || val === '7001-03-bfgi-0001') effectiveVal = 'partner01';
+    else if (val === '6001-02-03-bfgi' || val === '6001-03-bfgi-0002') effectiveVal = 'counselor01';
+    else if (val === '3001-01-03-bfgi' || val === '3001-03-bfgi-0001') effectiveVal = 'hod_cse';
+    else if (val === '5001-05-03-bfgi' || val === '5001-03-bfgi-0005') effectiveVal = 'accounts01';
 
     if (this.mode === 'mariadb' && this.mariaPool) {
       const [rows]: any = await this.mariaPool.query(

@@ -76,7 +76,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
               STUDENT CAMPUS PORTAL
             </span>
             <span className="font-mono text-[10px] text-orange-200">
-              UID: {student.student_id || '1001-03-BFGI-260088'}
+              UID: {student.student_id || '1001-88-03-BFGI'}
             </span>
           </div>
           <h2 className="text-sm font-bold uppercase tracking-tight text-white">

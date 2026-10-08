@@ -79,25 +79,25 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   useEffect(() => {
     api.getFeeKPIs().then(res => {
       if (res.success && res.kpi) setKpiData(res.kpi);
-    });
+    }).catch(console.warn);
     api.getFeeTrend().then(res => {
       if (res.success && res.trend) setTrendData(res.trend);
-    });
+    }).catch(console.warn);
     api.getDefaulters().then(res => {
       if (res.success && res.defaulters) setDefaulters(res.defaulters);
-    });
+    }).catch(console.warn);
     api.getEnterpriseMaster().then(res => {
       if (res.success && res.master) setMasterSummary(res.master);
-    });
-    api.getStaffList().then(res => {
+    }).catch(console.warn);
+    (api.getStaffList || api.getStaff)().then(res => {
       if (res.success && res.staff) setStaffCount(res.staff.length);
-    });
+    }).catch(console.warn);
     api.getPartners().then(res => {
       if (res.success && res.partners) setPartnerCount(res.partners.length);
-    });
+    }).catch(console.warn);
     api.getEnquiries().then(res => {
       if (res.success && res.enquiries) setEnquiryCount(res.enquiries.length);
-    });
+    }).catch(console.warn);
   }, []);
 
   return (
@@ -110,7 +110,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
               ENTERPRISE ERP CONSOLE
             </span>
             <span className="font-mono text-[10px] text-orange-200">
-              UID: 4001-03-BFGI-0001 (BFGI BATHINDA • PUNJAB)
+              UID: 4001-01-03-BFGI (BFGI BATHINDA • PUNJAB)
             </span>
           </div>
           <h2 className="text-sm font-bold uppercase tracking-tight text-white">

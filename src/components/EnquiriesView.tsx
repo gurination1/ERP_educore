@@ -522,7 +522,7 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
               <div className="bg-emerald-50 border border-emerald-300 p-2.5 rounded text-[10px] text-emerald-900 space-y-1">
                 <span className="font-bold block">[AUTOMATIC ADMISSION PROMOTION]:</span>
                 <p>
-                  Upon registration token clearance, this lead will be converted to an officially enrolled Student in Student Master with a canonical Course UID (e.g. 1001-03-BFGI-XXXXXX) and token receipt slip.
+                  Upon registration token clearance, this lead will be converted to an officially enrolled Student in Student Master with a canonical Course UID (e.g. 1001-88-03-BFGI) and token receipt slip.
                 </p>
               </div>
 

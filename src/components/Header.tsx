@@ -40,14 +40,14 @@ export const Header: React.FC<HeaderProps> = ({
 
   const displayUid = currentUser?.enterprise_uid || (
     currentUser?.role === 'super_admin'
-      ? '9001-03-BFGI-000001'
+      ? '9001-01-03-BFGI'
       : currentUser?.role === 'admin'
-      ? '4001-03-BFGI-0001'
+      ? '4001-01-03-BFGI'
       : currentUser?.role === 'staff'
-      ? '2001-03-BFGI-0014'
+      ? '2001-14-03-BFGI'
       : currentUser?.role === 'partner'
-      ? '7001-03-BFGI-0001'
-      : '1001-03-BFGI-260088'
+      ? '7001-01-03-BFGI'
+      : '1001-88-03-BFGI'
   );
 
   const handleCopyUid = () => {

@@ -255,6 +255,10 @@ export const api = {
     const query = new URLSearchParams(params).toString();
     return apiRequest(`/api/staff?${query}`);
   },
+  getStaffList: (params: Record<string, any> = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiRequest(`/api/staff?${query}`);
+  },
   getStaffProfile: (staffId: string) => apiRequest(`/api/staff/${staffId}`),
   createStaff: (payload: any) =>
     apiRequest('/api/staff', { method: 'POST', body: JSON.stringify(payload) }),

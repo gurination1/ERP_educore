@@ -155,61 +155,61 @@ export const LoginView: React.FC<LoginViewProps> = ({
                 type="button"
                 onClick={() => {
                   setSelectedRole('admin');
-                  setUsername('4001-03-BFGI-0001');
+                  setUsername('4001-01-03-BFGI');
                   setPassword('admin123');
                 }}
                 className="p-1 text-left bg-white hover:bg-blue-100 border border-blue-300 rounded text-[#00236f] flex items-center justify-between cursor-pointer"
               >
                 <span className="font-bold">[ADMIN]</span>
-                <span className="text-gray-500">4001-03-BFGI-0001</span>
+                <span className="text-gray-500">4001-01-03-BFGI</span>
               </button>
               <button
                 type="button"
                 onClick={() => {
                   setSelectedRole('super_admin');
-                  setUsername('9001-03-BFGI-000001');
+                  setUsername('9001-01-03-BFGI');
                   setPassword('super123');
                 }}
                 className="p-1 text-left bg-white hover:bg-blue-100 border border-blue-300 rounded text-[#00236f] flex items-center justify-between cursor-pointer"
               >
                 <span className="font-bold">[SUPER]</span>
-                <span className="text-gray-500">9001-03-BFGI-0001</span>
+                <span className="text-gray-500">9001-01-03-BFGI</span>
               </button>
               <button
                 type="button"
                 onClick={() => {
                   setSelectedRole('staff');
-                  setUsername('2001-03-BFGI-0014');
+                  setUsername('2001-14-03-BFGI');
                   setPassword('staff123');
                 }}
                 className="p-1 text-left bg-white hover:bg-blue-100 border border-blue-300 rounded text-[#00236f] flex items-center justify-between cursor-pointer"
               >
                 <span className="font-bold">[STAFF]</span>
-                <span className="text-gray-500">2001-03-BFGI-0014</span>
+                <span className="text-gray-500">2001-14-03-BFGI</span>
               </button>
               <button
                 type="button"
                 onClick={() => {
                   setSelectedRole('student');
-                  setUsername('1001-03-BFGI-260088');
+                  setUsername('1001-88-03-BFGI');
                   setPassword('student123');
                 }}
                 className="p-1 text-left bg-white hover:bg-blue-100 border border-blue-300 rounded text-[#00236f] flex items-center justify-between cursor-pointer"
               >
                 <span className="font-bold">[STUDENT]</span>
-                <span className="text-gray-500">1001-03-BFGI-260088</span>
+                <span className="text-gray-500">1001-88-03-BFGI</span>
               </button>
               <button
                 type="button"
                 onClick={() => {
                   setSelectedRole('partner');
-                  setUsername('PRT-001');
+                  setUsername('7001-01-03-BFGI');
                   setPassword('partner123');
                 }}
                 className="col-span-2 p-1 text-left bg-white hover:bg-orange-50 border border-orange-300 rounded text-[#ea580c] flex items-center justify-between cursor-pointer"
               >
                 <span className="font-bold">[PARTNER - INFOSYS]</span>
-                <span className="text-gray-500">PRT-001 / partner123</span>
+                <span className="text-gray-500">7001-01-03-BFGI / partner123</span>
               </button>
             </div>
           </div>
@@ -236,7 +236,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
                 required
                 value={username}
                 onChange={e => setUsername(e.target.value)}
-                placeholder="e.g. 4001-03-BFGI-0001 or admin"
+                placeholder="e.g. 4001-01-03-BFGI or admin"
                 className="w-full px-3 py-1.5 bg-gray-50 border border-gray-300 rounded font-mono text-[11px] text-black focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#00236f] focus:border-[#00236f]"
               />
             </div>

@@ -36,6 +36,7 @@ import { StaffManagementView } from './components/StaffManagementView';
 import { PartnerPortalView } from './components/PartnerPortalView';
 import { BulkImportView } from './components/BulkImportView';
 import { EnquiriesView } from './components/EnquiriesView';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 interface LayoutProps {
   currentUser: User | null;
@@ -341,7 +342,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
               <div>
                 <h1 className="text-xs font-extrabold text-[#191c1d] leading-none">EduCore Mobile</h1>
                 <span className="text-[8px] font-mono font-semibold text-[#00236f]">
-                  {currentUser?.enterprise_uid || '1001-03-BFGI-260088'}
+                  {currentUser?.enterprise_uid || '1001-88-03-BFGI'}
                 </span>
               </div>
             </div>
@@ -626,7 +627,7 @@ function MainApp() {
   }
 
   return (
-    <>
+    <ErrorBoundary>
       <Routes>
         {/* PUBLIC ROUTES: Student & Admin Login */}
         <Route
@@ -1161,6 +1162,6 @@ function MainApp() {
           }}
         />
       )}
-    </>
+    </ErrorBoundary>
   );
 }
