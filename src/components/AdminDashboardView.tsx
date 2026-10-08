@@ -101,23 +101,23 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   }, []);
 
   return (
-    <div id="admin-dashboard-screen" className="p-4 max-w-7xl mx-auto space-y-4 animate-fadeIn text-[11px]">
-      {/* Top Institutional Header Banner */}
-      <div className="bg-[#00236f] text-white p-3.5 rounded border-b-2 border-[#ea580c] flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xs">
+    <div id="admin-dashboard-screen" className="space-y-5 animate-fadeIn text-xs">
+      {/* Executive Hero Banner */}
+      <div className="bg-gradient-to-r from-[#00236f] via-[#001f5c] to-[#001744] text-white p-6 rounded-3xl shadow-md border border-white/10 relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="bg-[#ea580c] text-white px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider">
-              ENTERPRISE ERP CONSOLE
+          <div className="flex items-center gap-2 mb-2">
+            <span className="bg-[#ea580c] text-white px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider shadow-2xs">
+              Enterprise Console
             </span>
-            <span className="font-mono text-[10px] text-orange-200">
-              UID: 4001-01-03-BFGI (BFGI BATHINDA • PUNJAB)
+            <span className="font-mono text-[10px] text-orange-200 bg-white/10 px-2 py-0.5 rounded-full border border-white/10">
+              UID: 4001-01-03-BFGI • Punjab (03)
             </span>
           </div>
-          <h2 className="text-sm font-bold uppercase tracking-tight text-white">
-            ADMINISTRATION & INSTITUTIONAL OPERATIONS DASHBOARD
+          <h2 className="text-lg font-black uppercase tracking-tight text-white">
+            Institutional Operations & Governance
           </h2>
-          <p className="text-[10px] text-blue-200 mt-0.5">
-            Multi-College Governance • Tagged Departments • Multi-Table Staff • Pre-Admission CRM • Corporate Partners
+          <p className="text-xs text-blue-200/90 mt-1">
+            Multi-College Governance • Department Master • Staff HRMS • Admissions CRM • Corporate Partners
           </p>
         </div>
 
@@ -127,126 +127,126 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             id="admin-filter-course"
             value={selectedCourse}
             onChange={e => setSelectedCourse(e.target.value)}
-            className="px-2 py-1 bg-white text-[#00236f] border border-blue-200 rounded font-bold text-[10px]"
+            className="px-3 py-1.5 bg-white/15 backdrop-blur-md text-white border border-white/20 rounded-full font-semibold text-xs cursor-pointer focus:outline-none"
           >
-            <option value="All Courses">ALL COURSES</option>
-            <option value="B.Tech CS">B.TECH CSE</option>
-            <option value="B.Tech ME">B.TECH ME</option>
-            <option value="B.Sc Agri">B.SC AGRICULTURE</option>
-            <option value="MBA Finance">MBA MANAGEMENT</option>
+            <option value="All Courses" className="text-slate-900">All Courses</option>
+            <option value="B.Tech CS" className="text-slate-900">B.Tech CSE</option>
+            <option value="B.Tech ME" className="text-slate-900">B.Tech ME</option>
+            <option value="B.Sc Agri" className="text-slate-900">B.Sc Agriculture</option>
+            <option value="MBA Finance" className="text-slate-900">MBA Management</option>
           </select>
 
           <select
             id="admin-filter-semester"
             value={selectedSemester}
             onChange={e => setSelectedSemester(e.target.value)}
-            className="px-2 py-1 bg-white text-[#00236f] border border-blue-200 rounded font-bold text-[10px]"
+            className="px-3 py-1.5 bg-white/15 backdrop-blur-md text-white border border-white/20 rounded-full font-semibold text-xs cursor-pointer focus:outline-none"
           >
-            <option value="Current Semester">CURRENT SEMESTER</option>
-            <option value="Semester 1">SEM 1</option>
-            <option value="Semester 2">SEM 2</option>
-            <option value="Semester 3">SEM 3</option>
-            <option value="Semester 4">SEM 4</option>
+            <option value="Current Semester" className="text-slate-900">Current Semester</option>
+            <option value="Semester 1" className="text-slate-900">Semester 1</option>
+            <option value="Semester 2" className="text-slate-900">Semester 2</option>
+            <option value="Semester 3" className="text-slate-900">Semester 3</option>
+            <option value="Semester 4" className="text-slate-900">Semester 4</option>
           </select>
         </div>
       </div>
 
-      {/* Enterprise Architecture Quick Jump Command Hub */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+      {/* Enterprise Architecture Quick Jump Bento Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <button
           type="button"
           onClick={() => onNavigate('staff-management')}
-          className="p-2.5 bg-white hover:bg-blue-50 border border-[#00236f]/20 rounded text-left transition shadow-2xs group cursor-pointer"
+          className="p-3.5 bg-white/90 apple-glass-card hover:bg-white border border-slate-200/80 hover:border-blue-300 rounded-2xl text-left transition-all shadow-xs hover:shadow-md group cursor-pointer"
         >
-          <span className="text-[9px] font-mono text-[#ea580c] block font-bold">[STAFF MASTER]</span>
-          <strong className="text-[11px] text-[#00236f] block mt-0.5">Staff & Journey</strong>
-          <span className="text-[9px] text-gray-500 block">4 Staff • Multi-Tables</span>
+          <span className="text-[10px] font-bold text-[#ea580c] block uppercase tracking-wider">Staff Master</span>
+          <strong className="text-xs text-[#00236f] block mt-1 font-extrabold">Staff HRMS</strong>
+          <span className="text-[10px] text-slate-500 block mt-0.5">Multi-Table Dossier</span>
         </button>
 
         <button
           type="button"
           onClick={() => onNavigate('enquiries')}
-          className="p-2.5 bg-white hover:bg-orange-50 border border-[#ea580c]/30 rounded text-left transition shadow-2xs group cursor-pointer"
+          className="p-3.5 bg-white/90 apple-glass-card hover:bg-white border border-slate-200/80 hover:border-orange-300 rounded-2xl text-left transition-all shadow-xs hover:shadow-md group cursor-pointer"
         >
-          <span className="text-[9px] font-mono text-[#ea580c] block font-bold">[ADMISSIONS CRM]</span>
-          <strong className="text-[11px] text-[#00236f] block mt-0.5">Pre-Admission CRM</strong>
-          <span className="text-[9px] text-gray-500 block">Auto-Dialer • Leads ({enquiryCount})</span>
+          <span className="text-[10px] font-bold text-[#ea580c] block uppercase tracking-wider">Admissions CRM</span>
+          <strong className="text-xs text-[#00236f] block mt-1 font-extrabold">Leads Radar</strong>
+          <span className="text-[10px] text-slate-500 block mt-0.5">{enquiryCount} Active Leads</span>
         </button>
 
         <button
           type="button"
           onClick={() => onNavigate('bulk-import')}
-          className="p-2.5 bg-white hover:bg-blue-50 border border-[#00236f]/20 rounded text-left transition shadow-2xs group cursor-pointer"
+          className="p-3.5 bg-white/90 apple-glass-card hover:bg-white border border-slate-200/80 hover:border-blue-300 rounded-2xl text-left transition-all shadow-xs hover:shadow-md group cursor-pointer"
         >
-          <span className="text-[9px] font-mono text-[#00236f] block font-bold">[CSV ENGINE]</span>
-          <strong className="text-[11px] text-[#00236f] block mt-0.5">Dynamic Mapper</strong>
-          <span className="text-[9px] text-gray-500 block">3-Tier Validator</span>
+          <span className="text-[10px] font-bold text-[#00236f] block uppercase tracking-wider">CSV Engine</span>
+          <strong className="text-xs text-[#00236f] block mt-1 font-extrabold">Bulk Mapper</strong>
+          <span className="text-[10px] text-slate-500 block mt-0.5">3-Tier Verification</span>
         </button>
 
         <button
           type="button"
           onClick={() => onNavigate('partner-portal')}
-          className="p-2.5 bg-white hover:bg-blue-50 border border-[#00236f]/20 rounded text-left transition shadow-2xs group cursor-pointer"
+          className="p-3.5 bg-white/90 apple-glass-card hover:bg-white border border-slate-200/80 hover:border-orange-300 rounded-2xl text-left transition-all shadow-xs hover:shadow-md group cursor-pointer"
         >
-          <span className="text-[9px] font-mono text-[#ea580c] block font-bold">[PARTNER PORTAL]</span>
-          <strong className="text-[11px] text-[#00236f] block mt-0.5">Corporate Partners</strong>
-          <span className="text-[9px] text-gray-500 block">{partnerCount} Firms • Talent Share</span>
+          <span className="text-[10px] font-bold text-[#ea580c] block uppercase tracking-wider">Corporate</span>
+          <strong className="text-xs text-[#00236f] block mt-1 font-extrabold">Hiring Partners</strong>
+          <span className="text-[10px] text-slate-500 block mt-0.5">{partnerCount} Firms Connected</span>
         </button>
 
         <button
           type="button"
           onClick={() => onNavigate('manage-students')}
-          className="p-2.5 bg-white hover:bg-blue-50 border border-[#00236f]/20 rounded text-left transition shadow-2xs group cursor-pointer"
+          className="p-3.5 bg-white/90 apple-glass-card hover:bg-white border border-slate-200/80 hover:border-blue-300 rounded-2xl text-left transition-all shadow-xs hover:shadow-md group cursor-pointer"
         >
-          <span className="text-[9px] font-mono text-[#00236f] block font-bold">[STUDENT MASTER]</span>
-          <strong className="text-[11px] text-[#00236f] block mt-0.5">Student Records</strong>
-          <span className="text-[9px] text-gray-500 block">Roll Nos & Domicile</span>
+          <span className="text-[10px] font-bold text-[#00236f] block uppercase tracking-wider">Students</span>
+          <strong className="text-xs text-[#00236f] block mt-1 font-extrabold">Student Registry</strong>
+          <span className="text-[10px] text-slate-500 block mt-0.5">Enrollment & Domicile</span>
         </button>
 
         <button
           type="button"
           onClick={() => onNavigate('fee-ledger')}
-          className="p-2.5 bg-white hover:bg-blue-50 border border-[#00236f]/20 rounded text-left transition shadow-2xs group cursor-pointer"
+          className="p-3.5 bg-white/90 apple-glass-card hover:bg-white border border-slate-200/80 hover:border-orange-300 rounded-2xl text-left transition-all shadow-xs hover:shadow-md group cursor-pointer"
         >
-          <span className="text-[9px] font-mono text-[#ea580c] block font-bold">[ACCOUNTS]</span>
-          <strong className="text-[11px] text-[#00236f] block mt-0.5">Fee Ledger & Billing</strong>
-          <span className="text-[9px] text-gray-500 block">Tally XML & Dues</span>
+          <span className="text-[10px] font-bold text-[#ea580c] block uppercase tracking-wider">Finance</span>
+          <strong className="text-xs text-[#00236f] block mt-1 font-extrabold">Fee Ledger</strong>
+          <span className="text-[10px] text-slate-500 block mt-0.5">Billing & Receipts</span>
         </button>
       </div>
 
       {/* Operational Master & Tagging Status Strip */}
-      <div className="bg-white border border-[#00236f]/20 rounded p-3 space-y-2">
-        <div className="flex justify-between items-center border-b pb-1.5">
+      <div className="bg-white/90 apple-glass-card rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-2.5">
+        <div className="flex justify-between items-center border-b border-slate-100 pb-2">
           <div>
-            <span className="font-bold text-[#00236f]">[TAGGING NATION: MASTER DEPARTMENTS & ENTERPRISE STATUSES]</span>
-            <span className="text-[10px] text-gray-500 ml-2">7 Tagged Departments • 5 Reserve Columns Active</span>
+            <span className="font-extrabold text-[#00236f] tracking-tight">Department Tagging Matrix & Statuses</span>
+            <span className="text-[11px] text-slate-500 ml-2">7 Tagged Departments Active</span>
           </div>
-          <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-mono text-[9px] font-bold">
-            DB ENGINE: RELATIONAL ACTIVE
+          <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full font-mono text-[10px] font-bold">
+            Relational Engine Active
           </span>
         </div>
 
-        <div className="flex flex-wrap gap-1.5">
-          <span className="px-2 py-1 bg-blue-50 border border-blue-200 text-[#00236f] rounded text-[10px] font-bold">
-            CSE [AI, Engineering, Software]
+        <div className="flex flex-wrap gap-2">
+          <span className="px-3 py-1 bg-blue-50/80 border border-blue-200/80 text-[#00236f] rounded-full text-[10px] font-bold">
+            CSE · AI & Software
           </span>
-          <span className="px-2 py-1 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded text-[10px] font-bold">
-            AGRI [Agronomy, Soil, Field]
+          <span className="px-3 py-1 bg-emerald-50/80 border border-emerald-200/80 text-emerald-800 rounded-full text-[10px] font-bold">
+            AGRI · Agronomy & Soil
           </span>
-          <span className="px-2 py-1 bg-amber-50 border border-amber-200 text-amber-900 rounded text-[10px] font-bold">
-            CE [Structural, Surveying]
+          <span className="px-3 py-1 bg-amber-50/80 border border-amber-200/80 text-amber-900 rounded-full text-[10px] font-bold">
+            CE · Civil & Surveying
           </span>
-          <span className="px-2 py-1 bg-purple-50 border border-purple-200 text-purple-900 rounded text-[10px] font-bold">
-            ME [Thermal, Robotics]
+          <span className="px-3 py-1 bg-purple-50/80 border border-purple-200/80 text-purple-900 rounded-full text-[10px] font-bold">
+            ME · Mechanical & Robotics
           </span>
-          <span className="px-2 py-1 bg-cyan-50 border border-cyan-200 text-cyan-900 rounded text-[10px] font-bold">
-            MGMT [Finance, HR, Marketing]
+          <span className="px-3 py-1 bg-cyan-50/80 border border-cyan-200/80 text-cyan-900 rounded-full text-[10px] font-bold">
+            MGMT · Business & Finance
           </span>
-          <span className="px-2 py-1 bg-rose-50 border border-rose-200 text-rose-900 rounded text-[10px] font-bold">
-            PHARM [Clinical, Chemistry]
+          <span className="px-3 py-1 bg-rose-50/80 border border-rose-200/80 text-rose-900 rounded-full text-[10px] font-bold">
+            PHARM · Pharmacy & Health
           </span>
-          <span className="px-2 py-1 bg-gray-50 border border-gray-200 text-gray-800 rounded text-[10px] font-bold">
-            APP_SCI [Physics, Math, Chemistry]
+          <span className="px-3 py-1 bg-slate-100 border border-slate-200 text-slate-800 rounded-full text-[10px] font-bold">
+            APP_SCI · Physics & Math
           </span>
         </div>
       </div>
@@ -254,78 +254,78 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       {/* 4 Financial & Operational KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {/* KPI 1: Total Collected */}
-        <div className="bg-white rounded p-3.5 border border-[#00236f]/20 shadow-xs flex flex-col justify-between">
+        <div className="bg-white/90 apple-glass-card rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
               Total Fee Collection
             </span>
-            <span className="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[9px] font-bold">
-              [COLLECTED]
+            <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full text-[9px] font-bold">
+              Collected
             </span>
           </div>
-          <div className="mt-2">
-            <h3 className="text-xl font-black text-[#00236f] tracking-tight">
+          <div className="mt-3">
+            <h3 className="text-2xl font-black text-[#00236f] tracking-tight">
               {kpiData.totalCollectedFormatted}
             </h3>
-            <p className="text-[10px] font-bold text-emerald-700 mt-0.5">
+            <p className="text-[11px] font-bold text-emerald-600 mt-1">
               {kpiData.totalCollectedGrowth}
             </p>
           </div>
         </div>
 
         {/* KPI 2: Pending Dues */}
-        <div className="bg-white rounded p-3.5 border border-rose-200 shadow-xs flex flex-col justify-between">
+        <div className="bg-white/90 apple-glass-card rounded-2xl p-5 border border-rose-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
               Pending Dues Alert
             </span>
-            <span className="bg-rose-100 text-rose-800 px-1.5 py-0.5 rounded text-[9px] font-bold">
-              [DUES]
+            <span className="bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-full text-[9px] font-bold">
+              Outstanding
             </span>
           </div>
-          <div className="mt-2">
-            <h3 className="text-xl font-black text-rose-700 tracking-tight">
+          <div className="mt-3">
+            <h3 className="text-2xl font-black text-rose-600 tracking-tight">
               {kpiData.pendingDuesFormatted}
             </h3>
-            <p className="text-[10px] font-bold text-rose-600 mt-0.5">
+            <p className="text-[11px] font-bold text-rose-600 mt-1">
               {kpiData.pendingDuesAlert}
             </p>
           </div>
         </div>
 
         {/* KPI 3: Pending Approvals */}
-        <div className="bg-white rounded p-3.5 border border-[#ea580c]/30 shadow-xs flex flex-col justify-between">
+        <div className="bg-white/90 apple-glass-card rounded-2xl p-5 border border-orange-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
               Pending Approvals
             </span>
-            <span className="bg-orange-100 text-[#ea580c] px-1.5 py-0.5 rounded text-[9px] font-bold">
-              [APPROVALS]
+            <span className="bg-orange-50 text-[#ea580c] border border-orange-200 px-2 py-0.5 rounded-full text-[9px] font-bold">
+              Action Required
             </span>
           </div>
-          <div className="mt-2">
-            <h3 className="text-xl font-black text-[#ea580c] tracking-tight">
+          <div className="mt-3">
+            <h3 className="text-2xl font-black text-[#ea580c] tracking-tight">
               {kpiData.pendingApprovals}
             </h3>
-            <p className="text-[10px] text-gray-500 mt-0.5">{kpiData.pendingApprovalsLabel}</p>
+            <p className="text-[11px] text-slate-500 mt-1">{kpiData.pendingApprovalsLabel}</p>
           </div>
         </div>
 
         {/* KPI 4: Total Students */}
-        <div className="bg-white rounded p-3.5 border border-[#00236f]/20 shadow-xs flex flex-col justify-between">
+        <div className="bg-white/90 apple-glass-card rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
               Enrolled Students
             </span>
-            <span className="bg-blue-100 text-[#00236f] px-1.5 py-0.5 rounded text-[9px] font-bold">
-              [ENROLLED]
+            <span className="bg-blue-50 text-[#00236f] border border-blue-200 px-2 py-0.5 rounded-full text-[9px] font-bold">
+              Active Roll
             </span>
           </div>
-          <div className="mt-2">
-            <h3 className="text-xl font-black text-[#00236f] tracking-tight">
+          <div className="mt-3">
+            <h3 className="text-2xl font-black text-[#00236f] tracking-tight">
               {kpiData.totalStudents}
             </h3>
-            <p className="text-[10px] text-gray-500 mt-0.5">{kpiData.totalStudentsLabel}</p>
+            <p className="text-[11px] text-slate-500 mt-1">{kpiData.totalStudentsLabel}</p>
           </div>
         </div>
       </div>

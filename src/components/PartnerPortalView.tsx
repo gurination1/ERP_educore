@@ -171,60 +171,67 @@ export const PartnerPortalView: React.FC<PartnerPortalViewProps> = ({ currentUse
   };
 
   return (
-    <div className="p-4 max-w-7xl mx-auto space-y-4 font-sans text-[11px] text-[#00236f]">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 font-sans text-xs text-[#00236f]">
       {/* Top Banner */}
-      <div className="bg-white border border-[#00236f]/20 rounded p-3 flex flex-wrap items-center justify-between gap-3 shadow-sm">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-[13px] tracking-wide text-[#00236f]">
-              CORPORATE PARTNERS & TALENT SHARE PORTAL
-            </span>
-            <span className="bg-[#ea580c] text-white px-2 py-0.5 rounded text-[10px] font-bold">
-              ROLE: PARTNER / T&P CELL
-            </span>
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#00236f] via-[#001f60] to-[#00133b] p-6 text-white shadow-xl border border-white/15">
+        <div className="absolute -right-16 -top-16 w-64 h-64 bg-[#ea580c]/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#ea580c] text-white shadow-xs">
+                Corporate Partners & T&P Cell
+              </span>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium bg-white/10 backdrop-blur-md border border-white/15 text-orange-200">
+                Industry Collaboration Hub
+              </span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+              Corporate Partners & Talent Share
+            </h2>
+            <p className="text-xs text-blue-100/90 mt-1 font-medium">
+              Statutory PAN/GST/TAN verified entities, campus openings, and verified student academic share.
+            </p>
           </div>
-          <p className="text-[10px] text-gray-500 mt-0.5">
-            Sole Prop, Partnership, and Corporate entities with statutory PAN/GST/TAN, Campus Openings, and Verified Student Academic Share.
-          </p>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowNewPartnerModal(true)}
-            className="border border-[#00236f] text-[#00236f] bg-white hover:bg-[#00236f]/5 font-bold px-3 py-1.5 rounded text-[11px] transition"
-          >
-            + REGISTER PARTNER FIRM
-          </button>
-          <button
-            onClick={() => setShowNewJobModal(true)}
-            className="bg-[#00236f] hover:bg-[#00236f]/90 text-white font-bold px-3 py-1.5 rounded text-[11px] transition"
-          >
-            + POST JOB / INTERNSHIP
-          </button>
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => setShowNewPartnerModal(true)}
+              className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 font-semibold px-4 py-2 rounded-xl text-xs transition cursor-pointer"
+            >
+              + Register Partner Firm
+            </button>
+            <button
+              onClick={() => setShowNewJobModal(true)}
+              className="bg-gradient-to-r from-[#ea580c] to-[#c2410c] hover:opacity-95 text-white font-semibold px-4 py-2 rounded-xl text-xs transition shadow-xs cursor-pointer"
+            >
+              + Post Job / Internship
+            </button>
+          </div>
         </div>
       </div>
 
       {feedbackMsg && (
-        <div className="bg-emerald-50 border border-emerald-300 text-emerald-800 p-2.5 rounded text-[11px] font-medium">
-          [PORTAL NOTICE] {feedbackMsg}
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-2xl text-xs font-medium flex items-center gap-2 shadow-xs">
+          <span className="font-bold text-[10px] bg-emerald-600 text-white rounded-full w-4 h-4 inline-flex items-center justify-center">✓</span>
+          <span>{feedbackMsg}</span>
         </div>
       )}
 
-      {/* Navigation Tabs */}
-      <div className="flex border-b border-gray-200 text-[11px] font-bold gap-2 bg-white px-3 pt-2 rounded-t border border-[#00236f]/20 border-b-0">
+      {/* Navigation Pills */}
+      <div className="flex p-1.5 bg-slate-100/90 backdrop-blur-md rounded-2xl border border-black/[0.06] overflow-x-auto gap-1 shadow-2xs">
         {[
-          { id: 'partners', label: 'PARTNER ENTITIES & CONTRACTS' },
-          { id: 'jobs', label: `CAMPUS OPENINGS (${allJobs.length})` },
-          { id: 'talent', label: `VERIFIED TALENT POOL (${talentPool.length})` },
-          { id: 'applications', label: 'CANDIDATE APPLICATIONS' },
+          { id: 'partners', label: 'Partner Entities & Contracts' },
+          { id: 'jobs', label: `Campus Openings (${allJobs.length})` },
+          { id: 'talent', label: `Verified Talent Pool (${talentPool.length})` },
+          { id: 'applications', label: 'Candidate Applications' },
         ].map(s => (
           <button
             key={s.id}
             onClick={() => setActiveSection(s.id as any)}
-            className={`px-3 py-1.5 border-b-2 transition ${
+            className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
               activeSection === s.id
-                ? 'border-[#00236f] text-[#00236f] bg-gray-50'
-                : 'border-transparent text-gray-500 hover:text-gray-800'
+                ? 'bg-white text-[#00236f] shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             {s.label}
@@ -234,10 +241,10 @@ export const PartnerPortalView: React.FC<PartnerPortalViewProps> = ({ currentUse
 
       {/* SECTION 1: PARTNERS */}
       {activeSection === 'partners' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          <div className="lg:col-span-5 bg-white border border-[#00236f]/20 rounded p-3 space-y-2 shadow-sm">
-            <span className="font-bold text-[#00236f] block border-b pb-1">REGISTERED CORPORATE PARTNERS:</span>
-            <div className="space-y-1.5 max-h-[500px] overflow-y-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <div className="lg:col-span-5 apple-glass-card rounded-2xl p-5 border border-black/[0.06] space-y-3 shadow-sm">
+            <span className="font-semibold text-[#00236f] block border-b border-black/[0.06] pb-2 text-xs">Registered Corporate Partners</span>
+            <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
               {partners.map(p => (
                 <div
                   key={p.id}
@@ -267,7 +274,7 @@ export const PartnerPortalView: React.FC<PartnerPortalViewProps> = ({ currentUse
             </div>
           </div>
 
-          <div className="lg:col-span-7 bg-white border border-[#00236f]/20 rounded p-4 space-y-3 shadow-sm">
+          <div className="lg:col-span-7 apple-glass-card rounded-2xl p-5 border border-black/[0.06] space-y-4 shadow-sm">
             {partnerDetails ? (
               <>
                 <div className="border-b pb-2 flex justify-between items-center">
@@ -359,10 +366,10 @@ export const PartnerPortalView: React.FC<PartnerPortalViewProps> = ({ currentUse
 
       {/* SECTION 2: CAMPUS OPENINGS */}
       {activeSection === 'jobs' && (
-        <div className="bg-white border border-[#00236f]/20 rounded p-4 space-y-3 shadow-sm">
-          <div className="flex justify-between items-center border-b pb-2">
-            <span className="font-bold text-[#00236f]">ACTIVE ON-CAMPUS & REMOTE RECRUITMENT DRIVES</span>
-            <span className="text-gray-500 text-[10px]">TOTAL: {allJobs.length} OPENINGS</span>
+        <div className="apple-glass-card rounded-2xl p-5 border border-black/[0.06] space-y-4 shadow-sm">
+          <div className="flex justify-between items-center border-b border-black/[0.06] pb-3">
+            <span className="font-semibold text-[#00236f] text-sm">Active On-Campus & Remote Recruitment Drives</span>
+            <span className="text-slate-500 text-xs">Total: {allJobs.length} Openings</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -432,12 +439,12 @@ export const PartnerPortalView: React.FC<PartnerPortalViewProps> = ({ currentUse
 
       {/* SECTION 3: TALENT POOL */}
       {activeSection === 'talent' && (
-        <div className="bg-white border border-[#00236f]/20 rounded p-4 space-y-3 shadow-sm">
-          <div className="flex flex-wrap justify-between items-center border-b pb-2 gap-2">
+        <div className="apple-glass-card rounded-2xl p-5 border border-black/[0.06] space-y-4 shadow-sm">
+          <div className="flex flex-wrap justify-between items-center border-b border-black/[0.06] pb-3 gap-2">
             <div>
-              <span className="font-bold text-[#00236f] text-[12px]">VERIFIED STUDENT TALENT POOL & ACADEMIC DOSSIER</span>
-              <p className="text-[10px] text-gray-500">
-                Shared directly with authorized corporate recruiters. Academic records and regulatory marksheets certified by Institutional Provost.
+              <span className="font-semibold text-[#00236f] text-sm">Verified Student Talent Pool & Academic Dossier</span>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Shared directly with authorized corporate recruiters. Academic records certified by Institutional Provost.
               </p>
             </div>
 
@@ -521,11 +528,11 @@ export const PartnerPortalView: React.FC<PartnerPortalViewProps> = ({ currentUse
 
       {/* SECTION 4: APPLICATIONS */}
       {activeSection === 'applications' && (
-        <div className="bg-white border border-[#00236f]/20 rounded p-4 space-y-3 shadow-sm">
-          <div className="flex justify-between items-center border-b pb-2">
-            <span className="font-bold text-[#00236f]">CAMPUS CANDIDATE APPLICATIONS</span>
+        <div className="apple-glass-card rounded-2xl p-5 border border-black/[0.06] space-y-4 shadow-sm">
+          <div className="flex justify-between items-center border-b border-black/[0.06] pb-3">
+            <span className="font-semibold text-[#00236f] text-sm">Campus Candidate Applications</span>
             <div className="flex items-center gap-2">
-              <span className="text-gray-500 text-[10px]">FILTER BY OPENING:</span>
+              <span className="text-slate-500 text-xs">Filter by Opening:</span>
               <select
                 value={selectedJobId || ''}
                 onChange={e => setSelectedJobId(e.target.value)}

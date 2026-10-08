@@ -31,11 +31,10 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAuditLogs,
   onOpenMasterTables,
   onOpenStaffJourney,
-  viewMode = 'desktop',
-  onToggleViewMode,
 }) => {
   const [copiedUid, setCopiedUid] = useState(false);
   const [openDrawer, setOpenDrawer] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
 
   const displayUid = currentUser?.enterprise_uid || (
@@ -86,16 +85,16 @@ export const Header: React.FC<HeaderProps> = ({
   const menuSections = [
     {
       id: 'dashboard',
-      label: 'DASHBOARD',
+      label: 'Dashboard',
       action: () => {
         onNavigate(dashboardTarget);
         setOpenDrawer(null);
       },
-      isActive: activeScreen === 'admin-dashboard' || activeScreen === 'staff-dashboard' || activeScreen === 'student-dashboard',
+      isActive: ['admin-dashboard', 'staff-dashboard', 'student-dashboard'].includes(activeScreen as string),
     },
     {
       id: 'academics',
-      label: 'ACADEMICS',
+      label: 'Academics',
       action: () => {
         onNavigate('academics');
         setOpenDrawer(null);
@@ -104,39 +103,39 @@ export const Header: React.FC<HeaderProps> = ({
     },
     {
       id: 'students',
-      label: 'STUDENT LIFECYCLE',
+      label: 'Student Lifecycle',
       items: [
-        { id: 'manage-students' as ActiveScreen, label: 'STUDENT DIRECTORY', badge: 'MASTER' },
-        { id: 'student-documents' as ActiveScreen, label: 'REGULATORY DOCUMENTS VAULT', badge: 'AI VERIFIED' },
-        { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT QUIZ & LMS ENGINE', badge: 'EXAM CELL' },
-        { id: 'fee-ledger' as ActiveScreen, label: 'STUDENT FEE LEDGER', badge: 'FINANCE' },
-        { id: 'grievances' as ActiveScreen, label: 'GRIEVANCE & DISPUTE CELL' },
+        { id: 'manage-students' as ActiveScreen, label: 'Student Directory', badge: 'Master' },
+        { id: 'student-documents' as ActiveScreen, label: 'Document Vault', badge: 'Verified' },
+        { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz & LMS', badge: 'Exams' },
+        { id: 'fee-ledger' as ActiveScreen, label: 'Fee Ledger', badge: 'Accounts' },
+        { id: 'grievances' as ActiveScreen, label: 'Grievance Cell' },
       ],
       isActive: ['manage-students', 'student-documents', 'student-quiz-lms', 'fee-ledger', 'grievances'].includes(activeScreen as any),
     },
     {
       id: 'crm',
-      label: 'CRM & ADMISSIONS',
+      label: 'Admissions CRM',
       items: [
-        { id: 'enquiries' as ActiveScreen, label: 'PRE-ADMISSION LEADS & ENQUIRIES', badge: 'RADAR 0-100%' },
-        { id: 'bulk-import' as ActiveScreen, label: 'DYNAMIC BULK CSV MAPPER', badge: '3-TIER CHECK' },
-        ...(isCounselor ? [{ id: 'admissions' as ActiveScreen, label: 'ADMISSION INTAKE DESK' }] : []),
+        { id: 'enquiries' as ActiveScreen, label: 'Pre-Admission Leads', badge: 'Radar' },
+        { id: 'bulk-import' as ActiveScreen, label: 'Bulk CSV Mapper', badge: '3-Tier' },
+        ...(isCounselor ? [{ id: 'admissions' as ActiveScreen, label: 'Admission Desk' }] : []),
       ],
       isActive: ['enquiries', 'bulk-import', 'admissions'].includes(activeScreen as any),
     },
     {
       id: 'staff',
-      label: 'STAFF & HR',
+      label: 'Staff & HR',
       items: [
-        { id: 'staff-management' as ActiveScreen, label: 'STAFF DIRECTORY & MULTI-TABLE PROFILE', badge: 'ORG JOURNEY' },
-        ...(isFaculty ? [{ id: 'teacher-documents' as ActiveScreen, label: 'FACULTY CREDENTIALS VAULT', badge: 'DOSSIER' }] : []),
-        { id: 'staff-academic-journey' as any, label: 'CAS RESEARCH & ACADEMIC DOSSIER', action: onOpenStaffJourney },
+        { id: 'staff-management' as ActiveScreen, label: 'Staff HRMS Directory', badge: 'Profiles' },
+        ...(isFaculty ? [{ id: 'teacher-documents' as ActiveScreen, label: 'Faculty Dossier Vault', badge: 'Verified' }] : []),
+        { id: 'staff-academic-journey' as any, label: 'CAS Research Dossier', action: onOpenStaffJourney },
       ],
-      isActive: activeScreen === 'staff-management' || activeScreen === 'teacher-documents',
+      isActive: ['staff-management', 'teacher-documents'].includes(activeScreen as any),
     },
     {
       id: 'partners',
-      label: 'HIRING PARTNERS',
+      label: 'Hiring Partners',
       action: () => {
         onNavigate('partner-portal');
         setOpenDrawer(null);
@@ -147,14 +146,14 @@ export const Header: React.FC<HeaderProps> = ({
       ? [
           {
             id: 'governance',
-            label: 'ADMIN & GOVERNANCE',
+            label: 'Governance',
             items: [
-              { id: 'master-tables' as any, label: 'INSTITUTIONAL MASTER TABLES & TAGGING', badge: 'CANONICAL', action: onOpenMasterTables },
-              { id: 'audit-trail' as any, label: 'CRYPTOGRAPHIC AUDIT TRAIL', badge: 'IMMUTABLE', action: onOpenAuditLogs },
-              { id: 'user-management' as ActiveScreen, label: 'USER ACCOUNTS & APEX PRIVILEGES' },
-              { id: 'scholarships' as ActiveScreen, label: 'SCHOLARSHIP DISBURSEMENT MATRIX' },
-              { id: 'form-builder' as ActiveScreen, label: 'DYNAMIC FORM & SURVEY DESIGNER' },
-              { id: 'reports' as ActiveScreen, label: 'INSTITUTIONAL MIS REPORTS' },
+              { id: 'master-tables' as any, label: 'Institutional Master Tables', badge: 'Canonical', action: onOpenMasterTables },
+              { id: 'audit-trail' as any, label: 'Cryptographic Audit Trail', badge: 'Logs', action: onOpenAuditLogs },
+              { id: 'user-management' as ActiveScreen, label: 'User Accounts & Roles' },
+              { id: 'scholarships' as ActiveScreen, label: 'Scholarship Matrix' },
+              { id: 'form-builder' as ActiveScreen, label: 'Dynamic Form Builder' },
+              { id: 'reports' as ActiveScreen, label: 'Institutional MIS Reports' },
             ],
             isActive: ['user-management', 'scholarships', 'form-builder', 'reports'].includes(activeScreen as any),
           },
@@ -163,30 +162,36 @@ export const Header: React.FC<HeaderProps> = ({
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-[#00236f] text-white border-b border-[#00174a] shadow-md select-none font-sans text-[11px]">
-      {/* Primary Top Bar */}
-      <div className="max-w-7xl mx-auto px-4 h-12 flex items-center justify-between gap-2" ref={navRef}>
-        {/* Left Branding */}
+    <header className="sticky top-0 z-50 select-none font-sans transition-all duration-200 apple-glass-nav">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3" ref={navRef}>
+        
+        {/* Left: Brand Identity */}
         <div className="flex items-center gap-3 shrink-0">
-          <div
+          <button
+            type="button"
             onClick={() => onNavigate(dashboardTarget)}
-            className="flex items-center gap-2 cursor-pointer hover:opacity-90 transition"
+            className="flex items-center gap-2.5 text-left group cursor-pointer focus:outline-none"
           >
-            <div className="bg-[#ea580c] text-white font-black px-2 py-0.5 rounded text-[11px] tracking-wider">
-              EDUCORE
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#00236f] to-[#001744] flex items-center justify-center text-white font-extrabold text-xs shadow-sm ring-1 ring-black/5 group-hover:scale-105 transition-transform">
+              <span className="tracking-tighter">EC</span>
             </div>
-            <span className="font-bold tracking-tight text-[12px] text-white hidden sm:inline">
-              CAMPUS ERP
-            </span>
-          </div>
+            <div className="flex flex-col">
+              <span className="font-extrabold text-[13px] tracking-tight text-[#00236f] leading-none">
+                EduCore
+              </span>
+              <span className="text-[10px] font-semibold text-slate-500 tracking-tight leading-tight mt-0.5">
+                BFGI Enterprise
+              </span>
+            </div>
+          </button>
 
-          <span className="text-[#ea580c] text-[10px] font-mono hidden md:inline">
-            [PUNJAB REGION]
+          <span className="hidden xl:inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wide bg-orange-50 text-[#ea580c] border border-orange-200/60 font-mono">
+            PUNJAB • 03
           </span>
         </div>
 
-        {/* Center Primary Nav (Pure Text-Based Drawers) */}
-        <nav className="hidden lg:flex items-center gap-1">
+        {/* Center: Apple-style Segmented Navigation Bar */}
+        <nav className="hidden lg:flex items-center gap-1 bg-slate-100/70 p-1 rounded-full border border-slate-200/70 shadow-xs">
           {menuSections.map(sec => {
             const isDrawerOpen = openDrawer === sec.id;
             const hasChildren = Boolean(sec.items && sec.items.length > 0);
@@ -202,31 +207,32 @@ export const Header: React.FC<HeaderProps> = ({
                       sec.action();
                     }
                   }}
-                  className={`px-2.5 py-1.5 rounded font-bold tracking-wide transition text-[10px] uppercase flex items-center gap-1 ${
+                  className={`px-3 py-1 rounded-full font-medium transition-all text-[11px] tracking-tight flex items-center gap-1 cursor-pointer ${
                     sec.isActive || isDrawerOpen
-                      ? 'bg-white text-[#00236f] shadow-xs'
-                      : 'text-white/90 hover:text-white hover:bg-white/10'
+                      ? 'bg-white text-[#00236f] font-bold shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                   }`}
                 >
                   <span>{sec.label}</span>
                   {hasChildren && (
-                    <span className="text-[8px] font-mono opacity-70">
-                      {isDrawerOpen ? '▲' : '▼'}
+                    <span className="text-[8px] text-slate-400 ml-0.5 font-bold">
+                      {isDrawerOpen ? '▴' : '▾'}
                     </span>
                   )}
                 </button>
 
-                {/* Dropdown Drawer */}
+                {/* Glassmorphic Dropdown Drawer */}
                 {hasChildren && isDrawerOpen && (
-                  <div className="absolute top-full left-0 mt-1.5 w-64 bg-white text-[#00236f] border border-[#00236f]/30 rounded shadow-xl py-1.5 z-50 animate-fadeIn">
-                    <div className="px-3 py-1 text-[9px] font-bold text-gray-400 border-b border-gray-100 uppercase tracking-wider">
-                      {sec.label} MODULES
+                  <div className="absolute top-full left-0 mt-2 w-72 apple-glass-dropdown rounded-2xl p-1.5 z-50 animate-fadeIn">
+                    <div className="px-3 py-1.5 text-[9px] font-bold text-slate-400 border-b border-slate-100 uppercase tracking-wider">
+                      {sec.label} Hub
                     </div>
 
-                    <div className="py-1">
+                    <div className="py-1 space-y-0.5">
                       {sec.items!.map((item: any) => (
-                        <div
+                        <button
                           key={item.id || item.label}
+                          type="button"
                           onClick={() => {
                             if (item.action) {
                               item.action();
@@ -235,19 +241,19 @@ export const Header: React.FC<HeaderProps> = ({
                             }
                             setOpenDrawer(null);
                           }}
-                          className={`px-3 py-1.5 text-[10px] font-semibold flex items-center justify-between cursor-pointer transition ${
+                          className={`w-full px-3 py-2 rounded-xl text-[11px] font-medium flex items-center justify-between cursor-pointer transition text-left ${
                             activeScreen === item.id
-                              ? 'bg-[#00236f]/10 text-[#00236f] font-bold'
-                              : 'hover:bg-gray-50 text-gray-800'
+                              ? 'bg-blue-50 text-[#00236f] font-bold'
+                              : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-900'
                           }`}
                         >
                           <span>{item.label}</span>
                           {item.badge && (
-                            <span className="bg-[#ea580c] text-white px-1.5 py-0.2 rounded text-[8px] font-mono font-bold">
+                            <span className="bg-[#ea580c] text-white px-2 py-0.5 rounded-full text-[8px] font-mono font-bold tracking-tight shadow-2xs">
                               {item.badge}
                             </span>
                           )}
-                        </div>
+                        </button>
                       ))}
                     </div>
                   </div>
@@ -257,90 +263,121 @@ export const Header: React.FC<HeaderProps> = ({
           })}
         </nav>
 
-        {/* Right Action Cluster */}
-        <div className="flex items-center gap-2 shrink-0 text-[10px]">
-          {/* Canonical UID Copy Indicator */}
+        {/* Right: User Utility & Actions */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Canonical UID Copy Pill */}
           <button
+            type="button"
             onClick={handleCopyUid}
             title="Click to copy canonical Enterprise UID"
-            className="hidden md:flex items-center gap-1 px-2 py-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded font-mono text-[9px] transition"
+            className="flex items-center gap-1.5 px-3 py-1 bg-white/90 hover:bg-white border border-slate-200/80 rounded-full font-mono text-[10px] text-slate-700 transition shadow-2xs cursor-pointer"
           >
-            <span className="text-[#ea580c] font-bold">UID:</span>
-            <span className="text-white font-bold">{displayUid}</span>
-            <span className="text-white/70 ml-0.5">{copiedUid ? '[COPIED]' : '[COPY]'}</span>
+            <span className="text-[#ea580c] font-bold">UID</span>
+            <span className="font-semibold text-slate-900">{displayUid}</span>
+            <span className="text-slate-400 text-[9px]">
+              {copiedUid ? '✓ Copied' : 'Copy'}
+            </span>
           </button>
 
-          {/* Role Badge */}
-          <span className="px-2 py-0.5 rounded font-bold uppercase text-[9px] bg-[#ea580c] text-white tracking-wider">
-            {currentUser?.role === 'super_admin' ? 'APEX PROVOST' : currentUser?.role?.replace(/_/g, ' ') || 'GUEST'}
+          {/* Role Pill */}
+          <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#00236f] text-white shadow-2xs tracking-wide uppercase">
+            {currentUser?.role === 'super_admin'
+              ? 'Apex Provost'
+              : currentUser?.role?.replace(/_/g, ' ') || 'Guest'}
           </span>
 
-          {/* Telephony Headset Toggle */}
+          {/* Telephony CRM Switch */}
           {onToggleTelephony && (
             <button
+              type="button"
               onClick={onToggleTelephony}
-              className={`px-2 py-1 rounded font-bold transition text-[9px] border ${
+              className={`hidden md:inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold transition border cursor-pointer ${
                 isTelephonyOpen
-                  ? 'bg-emerald-500 text-white border-emerald-400'
-                  : 'bg-white/10 text-white/90 border-white/20 hover:bg-white/20'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
               }`}
             >
-              {isTelephonyOpen ? '[HEADSET: LIVE]' : '[HEADSET: OFF]'}
+              {isTelephonyOpen ? 'Telephony: Live' : 'Telephony'}
             </button>
           )}
 
-          {/* AI Copilot */}
+          {/* AI Copilot Action */}
           {onOpenCopilot && (
             <button
+              type="button"
               onClick={onOpenCopilot}
-              className="px-2 py-1 bg-white text-[#00236f] hover:bg-white/90 font-bold rounded text-[9px] transition"
+              className="px-3 py-1 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold rounded-full text-[10px] transition shadow-xs cursor-pointer flex items-center gap-1"
             >
-              [AI COPILOT]
+              <span>AI Copilot</span>
             </button>
           )}
 
-          {/* Phone / Desktop View Mode Switcher */}
-          {onToggleViewMode && (
+          {/* Sign Out Button */}
+          {onLogout && (
             <button
-              onClick={onToggleViewMode}
-              className="px-2 py-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded font-bold text-[9px] text-white transition hidden sm:inline"
-            >
-              {viewMode === 'desktop' ? '[VIEW: DESKTOP]' : '[VIEW: PHONE]'}
-            </button>
-          )}
-
-          {/* User Signout */}
-          {currentUser && onLogout && (
-            <button
+              type="button"
               onClick={onLogout}
-              className="px-2 py-1 bg-white/10 hover:bg-rose-600 border border-white/20 rounded font-bold text-[9px] text-white transition"
+              className="px-2.5 py-1 rounded-full text-[10px] font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
             >
-              [LOGOUT]
+              Sign Out
             </button>
           )}
+
+          {/* Mobile Navigation Toggle */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden p-1.5 rounded-lg text-slate-700 hover:bg-slate-100 cursor-pointer"
+            aria-label="Toggle Navigation Menu"
+          >
+            {mobileMenuOpen ? '✕' : '☰'}
+          </button>
         </div>
       </div>
 
-      {/* Secondary Mobile/Compact Drawer Bar for Small Screens */}
-      <div className="lg:hidden bg-[#001c57] border-t border-white/10 px-3 py-1 flex overflow-x-auto gap-1 text-[9px] font-bold">
-        {menuSections.map(sec => (
-          <button
-            key={sec.id}
-            onClick={() => {
-              if (sec.action) sec.action();
-              else if (sec.items && sec.items[0]) {
-                if (sec.items[0].action) sec.items[0].action();
-                else onNavigate(sec.items[0].id);
-              }
-            }}
-            className={`px-2 py-1 rounded whitespace-nowrap uppercase ${
-              sec.isActive ? 'bg-[#ea580c] text-white' : 'text-white/80 hover:bg-white/10'
-            }`}
-          >
-            {sec.label}
-          </button>
-        ))}
-      </div>
+      {/* Mobile Drawer Menu (Responsive Website Navigation) */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden apple-glass-dropdown border-t border-slate-200/80 px-4 py-3 space-y-2 animate-fadeIn">
+          {menuSections.map(sec => (
+            <div key={sec.id} className="py-1 border-b border-slate-100 last:border-b-0">
+              {sec.action ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    sec.action();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left font-bold text-xs py-1.5 text-[#00236f]"
+                >
+                  {sec.label}
+                </button>
+              ) : (
+                <>
+                  <div className="font-bold text-[10px] text-slate-400 uppercase tracking-wider py-1">
+                    {sec.label}
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 py-1">
+                    {sec.items?.map((item: any) => (
+                      <button
+                        key={item.id || item.label}
+                        type="button"
+                        onClick={() => {
+                          if (item.action) item.action();
+                          else if (item.id) onNavigate(item.id);
+                          setMobileMenuOpen(false);
+                        }}
+                        className="text-left text-xs text-slate-700 hover:text-black py-1 px-2 rounded-lg hover:bg-slate-100/70"
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </header>
   );
 };

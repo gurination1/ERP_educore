@@ -38,119 +38,124 @@ export const LoginView: React.FC<LoginViewProps> = ({
   return (
     <div
       id="educore-login-screen"
-      className="min-h-screen relative flex items-center justify-center p-3 bg-[#001744] text-[11px]"
+      className="min-h-screen relative flex items-center justify-center p-4 bg-[#020b22] text-slate-900 font-sans text-xs antialiased overflow-hidden"
     >
-      {/* Background Decorative Grid */}
-      <div className="absolute inset-0 bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
+      {/* Ambient Radial Lighting Accents */}
+      <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-gradient-to-b from-blue-600/25 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute -bottom-40 right-10 w-[500px] h-[400px] bg-gradient-to-t from-orange-600/15 to-transparent rounded-full blur-3xl pointer-events-none"></div>
 
-      {/* Main Login Box */}
-      <div className="relative z-10 w-full max-w-md my-6">
-        {/* Top Institutional Header */}
-        <div className="text-center mb-4">
-          <div className="inline-block bg-[#ea580c] text-white px-3 py-1 rounded text-[10px] font-black tracking-widest uppercase mb-1.5 shadow-sm">
-            EDUCORE ENTERPRISE ERP
+      {/* Main Glassmorphic Container */}
+      <div className="relative z-10 w-full max-w-lg my-8">
+        
+        {/* Institutional Branding Header */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-orange-400 text-[10px] font-bold tracking-widest uppercase mb-3 shadow-sm">
+            <span>EduCore Enterprise</span>
+            <span className="w-1 h-1 rounded-full bg-orange-400"></span>
+            <span className="font-mono text-white/80">MRSPTU Affiliated</span>
           </div>
-          <h1 className="text-xl font-black tracking-tight text-white uppercase">
-            BABA FARID GROUP OF INSTITUTIONS
+          <h1 className="text-2xl font-black tracking-tight text-white uppercase drop-shadow-sm">
+            Baba Farid Group of Institutions
           </h1>
-          <p className="text-[10px] font-mono text-orange-200 mt-0.5">
-            CANONICAL UID ARCHITECTURE • GST CODE: 03 (PUNJAB) • MRSPTU AFFILIATED
+          <p className="text-xs text-slate-300 font-medium mt-1">
+            Canonical UID Architecture • State GST 03 (Punjab)
           </p>
         </div>
 
-        {/* Card Box */}
-        <div className="bg-white rounded-lg p-5 shadow-xl border-t-4 border-[#ea580c]">
-          <div className="mb-4 text-center border-b pb-3">
-            <span className="text-[10px] font-bold text-[#ea580c] uppercase tracking-wider block">
-              PORTAL ACCESS GATEWAY
+        {/* Apple-Grade Frosted Glass Card */}
+        <div className="bg-white/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] border border-white/60">
+          
+          <div className="mb-5 text-center">
+            <span className="text-[10px] font-extrabold tracking-wider uppercase text-[#ea580c] block">
+              Secure Gateway
             </span>
-            <h2 className="text-sm font-bold text-[#00236f] uppercase mt-0.5">
+            <h2 className="text-base font-extrabold text-[#00236f] uppercase tracking-tight mt-0.5">
               {selectedRole === 'super_admin'
-                ? 'Super Admin Omnipotent Gateway'
+                ? 'Super Admin Apex Console'
                 : selectedRole === 'admin'
                 ? 'Institutional Administration Portal'
                 : selectedRole === 'staff'
-                ? 'Faculty & Academic R&D Portal'
+                ? 'Faculty & Academics Portal'
                 : selectedRole === 'partner'
-                ? 'Corporate Hiring & Internship Partner Gateway'
+                ? 'Corporate Hiring Partner Gateway'
                 : 'Student Campus & Academics Portal'}
             </h2>
-            <p className="text-[10px] text-gray-500 mt-0.5">
-              Authenticate via 16-Digit Canonical UID, institutional username, or registered email.
+            <p className="text-[11px] text-slate-500 mt-1">
+              Sign in via 16-Digit Canonical UID, institutional handle, or email.
             </p>
           </div>
 
-          {/* Role Selector Toggle (Pure Text Tabs) */}
-          <div className="grid grid-cols-5 gap-1 mb-3 bg-gray-100 p-1 rounded text-[9px] font-bold">
+          {/* Apple Segmented Role Control */}
+          <div className="grid grid-cols-5 gap-1 mb-5 bg-slate-100/90 p-1 rounded-full border border-slate-200/70 text-[10px] font-bold">
             <button
               type="button"
               id="role-toggle-student"
               onClick={() => handleRoleChange('student')}
-              className={`py-1.5 rounded text-center transition-all ${
+              className={`py-1.5 rounded-full text-center transition-all cursor-pointer ${
                 selectedRole === 'student'
-                  ? 'bg-[#00236f] text-white shadow-xs'
-                  : 'text-gray-700 hover:text-black bg-white/70'
+                  ? 'bg-white text-[#00236f] shadow-xs font-black'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              STUDENT
+              Student
             </button>
             <button
               type="button"
               id="role-toggle-staff"
               onClick={() => handleRoleChange('staff')}
-              className={`py-1.5 rounded text-center transition-all ${
+              className={`py-1.5 rounded-full text-center transition-all cursor-pointer ${
                 selectedRole === 'staff'
-                  ? 'bg-[#00236f] text-white shadow-xs'
-                  : 'text-gray-700 hover:text-black bg-white/70'
+                  ? 'bg-white text-[#00236f] shadow-xs font-black'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              FACULTY
+              Faculty
             </button>
             <button
               type="button"
               id="role-toggle-admin"
               onClick={() => handleRoleChange('admin')}
-              className={`py-1.5 rounded text-center transition-all ${
+              className={`py-1.5 rounded-full text-center transition-all cursor-pointer ${
                 selectedRole === 'admin'
-                  ? 'bg-[#00236f] text-white shadow-xs'
-                  : 'text-gray-700 hover:text-black bg-white/70'
+                  ? 'bg-white text-[#00236f] shadow-xs font-black'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              ADMIN
+              Admin
             </button>
             <button
               type="button"
               id="role-toggle-superadmin"
               onClick={() => handleRoleChange('super_admin')}
-              className={`py-1.5 rounded text-center transition-all ${
+              className={`py-1.5 rounded-full text-center transition-all cursor-pointer ${
                 selectedRole === 'super_admin'
-                  ? 'bg-[#00236f] text-white shadow-xs'
-                  : 'text-gray-700 hover:text-black bg-white/70'
+                  ? 'bg-white text-[#00236f] shadow-xs font-black'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              SUPER
+              Super
             </button>
             <button
               type="button"
               id="role-toggle-partner"
               onClick={() => handleRoleChange('partner')}
-              className={`py-1.5 rounded text-center transition-all ${
+              className={`py-1.5 rounded-full text-center transition-all cursor-pointer ${
                 selectedRole === 'partner'
-                  ? 'bg-[#ea580c] text-white shadow-xs'
-                  : 'text-gray-700 hover:text-black bg-white/70'
+                  ? 'bg-white text-[#ea580c] shadow-xs font-black'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              PARTNER
+              Partner
             </button>
           </div>
 
-          {/* Quick Demo Credentials / Enterprise UID chips */}
-          <div className="mb-3.5 p-2 bg-blue-50/60 border border-blue-200/80 rounded text-[9px]">
-            <div className="flex items-center justify-between font-bold text-[#00236f] mb-1">
-              <span>ONE-CLICK DEMO AUTHENTICATION:</span>
-              <span className="font-mono text-[9px] text-[#ea580c]">STATE 03 (PB)</span>
+          {/* Quick Demo Credentials Matrix */}
+          <div className="mb-5 p-3 bg-slate-50/80 border border-slate-200/70 rounded-2xl text-[10px]">
+            <div className="flex items-center justify-between font-bold text-slate-700 mb-2">
+              <span className="text-[10px] tracking-tight uppercase text-slate-500 font-extrabold">Instant Demo Accounts</span>
+              <span className="font-mono text-[9px] text-[#ea580c] font-bold">Punjab GST · 03</span>
             </div>
-            <div className="grid grid-cols-2 gap-1 font-mono">
+            <div className="grid grid-cols-2 gap-1.5 font-mono">
               <button
                 type="button"
                 onClick={() => {
@@ -158,10 +163,10 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   setUsername('4001-01-03-BFGI');
                   setPassword('admin123');
                 }}
-                className="p-1 text-left bg-white hover:bg-blue-100 border border-blue-300 rounded text-[#00236f] flex items-center justify-between cursor-pointer"
+                className="p-2 text-left bg-white hover:bg-blue-50/60 border border-slate-200/90 rounded-xl text-[#00236f] flex items-center justify-between cursor-pointer transition shadow-2xs hover:border-blue-300"
               >
-                <span className="font-bold">[ADMIN]</span>
-                <span className="text-gray-500">4001-01-03-BFGI</span>
+                <span className="font-bold text-[10px]">[ADMIN]</span>
+                <span className="text-slate-500 text-[10px]">4001-01-03-BFGI</span>
               </button>
               <button
                 type="button"
@@ -170,10 +175,10 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   setUsername('9001-01-03-BFGI');
                   setPassword('super123');
                 }}
-                className="p-1 text-left bg-white hover:bg-blue-100 border border-blue-300 rounded text-[#00236f] flex items-center justify-between cursor-pointer"
+                className="p-2 text-left bg-white hover:bg-blue-50/60 border border-slate-200/90 rounded-xl text-[#00236f] flex items-center justify-between cursor-pointer transition shadow-2xs hover:border-blue-300"
               >
-                <span className="font-bold">[SUPER]</span>
-                <span className="text-gray-500">9001-01-03-BFGI</span>
+                <span className="font-bold text-[10px]">[SUPER]</span>
+                <span className="text-slate-500 text-[10px]">9001-01-03-BFGI</span>
               </button>
               <button
                 type="button"
@@ -182,10 +187,10 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   setUsername('2001-14-03-BFGI');
                   setPassword('staff123');
                 }}
-                className="p-1 text-left bg-white hover:bg-blue-100 border border-blue-300 rounded text-[#00236f] flex items-center justify-between cursor-pointer"
+                className="p-2 text-left bg-white hover:bg-blue-50/60 border border-slate-200/90 rounded-xl text-[#00236f] flex items-center justify-between cursor-pointer transition shadow-2xs hover:border-blue-300"
               >
-                <span className="font-bold">[STAFF]</span>
-                <span className="text-gray-500">2001-14-03-BFGI</span>
+                <span className="font-bold text-[10px]">[STAFF]</span>
+                <span className="text-slate-500 text-[10px]">2001-14-03-BFGI</span>
               </button>
               <button
                 type="button"
@@ -194,10 +199,10 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   setUsername('1001-88-03-BFGI');
                   setPassword('student123');
                 }}
-                className="p-1 text-left bg-white hover:bg-blue-100 border border-blue-300 rounded text-[#00236f] flex items-center justify-between cursor-pointer"
+                className="p-2 text-left bg-white hover:bg-blue-50/60 border border-slate-200/90 rounded-xl text-[#00236f] flex items-center justify-between cursor-pointer transition shadow-2xs hover:border-blue-300"
               >
-                <span className="font-bold">[STUDENT]</span>
-                <span className="text-gray-500">1001-88-03-BFGI</span>
+                <span className="font-bold text-[10px]">[STUDENT]</span>
+                <span className="text-slate-500 text-[10px]">1001-88-03-BFGI</span>
               </button>
               <button
                 type="button"
@@ -206,27 +211,28 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   setUsername('7001-01-03-BFGI');
                   setPassword('partner123');
                 }}
-                className="col-span-2 p-1 text-left bg-white hover:bg-orange-50 border border-orange-300 rounded text-[#ea580c] flex items-center justify-between cursor-pointer"
+                className="col-span-2 p-2 text-left bg-white hover:bg-orange-50/60 border border-slate-200/90 rounded-xl text-[#ea580c] flex items-center justify-between cursor-pointer transition shadow-2xs hover:border-orange-300"
               >
-                <span className="font-bold">[PARTNER - INFOSYS]</span>
-                <span className="text-gray-500">7001-01-03-BFGI / partner123</span>
+                <span className="font-bold text-[10px]">[PARTNER - INFOSYS]</span>
+                <span className="text-slate-500 text-[10px]">7001-01-03-BFGI / partner123</span>
               </button>
             </div>
           </div>
 
-          {/* Error Message */}
+          {/* Error Banner */}
           {errorMessage && (
-            <div className="mb-3 p-2 bg-rose-50 border border-rose-300 text-rose-800 rounded text-[10px] font-bold">
-              [ERROR]: {errorMessage}
+            <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-semibold flex items-center gap-2">
+              <span className="font-bold">[Alert]</span>
+              <span>{errorMessage}</span>
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label
                 htmlFor="login-username-input"
-                className="block text-[10px] font-bold text-[#00236f] uppercase tracking-wider mb-1"
+                className="block text-[11px] font-bold text-slate-700 tracking-tight mb-1"
               >
                 Enterprise UID / Username / Registered Email
               </label>
@@ -237,7 +243,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
                 value={username}
                 onChange={e => setUsername(e.target.value)}
                 placeholder="e.g. 4001-01-03-BFGI or admin"
-                className="w-full px-3 py-1.5 bg-gray-50 border border-gray-300 rounded font-mono text-[11px] text-black focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#00236f] focus:border-[#00236f]"
+                className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl font-mono text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/20 focus:border-[#00236f] transition-all"
               />
             </div>
 
@@ -245,7 +251,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
               <div className="flex items-center justify-between mb-1">
                 <label
                   htmlFor="login-password-input"
-                  className="block text-[10px] font-bold text-[#00236f] uppercase tracking-wider"
+                  className="block text-[11px] font-bold text-slate-700 tracking-tight"
                 >
                   Password
                 </label>
@@ -253,12 +259,12 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   type="button"
                   id="forgot-password-link"
                   onClick={onOpenForgotPassword}
-                  className="text-[10px] font-bold text-[#ea580c] hover:underline"
+                  className="text-[11px] font-semibold text-[#ea580c] hover:underline cursor-pointer"
                 >
-                  [FORGOT PASSWORD?]
+                  Forgot Password?
                 </button>
               </div>
-              <div className="relative flex items-center">
+              <div className="relative">
                 <input
                   id="login-password-input"
                   type={showPassword ? 'text' : 'password'}
@@ -266,51 +272,52 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="w-full px-3 py-1.5 pr-14 bg-gray-50 border border-gray-300 rounded font-mono text-[11px] text-black focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#00236f] focus:border-[#00236f]"
+                  className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl font-mono text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/20 focus:border-[#00236f] transition-all pr-16"
                 />
                 <button
                   type="button"
-                  id="toggle-password-visibility-btn"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2 text-[9px] font-bold text-gray-600 hover:text-black uppercase px-1 py-0.5 border rounded bg-white cursor-pointer"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-500 hover:text-slate-800 cursor-pointer"
                 >
-                  {showPassword ? 'HIDE' : 'VIEW'}
+                  {showPassword ? 'HIDE' : 'SHOW'}
                 </button>
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-[10px] pt-0.5">
-              <label className="flex items-center gap-1.5 text-gray-700 cursor-pointer">
+            <div className="flex items-center justify-between pt-1">
+              <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={rememberMe}
                   onChange={e => setRememberMe(e.target.checked)}
-                  className="rounded border-gray-300 text-[#00236f]"
+                  className="rounded border-slate-300 text-[#00236f] focus:ring-[#00236f]"
                 />
-                <span>Persist session on this hardware</span>
+                <span className="text-[11px] text-slate-600">Keep session active</span>
               </label>
-              <span className="text-[9px] font-mono text-gray-500">TLS 1.3 / 256-BIT</span>
+              <span className="text-[10px] font-mono text-slate-400">TLS 1.3 · 256-Bit Encrypted</span>
             </div>
 
             <button
               type="submit"
-              id="login-submit-btn"
               disabled={isLoading}
-              className="w-full py-2 px-3 bg-[#00236f] hover:bg-[#00236f]/90 text-white rounded font-bold text-[11px] uppercase tracking-wider transition shadow-sm cursor-pointer disabled:opacity-70"
+              className="w-full py-3 rounded-xl font-bold text-xs tracking-wide bg-gradient-to-r from-[#00236f] to-[#001744] hover:opacity-95 text-white shadow-md transition-all active:scale-[0.99] disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
             >
-              {isLoading ? 'AUTHENTICATING ENCRYPTED SESSION...' : '[ENTER SECURE ERP PORTAL →]'}
+              {isLoading ? (
+                <>
+                  <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  <span>Verifying Enterprise Credentials...</span>
+                </>
+              ) : (
+                <span>Access Secure ERP Portal →</span>
+              )}
             </button>
           </form>
-        </div>
 
-        {/* Footer Security Badges */}
-        <div className="mt-4 text-center text-[9px] text-gray-300 space-y-1">
-          <p className="font-mono">
-            SECURITY GATES: ZERO-TRUST SESSION • OTP RESETS • AUDIT-LOG TRACKED
-          </p>
-          <p className="text-gray-400">
-            Designed for Baba Farid Group of Institutions & Affiliated Campuses
-          </p>
+          {/* Footer Note */}
+          <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+            <span>Zero-Trust Session • Punjab Audit Log</span>
+            <span className="font-semibold text-slate-500">MRSPTU Regulatory Portal</span>
+          </div>
         </div>
       </div>
     </div>
