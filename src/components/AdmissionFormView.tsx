@@ -411,23 +411,41 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
     <div id="student-admission-screen" className="p-8 max-w-5xl mx-auto space-y-6 animate-fadeIn">
       {/* Page Title & AI Action Button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 bg-[#dce1ff] text-[#00236f] rounded-full">
-              Punjab & Indian College Workflow
-            </span>
-            {assignedRollId && (
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full">
-                ID: {assignedRollId}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              if (onClose) {
+                onClose();
+              } else if (window.history.state && typeof window.history.state.idx === 'number' && window.history.state.idx > 0) {
+                window.history.back();
+              } else {
+                window.location.href = '/dashboard';
+              }
+            }}
+            className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-base transition-all cursor-pointer border border-slate-200/80 shadow-2xs shrink-0"
+            title="Return to Previous (Alt + ←)"
+          >
+            ‹
+          </button>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 bg-[#dce1ff] text-[#00236f] rounded-full">
+                Punjab & Indian College Workflow
               </span>
-            )}
+              {assignedRollId && (
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full">
+                  ID: {assignedRollId}
+                </span>
+              )}
+            </div>
+            <h2 className="text-2xl font-black text-[#191c1d] tracking-tight mt-1">
+              3-Step Progressive Student Intake
+            </h2>
+            <p className="text-sm text-[#444651]">
+              Walk-in campus counseling inquiry → Domicile & Parental profile → 12-Digit Aadhaar, Marksheets & Token Admission Fee
+            </p>
           </div>
-          <h2 className="text-2xl font-black text-[#191c1d] tracking-tight mt-1">
-            3-Step Progressive Student Intake
-          </h2>
-          <p className="text-sm text-[#444651]">
-            Walk-in campus counseling inquiry → Domicile & Parental profile → 12-Digit Aadhaar, Marksheets & Token Admission Fee
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <button

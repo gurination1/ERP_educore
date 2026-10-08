@@ -332,6 +332,20 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
       {/* Page Header Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-slate-200/70">
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              if (window.history.state && typeof window.history.state.idx === 'number' && window.history.state.idx > 0) {
+                window.history.back();
+              } else {
+                window.location.href = '/dashboard';
+              }
+            }}
+            className="w-6 h-6 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition-all cursor-pointer border border-slate-200/70 shrink-0"
+            title="Return to Previous (Alt + ←)"
+          >
+            ‹
+          </button>
           <h2 className="font-extrabold text-sm text-[#00236f] tracking-tight">
             Academics & Course Curriculum
           </h2>
@@ -481,12 +495,24 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
                   {selectedCourse.title}
                 </h3>
               </div>
-              <button
-                onClick={() => setSelectedCourse(null)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-[#757682] hover:bg-[#edeeef] cursor-pointer"
-              >
-                <span className="font-bold text-[10px]">✕</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedCourse(null)}
+                  className="px-2.5 py-1 rounded-full bg-slate-200/70 hover:bg-slate-300 text-slate-700 text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <span className="font-bold text-sm leading-none">‹</span>
+                  <span>Back</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedCourse(null)}
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-[#757682] hover:bg-[#edeeef] cursor-pointer"
+                  title="Close"
+                >
+                  <span className="font-bold text-[10px]">✕</span>
+                </button>
+              </div>
             </div>
 
             {/* Modal Body */}

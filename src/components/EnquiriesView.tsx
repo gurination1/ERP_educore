@@ -194,18 +194,34 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
     <div className="p-4 max-w-7xl mx-auto space-y-4 font-sans text-[11px] text-[#00236f]">
       {/* Top Banner */}
       <div className="bg-white border border-[#00236f]/20 rounded p-3 flex flex-wrap items-center justify-between gap-3 shadow-sm">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-[13px] tracking-wide text-[#00236f]">
-              PRE-ADMISSION COUNSELOR CRM & AUTO-DIALER
-            </span>
-            <span className="bg-[#ea580c] text-white px-2 py-0.5 rounded text-[10px] font-bold">
-              PROBABILITY RADAR (0-100%)
-            </span>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              if (window.history.state && typeof window.history.state.idx === 'number' && window.history.state.idx > 0) {
+                window.history.back();
+              } else {
+                window.location.href = '/dashboard';
+              }
+            }}
+            className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-[#00236f] flex items-center justify-center font-bold text-sm transition-all cursor-pointer border border-slate-200/80 shrink-0"
+            title="Return to Previous (Alt + ←)"
+          >
+            ‹
+          </button>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-[13px] tracking-wide text-[#00236f]">
+                PRE-ADMISSION COUNSELOR CRM & AUTO-DIALER
+              </span>
+              <span className="bg-[#ea580c] text-white px-2 py-0.5 rounded text-[10px] font-bold">
+                PROBABILITY RADAR (0-100%)
+              </span>
+            </div>
+            <p className="text-[10px] text-gray-500 mt-0.5">
+              Stage-wise interaction remarks tree, Click-to-call telephony integration, and instant conversion to Student Master upon token payment.
+            </p>
           </div>
-          <p className="text-[10px] text-gray-500 mt-0.5">
-            Stage-wise interaction remarks tree, Click-to-call telephony integration, and instant conversion to Student Master upon token payment.
-          </p>
         </div>
 
         <div className="flex items-center gap-2">

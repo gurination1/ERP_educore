@@ -129,12 +129,80 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
 
   const currentScreenId = getActiveScreenFromPath(location.pathname);
 
+  const canGoBack = location.pathname !== '/dashboard' && location.pathname !== '/';
+
+  const handleGoBack = () => {
+    if (window.history.state && typeof window.history.state.idx === 'number' && window.history.state.idx > 0) {
+      navigate(-1);
+    } else {
+      navigate('/dashboard');
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && e.key === 'ArrowLeft') {
+        if (canGoBack) {
+          e.preventDefault();
+          handleGoBack();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [canGoBack]);
+
+  const getBreadcrumbData = (path: string) => {
+    switch (path) {
+      case '/fees':
+        return { category: 'Finance & Accounts', title: 'Fee Ledger & Collections' };
+      case '/admissions':
+        return { category: 'Admissions & CRM', title: 'Application Desk & Scrutiny' };
+      case '/manage-students':
+        return { category: 'Students & Registry', title: 'Student Master Directory' };
+      case '/scholarships':
+        return { category: 'Finance & Accounts', title: 'Scholarships & Merit Waivers' };
+      case '/form-builder':
+        return { category: 'Administration', title: 'Dynamic Form Builder' };
+      case '/academics':
+        return { category: 'Academics & Exams', title: 'Academics & Course Curriculum' };
+      case '/reports':
+        return { category: 'Analytics & MIS', title: 'Institutional Reports & Exports' };
+      case '/settings':
+        return { category: 'Administration', title: 'Institutional & Stack Settings' };
+      case '/grievances':
+        return { category: 'Campus Welfare', title: 'Student Grievances & Redressal' };
+      case '/user-management':
+        return { category: 'Administration', title: 'RBAC & Identity Directory' };
+      case '/student-documents':
+        return { category: 'Academics & Exams', title: 'Student Regulatory Documents Vault' };
+      case '/teacher-documents':
+        return { category: 'Faculty & Research', title: 'Faculty Research Dossier & CV' };
+      case '/student-quiz-lms':
+        return { category: 'Academics & Exams', title: 'Online CBT Quiz & LMS Assessment' };
+      case '/staff-management':
+        return { category: 'Human Resources', title: 'Faculty & Staff Registry' };
+      case '/partner-portal':
+        return { category: 'Admissions & CRM', title: 'Consultant & Agency Portal' };
+      case '/bulk-import':
+        return { category: 'Admissions & CRM', title: 'Bulk CSV Lead Mapper' };
+      case '/enquiries':
+        return { category: 'Admissions & CRM', title: 'Admissions CRM & Inquiries Pipeline' };
+      default:
+        return { category: 'Portal', title: 'Console Module' };
+    }
+  };
+
+  const breadcrumb = getBreadcrumbData(location.pathname);
+
   return (
     <div id="educore-app-root" className="min-h-screen flex flex-col bg-[#f5f5f7] text-[#1d1d1f] antialiased">
       <Header
         currentUser={currentUser}
         activeScreen={currentScreenId}
         onNavigate={handleNavigate}
+        canGoBack={canGoBack}
+        onGoBack={handleGoBack}
         searchQuery={searchQuery}
         onSearchChange={onSearchChange}
         onOpenCopilot={() => setShowCopilot(true)}
@@ -148,6 +216,55 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
       />
 
       <main className="flex-1 min-w-0 w-full max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4 pb-12">
+        {/* Cupertino Breadcrumb & Universal Back Ribbon */}
+        {canGoBack && (
+          <nav aria-label="Breadcrumb Navigation" className="mb-3.5 flex flex-wrap items-center justify-between gap-2.5 px-3.5 py-2 bg-white/80 backdrop-blur-xl border border-slate-200/70 rounded-2xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] text-xs text-slate-600">
+            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+              {/* Apple-grade Back Pill */}
+              <button
+                type="button"
+                onClick={handleGoBack}
+                title="Return to previous screen (Alt + ←)"
+                className="h-6 px-2.5 bg-slate-100 hover:bg-slate-200/90 text-slate-800 rounded-full font-bold text-[11px] flex items-center gap-1 transition-all cursor-pointer shadow-2xs hover:shadow-xs group border border-slate-200/80 mr-1 shrink-0"
+              >
+                <span className="text-sm font-black text-[#00236f] group-hover:-translate-x-0.5 transition-transform leading-none">‹</span>
+                <span>Back</span>
+              </button>
+
+              {/* Breadcrumb Steps */}
+              <button
+                type="button"
+                onClick={() => navigate('/dashboard')}
+                className="hover:text-[#00236f] font-medium transition-colors cursor-pointer flex items-center gap-1 text-[11.5px]"
+              >
+                <span>Console</span>
+              </button>
+
+              <span className="text-slate-300 font-bold select-none text-[10px]">›</span>
+
+              <span className="text-slate-500 font-medium text-[11.5px]">
+                {breadcrumb.category}
+              </span>
+
+              <span className="text-slate-300 font-bold select-none text-[10px]">›</span>
+
+              <span className="font-bold text-[#00236f] truncate max-w-[220px] sm:max-w-md text-[11.5px]">
+                {breadcrumb.title}
+              </span>
+            </div>
+
+            {/* Right Institutional Pill */}
+            <div className="hidden sm:flex items-center gap-2 shrink-0 text-[10px]">
+              <span className="font-semibold text-slate-400 bg-slate-100/80 px-2 py-0.5 rounded-full border border-slate-200/60 font-mono">
+                Alt + ‹ to return
+              </span>
+              <span className="font-semibold text-[#00236f] bg-blue-50/80 px-2 py-0.5 rounded-full border border-blue-100">
+                PUP Patiala • MRSPTU • PU
+              </span>
+            </div>
+          </nav>
+        )}
+
         {children}
       </main>
 

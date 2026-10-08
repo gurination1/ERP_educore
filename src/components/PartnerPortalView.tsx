@@ -175,6 +175,20 @@ export const PartnerPortalView: React.FC<PartnerPortalViewProps> = ({ currentUse
       {/* Sleek Action Toolbar (Saves 140px vertical space) */}
       <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-slate-200/70">
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              if (window.history.state && typeof window.history.state.idx === 'number' && window.history.state.idx > 0) {
+                window.history.back();
+              } else {
+                window.location.href = '/dashboard';
+              }
+            }}
+            className="w-6 h-6 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition-all cursor-pointer border border-slate-200/70 shrink-0"
+            title="Return to Previous (Alt + ←)"
+          >
+            ‹
+          </button>
           <h2 className="font-extrabold text-sm text-[#00236f] tracking-tight">
             Corporate Partners & Talent Share
           </h2>

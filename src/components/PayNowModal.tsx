@@ -212,9 +212,20 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="text-[#757682] hover:text-[#191c1d] p-1 rounded-lg hover:bg-[#f3f4f5]">
-            <span className="font-bold text-[10px]">✕</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors border border-slate-200/80"
+              title="Return to Fee Ledger"
+            >
+              <span className="font-bold text-sm leading-none">‹</span>
+              <span>Back</span>
+            </button>
+            <button onClick={onClose} className="text-[#757682] hover:text-[#191c1d] p-1 rounded-lg hover:bg-[#f3f4f5]" title="Close">
+              <span className="font-bold text-[10px]">✕</span>
+            </button>
+          </div>
         </div>
 
         {errorMsg && (

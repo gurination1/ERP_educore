@@ -50,6 +50,15 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
             <p className="text-[11px] text-[#757682]">Roll Number Slip & Gate Clearance Verification (PUP Patiala / MRSPTU / PU)</p>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-2.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors border border-slate-200/80"
+              title="Return to Student Console"
+            >
+              <span className="font-bold text-sm leading-none">‹</span>
+              <span>Back</span>
+            </button>
             {isEligible && (
               <button
                 type="button"
@@ -63,6 +72,7 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
               type="button"
               onClick={onClose}
               className="p-1.5 text-[#757682] hover:text-[#191c1d] hover:bg-[#f3f4f5] rounded-lg transition-colors cursor-pointer"
+              title="Close"
             >
               <span className="font-bold text-[10px]">✕</span>
             </button>

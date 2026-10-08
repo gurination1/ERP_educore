@@ -5,6 +5,8 @@ interface HeaderProps {
   currentUser: User | null;
   activeScreen?: ActiveScreen;
   onNavigate: (screen: ActiveScreen) => void;
+  canGoBack?: boolean;
+  onGoBack?: () => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
   onOpenCopilot?: () => void;
@@ -23,6 +25,8 @@ export const Header: React.FC<HeaderProps> = ({
   currentUser,
   activeScreen,
   onNavigate,
+  canGoBack,
+  onGoBack,
   searchQuery,
   onSearchChange,
   onOpenCopilot,
@@ -296,6 +300,19 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           )}
 
+          {/* Mobile Back Button */}
+          {canGoBack && onGoBack && (
+            <button
+              type="button"
+              onClick={onGoBack}
+              title="Go Back"
+              className="lg:hidden h-7 px-2.5 bg-white/10 hover:bg-white/20 text-white rounded-full font-bold text-[11px] flex items-center gap-1 cursor-pointer border border-white/20"
+            >
+              <span className="text-sm leading-none font-bold">‹</span>
+              <span>Back</span>
+            </button>
+          )}
+
           {/* Mobile Navigation Toggle */}
           <button
             type="button"
@@ -310,8 +327,22 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* TIER 2: Dedicated MRSTU Horizontal Navigation Ribbon - iPhoneish Pill Segmented Style */}
       <div className="w-full bg-white/80 backdrop-blur-2xl border-b border-black/[0.06] shadow-[0_2px_12px_-4px_rgba(0,0,0,0.03)]">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 flex items-center h-[42px]">
-          <nav className="hidden lg:flex items-center gap-1">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 flex items-center h-[42px] justify-between">
+          <div className="flex items-center gap-1.5 h-full overflow-x-auto">
+            {/* Apple-Grade Universal Back Button (Visible when on any sub-screen) */}
+            {canGoBack && onGoBack && (
+              <button
+                type="button"
+                onClick={onGoBack}
+                title="Navigate Back to Previous Screen (Alt + ←)"
+                className="h-7 px-3 bg-slate-100 hover:bg-slate-200/90 text-slate-800 rounded-full font-bold text-[11px] flex items-center gap-1 transition-all shadow-2xs hover:shadow-xs cursor-pointer mr-1.5 shrink-0 select-none group border border-slate-200/80"
+              >
+                <span className="text-sm font-black text-[#00236f] group-hover:-translate-x-0.5 transition-transform leading-none">‹</span>
+                <span>Back</span>
+              </button>
+            )}
+
+            <nav className="hidden lg:flex items-center gap-1">
             {menuSections.map(sec => {
               const isDrawerOpen = openDrawer === sec.id;
               const hasChildren = Boolean(sec.items && sec.items.length > 0);
@@ -393,6 +424,7 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
         </div>
       </div>
+    </div>
 
       {/* SUB-TIER: Razor-Sharp Institutional Notice Ticker (Height: 20px) - Zero Hardcoded MRSPTU */}
       <div className="bg-[#001744]/95 backdrop-blur-md text-slate-200 h-[22px] flex items-center px-3 sm:px-6 text-[10px] border-b border-white/5">

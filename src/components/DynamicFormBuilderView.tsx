@@ -116,15 +116,31 @@ export const DynamicFormBuilderView: React.FC<DynamicFormBuilderViewProps> = ({ 
     <div id="dynamic-forms-screen" className="p-8 max-w-7xl mx-auto space-y-6 animate-fadeIn">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-[#191c1d] tracking-tight">
-            {isAdmin ? 'Dynamic Form Builder & Schema Engine' : 'Institutional Dynamic Forms'}
-          </h2>
-          <p className="text-sm text-[#444651] mt-1">
-            {isAdmin
-              ? 'Create, configure, and publish custom schema forms for student registrations and approvals.'
-              : 'Fill and submit department clearance, hostel allotment, and internship verification forms.'}
-          </p>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              if (window.history.state && typeof window.history.state.idx === 'number' && window.history.state.idx > 0) {
+                window.history.back();
+              } else {
+                window.location.href = '/dashboard';
+              }
+            }}
+            className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-base transition-all cursor-pointer border border-slate-200/80 shadow-2xs shrink-0"
+            title="Return to Previous (Alt + ←)"
+          >
+            ‹
+          </button>
+          <div>
+            <h2 className="text-2xl font-bold text-[#191c1d] tracking-tight">
+              {isAdmin ? 'Dynamic Form Builder & Schema Engine' : 'Institutional Dynamic Forms'}
+            </h2>
+            <p className="text-sm text-[#444651] mt-1">
+              {isAdmin
+                ? 'Create, configure, and publish custom schema forms for student registrations and approvals.'
+                : 'Fill and submit department clearance, hostel allotment, and internship verification forms.'}
+            </p>
+          </div>
         </div>
 
         {isAdmin && (
