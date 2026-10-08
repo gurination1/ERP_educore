@@ -37,17 +37,19 @@ export const Header: React.FC<HeaderProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
 
-  const displayUid = currentUser?.enterprise_uid || (
+  // Pure Digit Canonical UID (No alphabetic text, strict 10 digits formatted)
+  const rawUid = currentUser?.enterprise_uid || (
     currentUser?.role === 'super_admin'
-      ? '9001-01-03-BFGI'
+      ? '9001-01-03-01'
       : currentUser?.role === 'admin'
-      ? '4001-01-03-BFGI'
+      ? '4001-01-03-01'
       : currentUser?.role === 'staff'
-      ? '2001-14-03-BFGI'
+      ? '2001-14-03-01'
       : currentUser?.role === 'partner'
-      ? '7001-01-03-BFGI'
-      : '1001-88-03-BFGI'
+      ? '7001-01-03-01'
+      : '1001-88-03-01'
   );
+  const displayUid = rawUid.replace(/BFGI/g, '01');
 
   const handleCopyUid = () => {
     if (displayUid) {
@@ -94,7 +96,7 @@ export const Header: React.FC<HeaderProps> = ({
     },
     {
       id: 'academics',
-      label: 'Examination & Academics',
+      label: 'Academics',
       items: [
         { id: 'academics' as ActiveScreen, label: 'CBCS Syllabi & Datesheet', badge: 'MRSPTU' },
         { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz LMS & Exams', badge: 'Active' },
@@ -104,7 +106,7 @@ export const Header: React.FC<HeaderProps> = ({
     },
     {
       id: 'students',
-      label: 'Student Lifecycle',
+      label: 'Students',
       items: [
         { id: 'manage-students' as ActiveScreen, label: 'Student Master Directory', badge: 'Master' },
         { id: 'student-documents' as ActiveScreen, label: 'Document Vault (85% Domicile)', badge: 'Verified' },
@@ -116,7 +118,7 @@ export const Header: React.FC<HeaderProps> = ({
     },
     {
       id: 'crm',
-      label: 'Admissions CRM',
+      label: 'Admissions',
       items: [
         { id: 'enquiries' as ActiveScreen, label: 'Pre-Admission Leads Radar', badge: 'Radar' },
         { id: 'bulk-import' as ActiveScreen, label: '3-Tier Bulk CSV Mapper', badge: 'Verify' },
@@ -127,7 +129,7 @@ export const Header: React.FC<HeaderProps> = ({
     },
     {
       id: 'staff',
-      label: 'Staff & HRMS',
+      label: 'Faculty & HR',
       items: [
         { id: 'staff-management' as ActiveScreen, label: 'Faculty & HRMS Directory', badge: 'Roster' },
         ...(isFaculty ? [{ id: 'teacher-documents' as ActiveScreen, label: 'Faculty Dossier Vault', badge: 'Verified' }] : []),
@@ -137,7 +139,7 @@ export const Header: React.FC<HeaderProps> = ({
     },
     {
       id: 'partners',
-      label: 'Placements & Partners',
+      label: 'Placements',
       action: () => {
         onNavigate('partner-portal');
         setOpenDrawer(null);
@@ -148,7 +150,7 @@ export const Header: React.FC<HeaderProps> = ({
       ? [
           {
             id: 'governance',
-            label: 'Governance & Audits',
+            label: 'Governance',
             items: [
               { id: 'master-tables' as any, label: 'Institutional Master Tables', badge: 'Canonical', action: onOpenMasterTables },
               { id: 'audit-trail' as any, label: 'Cryptographic Audit Trail', badge: 'Logs', action: onOpenAuditLogs },
@@ -162,70 +164,140 @@ export const Header: React.FC<HeaderProps> = ({
   ];
 
   return (
-    <header className="sticky top-0 z-50 select-none font-sans shadow-md" ref={navRef}>
-      {/* TIER 1: Sleek Masthead (Height: 40px) */}
-      <div className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-3 sm:px-6 h-10 flex items-center justify-between gap-3 text-xs">
-        {/* Left: University & Campus Identity */}
+    <header className="sticky top-0 z-50 select-none font-sans shadow-xs" ref={navRef}>
+      {/* UNIFIED APPLE-GRADE FROSTED GLASS BAR (Height: 52px) */}
+      <div className="bg-white/90 backdrop-blur-xl border-b border-slate-200/80 px-3 sm:px-6 h-[52px] flex items-center justify-between gap-3 text-xs">
+        {/* Left: Campus Identity */}
         <div className="flex items-center gap-2.5 shrink-0">
           <button
             type="button"
             onClick={() => onNavigate(dashboardTarget)}
             className="flex items-center gap-2 text-left group cursor-pointer focus:outline-none"
           >
-            <div className="w-7 h-7 rounded-lg bg-[#00236f] flex items-center justify-center text-white font-extrabold text-[11px] shadow-xs ring-1 ring-black/5 group-hover:scale-105 transition-transform">
+            <div className="w-7 h-7 rounded-lg bg-[#00236f] flex items-center justify-center text-white font-extrabold text-[11px] shadow-2xs ring-1 ring-black/5 group-hover:scale-105 transition-transform">
               <span className="tracking-tighter">BFGI</span>
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5 leading-none">
                 <span className="font-extrabold text-xs tracking-tight text-[#00236f]">
-                  EduCore Enterprise
+                  EduCore
                 </span>
-                <span className="text-[10px] text-slate-400 font-semibold">•</span>
-                <span className="text-[10px] font-semibold text-slate-600 tracking-tight">
-                  MRSPTU Affiliated
+                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-orange-50 text-[#ea580c] border border-orange-200">
+                  MRSPTU
                 </span>
               </div>
               <span className="text-[9px] font-medium text-slate-400 leading-tight">
-                Baba Farid Group of Institutions • Punjab (03)
+                Punjab (03) • CBCS
               </span>
             </div>
           </button>
         </div>
 
-        {/* Center: High-Density Search Input */}
-        <div className="hidden md:flex items-center flex-1 max-w-sm mx-4">
-          <div className="w-full relative">
+        {/* Center: Sleek Inline MRSPTU Examination Navigation */}
+        <nav className="hidden lg:flex items-center gap-1">
+          {menuSections.map(sec => {
+            const isDrawerOpen = openDrawer === sec.id;
+            const hasChildren = Boolean(sec.items && sec.items.length > 0);
+
+            return (
+              <div key={sec.id} className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (hasChildren) {
+                      setOpenDrawer(isDrawerOpen ? null : sec.id);
+                    } else if (sec.action) {
+                      sec.action();
+                    }
+                  }}
+                  className={`h-8 px-2.5 rounded-lg flex items-center gap-1 text-[11px] font-semibold transition-all cursor-pointer ${
+                    sec.isActive
+                      ? 'bg-[#00236f] text-white shadow-2xs'
+                      : 'text-slate-700 hover:text-black hover:bg-slate-100/90'
+                  }`}
+                >
+                  <span>{sec.label}</span>
+                  {hasChildren && (
+                    <span className="text-[8px] opacity-70 ml-0.5">
+                      {isDrawerOpen ? '▴' : '▾'}
+                    </span>
+                  )}
+                </button>
+
+                {/* Apple-Grade Frosted Glass Flyout Menu */}
+                {hasChildren && isDrawerOpen && (
+                  <div className="absolute top-full left-0 mt-1.5 w-64 bg-white/95 backdrop-blur-2xl border border-slate-200/90 rounded-xl p-1.5 z-50 shadow-xl animate-fadeIn text-slate-800">
+                    <div className="px-3 py-1 text-[9px] font-bold text-slate-400 border-b border-slate-100 uppercase tracking-wider">
+                      {sec.label}
+                    </div>
+
+                    <div className="py-1 space-y-0.5">
+                      {sec.items!.map((item: any) => (
+                        <button
+                          key={item.id || item.label}
+                          type="button"
+                          onClick={() => {
+                            if (item.action) {
+                              item.action();
+                            } else if (item.id) {
+                              onNavigate(item.id);
+                            }
+                            setOpenDrawer(null);
+                          }}
+                          className={`w-full px-3 py-1.5 rounded-lg text-[11px] font-medium flex items-center justify-between cursor-pointer transition text-left ${
+                            activeScreen === item.id
+                              ? 'bg-blue-50 text-[#00236f] font-bold'
+                              : 'text-slate-700 hover:bg-slate-100/90 hover:text-black'
+                          }`}
+                        >
+                          <span>{item.label}</span>
+                          {item.badge && (
+                            <span className="bg-[#ea580c] text-white px-1.5 py-0.2 rounded text-[8px] font-mono font-bold tracking-tight">
+                              {item.badge}
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </nav>
+
+        {/* Right: Operational Controls & Digit-Only UID */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* High-Density Quick Search */}
+          <div className="hidden xl:flex items-center w-48 relative">
             <input
               type="text"
               value={searchQuery}
               onChange={e => onSearchChange(e.target.value)}
-              placeholder="Search student UID, marks, fees, circulars... ⌘K"
-              className="w-full h-7 pl-3 pr-8 bg-slate-100/90 hover:bg-slate-100 focus:bg-white text-[11px] font-medium text-slate-800 rounded-lg border border-slate-200/70 focus:outline-none focus:ring-1 focus:ring-[#00236f] transition-all"
+              placeholder="Search... ⌘K"
+              className="w-full h-7 pl-2.5 pr-7 bg-slate-100/80 hover:bg-slate-100 focus:bg-white text-[11px] font-medium text-slate-800 rounded-lg border border-slate-200/70 focus:outline-none focus:ring-1 focus:ring-[#00236f] transition-all"
             />
-            <span className="absolute right-2 top-1.5 text-[9px] font-mono font-semibold text-slate-400">
+            <span className="absolute right-2 top-1.5 text-[8px] font-mono font-semibold text-slate-400">
               ⌘K
             </span>
           </div>
-        </div>
 
-        {/* Right: Operational Controls & Canonical UID */}
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Canonical UID Copy Badge */}
+          {/* Pure Digit Canonical UID Copy Badge */}
           <button
             type="button"
             onClick={handleCopyUid}
-            title="Click to copy canonical Enterprise UID"
-            className="flex items-center gap-1.5 h-6 px-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md font-mono text-[10px] text-slate-700 transition cursor-pointer"
+            title="Click to copy canonical 10-digit UID"
+            className="flex items-center gap-1.5 h-7 px-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg font-mono text-[10px] text-slate-700 transition cursor-pointer shadow-2xs"
           >
             <span className="text-[#ea580c] font-bold">UID</span>
-            <span className="font-semibold text-slate-900">{displayUid}</span>
+            <span className="font-bold text-slate-900 tracking-tight">{displayUid}</span>
             <span className="text-slate-400 text-[9px]">
               {copiedUid ? '✓' : 'Copy'}
             </span>
           </button>
 
           {/* Role Pill */}
-          <span className="hidden sm:inline-flex h-6 items-center px-2 rounded text-[9px] font-bold bg-[#00236f] text-white tracking-wider uppercase">
+          <span className="hidden sm:inline-flex h-7 items-center px-2 rounded-lg text-[9px] font-bold bg-[#00236f] text-white tracking-wider uppercase shadow-2xs">
             {currentUser?.role === 'super_admin'
               ? 'Apex Provost'
               : currentUser?.role?.replace(/_/g, ' ') || 'Guest'}
@@ -236,7 +308,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onToggleTelephony}
-              className={`hidden lg:inline-flex h-6 items-center px-2 rounded text-[10px] font-bold transition border cursor-pointer ${
+              className={`hidden md:inline-flex h-7 items-center px-2.5 rounded-lg text-[10px] font-bold transition border cursor-pointer ${
                 isTelephonyOpen
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
                   : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
@@ -251,7 +323,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onOpenCopilot}
-              className="h-6 px-2.5 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold rounded text-[10px] transition shadow-xs cursor-pointer flex items-center gap-1"
+              className="h-7 px-2.5 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold rounded-lg text-[10px] transition shadow-2xs cursor-pointer flex items-center gap-1"
             >
               <span>AI Copilot</span>
             </button>
@@ -262,7 +334,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onLogout}
-              className="h-6 px-2 rounded text-[10px] font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+              className="h-7 px-2 rounded-lg text-[10px] font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
             >
               Sign Out
             </button>
@@ -272,7 +344,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-1 rounded text-slate-700 hover:bg-slate-100 cursor-pointer"
+            className="lg:hidden p-1 rounded-lg text-slate-700 hover:bg-slate-100 cursor-pointer"
             aria-label="Toggle Navigation Menu"
           >
             {mobileMenuOpen ? '✕' : '☰'}
@@ -280,93 +352,12 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* TIER 2: MRSPTU-Style Horizontal Examination Navigation Bar (Height: 34px) */}
-      <nav className="mrsptu-nav-bar hidden lg:flex items-center px-4 sm:px-6 h-8 text-[11px] font-medium">
-        <div className="max-w-7xl w-full mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-0.5">
-            {menuSections.map(sec => {
-              const isDrawerOpen = openDrawer === sec.id;
-              const hasChildren = Boolean(sec.items && sec.items.length > 0);
-
-              return (
-                <div key={sec.id} className="relative">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (hasChildren) {
-                        setOpenDrawer(isDrawerOpen ? null : sec.id);
-                      } else if (sec.action) {
-                        sec.action();
-                      }
-                    }}
-                    className={`mrsptu-nav-item h-8 px-3.5 flex items-center gap-1 font-semibold tracking-tight cursor-pointer ${
-                      sec.isActive ? 'active' : ''
-                    }`}
-                  >
-                    <span>{sec.label}</span>
-                    {hasChildren && (
-                      <span className="text-[8px] opacity-70 ml-0.5">
-                        {isDrawerOpen ? '▴' : '▾'}
-                      </span>
-                    )}
-                  </button>
-
-                  {/* Glassmorphic Dropdown Drawer */}
-                  {hasChildren && isDrawerOpen && (
-                    <div className="absolute top-full left-0 w-64 apple-glass-dropdown rounded-b-xl rounded-tr-xl p-1.5 z-50 animate-fadeIn text-slate-800">
-                      <div className="px-3 py-1 text-[9px] font-bold text-slate-400 border-b border-slate-100 uppercase tracking-wider">
-                        {sec.label}
-                      </div>
-
-                      <div className="py-1 space-y-0.5">
-                        {sec.items!.map((item: any) => (
-                          <button
-                            key={item.id || item.label}
-                            type="button"
-                            onClick={() => {
-                              if (item.action) {
-                                item.action();
-                              } else if (item.id) {
-                                onNavigate(item.id);
-                              }
-                              setOpenDrawer(null);
-                            }}
-                            className={`w-full px-3 py-1.5 rounded-lg text-[11px] font-medium flex items-center justify-between cursor-pointer transition text-left ${
-                              activeScreen === item.id
-                                ? 'bg-blue-50 text-[#00236f] font-bold'
-                                : 'text-slate-700 hover:bg-slate-100/90 hover:text-black'
-                            }`}
-                          >
-                            <span>{item.label}</span>
-                            {item.badge && (
-                              <span className="bg-[#ea580c] text-white px-1.5 py-0.2 rounded text-[8px] font-mono font-bold tracking-tight">
-                                {item.badge}
-                              </span>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Right Status Pill */}
-          <div className="hidden xl:flex items-center gap-2 text-white/80 text-[10px] font-mono">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block" />
-            <span>MRSPTU Examination Portal • CBCS 2025-26</span>
-          </div>
-        </div>
-      </nav>
-
-      {/* TIER 3: Institutional Notice Ticker (Height: 24px - MRSPTU Marquee Upgrade) */}
-      <div className="mrsptu-ticker-container h-6 flex items-center px-3 sm:px-6 text-[10px]">
+      {/* SUB-TIER: Razor-Sharp Institutional Notice Ticker (Height: 22px) */}
+      <div className="bg-[#00236f] text-slate-200 h-[22px] flex items-center px-3 sm:px-6 text-[10px] border-b border-black/10">
         <div className="max-w-7xl w-full mx-auto flex items-center justify-between gap-3 overflow-hidden">
-          {/* Fixed Alert Tag */}
-          <div className="flex items-center gap-1.5 shrink-0 z-10 bg-[#001744] pr-2">
-            <span className="bg-[#ea580c] text-white font-extrabold text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded shadow-2xs">
+          {/* Alert Tag */}
+          <div className="flex items-center gap-1 shrink-0 z-10 bg-[#00236f] pr-2">
+            <span className="bg-[#ea580c] text-white font-extrabold text-[8px] uppercase tracking-wider px-1.5 py-0.2 rounded shadow-2xs">
               MRSPTU GAZETTE
             </span>
           </div>
@@ -400,11 +391,11 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Quick Notice Action */}
-          <div className="shrink-0 z-10 bg-[#001744] pl-2 hidden sm:block">
+          <div className="shrink-0 z-10 bg-[#00236f] pl-2 hidden sm:block">
             <button
               type="button"
               onClick={() => onNavigate('academics')}
-              className="text-[#ea580c] hover:text-orange-300 font-bold text-[9px] uppercase tracking-wider hover:underline cursor-pointer"
+              className="text-orange-300 hover:text-white font-bold text-[9px] uppercase tracking-wider hover:underline cursor-pointer"
             >
               [View Scheme &rarr;]
             </button>
@@ -414,7 +405,7 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden apple-glass-dropdown border-t border-slate-200/80 px-4 py-3 space-y-2 animate-fadeIn max-h-[80vh] overflow-y-auto">
+        <div className="lg:hidden bg-white/98 backdrop-blur-2xl border-t border-slate-200/80 px-4 py-3 space-y-2 animate-fadeIn max-h-[80vh] overflow-y-auto shadow-xl">
           {menuSections.map(sec => (
             <div key={sec.id} className="py-1 border-b border-slate-100 last:border-b-0">
               {sec.action ? (

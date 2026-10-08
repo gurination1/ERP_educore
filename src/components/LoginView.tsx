@@ -81,7 +81,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
                 : 'Student Campus & Academics Portal'}
             </h2>
             <p className="text-[11px] text-slate-500 mt-1">
-              Sign in via 16-Digit Canonical UID, institutional handle, or email.
+              Sign in via 10-Digit Pure-Digit UID, institutional handle, or email.
             </p>
           </div>
 
@@ -153,68 +153,68 @@ export const LoginView: React.FC<LoginViewProps> = ({
           <div className="mb-5 p-3 bg-slate-50/80 border border-slate-200/70 rounded-2xl text-[10px]">
             <div className="flex items-center justify-between font-bold text-slate-700 mb-2">
               <span className="text-[10px] tracking-tight uppercase text-slate-500 font-extrabold">Instant Demo Accounts</span>
-              <span className="font-mono text-[9px] text-[#ea580c] font-bold">Punjab GST · 03</span>
+              <span className="font-mono text-[9px] text-[#ea580c] font-bold">Pure Digits • Punjab 03</span>
             </div>
             <div className="grid grid-cols-2 gap-1.5 font-mono">
               <button
                 type="button"
                 onClick={() => {
                   setSelectedRole('admin');
-                  setUsername('4001-01-03-BFGI');
+                  setUsername('4001-01-03-01');
                   setPassword('admin123');
                 }}
                 className="p-2 text-left bg-white hover:bg-blue-50/60 border border-slate-200/90 rounded-xl text-[#00236f] flex items-center justify-between cursor-pointer transition shadow-2xs hover:border-blue-300"
               >
                 <span className="font-bold text-[10px]">[ADMIN]</span>
-                <span className="text-slate-500 text-[10px]">4001-01-03-BFGI</span>
+                <span className="text-slate-500 text-[10px]">4001-01-03-01</span>
               </button>
               <button
                 type="button"
                 onClick={() => {
                   setSelectedRole('super_admin');
-                  setUsername('9001-01-03-BFGI');
+                  setUsername('9001-01-03-01');
                   setPassword('super123');
                 }}
                 className="p-2 text-left bg-white hover:bg-blue-50/60 border border-slate-200/90 rounded-xl text-[#00236f] flex items-center justify-between cursor-pointer transition shadow-2xs hover:border-blue-300"
               >
                 <span className="font-bold text-[10px]">[SUPER]</span>
-                <span className="text-slate-500 text-[10px]">9001-01-03-BFGI</span>
+                <span className="text-slate-500 text-[10px]">9001-01-03-01</span>
               </button>
               <button
                 type="button"
                 onClick={() => {
                   setSelectedRole('staff');
-                  setUsername('2001-14-03-BFGI');
+                  setUsername('2001-14-03-01');
                   setPassword('staff123');
                 }}
                 className="p-2 text-left bg-white hover:bg-blue-50/60 border border-slate-200/90 rounded-xl text-[#00236f] flex items-center justify-between cursor-pointer transition shadow-2xs hover:border-blue-300"
               >
                 <span className="font-bold text-[10px]">[STAFF]</span>
-                <span className="text-slate-500 text-[10px]">2001-14-03-BFGI</span>
+                <span className="text-slate-500 text-[10px]">2001-14-03-01</span>
               </button>
               <button
                 type="button"
                 onClick={() => {
                   setSelectedRole('student');
-                  setUsername('1001-88-03-BFGI');
+                  setUsername('1001-88-03-01');
                   setPassword('student123');
                 }}
                 className="p-2 text-left bg-white hover:bg-blue-50/60 border border-slate-200/90 rounded-xl text-[#00236f] flex items-center justify-between cursor-pointer transition shadow-2xs hover:border-blue-300"
               >
                 <span className="font-bold text-[10px]">[STUDENT]</span>
-                <span className="text-slate-500 text-[10px]">1001-88-03-BFGI</span>
+                <span className="text-slate-500 text-[10px]">1001-88-03-01</span>
               </button>
               <button
                 type="button"
                 onClick={() => {
                   setSelectedRole('partner');
-                  setUsername('7001-01-03-BFGI');
+                  setUsername('7001-01-03-01');
                   setPassword('partner123');
                 }}
                 className="col-span-2 p-2 text-left bg-white hover:bg-orange-50/60 border border-slate-200/90 rounded-xl text-[#ea580c] flex items-center justify-between cursor-pointer transition shadow-2xs hover:border-orange-300"
               >
                 <span className="font-bold text-[10px]">[PARTNER - INFOSYS]</span>
-                <span className="text-slate-500 text-[10px]">7001-01-03-BFGI / partner123</span>
+                <span className="text-slate-500 text-[10px]">7001-01-03-01 / partner123</span>
               </button>
             </div>
           </div>
@@ -242,7 +242,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
                 required
                 value={username}
                 onChange={e => setUsername(e.target.value)}
-                placeholder="e.g. 4001-01-03-BFGI or admin"
+                placeholder="e.g. 4001-01-03-01 or 4001010301 or admin"
                 className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl font-mono text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/20 focus:border-[#00236f] transition-all"
               />
             </div>

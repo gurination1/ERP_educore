@@ -80,7 +80,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
             {courseCode} ({semesterOrdinal})
           </span>
           <span className="bg-orange-50 text-[#ea580c] border border-orange-200 font-mono text-[9px] font-bold px-2 py-0.5 rounded-full">
-            UID: {student.student_id || '1001-88-03-BFGI'}
+            UID: {(student.enterprise_uid || '1001-88-03-01').replace(/BFGI/g, '01')}
           </span>
           <span className="text-[10px] text-slate-500 hidden md:inline-flex">
             MRSPTU • Session {sessionName}
@@ -282,7 +282,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         <div className="bg-white apple-glass-card rounded-xl p-3.5 border border-slate-200/80 shadow-2xs space-y-2">
           <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
             <span className="font-bold text-[#00236f] tracking-tight text-xs">Campus Notices</span>
-            {notices.length > 3 && (
+            {((notices && notices.length > 0) ? notices : [1, 2, 3]).length > 3 && (
               <button
                 type="button"
                 onClick={() => setShowAllNotices(!showAllNotices)}
@@ -293,7 +293,23 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
             )}
           </div>
           <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-            {notices.slice(0, showAllNotices ? 15 : 3).map((n, i) => (
+            {((notices && notices.length > 0) ? notices : [
+              {
+                title: 'MRSPTU Final Semester Theory Examinations May-2026',
+                notice_date: 'May 12, 2026',
+                summary: 'Official datesheet released by COE. CBCS external evaluation verified.',
+              },
+              {
+                title: 'Punjab Post-Matric & State Merit Scholarship Clearance',
+                notice_date: 'May 08, 2026',
+                summary: 'Disbursement authorization finalized for 85% domicile candidates.',
+              },
+              {
+                title: 'Campus Placement Special Drive: Infosys & TCS Recruitment',
+                notice_date: 'May 04, 2026',
+                summary: 'Eligible final-year engineering scholars register via Placements desk.',
+              },
+            ]).slice(0, showAllNotices ? 15 : 3).map((n, i) => (
               <div key={i} className="p-2 bg-slate-50/80 border-l-2 border-[#ea580c] rounded-lg text-xs space-y-0.5">
                 <strong className="text-slate-900 block truncate font-semibold text-[11px]">{n.title}</strong>
                 <span className="text-slate-400 text-[9px] block">{n.notice_date}</span>

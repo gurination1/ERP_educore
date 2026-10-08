@@ -98,7 +98,7 @@ userRouter.post('/', authenticateToken, requireRole('admin'), async (req: AuthRe
 
   const salt = bcrypt.genSaltSync(10);
   const passwordHash = bcrypt.hashSync(password, salt);
-  const enterpriseUid = generateEnterpriseUID(role, '03', 'BFGI');
+  const enterpriseUid = generateEnterpriseUID(role, '03', '01');
 
   const newUser: User = {
     id: `usr-${role}-${Date.now().toString().slice(-6)}`,

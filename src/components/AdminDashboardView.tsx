@@ -110,7 +110,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           </h2>
           <span className="text-[10px] text-slate-300 font-semibold">•</span>
           <span className="bg-orange-50 text-[#ea580c] border border-orange-200 font-mono text-[9px] font-bold px-2 py-0.5 rounded-full">
-            UID: 4001-01-03-BFGI
+            UID: 4001-01-03-01
           </span>
           <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-semibold px-2 py-0.5 rounded-full hidden sm:inline-flex">
             Relational DB Engine Live

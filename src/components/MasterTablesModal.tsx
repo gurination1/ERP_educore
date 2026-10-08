@@ -179,7 +179,7 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
                         )}
                       </td>
                       <td className="py-2.5 px-4 font-mono text-[11px] text-[#00236f]">
-                        {u.type_code}-03-BFGI-26XXXX
+                        {u.type_code}-XX-03-01
                       </td>
                       <td className="py-2.5 px-4 text-[#757682]">{u.description}</td>
                     </tr>

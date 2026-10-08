@@ -340,7 +340,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClos
                   required
                   value={smsIdentifier}
                   onChange={e => setSmsIdentifier(e.target.value)}
-                  placeholder="e.g. aryan, 1001-88-03-BFGI, or admin@educore.edu"
+                  placeholder="e.g. aryan, 1001-88-03-01, or admin@educore.edu"
                   className="w-full px-2.5 py-1.5 border border-gray-300 rounded text-[11px]"
                 />
               </div>
