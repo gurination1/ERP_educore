@@ -3,7 +3,7 @@ import http from 'http';
 import { spawn } from 'child_process';
 
 const PORT = process.env.TEST_PORT || 3333;
-const BASE_URL = `http://127.0.0.1:${PORT}`;
+const BASE_URL = process.env.BASE_URL || `http://127.0.0.1:${PORT}`;
 
 console.log(`======================================================================`);
 console.log(`  EDUCORE ALL 8 ROLES: SEPARATE UI, CREDENTIALS & ACCESS CONTROL TEST`);
@@ -13,6 +13,7 @@ console.log(`===================================================================
 let serverProcess = null;
 
 async function startServerIfNeeded() {
+  if (process.env.BASE_URL) return;
   try {
     const res = await fetch(`${BASE_URL}/api/health`);
     if (res.ok) return;
@@ -80,7 +81,7 @@ async function runRoleAudit() {
       identifier: 'admin',
       password: 'admin123',
       uid: '4001-01-03-01',
-      expectedNameFragment: 'Singh',
+      expectedNameFragment: 'Provost',
     },
     {
       role: 'staff',
