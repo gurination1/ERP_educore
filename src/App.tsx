@@ -115,6 +115,8 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
           ? 'admin-dashboard'
           : (currentUser?.role === 'staff' || currentUser?.role === 'counselor' || currentUser?.role === 'hod')
           ? 'staff-dashboard'
+          : currentUser?.role === 'partner'
+          ? 'partner-portal'
           : currentUser?.role === 'accounts'
           ? 'fee-ledger'
           : 'student-dashboard';
@@ -622,7 +624,7 @@ function MainApp() {
           element={
             !currentUser ? (
               <Navigate to="/admin" replace />
-            ) : !['admin', 'super_admin', 'staff', 'counselor', 'hod'].includes(currentUser.role) ? (
+            ) : !['admin', 'super_admin', 'staff', 'counselor', 'hod', 'accounts'].includes(currentUser.role) ? (
               <Navigate to="/dashboard" replace />
             ) : (
               <AuthenticatedLayout

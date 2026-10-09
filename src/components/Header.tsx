@@ -124,118 +124,484 @@ export const Header: React.FC<HeaderProps> = ({
 
   const isSuperAdmin = currentUser?.role === 'super_admin';
   const isAdmin = currentUser?.role === 'admin' || isSuperAdmin;
-  const isCounselor = currentUser?.role === 'counselor' || isAdmin;
-  const isFaculty = currentUser?.role === 'staff' || isAdmin;
+  const userRole = currentUser?.role;
 
   const dashboardTarget: ActiveScreen =
     isAdmin
       ? 'admin-dashboard'
-      : currentUser?.role === 'staff' || currentUser?.role === 'hod' || currentUser?.role === 'counselor'
+      : userRole === 'staff' || userRole === 'hod' || userRole === 'counselor'
       ? 'staff-dashboard'
-      : currentUser?.role === 'partner'
+      : userRole === 'partner'
       ? 'partner-portal'
+      : userRole === 'accounts'
+      ? 'fee-ledger'
       : 'student-dashboard';
 
-  const menuSections = [
-    {
-      id: 'dashboard',
-      label: 'Home',
-      defaultScreen: dashboardTarget,
-      action: () => {
-        onNavigate(dashboardTarget);
-        setOpenDrawer(null);
+  let menuSections: Array<{
+    id: string;
+    label: string;
+    defaultScreen: ActiveScreen;
+    items?: Array<{ id?: ActiveScreen; label: string; action?: () => void }>;
+    action?: () => void;
+    isActive: boolean;
+  }> = [];
+
+  if (isAdmin) {
+    // Universal Provost & Institutional Registrar: Complete Governance Suite
+    menuSections = [
+      {
+        id: 'dashboard',
+        label: 'Home',
+        defaultScreen: 'admin-dashboard',
+        action: () => {
+          onNavigate('admin-dashboard');
+          setOpenDrawer(null);
+        },
+        isActive: activeScreen === 'admin-dashboard',
       },
-      isActive: ['admin-dashboard', 'staff-dashboard', 'student-dashboard'].includes(activeScreen as string),
-    },
-    {
-      id: 'examination',
-      label: 'Examination',
-      defaultScreen: 'examination' as ActiveScreen,
-      items: [
-        { id: 'examination' as ActiveScreen, label: 'Regular Examination Form', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
-        { id: 'examination' as ActiveScreen, label: 'Reappear / Backlog Form', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
-        { id: 'examination' as ActiveScreen, label: 'Admit Card & Gate Clearance', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
-        { id: 'examination' as ActiveScreen, label: 'Datesheet & Examination Timetable', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
-        { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz & Examination LMS' },
-        { id: 'fee-ledger' as ActiveScreen, label: 'Fee Clearance for Examination' },
-      ],
-      isActive: ['examination', 'student-quiz-lms'].includes(activeScreen as any),
-    },
-    {
-      id: 'academics',
-      label: 'Academics',
-      defaultScreen: 'academics' as ActiveScreen,
-      items: [
-        { id: 'academics' as ActiveScreen, label: 'Choice Based Credit System (CBCS)' },
-        { id: 'academics' as ActiveScreen, label: 'Evaluation & Sessional Scheme' },
-        { id: 'student-quiz-lms' as ActiveScreen, label: 'Continuous Assessment (CA) Quiz' },
-        { id: 'academics' as ActiveScreen, label: 'Curriculum Syllabi Archive' },
-      ],
-      isActive: ['academics'].includes(activeScreen as any),
-    },
-    {
-      id: 'students',
-      label: 'Students',
-      defaultScreen: 'manage-students' as ActiveScreen,
-      items: [
-        { id: 'manage-students' as ActiveScreen, label: 'Student Master Directory' },
-        { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault' },
-        { id: 'fee-ledger' as ActiveScreen, label: 'Tuition Fee Assessment & Ledger' },
-        { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships' },
-        { id: 'grievances' as ActiveScreen, label: 'Statutory Grievance Redressal' },
-      ],
-      isActive: ['manage-students', 'student-documents', 'fee-ledger', 'scholarships', 'grievances'].includes(activeScreen as any),
-    },
-    {
-      id: 'crm',
-      label: 'Admissions',
-      defaultScreen: 'enquiries' as ActiveScreen,
-      items: [
-        { id: 'enquiries' as ActiveScreen, label: 'Pre-Admission Leads Radar' },
-        { id: 'bulk-import' as ActiveScreen, label: 'Bulk Lead CSV / Excel Mapper' },
-        ...(isCounselor ? [{ id: 'admissions' as ActiveScreen, label: 'Admissions Counter Desk' }] : []),
-        { id: 'form-builder' as ActiveScreen, label: 'Application Form Builder' },
-      ],
-      isActive: ['enquiries', 'bulk-import', 'admissions', 'form-builder'].includes(activeScreen as any),
-    },
-    {
-      id: 'staff',
-      label: 'Faculty & HR',
-      defaultScreen: 'staff-management' as ActiveScreen,
-      items: [
-        { id: 'staff-management' as ActiveScreen, label: 'Faculty & HRMS Directory' },
-        ...(isFaculty ? [{ id: 'teacher-documents' as ActiveScreen, label: 'Faculty Dossier Vault' }] : []),
-        { id: 'staff-academic-journey' as any, label: 'CAS Research Publications & Patents', action: onOpenStaffJourney },
-      ],
-      isActive: ['staff-management', 'teacher-documents'].includes(activeScreen as any),
-    },
-    {
-      id: 'partners',
-      label: 'Placements',
-      defaultScreen: 'partner-portal' as ActiveScreen,
-      action: () => {
-        onNavigate('partner-portal');
-        setOpenDrawer(null);
+      {
+        id: 'examination',
+        label: 'Examination',
+        defaultScreen: 'examination' as ActiveScreen,
+        items: [
+          { id: 'examination' as ActiveScreen, label: 'University Examination Forms', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+          { id: 'examination' as ActiveScreen, label: 'Reappear / Backlog Portal', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+          { id: 'examination' as ActiveScreen, label: 'Admit Card & Gate Clearance', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+          { id: 'examination' as ActiveScreen, label: 'Datesheet & Examination Timetable', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+          { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz & Examination LMS' },
+          { id: 'fee-ledger' as ActiveScreen, label: 'Fee Clearance for Examination' },
+        ],
+        isActive: ['examination', 'student-quiz-lms'].includes(activeScreen as any),
       },
-      isActive: activeScreen === 'partner-portal',
-    },
-    ...(isAdmin
-      ? [
-          {
-            id: 'governance',
-            label: 'Governance',
-            defaultScreen: 'user-management' as ActiveScreen,
-            items: [
-              { id: 'user-management' as ActiveScreen, label: 'User Accounts & Roles' },
-              { id: 'master-tables' as any, label: 'Statutory Master Tables', action: onOpenMasterTables },
-              { id: 'audit-trail' as any, label: 'Cryptographic Audit Trail', action: onOpenAuditLogs },
-              { id: 'reports' as ActiveScreen, label: 'Institutional MIS Reports' },
-            ],
-            isActive: ['user-management', 'reports'].includes(activeScreen as any),
-          },
-        ]
-      : []),
-  ];
+      {
+        id: 'academics',
+        label: 'Academics',
+        defaultScreen: 'academics' as ActiveScreen,
+        items: [
+          { id: 'academics' as ActiveScreen, label: 'Choice Based Credit System (CBCS)' },
+          { id: 'academics' as ActiveScreen, label: 'Evaluation & Sessional Scheme' },
+          { id: 'student-quiz-lms' as ActiveScreen, label: 'Continuous Assessment (CA) Quiz' },
+          { id: 'academics' as ActiveScreen, label: 'Curriculum Syllabi Archive' },
+        ],
+        isActive: ['academics'].includes(activeScreen as any),
+      },
+      {
+        id: 'students',
+        label: 'Students',
+        defaultScreen: 'manage-students' as ActiveScreen,
+        items: [
+          { id: 'manage-students' as ActiveScreen, label: 'Student Master Directory' },
+          { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault' },
+          { id: 'fee-ledger' as ActiveScreen, label: 'Tuition Fee Assessment & Ledger' },
+          { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships' },
+          { id: 'grievances' as ActiveScreen, label: 'Statutory Grievance Redressal' },
+        ],
+        isActive: ['manage-students', 'student-documents', 'fee-ledger', 'scholarships', 'grievances'].includes(activeScreen as any),
+      },
+      {
+        id: 'crm',
+        label: 'Admissions',
+        defaultScreen: 'enquiries' as ActiveScreen,
+        items: [
+          { id: 'enquiries' as ActiveScreen, label: 'Pre-Admission Leads Radar' },
+          { id: 'bulk-import' as ActiveScreen, label: 'Bulk Lead CSV / Excel Mapper' },
+          { id: 'admissions' as ActiveScreen, label: 'Admissions Counter Desk' },
+          { id: 'form-builder' as ActiveScreen, label: 'Application Form Builder' },
+        ],
+        isActive: ['enquiries', 'bulk-import', 'admissions', 'form-builder'].includes(activeScreen as any),
+      },
+      {
+        id: 'staff',
+        label: 'Faculty & HR',
+        defaultScreen: 'staff-management' as ActiveScreen,
+        items: [
+          { id: 'staff-management' as ActiveScreen, label: 'Faculty & HRMS Directory' },
+          { id: 'teacher-documents' as ActiveScreen, label: 'Faculty Dossier Vault' },
+          { id: 'staff-academic-journey' as any, label: 'CAS Research Publications & Patents', action: onOpenStaffJourney },
+        ],
+        isActive: ['staff-management', 'teacher-documents'].includes(activeScreen as any),
+      },
+      {
+        id: 'partners',
+        label: 'Placements',
+        defaultScreen: 'partner-portal' as ActiveScreen,
+        action: () => {
+          onNavigate('partner-portal');
+          setOpenDrawer(null);
+        },
+        isActive: activeScreen === 'partner-portal',
+      },
+      {
+        id: 'governance',
+        label: 'Governance',
+        defaultScreen: 'user-management' as ActiveScreen,
+        items: [
+          { id: 'user-management' as ActiveScreen, label: 'User Accounts & Roles' },
+          { id: 'master-tables' as any, label: 'Statutory Master Tables', action: onOpenMasterTables },
+          { id: 'audit-trail' as any, label: 'Cryptographic Audit Trail', action: onOpenAuditLogs },
+          { id: 'reports' as ActiveScreen, label: 'Institutional MIS Reports' },
+        ],
+        isActive: ['user-management', 'reports'].includes(activeScreen as any),
+      },
+    ];
+  } else if (userRole === 'partner') {
+    // Corporate Placement Partner
+    menuSections = [
+      {
+        id: 'dashboard',
+        label: 'Placements Home',
+        defaultScreen: 'partner-portal',
+        action: () => {
+          onNavigate('partner-portal');
+          setOpenDrawer(null);
+        },
+        isActive: activeScreen === 'partner-portal',
+      },
+      {
+        id: 'talent',
+        label: 'Campus Talent Pool',
+        defaultScreen: 'partner-portal',
+        action: () => {
+          onNavigate('partner-portal');
+          setOpenDrawer(null);
+        },
+        isActive: false,
+      },
+      {
+        id: 'drives',
+        label: 'Placement Drives',
+        defaultScreen: 'partner-portal',
+        action: () => {
+          onNavigate('partner-portal');
+          setOpenDrawer(null);
+        },
+        isActive: false,
+      },
+    ];
+  } else if (userRole === 'accounts') {
+    // Bursar & Chief Accounts Officer
+    menuSections = [
+      {
+        id: 'dashboard',
+        label: 'Collections Home',
+        defaultScreen: 'fee-ledger',
+        action: () => {
+          onNavigate('fee-ledger');
+          setOpenDrawer(null);
+        },
+        isActive: activeScreen === 'fee-ledger',
+      },
+      {
+        id: 'fees',
+        label: 'Fee Ledger & Registers',
+        defaultScreen: 'fee-ledger',
+        items: [
+          { id: 'fee-ledger' as ActiveScreen, label: 'Tuition Fee Assessment & Collections' },
+          { id: 'fee-ledger' as ActiveScreen, label: 'Student Fee Defaulters & Ledger' },
+          { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships' },
+        ],
+        isActive: ['fee-ledger', 'scholarships'].includes(activeScreen as any),
+      },
+      {
+        id: 'students',
+        label: 'Student Directory',
+        defaultScreen: 'manage-students',
+        items: [
+          { id: 'manage-students' as ActiveScreen, label: 'Student Billing & Master Directory' },
+          { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault' },
+        ],
+        isActive: ['manage-students', 'student-documents'].includes(activeScreen as any),
+      },
+      {
+        id: 'examination',
+        label: 'Exam Clearance',
+        defaultScreen: 'examination',
+        items: [
+          { id: 'examination' as ActiveScreen, label: 'Gate Clearance & Exam Fee Clearance', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+          { id: 'examination' as ActiveScreen, label: 'Admit Card Fee Verification', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+        ],
+        isActive: activeScreen === 'examination',
+      },
+      {
+        id: 'reports',
+        label: 'Financial Reports',
+        defaultScreen: 'reports',
+        action: () => {
+          onNavigate('reports');
+          setOpenDrawer(null);
+        },
+        isActive: activeScreen === 'reports',
+      },
+    ];
+  } else if (userRole === 'counselor') {
+    // Senior Admissions Counselor
+    menuSections = [
+      {
+        id: 'dashboard',
+        label: 'Counselor Desk',
+        defaultScreen: 'staff-dashboard',
+        action: () => {
+          onNavigate('staff-dashboard');
+          setOpenDrawer(null);
+        },
+        isActive: activeScreen === 'staff-dashboard',
+      },
+      {
+        id: 'crm',
+        label: 'Admissions CRM',
+        defaultScreen: 'enquiries',
+        items: [
+          { id: 'enquiries' as ActiveScreen, label: 'Pre-Admission Leads Radar' },
+          { id: 'bulk-import' as ActiveScreen, label: 'Bulk Lead CSV / Excel Mapper' },
+          { id: 'admissions' as ActiveScreen, label: 'Admissions Counter Desk' },
+        ],
+        isActive: ['enquiries', 'bulk-import', 'admissions'].includes(activeScreen as any),
+      },
+      {
+        id: 'students',
+        label: 'Enrolled Scholars',
+        defaultScreen: 'manage-students',
+        items: [
+          { id: 'manage-students' as ActiveScreen, label: 'Student Master Directory' },
+          { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault' },
+        ],
+        isActive: ['manage-students', 'student-documents'].includes(activeScreen as any),
+      },
+      {
+        id: 'fees',
+        label: 'Fees & Scholarships',
+        defaultScreen: 'fee-ledger',
+        items: [
+          { id: 'fee-ledger' as ActiveScreen, label: 'Course Fee Assessment & Structure' },
+          { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships' },
+        ],
+        isActive: ['fee-ledger', 'scholarships'].includes(activeScreen as any),
+      },
+      {
+        id: 'grievances',
+        label: 'Grievances',
+        defaultScreen: 'grievances',
+        action: () => {
+          onNavigate('grievances');
+          setOpenDrawer(null);
+        },
+        isActive: activeScreen === 'grievances',
+      },
+    ];
+  } else if (userRole === 'hod') {
+    // Head of Department
+    menuSections = [
+      {
+        id: 'dashboard',
+        label: 'HOD Desk',
+        defaultScreen: 'staff-dashboard',
+        action: () => {
+          onNavigate('staff-dashboard');
+          setOpenDrawer(null);
+        },
+        isActive: activeScreen === 'staff-dashboard',
+      },
+      {
+        id: 'academics',
+        label: 'Academics',
+        defaultScreen: 'academics',
+        items: [
+          { id: 'academics' as ActiveScreen, label: 'Department CBCS Curriculum' },
+          { id: 'academics' as ActiveScreen, label: 'Evaluation & Sessional Scheme' },
+          { id: 'student-quiz-lms' as ActiveScreen, label: 'Continuous Assessment (CA) Quiz' },
+          { id: 'academics' as ActiveScreen, label: 'Curriculum Syllabi Archive' },
+        ],
+        isActive: ['academics', 'student-quiz-lms'].includes(activeScreen as any),
+      },
+      {
+        id: 'students',
+        label: 'Department Students',
+        defaultScreen: 'manage-students',
+        items: [
+          { id: 'manage-students' as ActiveScreen, label: 'Department Student Master Directory' },
+          { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault' },
+        ],
+        isActive: ['manage-students', 'student-documents'].includes(activeScreen as any),
+      },
+      {
+        id: 'examination',
+        label: 'Examination',
+        defaultScreen: 'examination',
+        items: [
+          { id: 'examination' as ActiveScreen, label: 'Department Examination Approvals', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+          { id: 'examination' as ActiveScreen, label: 'Datesheet & Examination Timetable', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+          { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz & Examination LMS' },
+        ],
+        isActive: ['examination', 'student-quiz-lms'].includes(activeScreen as any),
+      },
+      {
+        id: 'faculty',
+        label: 'Department Faculty',
+        defaultScreen: 'staff-management',
+        items: [
+          { id: 'staff-management' as ActiveScreen, label: 'Faculty & HRMS Directory' },
+          { id: 'teacher-documents' as ActiveScreen, label: 'Faculty Dossier Vault' },
+          { id: 'staff-academic-journey' as any, label: 'CAS Research Publications & Patents', action: onOpenStaffJourney },
+        ],
+        isActive: ['staff-management', 'teacher-documents'].includes(activeScreen as any),
+      },
+      {
+        id: 'reports',
+        label: 'Academic Reports',
+        defaultScreen: 'reports',
+        action: () => {
+          onNavigate('reports');
+          setOpenDrawer(null);
+        },
+        isActive: activeScreen === 'reports',
+      },
+      {
+        id: 'grievances',
+        label: 'Grievances',
+        defaultScreen: 'grievances',
+        action: () => {
+          onNavigate('grievances');
+          setOpenDrawer(null);
+        },
+        isActive: activeScreen === 'grievances',
+      },
+    ];
+  } else if (userRole === 'staff') {
+    // Faculty / Assistant Professor
+    menuSections = [
+      {
+        id: 'dashboard',
+        label: 'Faculty Desk',
+        defaultScreen: 'staff-dashboard',
+        action: () => {
+          onNavigate('staff-dashboard');
+          setOpenDrawer(null);
+        },
+        isActive: activeScreen === 'staff-dashboard',
+      },
+      {
+        id: 'academics',
+        label: 'Academics',
+        defaultScreen: 'academics',
+        items: [
+          { id: 'academics' as ActiveScreen, label: 'CBCS Courses & Syllabus' },
+          { id: 'academics' as ActiveScreen, label: 'Evaluation & Sessional Scheme' },
+          { id: 'student-quiz-lms' as ActiveScreen, label: 'Continuous Assessment (CA) Quiz' },
+          { id: 'academics' as ActiveScreen, label: 'Curriculum Syllabi Archive' },
+        ],
+        isActive: ['academics', 'student-quiz-lms'].includes(activeScreen as any),
+      },
+      {
+        id: 'students',
+        label: 'Students',
+        defaultScreen: 'manage-students',
+        items: [
+          { id: 'manage-students' as ActiveScreen, label: 'Student Master Directory' },
+          { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault' },
+        ],
+        isActive: ['manage-students', 'student-documents'].includes(activeScreen as any),
+      },
+      {
+        id: 'examination',
+        label: 'Examination',
+        defaultScreen: 'examination',
+        items: [
+          { id: 'examination' as ActiveScreen, label: 'University Examination Forms', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+          { id: 'examination' as ActiveScreen, label: 'Datesheet & Examination Timetable', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+          { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz & Examination LMS' },
+        ],
+        isActive: ['examination', 'student-quiz-lms'].includes(activeScreen as any),
+      },
+      {
+        id: 'dossier',
+        label: 'Faculty Dossier',
+        defaultScreen: 'teacher-documents',
+        items: [
+          { id: 'teacher-documents' as ActiveScreen, label: 'Teaching Dossier Vault' },
+          { id: 'staff-academic-journey' as any, label: 'CAS Research Publications & Patents', action: onOpenStaffJourney },
+        ],
+        isActive: activeScreen === 'teacher-documents',
+      },
+      {
+        id: 'grievances',
+        label: 'Grievances',
+        defaultScreen: 'grievances',
+        action: () => {
+          onNavigate('grievances');
+          setOpenDrawer(null);
+        },
+        isActive: activeScreen === 'grievances',
+      },
+    ];
+  } else {
+    // Enrolled Scholar (Student)
+    menuSections = [
+      {
+        id: 'dashboard',
+        label: 'Scholar Home',
+        defaultScreen: 'student-dashboard',
+        action: () => {
+          onNavigate('student-dashboard');
+          setOpenDrawer(null);
+        },
+        isActive: activeScreen === 'student-dashboard',
+      },
+      {
+        id: 'academics',
+        label: 'Academics',
+        defaultScreen: 'academics',
+        items: [
+          { id: 'academics' as ActiveScreen, label: 'Choice Based Credit System (CBCS)' },
+          { id: 'academics' as ActiveScreen, label: 'Curriculum Syllabi Archive' },
+          { id: 'student-quiz-lms' as ActiveScreen, label: 'Continuous Assessment (CA) Quiz & LMS' },
+        ],
+        isActive: ['academics'].includes(activeScreen as any),
+      },
+      {
+        id: 'examination',
+        label: 'Examination',
+        defaultScreen: 'examination',
+        items: [
+          { id: 'examination' as ActiveScreen, label: 'Regular Examination Form', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+          { id: 'examination' as ActiveScreen, label: 'Reappear / Backlog Form', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+          { id: 'examination' as ActiveScreen, label: 'Admit Card & Gate Clearance', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+          { id: 'examination' as ActiveScreen, label: 'Datesheet & Examination Timetable', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+          { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz & Examination LMS' },
+        ],
+        isActive: ['examination', 'student-quiz-lms'].includes(activeScreen as any),
+      },
+      {
+        id: 'fees',
+        label: 'Fees & Scholarships',
+        defaultScreen: 'fee-ledger',
+        items: [
+          { id: 'fee-ledger' as ActiveScreen, label: 'Tuition Fee Assessment & Ledger' },
+          { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships' },
+        ],
+        isActive: ['fee-ledger', 'scholarships'].includes(activeScreen as any),
+      },
+      {
+        id: 'documents',
+        label: 'Regulatory Documents',
+        defaultScreen: 'student-documents',
+        action: () => {
+          onNavigate('student-documents');
+          setOpenDrawer(null);
+        },
+        isActive: activeScreen === 'student-documents',
+      },
+      {
+        id: 'grievances',
+        label: 'Grievances',
+        defaultScreen: 'grievances',
+        action: () => {
+          onNavigate('grievances');
+          setOpenDrawer(null);
+        },
+        isActive: activeScreen === 'grievances',
+      },
+    ];
+  }
 
   return (
     <header className="sticky top-0 z-50 select-none font-sans" ref={navRef}>

@@ -101,6 +101,11 @@ export const api = {
     apiRequest(`/api/students/${studentId}/condone-attendance`, { method: 'POST', body: JSON.stringify(data) }),
   promoteStudent: (studentId: string) =>
     apiRequest(`/api/students/${studentId}/promote`, { method: 'POST' }),
+  updateStudentStatus: (studentId: string, status: string, reason?: string) =>
+    apiRequest(`/api/students/${studentId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, reason }),
+    }),
   sendEmailReminders: () => apiRequest('/api/students/send-email-reminders', { method: 'POST' }),
 
   // Admissions
@@ -236,8 +241,13 @@ export const api = {
     apiRequest('/api/users', { method: 'POST', body: JSON.stringify(userData) }),
   updateUser: (id: string, updates: any) =>
     apiRequest(`/api/users/${id}`, { method: 'PATCH', body: JSON.stringify(updates) }),
-  updateUserStatus: (id: string, isActive: boolean) =>
-    apiRequest(`/api/users/${id}/status`, { method: 'PATCH', body: JSON.stringify({ isActive }) }),
+  updateUserStatus: (
+    id: string,
+    payload: boolean | { isActive?: boolean; status?: string; reason?: string; effectiveDate?: string; lastWorkingDate?: string }
+  ) => {
+    const body = typeof payload === 'boolean' ? { isActive: payload } : payload;
+    return apiRequest(`/api/users/${id}/status`, { method: 'PATCH', body: JSON.stringify(body) });
+  },
   resetUserPassword: (id: string, newPassword?: string) =>
     apiRequest(`/api/users/${id}/reset-password`, { method: 'POST', body: JSON.stringify({ newPassword }) }),
   deleteUser: (id: string) =>

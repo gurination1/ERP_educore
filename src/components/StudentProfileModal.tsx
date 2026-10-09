@@ -65,6 +65,39 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
     }
   };
 
+  const [isTogglingStatus, setIsTogglingStatus] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<string | null>(null);
+
+  const isStudentActive = (profileData?.status || student.status || 'active').toLowerCase() === 'active';
+
+  const handleToggleStudentStatus = async () => {
+    const actionName = isStudentActive ? 'Suspend' : 'Reactivate';
+    const reason = window.prompt(
+      `Enter administrative reason for student account ${actionName}:`,
+      isStudentActive ? 'Administrative disciplinary hold' : 'Account reinstated by Administrator'
+    );
+    if (!reason) return;
+
+    setIsTogglingStatus(true);
+    setStatusMsg(null);
+    try {
+      const newStatus = isStudentActive ? 'suspended' : 'active';
+      const res = await api.updateStudentStatus(student.id, newStatus, reason.trim());
+      if (res.success) {
+        setStatusMsg(res.message);
+        const freshRes = await api.getStudentProfile(student.id);
+        if (freshRes.success) setProfileData(freshRes.student);
+        if (onStudentUpdated) onStudentUpdated();
+      } else {
+        alert(res.error || `Failed to ${actionName.toLowerCase()} student account.`);
+      }
+    } catch (err: any) {
+      alert(err.message || 'Error communicating with server.');
+    } finally {
+      setIsTogglingStatus(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
       <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-[#e1e3e4] space-y-5 my-6 animate-scaleUp">
@@ -75,7 +108,14 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
               {student.last_name[0]}
             </div>
             <div>
-              <h3 className="text-lg font-bold text-[#191c1d]">{fullName}</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold text-[#191c1d]">{fullName}</h3>
+                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                  isStudentActive ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                }`}>
+                  {isStudentActive ? '● ACTIVE' : '● SUSPENDED'}
+                </span>
+              </div>
               <p className="text-xs font-semibold text-[#00236f]">{student.student_id}</p>
             </div>
           </div>
@@ -215,23 +255,46 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
               </div>
             )}
 
-            <div className="pt-3 flex items-center justify-between gap-2 border-t border-[#f3f4f5]">
-              <div>
+            {statusMsg && (
+              <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-lg text-emerald-900 text-xs font-semibold flex items-center gap-2">
+                <span className="font-bold text-xs">✓</span>
+                <span>{statusMsg}</span>
+              </div>
+            )}
+
+            <div className="pt-3 flex items-center justify-between gap-2 border-t border-[#f3f4f5] flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
                 {(currentUser?.role === 'admin' || currentUser?.role === 'super_admin') && (
-                  <button
-                    type="button"
-                    onClick={handlePromote}
-                    disabled={isPromoting || (profileData?.current_semester || student.current_semester) >= 8}
-                    className="px-3.5 py-2 bg-[#ea580c] hover:bg-[#9a3412] text-white font-bold rounded-lg text-xs flex items-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-xs"
-                    title="Advance student to next academic term and assess statutory tuition"
-                  >
-                    
-                    <span>
-                      {isPromoting
-                        ? 'Promoting...'
-                        : `Promote to Sem ${(profileData?.current_semester || student.current_semester) + 1}`}
-                    </span>
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={handlePromote}
+                      disabled={isPromoting || (profileData?.current_semester || student.current_semester) >= 8}
+                      className="px-3.5 py-2 bg-[#ea580c] hover:bg-[#9a3412] text-white font-bold rounded-lg text-xs flex items-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-xs"
+                      title="Advance student to next academic term and assess statutory tuition"
+                    >
+                      <span>
+                        {isPromoting
+                          ? 'Promoting...'
+                          : `Promote to Sem ${(profileData?.current_semester || student.current_semester) + 1}`}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleToggleStudentStatus}
+                      disabled={isTogglingStatus}
+                      className={`px-3 py-2 font-bold rounded-lg text-xs flex items-center gap-1.5 cursor-pointer shadow-xs border transition-colors ${
+                        isStudentActive
+                          ? 'bg-rose-50 hover:bg-rose-100 text-[#ba1a1a] border-rose-200'
+                          : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200'
+                      }`}
+                      title={isStudentActive ? 'Suspend student account & block examination/portal login' : 'Reactivate student account'}
+                    >
+                      <span>{isStudentActive ? '⏸' : '▶'}</span>
+                      <span>{isTogglingStatus ? 'Updating...' : isStudentActive ? 'Suspend Student' : 'Reactivate Student'}</span>
+                    </button>
+                  </>
                 )}
               </div>
 

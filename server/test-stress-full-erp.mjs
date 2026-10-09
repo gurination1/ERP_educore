@@ -21,11 +21,11 @@ async function startServer() {
     env: { ...process.env, PORT: String(PORT), NODE_ENV: 'production' },
     stdio: 'ignore'
   });
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 60; i++) {
     if (await checkHealth()) return s;
-    await sleep(250);
+    await sleep(500);
   }
-  return s;
+  throw new Error(`Server failed to start on port ${PORT}`);
 }
 
 async function request(path, options = {}) {

@@ -214,17 +214,22 @@ userRouter.patch('/:id', authenticateToken, requireRole('admin'), async (req: Au
   });
 });
 
-// 4. Toggle Active / Suspended Status (Admin only)
+// 4. Toggle Active / Suspended / Deactivated Status (Admin & Super Admin power)
 userRouter.patch('/:id/status', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
-  const { isActive } = req.body;
+  const { isActive, status, reason, effectiveDate, lastWorkingDate } = req.body;
 
-  if (typeof isActive !== 'boolean') {
-    res.status(400).json({ success: false, error: 'isActive must be a boolean.' });
+  if (typeof isActive !== 'boolean' && typeof status !== 'string') {
+    res.status(400).json({ success: false, error: 'Either isActive (boolean) or status (string) is required.' });
     return;
   }
 
-  if (req.user?.id === id && !isActive) {
+  const computedIsActive = typeof isActive === 'boolean'
+    ? isActive
+    : status === 'ACTIVE' || status === 'active';
+
+  // Prevent self-deactivation of currently logged in operator
+  if (req.user?.id === id && !computedIsActive) {
     res.status(400).json({ success: false, error: 'Cannot deactivate your own active session.' });
     return;
   }
@@ -235,28 +240,68 @@ userRouter.patch('/:id/status', authenticateToken, requireRole('admin'), async (
     return;
   }
 
-  if (existing.role === 'super_admin') {
-    res.status(403).json({ success: false, error: 'Super Admin status cannot be altered.' });
+  // Super Admin security fence: Only Super Admin can mutate Super Admin accounts
+  if (existing.role === 'super_admin' && req.user?.role !== 'super_admin') {
+    res.status(403).json({ success: false, error: 'Super Admin status cannot be altered by subordinate administrator.' });
     return;
   }
 
-  await db.updateUser(id, { is_active: isActive });
+  // Subordinate administrator fence: Cannot deactivate another administrator unless caller is Super Admin
+  if (existing.role === 'admin' && req.user?.role !== 'super_admin' && req.user?.id !== id) {
+    res.status(403).json({ success: false, error: 'Subordinate administrator cannot deactivate another Administrator. Super Admin authority required.' });
+    return;
+  }
+
+  const statusLabel = status || (computedIsActive ? 'ACTIVE' : 'SUSPENDED');
+
+  await db.updateUser(id, { is_active: computedIsActive });
+
+  // Synchronize with linked staff record if user has employee_id
+  if (existing.employee_id) {
+    try {
+      const staffMember = await db.findStaffByEmployeeId(existing.employee_id);
+      if (staffMember) {
+        await db.updateStaffBasic(staffMember.staff_id, {
+          employee_status: statusLabel.toUpperCase(),
+          login_enabled: computedIsActive,
+          last_working_date: lastWorkingDate || undefined,
+          date_of_resigning: effectiveDate || undefined,
+          remarks: reason || `Account status changed to ${statusLabel} by ${req.user?.full_name}`,
+        });
+      }
+    } catch (e) {
+      // non-fatal
+    }
+  }
+
+  // Synchronize with linked student record if user is a student
+  try {
+    const student = await db.getStudentByUserIdOrEmail(existing.id) || await db.getStudentByUserIdOrEmail(existing.email);
+    if (student) {
+      await db.updateStudent(student.id, {
+        status: computedIsActive ? 'active' : 'suspended',
+      });
+    }
+  } catch (e) {
+    // non-fatal
+  }
 
   await db.createAuditLog({
     actor_id: req.user!.id,
     actor_name: req.user!.full_name,
     actor_role: req.user!.role,
-    action: isActive ? 'USER_ACTIVATED' : 'USER_SUSPENDED',
+    action: computedIsActive ? 'USER_ACTIVATED' : 'USER_DEACTIVATED',
     target_type: 'user',
     target_id: existing.id,
-    details: `User status changed to ${isActive ? 'active' : 'suspended'}.`,
-    severity: 'warn',
+    details: `User status changed to ${statusLabel} (${computedIsActive ? 'active' : 'inactive'}). Reason: ${reason || 'Administrative governance decision'}. Effective: ${effectiveDate || 'immediate'}. Last Working Day: ${lastWorkingDate || 'N/A'}.`,
+    severity: computedIsActive ? 'info' : 'warn',
   });
 
   res.json({
     success: true,
-    message: `User ${existing.username} has been ${isActive ? 'activated' : 'suspended'}.`,
-    is_active: isActive,
+    message: `User ${existing.full_name} (@${existing.username}) is now ${statusLabel} (${computedIsActive ? 'Active' : 'Inactive'}).`,
+    is_active: computedIsActive,
+    status: statusLabel,
   });
 });
 

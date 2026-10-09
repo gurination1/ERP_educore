@@ -22,6 +22,14 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
   const [isApexOverrideModalOpen, setIsApexOverrideModalOpen] = useState(false);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [statusTargetUser, setStatusTargetUser] = useState<User | null>(null);
+  const [statusForm, setStatusForm] = useState({
+    status: 'SUSPENDED' as 'ACTIVE' | 'SUSPENDED' | 'INACTIVE' | 'RESIGNED' | 'TERMINATED' | 'AWOL',
+    effectiveDate: new Date().toISOString().slice(0, 10),
+    lastWorkingDate: '',
+    reason: '',
+  });
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [apexOverrideForm, setApexOverrideForm] = useState({
     fullName: '',
@@ -203,15 +211,66 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
     }
   };
 
-  const handleToggleStatus = async (user: User) => {
-    setActionLoadingId(user.id);
-    const newStatus = !user.is_active;
+  const openStatusModal = (user: User) => {
+    setStatusTargetUser(user);
+    const isCurrentlyActive = user.is_active !== false;
+    setStatusForm({
+      status: isCurrentlyActive ? 'SUSPENDED' : 'ACTIVE',
+      effectiveDate: new Date().toISOString().slice(0, 10),
+      lastWorkingDate: '',
+      reason: isCurrentlyActive ? 'Administrative governance suspension' : 'Administrative account reinstatement',
+    });
+    setIsStatusModalOpen(true);
+  };
+
+  const handleStatusSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!statusTargetUser) return;
+    setActionLoadingId(statusTargetUser.id);
+    const targetIsActive = statusForm.status === 'ACTIVE';
     try {
-      const res = await api.updateUserStatus(user.id, newStatus);
+      const res = await api.updateUserStatus(statusTargetUser.id, {
+        isActive: targetIsActive,
+        status: statusForm.status,
+        reason: statusForm.reason.trim(),
+        effectiveDate: statusForm.effectiveDate,
+        lastWorkingDate: statusForm.lastWorkingDate,
+      });
+      if (res.success) {
+        setIsStatusModalOpen(false);
+        setFeedback({
+          type: 'success',
+          message: res.message || `User ${statusTargetUser.full_name} status updated to ${statusForm.status}.`,
+        });
+        await loadUsers();
+      } else {
+        setFeedback({ type: 'error', message: res.error || 'Failed to update account status.' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message || 'Error updating user status.' });
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleToggleStatus = async (user: User) => {
+    const isCurrentlyActive = user.is_active !== false;
+    const actionName = isCurrentlyActive ? 'Deactivate / Suspend' : 'Reactivate';
+    const confirmed = window.confirm(`Are you sure you want to ${actionName} the account for ${user.full_name} (@${user.username})?`);
+    if (!confirmed) return;
+
+    setActionLoadingId(user.id);
+    const newStatus = !isCurrentlyActive;
+    try {
+      const res = await api.updateUserStatus(user.id, {
+        isActive: newStatus,
+        status: newStatus ? 'ACTIVE' : 'SUSPENDED',
+        reason: `One-click administrative action by ${currentUser?.full_name || 'Admin'}`,
+      });
       if (res.success) {
         setFeedback({
           type: 'success',
-          message: `User ${user.full_name} has been ${newStatus ? 'Activated' : 'Suspended'}.`,
+          message: res.message || `User ${user.full_name} has been ${newStatus ? 'Activated' : 'Suspended'}.`,
         });
         await loadUsers();
       } else {
@@ -618,41 +677,58 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
+                        <div className="flex items-center justify-end gap-1.5 flex-wrap">
                           {currentUser?.role === 'super_admin' && (
                             <button
+                              type="button"
                               onClick={() => openApexOverrideModal(user)}
-                              className="p-1 text-amber-600 hover:bg-amber-50 rounded border border-transparent hover:border-amber-300 cursor-pointer"
+                              className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded border border-amber-300 font-bold text-[10px] cursor-pointer flex items-center gap-1 shadow-2xs transition-colors"
                               title="Apex Universal Override (Super Admin Omnipotent Edit)"
                             >
-                              
+                              <span>⚡</span>
+                              <span>APEX</span>
                             </button>
                           )}
                           <button
+                            type="button"
                             onClick={() => openEditModal(user)}
-                            className="p-1 text-[#444651] hover:text-[#00236f] hover:bg-white rounded border border-transparent hover:border-[#e1e3e4] cursor-pointer"
+                            className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border border-slate-300 font-bold text-[10px] cursor-pointer flex items-center gap-1 shadow-2xs transition-colors"
                             title="Edit User Profile"
                           >
-                            <span className="font-bold text-[10px]">[EDIT]</span>
+                            <span>✎</span>
+                            <span>EDIT</span>
                           </button>
                           <button
+                            type="button"
                             onClick={() => openResetPasswordModal(user)}
-                            className="p-1 text-[#00236f] hover:bg-teal-50 rounded border border-transparent hover:border-teal-200 cursor-pointer"
+                            className="px-2 py-1 bg-teal-50 hover:bg-teal-100 text-[#00236f] rounded border border-teal-200 font-bold text-[10px] cursor-pointer flex items-center gap-1 shadow-2xs transition-colors"
                             title="Override & Reset Password"
                           >
-                            
+                            <span>🔑</span>
+                            <span>RESET PWD</span>
                           </button>
                           <button
-                            disabled={actionLoadingId === user.id || user.id === currentUser?.id}
-                            onClick={() => handleToggleStatus(user)}
-                            className={`p-1 rounded border border-transparent cursor-pointer disabled:opacity-30 ${
-                              isUserActive
-                                ? 'text-[#ba1a1a] hover:bg-red-50 hover:border-red-200'
-                                : 'text-[#00236f] hover:bg-teal-50 hover:border-teal-200'
-                            }`}
-                            title={isUserActive ? 'Suspend Account' : 'Reactivate Account'}
+                            type="button"
+                            onClick={() => openStatusModal(user)}
+                            className="px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-800 rounded border border-purple-200 font-bold text-[10px] cursor-pointer flex items-center gap-1 shadow-2xs transition-colors"
+                            title="Open Formal HR / Account Status Governance Modal"
                           >
-                            
+                            <span>⚙</span>
+                            <span>GOVERN</span>
+                          </button>
+                          <button
+                            type="button"
+                            disabled={actionLoadingId === user.id || user.id === currentUser?.id || (user.role === 'super_admin' && currentUser?.role !== 'super_admin')}
+                            onClick={() => handleToggleStatus(user)}
+                            className={`px-2 py-1 rounded border font-bold text-[10px] cursor-pointer flex items-center gap-1 shadow-2xs transition-colors disabled:opacity-30 ${
+                              isUserActive
+                                ? 'bg-red-50 hover:bg-red-100 text-[#ba1a1a] border-red-200'
+                                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200'
+                            }`}
+                            title={isUserActive ? 'Deactivate or Suspend User' : 'Reactivate User Account'}
+                          >
+                            <span>{isUserActive ? '⏸' : '▶'}</span>
+                            <span>{isUserActive ? 'DEACTIVATE' : 'ACTIVATE'}</span>
                           </button>
                         </div>
                       </td>
@@ -1242,6 +1318,135 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                 >
                   <span className="font-bold text-[10px]">✓</span>
                   <span>{actionLoadingId === selectedUser.id ? 'Overriding...' : 'Apply Universal Override'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Status & Account Governance (Deactivation / Suspension / Resignation / AWOL) */}
+      {isStatusModalOpen && statusTargetUser && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-gradient-to-r from-[#00236f] to-[#1e3a8a] text-white">
+              <div className="flex items-center gap-2.5">
+                <span className="text-lg">⚙</span>
+                <div>
+                  <h3 className="text-base font-bold">Personnel Status Governance</h3>
+                  <p className="text-[11px] text-blue-100">Statutory Access & HR Lifecycle Controls</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsStatusModalOpen(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white cursor-pointer"
+              >
+                <span className="font-bold text-xs">✕</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleStatusSubmit} className="p-6 space-y-4 text-xs">
+              {/* Target User Info Banner */}
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+                <div>
+                  <div className="font-bold text-slate-900 text-sm">{statusTargetUser.full_name}</div>
+                  <div className="text-[11px] text-slate-500 font-mono">@{statusTargetUser.username} • {statusTargetUser.enterprise_uid || statusTargetUser.employee_id || 'UID'}</div>
+                  <div className="text-[10px] text-slate-600 mt-0.5 uppercase font-semibold">{statusTargetUser.role} • {statusTargetUser.department || 'General Administration'}</div>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Current Status</span>
+                  <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold mt-0.5 ${
+                    statusTargetUser.is_active !== false ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                  }`}>
+                    {statusTargetUser.is_active !== false ? '● ACTIVE' : '● SUSPENDED'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Status Select */}
+              <div>
+                <label className="block text-[11px] font-bold text-[#191c1d] uppercase mb-1">
+                  Target Account & Employment Status *
+                </label>
+                <select
+                  value={statusForm.status}
+                  onChange={e => setStatusForm({ ...statusForm, status: e.target.value as any })}
+                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-bold text-[#00236f]"
+                >
+                  <option value="ACTIVE">ACTIVE — Full Institutional Access & Good Standing</option>
+                  <option value="SUSPENDED">SUSPENDED — Administrative Suspension (Login Blocked)</option>
+                  <option value="INACTIVE">INACTIVE — Account Deactivated (Access Revoked)</option>
+                  <option value="RESIGNED">RESIGNED — Voluntary Resignation Submitted</option>
+                  <option value="TERMINATED">TERMINATED — Institutional Employment Terminated</option>
+                  <option value="AWOL">AWOL — Absent Without Official Leave</option>
+                </select>
+                <p className="text-[10px] text-slate-500 mt-1">
+                  {statusForm.status === 'ACTIVE'
+                    ? 'Account will be restored with full login privileges and system access.'
+                    : 'Account login will be immediately blocked across all mobile and web portals.'}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-[#191c1d] uppercase mb-1">
+                    Effective Date *
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={statusForm.effectiveDate}
+                    onChange={e => setStatusForm({ ...statusForm, effectiveDate: e.target.value })}
+                    className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[#191c1d] uppercase mb-1">
+                    Last Working Date
+                  </label>
+                  <input
+                    type="date"
+                    value={statusForm.lastWorkingDate}
+                    onChange={e => setStatusForm({ ...statusForm, lastWorkingDate: e.target.value })}
+                    className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
+                    placeholder="YYYY-MM-DD"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-[#191c1d] uppercase mb-1">
+                  Statutory Reason & Governance Remarks *
+                </label>
+                <textarea
+                  required
+                  rows={3}
+                  value={statusForm.reason}
+                  onChange={e => setStatusForm({ ...statusForm, reason: e.target.value })}
+                  placeholder="Record administrative decision details for immutable cryptographic audit log..."
+                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-[#f3f4f5] flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsStatusModalOpen(false)}
+                  className="px-4 py-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] text-[#444651] font-bold rounded-lg text-xs cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={actionLoadingId === statusTargetUser.id}
+                  className={`px-4 py-2 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-xs cursor-pointer ${
+                    statusForm.status === 'ACTIVE'
+                      ? 'bg-emerald-600 hover:bg-emerald-700'
+                      : 'bg-rose-700 hover:bg-rose-800'
+                  }`}
+                >
+                  <span>{actionLoadingId === statusTargetUser.id ? 'Applying...' : 'Confirm Status Transition'}</span>
                 </button>
               </div>
             </form>

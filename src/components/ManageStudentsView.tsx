@@ -306,7 +306,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
                   <th className="py-3 px-4">Student ID</th>
                   <th className="py-3 px-4">Name</th>
                   <th className="py-3 px-4">Course</th>
-                  <th className="py-3 px-4">Session</th>
+                  <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4">Fees Status</th>
                   <th className="py-3 px-4 text-right">Action</th>
                 </tr>
@@ -329,7 +329,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
                     const fullName = `${s.first_name} ${s.last_name}`;
                     const initials = `${s.first_name[0] || ''}${s.last_name[0] || ''}`.toUpperCase();
                     const courseCode = s.course?.code || 'B.Tech CS';
-                    const sessionName = s.session?.name || '2023-2027';
+                    const isAccountActive = (s.status || 'active').toLowerCase() === 'active';
 
                     return (
                       <tr key={s.id} className="hover:bg-[#f8f9fa] transition-colors">
@@ -345,11 +345,27 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
                             >
                               {initials}
                             </div>
-                            <span className="font-semibold text-[#191c1d]">{fullName}</span>
+                            <div>
+                              <span className="font-semibold text-[#191c1d] block">{fullName}</span>
+                              <span className="text-[10px] text-slate-400 font-mono">{s.email}</span>
+                            </div>
                           </div>
                         </td>
-                        <td className="py-3.5 px-4 text-[#444651]">{courseCode}</td>
-                        <td className="py-3.5 px-4 text-[#757682]">{sessionName}</td>
+                        <td className="py-3.5 px-4 text-[#444651]">
+                          <div>{courseCode}</div>
+                          <div className="text-[10px] text-[#757682]">Sem {s.current_semester}</div>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                              isAccountActive
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : 'bg-rose-100 text-rose-800'
+                            }`}
+                          >
+                            {isAccountActive ? '● Active' : '● Suspended'}
+                          </span>
+                        </td>
                         <td className="py-3.5 px-4">
                           <span
                             className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${
@@ -364,13 +380,17 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
                           </span>
                         </td>
                         <td className="py-3.5 px-4 text-right">
-                          <button
-                            onClick={() => onSelectStudent(s)}
-                            className="text-[#00236f] hover:text-[#1e3a8a] font-bold inline-flex items-center gap-1 text-xs hover:underline cursor-pointer"
-                          >
-                            <span>View</span>
-                            <span className="font-bold text-xs">→</span>
-                          </button>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => onSelectStudent(s)}
+                              className="px-2.5 py-1 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded font-bold text-xs inline-flex items-center gap-1 cursor-pointer shadow-2xs"
+                              title="Inspect full academic dossier & manage student"
+                            >
+                              <span>Inspect</span>
+                              <span className="font-bold text-xs">→</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );

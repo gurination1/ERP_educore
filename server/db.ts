@@ -4904,6 +4904,20 @@ class DatabaseStore {
         is_active: true,
         created_at: new Date().toISOString(),
       },
+      {
+        id: 'usr-partner-01',
+        username: 'partner01',
+        email: 'partner@educore.edu',
+        password_hash: bcrypt.hashSync('partner123', 10),
+        role: 'partner',
+        full_name: 'Infosys Campus Relations Lead',
+        department: 'Corporate Relations',
+        designation: 'Campus Hiring Director',
+        employee_id: 'PRT-INF-001',
+        enterprise_uid: '7001-01-03-01',
+        is_active: true,
+        created_at: new Date().toISOString(),
+      },
     ];
 
     this.sessions = [

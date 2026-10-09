@@ -135,6 +135,7 @@ authRouter.post('/login', authLimiter, async (req: Request, res: Response): Prom
       designation: user.designation,
       employee_id: user.employee_id,
       enterprise_uid: user.enterprise_uid,
+      is_active: user.is_active !== false,
       must_change_password: Boolean(user.must_change_password),
     },
     student: student
@@ -177,6 +178,7 @@ authRouter.get('/me', authenticateToken, async (req: AuthRequest, res: Response)
       designation: user.designation,
       employee_id: user.employee_id,
       enterprise_uid: user.enterprise_uid,
+      is_active: user.is_active !== false,
     },
     student: student
       ? {

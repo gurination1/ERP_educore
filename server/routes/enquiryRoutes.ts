@@ -4,8 +4,11 @@ import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth.
 
 export const enquiryRouter = Router();
 
+// Fenced to Admissions Personnel, Academic Staff, HOD and Institutional Admins only
+enquiryRouter.use(authenticateToken, requireRole('admin', 'staff', 'counselor', 'hod'));
+
 // 1. List all pre-admission enquiries
-enquiryRouter.get('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+enquiryRouter.get('/', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { status, counselor_id, search } = req.query;
     const filters: { status?: string; counselor_id?: string; search?: string } = {};

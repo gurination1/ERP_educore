@@ -771,3 +771,58 @@ studentRouter.post('/:id/promote', authenticateToken, requireRole('admin'), asyn
     student: updatedStudent,
   });
 });
+
+// 5. Student Status Governance: Suspend / Deactivate / Reactivate Student Account (Admin & Super Admin)
+studentRouter.patch('/:id/status', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { status, reason } = req.body;
+
+  if (!status || typeof status !== 'string') {
+    res.status(400).json({ success: false, error: 'Status is required (active, suspended, inactive, withdrawn, expelled).' });
+    return;
+  }
+
+  const normalizedStatus = status.toLowerCase();
+  const isActive = normalizedStatus === 'active';
+
+  const student = await db.getStudentById(id);
+  if (!student) {
+    res.status(404).json({ success: false, error: 'Student record not found.' });
+    return;
+  }
+
+  await db.updateStudent(id, { status: normalizedStatus as any });
+
+  // Synchronize linked user account login status
+  if (student.user_id) {
+    await db.updateUser(student.user_id, { is_active: isActive });
+  } else if (student.email) {
+    const user = await db.findUserByUsernameOrEmail(student.email);
+    if (user) {
+      await db.updateUser(user.id, { is_active: isActive });
+    }
+  }
+
+  await db.createAuditLog({
+    actor_id: req.user?.id || 'usr-admin-01',
+    actor_name: req.user?.full_name || 'Dean / Campus Administrator',
+    actor_role: req.user?.role || 'admin',
+    actor_ip: (req.headers['x-forwarded-for'] as string) || req.ip || '127.0.0.1',
+    action: isActive ? 'STUDENT_ACTIVATED' : 'STUDENT_SUSPENDED',
+    target_type: 'student',
+    target_id: student.id,
+    details: `Student ${student.first_name} ${student.last_name} (${student.student_id}) account status changed to ${normalizedStatus.toUpperCase()} (login: ${isActive ? 'enabled' : 'disabled'}). Reason: ${reason || 'Administrative governance decision'}.`,
+    severity: isActive ? 'info' : 'warn',
+  });
+
+  const updatedStudent = await db.getStudentById(id);
+
+  res.json({
+    success: true,
+    message: `Student ${student.first_name} ${student.last_name} account status updated to ${normalizedStatus.toUpperCase()}.`,
+    student: updatedStudent,
+    is_active: isActive,
+    status: normalizedStatus,
+  });
+});
+
