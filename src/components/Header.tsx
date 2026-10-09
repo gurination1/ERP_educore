@@ -140,6 +140,7 @@ export const Header: React.FC<HeaderProps> = ({
     {
       id: 'dashboard',
       label: 'Home',
+      defaultScreen: dashboardTarget,
       action: () => {
         onNavigate(dashboardTarget);
         setOpenDrawer(null);
@@ -149,6 +150,7 @@ export const Header: React.FC<HeaderProps> = ({
     {
       id: 'examination',
       label: 'Examination',
+      defaultScreen: 'examination' as ActiveScreen,
       items: [
         { id: 'examination' as ActiveScreen, label: 'Regular Examination Form', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
         { id: 'examination' as ActiveScreen, label: 'Reappear / Backlog Form', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
@@ -162,6 +164,7 @@ export const Header: React.FC<HeaderProps> = ({
     {
       id: 'academics',
       label: 'Academics',
+      defaultScreen: 'academics' as ActiveScreen,
       items: [
         { id: 'academics' as ActiveScreen, label: 'Choice Based Credit System (CBCS)' },
         { id: 'academics' as ActiveScreen, label: 'Evaluation & Sessional Scheme' },
@@ -173,6 +176,7 @@ export const Header: React.FC<HeaderProps> = ({
     {
       id: 'students',
       label: 'Students',
+      defaultScreen: 'manage-students' as ActiveScreen,
       items: [
         { id: 'manage-students' as ActiveScreen, label: 'Student Master Directory' },
         { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault' },
@@ -185,6 +189,7 @@ export const Header: React.FC<HeaderProps> = ({
     {
       id: 'crm',
       label: 'Admissions',
+      defaultScreen: 'enquiries' as ActiveScreen,
       items: [
         { id: 'enquiries' as ActiveScreen, label: 'Pre-Admission Leads Radar' },
         { id: 'bulk-import' as ActiveScreen, label: 'Bulk Lead CSV / Excel Mapper' },
@@ -196,6 +201,7 @@ export const Header: React.FC<HeaderProps> = ({
     {
       id: 'staff',
       label: 'Faculty & HR',
+      defaultScreen: 'staff-management' as ActiveScreen,
       items: [
         { id: 'staff-management' as ActiveScreen, label: 'Faculty & HRMS Directory' },
         ...(isFaculty ? [{ id: 'teacher-documents' as ActiveScreen, label: 'Faculty Dossier Vault' }] : []),
@@ -206,6 +212,7 @@ export const Header: React.FC<HeaderProps> = ({
     {
       id: 'partners',
       label: 'Placements',
+      defaultScreen: 'partner-portal' as ActiveScreen,
       action: () => {
         onNavigate('partner-portal');
         setOpenDrawer(null);
@@ -217,10 +224,11 @@ export const Header: React.FC<HeaderProps> = ({
           {
             id: 'governance',
             label: 'Governance',
+            defaultScreen: 'user-management' as ActiveScreen,
             items: [
+              { id: 'user-management' as ActiveScreen, label: 'User Accounts & Roles' },
               { id: 'master-tables' as any, label: 'Statutory Master Tables', action: onOpenMasterTables },
               { id: 'audit-trail' as any, label: 'Cryptographic Audit Trail', action: onOpenAuditLogs },
-              { id: 'user-management' as ActiveScreen, label: 'User Accounts & Roles' },
               { id: 'reports' as ActiveScreen, label: 'Institutional MIS Reports' },
             ],
             isActive: ['user-management', 'reports'].includes(activeScreen as any),
@@ -297,21 +305,6 @@ export const Header: React.FC<HeaderProps> = ({
                 {getInstitutionalRoleTitle(currentUser)}
               </span>
             </div>
-          )}
-
-          {/* Telephony CRM Switch */}
-          {onToggleTelephony && (
-            <button
-              type="button"
-              onClick={onToggleTelephony}
-              className={`hidden md:inline-flex h-8 items-center px-3.5 rounded-full text-xs font-semibold transition border backdrop-blur-md cursor-pointer ${
-                isTelephonyOpen
-                  ? 'bg-emerald-500/25 text-emerald-200 border-emerald-400/50'
-                  : 'bg-white/10 text-slate-200 border-white/20 hover:bg-white/20'
-              }`}
-            >
-              Telephony
-            </button>
           )}
 
           {/* AI Copilot Action */}
@@ -400,10 +393,11 @@ export const Header: React.FC<HeaderProps> = ({
                           clearTimeout(closeTimerRef.current);
                           closeTimerRef.current = null;
                         }
-                        if (hasChildren) {
-                          setOpenDrawer(isDrawerOpen ? null : sec.id);
-                        } else if (sec.action) {
+                        setOpenDrawer(null);
+                        if (sec.action) {
                           sec.action();
+                        } else if (sec.defaultScreen) {
+                          onNavigate(sec.defaultScreen);
                         }
                       }}
                       className={`h-8 sm:h-full px-2.5 sm:px-3 text-xs font-semibold tracking-tight transition-colors flex items-center gap-1 cursor-pointer select-none relative rounded-lg sm:rounded-none ${
@@ -414,7 +408,20 @@ export const Header: React.FC<HeaderProps> = ({
                     >
                       <span className="whitespace-nowrap">{sec.label}</span>
                       {hasChildren && (
-                        <span className={`text-[9px] transition-transform duration-200 ${isDrawerOpen ? 'rotate-180 text-[#00236f]' : 'text-slate-400'}`}>
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (closeTimerRef.current) {
+                              clearTimeout(closeTimerRef.current);
+                              closeTimerRef.current = null;
+                            }
+                            setOpenDrawer(isDrawerOpen ? null : sec.id);
+                          }}
+                          title={`Toggle ${sec.label} menu`}
+                          className={`text-[9px] px-1 py-0.5 rounded-sm hover:bg-slate-200/60 transition-transform duration-200 cursor-pointer ${isDrawerOpen ? 'rotate-180 text-[#00236f]' : 'text-slate-400'}`}
+                        >
                           ▾
                         </span>
                       )}
@@ -508,15 +515,6 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="hidden xl:flex items-center gap-1 h-7 px-2.5 bg-amber-500/10 border border-amber-500/20 rounded-full text-[10px] font-bold text-amber-900">
               <span className="text-amber-600 font-extrabold">UGC</span>
               <span>MRSPTU • PUP • PU</span>
-            </div>
-
-            {/* Real-Time Engine Heartbeat */}
-            <div className="flex items-center gap-1.5 h-7 px-2.5 bg-emerald-50 border border-emerald-200 rounded-full text-[10px] font-bold text-emerald-800">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span>Online (120Hz)</span>
             </div>
           </div>
         </div>

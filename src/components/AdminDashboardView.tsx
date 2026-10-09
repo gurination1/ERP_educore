@@ -112,9 +112,6 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           <span className="bg-slate-100 text-[#00236f] border border-slate-200/90 font-mono text-xs font-bold px-2.5 py-0.5 rounded-md shadow-2xs">
             UID 4001-01-03-01
           </span>
-          <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-2.5 py-0.5 rounded-md hidden sm:inline-flex shadow-2xs">
-            Relational DB Engine Live
-          </span>
         </div>
 
         {/* Quick Filter Selectors - Cupertino Style */}
