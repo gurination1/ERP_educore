@@ -116,7 +116,7 @@ Navkiran Gill,9872011223,navkiran.gill@gmail.com,B.Tech CSE,S. Harnek Singh,fema
     setIsProcessing(false);
 
     if (res.success) {
-      setValidationResult(res);
+      setValidationResult(res as any);
       setActiveTab('preview');
       setStatusMessage(`Validation Complete: ${res.fresh_count} Fresh, ${res.duplicate_count} Probable Duplicates, ${res.wrong_count} Wrong Data.`);
     } else {

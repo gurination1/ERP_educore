@@ -5,7 +5,7 @@ import { StudentProfile, User } from '../types';
 
 interface FeeLedgerViewProps {
   currentUser?: User | null;
-  currentStudent: StudentProfile | null;
+  currentStudent?: StudentProfile | null;
   onOpenPayModal: (feeId?: string, studentObj?: any) => void;
   onOpenReceiptModal: (receiptNo?: string) => void;
 }

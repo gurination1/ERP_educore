@@ -25,7 +25,7 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
       api.getMasterData()
         .then(res => {
           if (res.success) {
-            setData(res);
+            setData(res as any);
           }
         })
         .finally(() => setIsLoading(false));

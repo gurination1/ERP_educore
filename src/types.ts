@@ -396,6 +396,10 @@ export interface StudentProfile {
     id: string;
     name: string;
   };
+  status?: string;
+  enterprise_uid?: string;
+  roll_number?: string;
+  mobile?: string;
 }
 
 export interface AdmissionFollowup {

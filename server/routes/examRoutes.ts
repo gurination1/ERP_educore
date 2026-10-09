@@ -1,7 +1,6 @@
 import { Router, Response } from 'express';
-import { db } from '../db';
+import { db, Student } from '../db';
 import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
-import { Student } from '../../src/types';
 
 export const examRouter = Router();
 
@@ -98,6 +97,44 @@ examRouter.get('/students', authenticateToken, async (req: AuthRequest, res: Res
   );
 
   res.json({ success: true, students: summaryList });
+});
+
+// 2.5 Dynamic Eligibility Check Endpoint
+examRouter.get('/check-eligibility', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  const studentId = (req.query.studentId || req.query.id) as string;
+  const allStudents = await db.getStudents();
+  let student: Student | undefined;
+
+  if (studentId) {
+    student = findStudent(allStudents, studentId);
+  } else if (req.user?.role === 'student') {
+    student = allStudents.find(s => s.user_id === req.user?.id || s.email === req.user?.email || s.student_id === req.user?.username);
+  } else {
+    student = allStudents[0];
+  }
+
+  if (!student) {
+    res.status(404).json({ success: false, error: 'Student not found.' });
+    return;
+  }
+
+  const fees = await db.getStudentFees(student.id);
+  const unpaidFees = fees.filter(f => f.status !== 'paid' && f.due_amount > 0);
+  const hasFeeClearance = unpaidFees.length === 0;
+  const hasAttendanceClearance = (student.attendance_percentage || 0) >= 75 || Boolean(student.condonation_granted);
+  const isEligible = hasFeeClearance && hasAttendanceClearance;
+
+  res.json({
+    success: true,
+    student,
+    eligibility: {
+      isEligible,
+      hasFeeClearance,
+      hasAttendanceClearance,
+      attendancePercentage: student.attendance_percentage || 0,
+      unpaidFeesCount: unpaidFees.length,
+    },
+  });
 });
 
 // 3. Detailed Student Examination Profile & Eligibility Matrix
@@ -237,10 +274,15 @@ examRouter.post('/regular-form', authenticateToken, async (req: AuthRequest, res
   examSubmissions.set(student.id, [...existing.filter(e => !(e.submissionType === 'REGULAR' && e.semester === record.semester)), record]);
 
   await db.createAuditLog({
-    user_id: req.user?.id || 'admin',
+    actor_id: req.user?.id || 'admin',
+    actor_name: req.user?.full_name || 'Admin Officer',
+    actor_role: (req.user?.role as any) || 'admin',
+    actor_ip: req.ip || '127.0.0.1',
     action: 'EXAM_REGULAR_FORM_SUBMITTED',
+    target_type: 'student',
+    target_id: student.id,
     details: `Regular Examination Form submitted for ${student.first_name} ${student.last_name} (${student.student_id}) Sem ${record.semester}. Ref: ${submissionId}`,
-    ip_address: req.ip || '127.0.0.1',
+    severity: 'info',
   });
 
   res.json({
@@ -285,10 +327,15 @@ examRouter.post('/reappear-form', authenticateToken, async (req: AuthRequest, re
   examSubmissions.set(student.id, [...existing.filter(e => !(e.submissionType === 'REAPPEAR' && e.semester === record.semester)), record]);
 
   await db.createAuditLog({
-    user_id: req.user?.id || 'admin',
+    actor_id: req.user?.id || 'admin',
+    actor_name: req.user?.full_name || 'Admin Officer',
+    actor_role: (req.user?.role as any) || 'admin',
+    actor_ip: req.ip || '127.0.0.1',
     action: 'EXAM_REAPPEAR_FORM_SUBMITTED',
+    target_type: 'student',
+    target_id: student.id,
     details: `Reappear Examination Form submitted for ${student.first_name} ${student.last_name} (${student.student_id}) with ${paperCount} papers. Total fee ₹${feeAmount} (${paymentMode}). Ref: ${submissionId}`,
-    ip_address: req.ip || '127.0.0.1',
+    severity: 'info',
   });
 
   res.json({
@@ -309,20 +356,25 @@ examRouter.post('/condone-attendance', authenticateToken, requireRole('admin', '
     return;
   }
 
-  student.condonation_granted = 1;
+  student.condonation_granted = true;
   student.condonation_order_no = orderNo;
   student.condonation_remarks = reason;
   await db.updateStudent(student.id, {
-    condonation_granted: 1,
+    condonation_granted: true,
     condonation_order_no: orderNo,
     condonation_remarks: reason,
   });
 
   await db.createAuditLog({
-    user_id: req.user?.id || 'admin',
+    actor_id: req.user?.id || 'admin',
+    actor_name: req.user?.full_name || 'Dean / COE Officer',
+    actor_role: (req.user?.role as any) || 'admin',
+    actor_ip: req.ip || '127.0.0.1',
     action: 'EXAM_ATTENDANCE_CONDONED',
+    target_type: 'student',
+    target_id: student.id,
     details: `Dean/COE attendance condonation granted for ${student.first_name} ${student.last_name} (${student.student_id}). Order: ${orderNo}`,
-    ip_address: req.ip || '127.0.0.1',
+    severity: 'info',
   });
 
   res.json({
@@ -346,17 +398,23 @@ examRouter.post('/clear-fee-dues', authenticateToken, requireRole('admin', 'acco
   const fees = await db.getStudentFees(student.id);
   for (const f of fees) {
     if (f.status !== 'paid') {
-      f.paid_amount = f.total_amount;
+      f.paid_amount = f.amount;
       f.due_amount = 0;
       f.status = 'paid';
+      await db.updateStudentFee(f.id, { paid_amount: f.amount, due_amount: 0, status: 'paid' });
     }
   }
 
   await db.createAuditLog({
-    user_id: req.user?.id || 'admin',
+    actor_id: req.user?.id || 'admin',
+    actor_name: req.user?.full_name || 'Accounts Bursar',
+    actor_role: (req.user?.role as any) || 'accounts',
+    actor_ip: req.ip || '127.0.0.1',
     action: 'EXAM_FEES_RECONCILED',
+    target_type: 'student',
+    target_id: student.id,
     details: `Accounts branch clearance recorded for ${student.first_name} ${student.last_name} (${student.student_id}) to clear examination hold.`,
-    ip_address: req.ip || '127.0.0.1',
+    severity: 'info',
   });
 
   res.json({

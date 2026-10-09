@@ -4,18 +4,23 @@ import { api } from '../api/client';
 interface AIFeeNoticeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  studentId: string;
-  studentName: string;
-  dueAmount: number;
+  studentId?: string;
+  studentName?: string;
+  dueAmount?: number;
+  defaultStudent?: any;
 }
 
 export const AIFeeNoticeModal: React.FC<AIFeeNoticeModalProps> = ({
   isOpen,
   onClose,
-  studentId,
-  studentName,
-  dueAmount,
+  studentId: propStudentId,
+  studentName: propStudentName,
+  dueAmount: propDueAmount,
+  defaultStudent,
 }) => {
+  const studentId = defaultStudent?.id || defaultStudent?.student_id || propStudentId || '';
+  const studentName = defaultStudent ? `${defaultStudent.first_name || ''} ${defaultStudent.last_name || ''}`.trim() : (propStudentName || '');
+  const dueAmount = defaultStudent?.due_amount ?? defaultStudent?.total_due ?? propDueAmount ?? 0;
   const [urgency, setUrgency] = useState<'gentle' | 'reminder' | 'urgent'>('reminder');
   const [loading, setLoading] = useState(false);
   const [noticeData, setNoticeData] = useState<any | null>(null);

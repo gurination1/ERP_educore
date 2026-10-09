@@ -135,7 +135,7 @@ authRouter.post('/login', authLimiter, async (req: Request, res: Response): Prom
       designation: user.designation,
       employee_id: user.employee_id,
       enterprise_uid: user.enterprise_uid,
-      is_active: user.is_active !== false,
+      is_active: Boolean(user.is_active),
       must_change_password: Boolean(user.must_change_password),
     },
     student: student

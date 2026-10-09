@@ -1001,6 +1001,7 @@ export interface Student {
   current_semester: number;
   admission_year: number;
   admission_status: 'inquiry' | 'registered' | 'draft' | 'submitted' | 'pending' | 'verified' | 'fee_pending' | 'provisionally_admitted' | 'approved' | 'enrolled' | 'rejected';
+  status?: 'active' | 'suspended' | 'inactive' | 'withdrawn' | 'expelled';
   admission_remarks?: string;
   fees_status: 'paid' | 'due' | 'overdue' | 'cancelled' | 'partial';
   attendance_percentage: number;
@@ -3367,6 +3368,11 @@ class DatabaseStore {
     return this.getStaffFullProfile(staffId);
   }
 
+  public async findStaffByEmployeeId(empId: string): Promise<StaffBasicInfo | null> {
+    const staff = this.staff_basic_info.find(s => s.employee_id === empId || s.staff_id === empId);
+    return staff || null;
+  }
+
   public async updateStaffBasic(staffId: string, updates: Partial<StaffBasicInfo>, actorId: string = 'usr-admin-01'): Promise<StaffBasicInfo | null> {
     const idx = this.staff_basic_info.findIndex(s => s.staff_id === staffId || s.id === staffId);
     if (idx === -1) return null;
@@ -4108,7 +4114,7 @@ class DatabaseStore {
         'token_fee_receipt', 'token_fee_amount', 'token_fee_mode', 'token_fee_date',
         'intake_step', 'counseling_notes', 'admitted_by',
         'condonation_granted', 'condonation_order_no', 'condonation_remarks', 'admission_remarks',
-        'followup_status', 'followup_priority', 'next_followup_date', 'last_followup_at', 'assigned_counselor_id', 'assigned_counselor_name', 'created_at'
+        'followup_status', 'followup_priority', 'next_followup_date', 'last_followup_at', 'assigned_counselor_id', 'assigned_counselor_name', 'created_at', 'status'
       ];
       const keys = Object.keys(updates).filter(k => allowedCols.includes(k));
       if (keys.length === 0) return this.getStudentById(id);

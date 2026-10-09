@@ -213,6 +213,16 @@ enquiryRouter.post('/bulk/commit', authenticateToken, async (req: AuthRequest, r
   }
 });
 
+// 5.5 CRM Followup Radar KPI Statistics
+enquiryRouter.get('/radar-stats', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const stats = await db.getFollowupRadarStats();
+    res.json({ success: true, stats });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // 6. Get single enquiry details with stage-wise remarks tree
 enquiryRouter.get('/:id', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {

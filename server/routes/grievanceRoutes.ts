@@ -75,7 +75,11 @@ grievanceRouter.get('/:id', authenticateToken, async (req: AuthRequest, res: Res
 
 // Submit new grievance (Student or Admin intake)
 grievanceRouter.post('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
-  const parseResult = createGrievanceSchema.safeParse(req.body);
+  const payload = {
+    ...req.body,
+    subject: req.body.subject || req.body.title,
+  };
+  const parseResult = createGrievanceSchema.safeParse(payload);
   if (!parseResult.success) {
     res.status(400).json({ success: false, error: parseResult.error.errors.map(e => e.message).join(', ') });
     return;

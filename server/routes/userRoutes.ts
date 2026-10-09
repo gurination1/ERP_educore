@@ -214,10 +214,11 @@ userRouter.patch('/:id', authenticateToken, requireRole('admin'), async (req: Au
   });
 });
 
-// 4. Toggle Active / Suspended / Deactivated Status (Admin & Super Admin power)
-userRouter.patch('/:id/status', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+const handleUserStatusUpdate = async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
-  const { isActive, status, reason, effectiveDate, lastWorkingDate } = req.body;
+  const rawActive = req.body.isActive !== undefined ? req.body.isActive : req.body.is_active;
+  const { status, reason, effectiveDate, lastWorkingDate } = req.body;
+  const isActive = typeof rawActive === 'boolean' ? rawActive : undefined;
 
   if (typeof isActive !== 'boolean' && typeof status !== 'string') {
     res.status(400).json({ success: false, error: 'Either isActive (boolean) or status (string) is required.' });
@@ -266,8 +267,7 @@ userRouter.patch('/:id/status', authenticateToken, requireRole('admin'), async (
           login_enabled: computedIsActive,
           last_working_date: lastWorkingDate || undefined,
           date_of_resigning: effectiveDate || undefined,
-          remarks: reason || `Account status changed to ${statusLabel} by ${req.user?.full_name}`,
-        });
+        }, req.user?.id || 'admin');
       }
     } catch (e) {
       // non-fatal
@@ -303,7 +303,10 @@ userRouter.patch('/:id/status', authenticateToken, requireRole('admin'), async (
     is_active: computedIsActive,
     status: statusLabel,
   });
-});
+};
+
+userRouter.patch('/:id/status', authenticateToken, requireRole('admin'), handleUserStatusUpdate);
+userRouter.put('/:id/status', authenticateToken, requireRole('admin'), handleUserStatusUpdate);
 
 // 5. Reset Password (Admin extreme power override)
 userRouter.post('/:id/reset-password', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {

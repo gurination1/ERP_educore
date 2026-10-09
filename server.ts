@@ -77,6 +77,7 @@ async function startServer() {
   app.use('/api/enquiries', enquiryRouter);
   app.use('/api/master', masterRouter);
   app.use('/api/examination', examRouter);
+  app.use('/api/exam', examRouter);
   app.use('/api', auditRouter);
 
   // Centralized Error Handler for API

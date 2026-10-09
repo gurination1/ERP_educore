@@ -5,8 +5,7 @@ import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth.
 
 export const auditRouter = Router();
 
-// 1. Immutable Audit Logs View (Admin & Super Admin)
-auditRouter.get('/audit-logs', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+const handleGetAuditLogs = async (req: AuthRequest, res: Response): Promise<void> => {
   const { limit, actor_role, target_type, action, search } = req.query;
 
   const logs = await db.getAuditLogs({
@@ -22,7 +21,10 @@ auditRouter.get('/audit-logs', authenticateToken, requireRole('admin'), async (r
     count: logs.length,
     logs,
   });
-});
+};
+
+auditRouter.get('/audit-logs', authenticateToken, requireRole('admin'), handleGetAuditLogs);
+auditRouter.get('/audit/logs', authenticateToken, requireRole('admin'), handleGetAuditLogs);
 
 // 2. Canonical Master Data (Tenant-Agnostic standard tables)
 auditRouter.get('/master-data', async (req: Request, res: Response): Promise<void> => {
