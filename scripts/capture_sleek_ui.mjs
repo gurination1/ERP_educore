@@ -58,13 +58,13 @@ async function run() {
     await page.screenshot({ path: ss1 });
     console.log('Saved', ss1);
 
-    // Hover over Examination menu section in horizontal text strip
+    // Hover over Admissions menu section in horizontal text strip
     const navButtons = await page.$$('header nav button');
     for (const btn of navButtons) {
       const text = await page.evaluate(el => el.textContent, btn);
-      if (text && text.includes('Examination')) {
-        console.log('Hovering Examination section in horizontal text strip...');
-        await btn.hover();
+      if (text && text.includes('Admissions')) {
+        console.log('Clicking Admissions section in horizontal text strip to open vertical section...');
+        await btn.click();
         break;
       }
     }

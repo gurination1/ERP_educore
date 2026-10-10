@@ -44,17 +44,17 @@ export const Header: React.FC<HeaderProps> = ({
   const navRef = useRef<HTMLDivElement>(null);
   const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Pure Digit Canonical UID (No alphabetic text, strict 10 digits formatted)
+  // Pure Digit Canonical 12-13 Digit UID: [Type4]-[Seq2]-[Client2]-[State03]-[Inst01]
   const rawUid = currentUser?.enterprise_uid || (
     currentUser?.role === 'super_admin'
-      ? '9001-01-03-01'
+      ? '9001-01-01-03-01'
       : currentUser?.role === 'admin'
-      ? '4001-01-03-01'
+      ? '4001-01-01-03-01'
       : currentUser?.role === 'staff'
-      ? '2001-14-03-01'
+      ? '2001-14-01-03-01'
       : currentUser?.role === 'partner'
-      ? '7001-01-03-01'
-      : '1001-88-03-01'
+      ? '7001-01-01-03-01'
+      : '1001-88-01-03-01'
   );
   const displayUid = rawUid.replace(/BFGI/g, '01');
 
@@ -821,8 +821,8 @@ export const Header: React.FC<HeaderProps> = ({
                           </span>
                         </div>
 
-                        {/* Interactive Action Grid */}
-                        <div className={`py-2 ${sec.items!.length > 4 ? 'grid grid-cols-1 sm:grid-cols-2 gap-1.5' : 'space-y-1'}`}>
+                        {/* Interactive Action Grid (Pure Text Hierarchy, Zero Icons) */}
+                        <div className={`py-1.5 ${sec.items!.length > 4 ? 'grid grid-cols-1 sm:grid-cols-2 gap-1' : 'space-y-0.5'}`}>
                           {sec.items!.map((item: any) => (
                             <button
                               key={item.id || item.label}
@@ -835,28 +835,23 @@ export const Header: React.FC<HeaderProps> = ({
                                 }
                                 setOpenDrawer(null);
                               }}
-                              className={`w-full px-3 py-2 rounded-xl text-xs font-semibold transition-all text-left flex items-center justify-between cursor-pointer group ${
+                              className={`w-full px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all text-left flex items-center justify-between cursor-pointer group ${
                                 activeScreen === item.id
-                                  ? 'bg-[#00236f] text-white shadow-xs'
+                                  ? 'bg-[#00236f] text-white shadow-2xs font-bold'
                                   : 'text-slate-700 hover:bg-slate-100/90 hover:text-[#00236f]'
                               }`}
                             >
-                              <div className="flex items-center gap-2 min-w-0 pr-2">
-                                <span className={`text-[10px] shrink-0 font-bold ${activeScreen === item.id ? 'text-amber-300' : 'text-slate-400 group-hover:text-[#00236f]'}`}>
-                                  •
-                                </span>
-                                <span className="truncate">{item.label}</span>
-                              </div>
-                              <span className={`text-xs shrink-0 transition-transform group-hover:translate-x-0.5 ${activeScreen === item.id ? 'text-white/80' : 'text-slate-400'}`}>
-                                ›
-                              </span>
+                              <span className="truncate">{item.label}</span>
+                              {activeScreen === item.id && (
+                                <span className="text-[9px] uppercase tracking-wider font-extrabold text-amber-300 ml-2">Active</span>
+                              )}
                             </button>
                           ))}
                         </div>
 
                         {/* Card Footer Quick Note */}
                         <div className="pt-2 mt-1 border-t border-slate-100 px-3 flex items-center justify-between text-[10px] text-slate-400">
-                          <span>Statutory Ordinance 7.4 Active</span>
+                          <span>Statutory Regulation Active</span>
                           <span className="font-semibold text-slate-500">Autonomous Campus</span>
                         </div>
                       </div>
@@ -867,62 +862,11 @@ export const Header: React.FC<HeaderProps> = ({
             </nav>
           </div>
 
-          {/* Right: Operational Quick Action Ribbon & Live Campus Status (Fills Desktop Void) */}
-          <div className="hidden md:flex items-center gap-2 shrink-0 select-none">
-            {/* Quick Intake / Lead Shortcut Button */}
-            {isAdmin && (
-              <button
-                type="button"
-                onClick={() => onNavigate('enquiries')}
-                title="Quick Admissions Lead Entry"
-                className="h-7 px-2.5 bg-emerald-50 hover:bg-emerald-100/90 active:bg-emerald-200 text-emerald-800 border border-emerald-300/80 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-spring-fast cursor-pointer shadow-2xs group"
-              >
-                <span className="text-xs text-emerald-600 group-hover:scale-110 transition-transform leading-none">+</span>
-                <span>Quick Lead</span>
-              </button>
-            )}
-
-            {/* Quick Fee Collection Shortcut Button */}
-            {isAdmin && (
-              <button
-                type="button"
-                onClick={() => onNavigate('fee-ledger')}
-                title="Collect Semester / Registration Fee"
-                className="h-7 px-2.5 bg-blue-50 hover:bg-blue-100/90 active:bg-blue-200 text-[#00236f] border border-blue-200 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-spring-fast cursor-pointer shadow-2xs group"
-              >
-                <span className="text-[10px] text-blue-700">₹</span>
-                <span>Collect Fee</span>
-              </button>
-            )}
-
-            {/* Quick Admit Card / Hall Ticket Shortcut */}
-            <button
-              type="button"
-              onClick={() => onOpenAdmitCard ? onOpenAdmitCard() : onNavigate('examination')}
-              title="Verify Gate Clearance & Admit Card"
-              className="h-7 px-2.5 bg-slate-100 hover:bg-slate-200/90 active:bg-slate-300 text-slate-800 border border-slate-200/90 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-spring-fast cursor-pointer shadow-2xs"
-            >
-              <span>Hall Ticket</span>
-            </button>
-
-            {/* Term Badge with Semester */}
-            <div className="flex items-center gap-1.5 h-7 px-2.5 bg-slate-100/80 border border-slate-200 rounded-full text-[11px] font-semibold text-slate-700">
-              <span className="text-[#00236f] font-bold">AY 2026-27</span>
-              <span className="text-slate-400">•</span>
-              <span className="text-slate-600">Sem 4/6/8</span>
-            </div>
-
-            {/* Live Database Sync Status Pill */}
-            <div className="hidden xl:flex items-center gap-1.5 h-7 px-2.5 bg-emerald-50/70 border border-emerald-200 rounded-full text-[10px] font-semibold text-emerald-800">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>DB Sync: Online</span>
-            </div>
-
-            {/* Tripartite University Tag */}
-            <div className="hidden 2xl:flex items-center gap-1 h-7 px-2.5 bg-amber-500/10 border border-amber-500/20 rounded-full text-[10px] font-bold text-amber-900">
-              <span className="text-amber-600 font-extrabold">UGC</span>
-              <span>MRSPTU • PUP • PU</span>
-            </div>
+          {/* Right: Sleek Text-Only Session & Multi-University Accreditation Strip (Zero Boxes, Zero Icons) */}
+          <div className="hidden lg:flex items-center gap-3 text-xs text-slate-500 font-medium select-none shrink-0 pr-2">
+            <span className="text-slate-400">Session: <strong className="text-[#00236f] font-semibold">AY 2026-27</strong> (Sem 4/6/8)</span>
+            <span className="text-slate-300">|</span>
+            <span className="text-slate-600 font-semibold tracking-tight">PUP Patiala • MRSPTU • PU Affiliated</span>
           </div>
         </div>
       </div>

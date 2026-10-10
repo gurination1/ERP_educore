@@ -111,8 +111,8 @@ export function generateEnterpriseUID(
     ? String(sequenceNum).padStart(2, '0').slice(-2)
     : Math.floor(10 + Math.random() * 89).toString();
 
-  // Canonical Architecture (Digits Only): [CollegeNumber: 4 digits]-[Serial: 2 digits]-[State GST: 2 digits]-[Institutional Code: 2 digits]
-  return `${selected.numeric}-${seq}-${stateGst}-${instCode}`;
+  // Canonical Multi-College Architecture (Pure Digits 12-13 digits): [Type: 4]-[Seq: 2]-[Client: 2]-[State GST: 2]-[Inst: 2]
+  return `${selected.numeric}-${seq}-${clientCode}-${stateGst}-${instCode}`;
 }
 
 export const DEFAULT_MASTER_STATES: MasterState[] = [
@@ -2683,15 +2683,15 @@ class DatabaseStore {
     const val = input.trim().toLowerCase();
     const cleanDigits = val.replace(/[^0-9]/g, '');
     let effectiveVal = val;
-    if (val === 'staff' || val === '2001-14-03-01' || val === '2001140301') effectiveVal = 'staff01';
-    else if (val === 'counselor' || val === '6001-02-03-01' || val === '6001020301') effectiveVal = 'counselor01';
-    else if (val === 'hod' || val === '3001-01-03-01' || val === '3001010301') effectiveVal = 'hod_cse';
-    else if (val === 'accounts' || val === '5001-05-03-01' || val === '5001050301') effectiveVal = 'accounts01';
-    else if (val === 'super' || val === 'superadmin' || val === '9001-01-03-01' || val === '9001010301' || val === '9001-01-03-bfgi' || val === '9001-03-bfgi-000001' || val === '9001-03-bfgi-0001') effectiveVal = 'superadmin';
-    else if (val === 'admin' || val === '4001-01-03-01' || val === '4001010301' || val === '4001-01-03-bfgi' || val === '4001-03-bfgi-0001') effectiveVal = 'admin';
+    if (val === 'staff' || val === '2001-14-03-01' || val === '2001140301' || val === '2001-14-01-03-01' || val === '200114010301') effectiveVal = 'staff01';
+    else if (val === 'counselor' || val === '6001-02-03-01' || val === '6001020301' || val === '6001-02-01-03-01' || val === '600102010301') effectiveVal = 'counselor01';
+    else if (val === 'hod' || val === '3001-01-03-01' || val === '3001010301' || val === '3001-01-01-03-01' || val === '300101010301') effectiveVal = 'hod_cse';
+    else if (val === 'accounts' || val === '5001-05-03-01' || val === '5001050301' || val === '5001-05-01-03-01' || val === '500105010301') effectiveVal = 'accounts01';
+    else if (val === 'super' || val === 'superadmin' || val === '9001-01-03-01' || val === '9001010301' || val === '9001-01-01-03-01' || val === '900101010301' || val === '9001-01-03-bfgi' || val === '9001-03-bfgi-000001' || val === '9001-03-bfgi-0001') effectiveVal = 'superadmin';
+    else if (val === 'admin' || val === '4001-01-03-01' || val === '4001010301' || val === '4001-01-01-03-01' || val === '400101010301' || val === '4001-01-03-bfgi' || val === '4001-03-bfgi-0001') effectiveVal = 'admin';
     else if (val === '2001-14-03-bfgi' || val === '2001-03-bfgi-0014') effectiveVal = 'staff01';
-    else if (val === '1001-88-03-01' || val === '1001880301' || val === '1001-88-03-bfgi' || val === '1001-03-bfgi-260088' || val === 'aryan' || val === 'student') effectiveVal = 'aryan';
-    else if (val === 'partner' || val === 'prt-001' || val === 'prt-inf-001' || val === '7001-01-03-01' || val === '7001010301' || val === '7001-01-03-bfgi' || val === '7001-03-bfgi-0001') effectiveVal = 'partner01';
+    else if (val === '1001-88-03-01' || val === '1001880301' || val === '1001-88-01-03-01' || val === '100188010301' || val === '1001-88-03-bfgi' || val === '1001-03-bfgi-260088' || val === 'aryan' || val === 'student') effectiveVal = 'aryan';
+    else if (val === 'partner' || val === 'prt-001' || val === 'prt-inf-001' || val === '7001-01-03-01' || val === '7001010301' || val === '7001-01-01-03-01' || val === '700101010301' || val === '7001-01-03-bfgi' || val === '7001-03-bfgi-0001') effectiveVal = 'partner01';
     else if (val === '6001-02-03-bfgi' || val === '6001-03-bfgi-0002') effectiveVal = 'counselor01';
     else if (val === '3001-01-03-bfgi' || val === '3001-03-bfgi-0001') effectiveVal = 'hod_cse';
     else if (val === '5001-05-03-bfgi' || val === '5001-03-bfgi-0005') effectiveVal = 'accounts01';
