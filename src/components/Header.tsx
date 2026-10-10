@@ -146,13 +146,81 @@ export const Header: React.FC<HeaderProps> = ({
     isActive: boolean;
   }> = [];
 
-  if (isAdmin) {
-    // Universal Provost & Institutional Registrar: High-Demand Operational Governance Suite
-    // Ordered strictly by daily collegiate demand: Home -> Admissions -> Finance & Fees -> Students -> Academics & Exams -> Faculty & HR -> Governance
+  if (isSuperAdmin) {
+    // Universal Provost & SaaS Platform Vendor: Apex Multi-Tenant Infrastructure Suite
+    menuSections = [
+      {
+        id: 'platform',
+        label: 'Platform Overview',
+        defaultScreen: 'admin-dashboard',
+        action: () => {
+          onNavigate('admin-dashboard');
+          setOpenDrawer(null);
+        },
+        isActive: activeScreen === 'admin-dashboard',
+      },
+      {
+        id: 'tenants',
+        label: 'Tenants & Campuses',
+        defaultScreen: 'admin-dashboard',
+        items: [
+          { id: 'master-tables' as any, label: 'Multi-College Institutional Campuses', action: onOpenMasterTables },
+          { id: 'master-tables' as any, label: 'Affiliated Universities (PUP / MRSPTU / PU)', action: onOpenMasterTables },
+          { id: 'master-tables' as any, label: 'Academic Departments Catalog', action: onOpenMasterTables },
+        ],
+        isActive: false,
+      },
+      {
+        id: 'access',
+        label: 'Universal Access & RBAC',
+        defaultScreen: 'user-management',
+        items: [
+          { id: 'user-management' as ActiveScreen, label: 'Universal User Directory & Security' },
+          { id: 'user-management' as ActiveScreen, label: 'Apex Institutional Role Delegation' },
+          { id: 'user-management' as ActiveScreen, label: 'Universal Password Override & Security' },
+        ],
+        isActive: activeScreen === 'user-management',
+      },
+      {
+        id: 'architecture',
+        label: 'Master Architecture',
+        defaultScreen: 'admin-dashboard',
+        items: [
+          { id: 'master-tables' as any, label: 'State GST Codes (GST-01 to 37)', action: onOpenMasterTables },
+          { id: 'master-tables' as any, label: 'Enterprise User Type Codes (1001-9001)', action: onOpenMasterTables },
+          { id: 'master-tables' as any, label: 'Approved Degrees (AICTE / UGC / PCI)', action: onOpenMasterTables },
+          { id: 'master-tables' as any, label: 'Statutory Document Types & MIME Rules', action: onOpenMasterTables },
+        ],
+        isActive: false,
+      },
+      {
+        id: 'audit',
+        label: 'Cryptographic Forensics',
+        defaultScreen: 'admin-dashboard',
+        items: [
+          { id: 'audit-trail' as any, label: 'Immutable Audit Log Stream', action: onOpenAuditLogs },
+          { id: 'audit-trail' as any, label: 'Security & Actor Difference Forensics', action: onOpenAuditLogs },
+        ],
+        isActive: false,
+      },
+      {
+        id: 'telemetry',
+        label: 'Database & Telemetry',
+        defaultScreen: 'reports',
+        items: [
+          { id: 'reports' as ActiveScreen, label: 'High-Throughput PostgreSQL DB Telemetry' },
+          { id: 'reports' as ActiveScreen, label: 'Cloud MariaDB Dual-Pool Health' },
+          { id: 'reports' as ActiveScreen, label: 'Platform Performance Metrics' },
+        ],
+        isActive: activeScreen === 'reports',
+      },
+    ];
+  } else if (isAdmin) {
+    // Institutional Administrator (Dean, Registrar, Principal): Daily Operational Management Suite
     menuSections = [
       {
         id: 'dashboard',
-        label: 'Home',
+        label: 'Operations Console',
         defaultScreen: 'admin-dashboard',
         action: () => {
           onNavigate('admin-dashboard');
@@ -162,36 +230,34 @@ export const Header: React.FC<HeaderProps> = ({
       },
       {
         id: 'crm',
-        label: 'Admissions',
+        label: 'Admissions Desk',
         defaultScreen: 'enquiries' as ActiveScreen,
         items: [
           { id: 'enquiries' as ActiveScreen, label: 'Pre-Admission Leads Radar' },
           { id: 'bulk-import' as ActiveScreen, label: 'Bulk Lead CSV / Excel Mapper' },
-          { id: 'admissions' as ActiveScreen, label: 'Admissions Counter Desk' },
+          { id: 'admissions' as ActiveScreen, label: 'Admissions Intake Desk' },
           { id: 'form-builder' as ActiveScreen, label: 'Application Form Builder' },
         ],
         isActive: ['enquiries', 'bulk-import', 'admissions', 'form-builder'].includes(activeScreen as any),
       },
       {
         id: 'fees',
-        label: 'Finance & Fees',
+        label: 'Tuition & Ledgers',
         defaultScreen: 'fee-ledger' as ActiveScreen,
         items: [
           { id: 'fee-ledger' as ActiveScreen, label: 'Tuition Fee Assessment & Ledger' },
           { id: 'fee-ledger' as ActiveScreen, label: 'Fee Head Configuration & Schedules' },
           { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships' },
-          { id: 'partner-portal' as ActiveScreen, label: 'Channel & Partner Accounts (Tax & Bank)' },
         ],
         isActive: ['fee-ledger', 'scholarships'].includes(activeScreen as any),
       },
       {
         id: 'students',
-        label: 'Students',
+        label: 'Student Directory',
         defaultScreen: 'manage-students' as ActiveScreen,
         items: [
           { id: 'manage-students' as ActiveScreen, label: 'Student Master Directory' },
           { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault' },
-          { id: 'partner-portal' as ActiveScreen, label: 'Corporate Placement Partners & Drives' },
           { id: 'grievances' as ActiveScreen, label: 'Statutory Grievance Redressal' },
         ],
         isActive: ['manage-students', 'student-documents', 'grievances'].includes(activeScreen as any),
@@ -213,7 +279,7 @@ export const Header: React.FC<HeaderProps> = ({
       },
       {
         id: 'staff',
-        label: 'Faculty & HR',
+        label: 'Faculty & HRMS',
         defaultScreen: 'staff-management' as ActiveScreen,
         items: [
           { id: 'staff-management' as ActiveScreen, label: 'Faculty & HRMS Directory' },
@@ -225,10 +291,10 @@ export const Header: React.FC<HeaderProps> = ({
       },
       {
         id: 'governance',
-        label: 'Governance',
+        label: 'Institutional Governance',
         defaultScreen: 'user-management' as ActiveScreen,
         items: [
-          { id: 'user-management' as ActiveScreen, label: 'User Accounts & Access Control' },
+          { id: 'user-management' as ActiveScreen, label: 'Campus User Accounts & Access' },
           { id: 'master-tables' as any, label: 'Statutory Master Tables', action: onOpenMasterTables },
           { id: 'audit-trail' as any, label: 'Cryptographic Audit Trail', action: onOpenAuditLogs },
           { id: 'reports' as ActiveScreen, label: 'Institutional MIS Reports' },
@@ -539,8 +605,42 @@ export const Header: React.FC<HeaderProps> = ({
         isActive: activeScreen === 'student-dashboard',
       },
       {
+        id: 'attendance',
+        label: 'Attendance & Classes',
+        defaultScreen: 'student-dashboard',
+        items: [
+          { id: 'student-dashboard' as ActiveScreen, label: 'Lecture Attendance (75% Gate Tracking)' },
+          { id: 'academics' as ActiveScreen, label: 'Semester Timetable Schedule' },
+        ],
+        isActive: activeScreen === 'student-dashboard',
+      },
+      {
+        id: 'fees',
+        label: 'Tuition & Dues',
+        defaultScreen: 'fee-ledger',
+        items: [
+          { id: 'fee-ledger' as ActiveScreen, label: 'Tuition Fee Assessment & Ledger' },
+          { id: 'fee-ledger' as ActiveScreen, label: 'Pay Online Fee Heads' },
+          { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships' },
+        ],
+        isActive: ['fee-ledger', 'scholarships'].includes(activeScreen as any),
+      },
+      {
+        id: 'examination',
+        label: 'Admit Card & Exams',
+        defaultScreen: 'examination',
+        items: [
+          { id: 'examination' as ActiveScreen, label: 'University Regular Examination Form', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+          { id: 'examination' as ActiveScreen, label: 'Reappear / Backlog Form', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+          { id: 'examination' as ActiveScreen, label: 'Download Admit Card & Hall Ticket', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+          { id: 'examination' as ActiveScreen, label: 'Datesheet & Examination Timetable', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+          { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz & Examination LMS' },
+        ],
+        isActive: ['examination', 'student-quiz-lms'].includes(activeScreen as any),
+      },
+      {
         id: 'academics',
-        label: 'Academics',
+        label: 'Syllabus & LMS',
         defaultScreen: 'academics',
         items: [
           { id: 'academics' as ActiveScreen, label: 'Choice Based Credit System (CBCS)' },
@@ -550,47 +650,14 @@ export const Header: React.FC<HeaderProps> = ({
         isActive: ['academics'].includes(activeScreen as any),
       },
       {
-        id: 'examination',
-        label: 'Examination',
-        defaultScreen: 'examination',
-        items: [
-          { id: 'examination' as ActiveScreen, label: 'Regular Examination Form', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
-          { id: 'examination' as ActiveScreen, label: 'Reappear / Backlog Form', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
-          { id: 'examination' as ActiveScreen, label: 'Admit Card & Gate Clearance', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
-          { id: 'examination' as ActiveScreen, label: 'Datesheet & Examination Timetable', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
-          { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz & Examination LMS' },
-        ],
-        isActive: ['examination', 'student-quiz-lms'].includes(activeScreen as any),
-      },
-      {
-        id: 'fees',
-        label: 'Fees & Scholarships',
-        defaultScreen: 'fee-ledger',
-        items: [
-          { id: 'fee-ledger' as ActiveScreen, label: 'Tuition Fee Assessment & Ledger' },
-          { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships' },
-        ],
-        isActive: ['fee-ledger', 'scholarships'].includes(activeScreen as any),
-      },
-      {
         id: 'documents',
-        label: 'Regulatory Documents',
+        label: 'Compliance & Help',
         defaultScreen: 'student-documents',
-        action: () => {
-          onNavigate('student-documents');
-          setOpenDrawer(null);
-        },
-        isActive: activeScreen === 'student-documents',
-      },
-      {
-        id: 'grievances',
-        label: 'Grievances',
-        defaultScreen: 'grievances',
-        action: () => {
-          onNavigate('grievances');
-          setOpenDrawer(null);
-        },
-        isActive: activeScreen === 'grievances',
+        items: [
+          { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault' },
+          { id: 'grievances' as ActiveScreen, label: 'Statutory Grievance Redressal' },
+        ],
+        isActive: ['student-documents', 'grievances'].includes(activeScreen as any),
       },
     ];
   }

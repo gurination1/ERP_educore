@@ -4,6 +4,7 @@ import path from 'path';
 import initSqlJs from 'sql.js';
 import type { Database as SqlJsDatabase } from 'sql.js';
 import mysql from 'mysql2/promise';
+import pg from 'pg';
 
 export type EnterpriseUserRole = 'super_admin' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts' | 'student' | 'partner';
 
@@ -1240,10 +1241,11 @@ class DatabaseStore {
   public enquiry_interactions: EnquiryInteraction[] = [];
   public dialer_settings: DialerSettings = { id: 'default', is_enabled: true, provider: 'exotel', api_key_configured: true };
 
-  public mode: 'mariadb' | 'sqlite' = 'sqlite';
+  public mode: 'postgres' | 'mariadb' | 'sqlite' = 'sqlite';
   private dbPath: string = process.env.DB_PATH || path.join(process.cwd(), 'database', 'educore.sqlite');
   private sqlDb: SqlJsDatabase | null = null;
   private mariaPool: mysql.Pool | null = null;
+  private pgPool: pg.Pool | null = null;
   private isInitialized: boolean = false;
 
   constructor() {
@@ -1254,6 +1256,40 @@ class DatabaseStore {
     if (this.isInitialized) return;
 
     const seedPath = path.join(process.cwd(), 'database', 'educore-seed.sqlite');
+
+    // 0. Try PostgreSQL connection if PGHOST / POSTGRES_URL / DATABASE_URL (postgres://) is configured
+    const pgUrl = process.env.POSTGRES_URL || (process.env.DATABASE_URL?.startsWith('postgres://') || process.env.DATABASE_URL?.startsWith('postgresql://') ? process.env.DATABASE_URL : '');
+    const pgHost = process.env.PGHOST || '';
+    if (pgUrl || pgHost) {
+      try {
+        const pool = new pg.Pool({
+          connectionString: pgUrl || undefined,
+          host: !pgUrl ? pgHost : undefined,
+          port: !pgUrl ? parseInt(process.env.PGPORT || '5432', 10) : undefined,
+          user: !pgUrl ? process.env.PGUSER || 'postgres' : undefined,
+          password: !pgUrl ? process.env.PGPASSWORD || '' : undefined,
+          database: !pgUrl ? process.env.PGDATABASE || 'educore_erp' : undefined,
+          connectionTimeoutMillis: 5000,
+          ssl: process.env.NODE_ENV === 'production' && !pgUrl?.includes('localhost') ? { rejectUnauthorized: false } : undefined,
+        });
+        const client = await pool.connect();
+        await client.query('SELECT 1');
+        client.release();
+
+        this.pgPool = pool;
+        this.mode = 'postgres';
+        console.log('[DB] Connected successfully to PostgreSQL Production Instance (Preferred Multi-Tenant Engine).');
+
+        await this.createPostgresTables();
+        await this.seedPostgresDefaults();
+
+        this.isInitialized = true;
+        return;
+      } catch (err: any) {
+        console.warn(`[DB] PostgreSQL connection attempt failed (${err.message}). Falling back to secondary cloud engine.`);
+        this.pgPool = null;
+      }
+    }
 
     // 1. Try MariaDB/MySQL connection if DB_HOST / MYSQLHOST / MYSQL_URL / DATABASE_URL is configured
     let host = process.env.DB_HOST || process.env.MYSQLHOST || '';
@@ -1361,6 +1397,316 @@ class DatabaseStore {
     }
 
     this.isInitialized = true;
+  }
+
+  private async createPostgresTables(): Promise<void> {
+    if (!this.pgPool) return;
+
+    await this.pgPool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id VARCHAR(64) PRIMARY KEY,
+        username VARCHAR(64) UNIQUE NOT NULL,
+        email VARCHAR(128) UNIQUE NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
+        role VARCHAR(32) NOT NULL,
+        full_name VARCHAR(128) NOT NULL,
+        avatar_url TEXT,
+        is_active BOOLEAN DEFAULT TRUE,
+        department VARCHAR(64),
+        designation VARCHAR(64),
+        employee_id VARCHAR(32),
+        enterprise_uid VARCHAR(64),
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS sessions (
+        id VARCHAR(64) PRIMARY KEY,
+        name VARCHAR(64) UNIQUE NOT NULL,
+        start_date VARCHAR(32) NOT NULL,
+        end_date VARCHAR(32) NOT NULL,
+        is_current BOOLEAN DEFAULT FALSE
+      );
+
+      CREATE TABLE IF NOT EXISTS courses (
+        id VARCHAR(64) PRIMARY KEY,
+        code VARCHAR(32) UNIQUE NOT NULL,
+        name VARCHAR(128) NOT NULL,
+        department VARCHAR(64) NOT NULL,
+        duration_years INT NOT NULL,
+        total_semesters INT NOT NULL,
+        base_tuition_fee NUMERIC(12, 2) NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS students (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64),
+        student_id VARCHAR(64) UNIQUE NOT NULL,
+        first_name VARCHAR(64) NOT NULL,
+        last_name VARCHAR(64) NOT NULL,
+        gender VARCHAR(16) NOT NULL,
+        dob VARCHAR(32) NOT NULL,
+        email VARCHAR(128) UNIQUE NOT NULL,
+        phone VARCHAR(32) NOT NULL,
+        guardian_name VARCHAR(128) NOT NULL,
+        guardian_relation VARCHAR(32) NOT NULL,
+        guardian_phone VARCHAR(32) NOT NULL,
+        mother_name VARCHAR(64),
+        address TEXT,
+        city VARCHAR(64),
+        district VARCHAR(64),
+        state VARCHAR(64),
+        pincode VARCHAR(16),
+        annual_family_income NUMERIC(12, 2),
+        course_id VARCHAR(64) NOT NULL,
+        session_id VARCHAR(64) NOT NULL,
+        current_semester INT NOT NULL,
+        admission_year INT NOT NULL,
+        admission_status VARCHAR(32) NOT NULL,
+        fees_status VARCHAR(32) NOT NULL,
+        attendance_percentage NUMERIC(5, 2) NOT NULL,
+        total_classes INT NOT NULL,
+        attended_classes INT NOT NULL,
+        is_hosteller BOOLEAN DEFAULT FALSE,
+        is_transport_user BOOLEAN DEFAULT FALSE,
+        transport_route VARCHAR(128),
+        hostel_room_no VARCHAR(64),
+        category VARCHAR(32),
+        quota VARCHAR(32),
+        tenth_percentage NUMERIC(5, 2),
+        twelfth_percentage NUMERIC(5, 2),
+        tenth_roll_no VARCHAR(32),
+        twelfth_roll_no VARCHAR(32),
+        board_name VARCHAR(64),
+        aadhaar_no VARCHAR(20),
+        tenth_doc_verified BOOLEAN DEFAULT FALSE,
+        twelfth_doc_verified BOOLEAN DEFAULT FALSE,
+        aadhaar_doc_verified BOOLEAN DEFAULT FALSE,
+        token_fee_receipt VARCHAR(64),
+        token_fee_amount NUMERIC(12, 2) DEFAULT 0,
+        token_fee_mode VARCHAR(32),
+        token_fee_date VARCHAR(64),
+        intake_step INT DEFAULT 1,
+        counseling_notes TEXT,
+        admitted_by VARCHAR(64),
+        condonation_granted BOOLEAN DEFAULT FALSE,
+        condonation_order_no VARCHAR(64),
+        condonation_remarks TEXT,
+        admission_remarks TEXT,
+        followup_status VARCHAR(64) DEFAULT 'pending',
+        followup_priority VARCHAR(32) DEFAULT 'p1_high',
+        next_followup_date VARCHAR(64),
+        last_followup_at VARCHAR(64),
+        assigned_counselor_id VARCHAR(64),
+        assigned_counselor_name VARCHAR(255),
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS fee_heads (
+        id VARCHAR(64) PRIMARY KEY,
+        code VARCHAR(32) UNIQUE NOT NULL,
+        title VARCHAR(128) NOT NULL,
+        description TEXT,
+        is_recurring BOOLEAN DEFAULT TRUE
+      );
+
+      CREATE TABLE IF NOT EXISTS student_fees (
+        id VARCHAR(64) PRIMARY KEY,
+        student_id VARCHAR(64) NOT NULL,
+        fee_head_id VARCHAR(64) NOT NULL,
+        session_id VARCHAR(64) NOT NULL,
+        semester INT NOT NULL,
+        amount NUMERIC(12, 2) NOT NULL,
+        discount_amount NUMERIC(12, 2) DEFAULT 0,
+        paid_amount NUMERIC(12, 2) DEFAULT 0,
+        due_amount NUMERIC(12, 2) NOT NULL,
+        due_date VARCHAR(32) NOT NULL,
+        status VARCHAR(32) NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS payments (
+        id VARCHAR(64) PRIMARY KEY,
+        receipt_no VARCHAR(64) UNIQUE NOT NULL,
+        student_id VARCHAR(64) NOT NULL,
+        student_fee_id VARCHAR(64),
+        amount_paid NUMERIC(12, 2) NOT NULL,
+        payment_mode VARCHAR(32) NOT NULL,
+        transaction_reference VARCHAR(128) NOT NULL,
+        payment_date TIMESTAMPTZ NOT NULL,
+        status VARCHAR(32) NOT NULL,
+        notes TEXT,
+        collected_by VARCHAR(64)
+      );
+
+      CREATE TABLE IF NOT EXISTS schemes (
+        id VARCHAR(64) PRIMARY KEY,
+        code VARCHAR(32) UNIQUE NOT NULL,
+        title VARCHAR(128) NOT NULL,
+        description TEXT,
+        award_amount NUMERIC(12, 2) NOT NULL,
+        eligibility_criteria TEXT,
+        deadline VARCHAR(32) NOT NULL,
+        is_active BOOLEAN DEFAULT TRUE
+      );
+
+      CREATE TABLE IF NOT EXISTS scholarship_applications (
+        id VARCHAR(64) PRIMARY KEY,
+        scheme_id VARCHAR(64) NOT NULL,
+        student_id VARCHAR(64) NOT NULL,
+        annual_family_income NUMERIC(12, 2) NOT NULL,
+        previous_gpa NUMERIC(4, 2) NOT NULL,
+        reason_for_application TEXT NOT NULL,
+        document_path VARCHAR(255),
+        status VARCHAR(32) NOT NULL,
+        admin_remarks TEXT,
+        reviewed_by VARCHAR(64),
+        reviewed_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS audit_logs (
+        id VARCHAR(64) PRIMARY KEY,
+        timestamp TIMESTAMPTZ NOT NULL,
+        actor_id VARCHAR(64) NOT NULL,
+        actor_name VARCHAR(128) NOT NULL,
+        actor_role VARCHAR(32) NOT NULL,
+        actor_ip VARCHAR(64),
+        action VARCHAR(64) NOT NULL,
+        target_type VARCHAR(64) NOT NULL,
+        target_id VARCHAR(64) NOT NULL,
+        details TEXT NOT NULL,
+        changes_diff TEXT,
+        severity VARCHAR(16) NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS master_states (
+        gst_code VARCHAR(8) PRIMARY KEY,
+        state_name VARCHAR(64) NOT NULL,
+        state_short_code VARCHAR(8) NOT NULL,
+        is_union_territory BOOLEAN DEFAULT FALSE
+      );
+
+      CREATE TABLE IF NOT EXISTS master_user_types (
+        type_code VARCHAR(16) PRIMARY KEY,
+        alpha_prefix VARCHAR(8) NOT NULL,
+        role_key VARCHAR(32) NOT NULL,
+        display_title VARCHAR(64) NOT NULL,
+        description TEXT
+      );
+
+      CREATE TABLE IF NOT EXISTS master_degrees (
+        degree_code VARCHAR(32) PRIMARY KEY,
+        degree_name VARCHAR(128) NOT NULL,
+        level VARCHAR(32) NOT NULL,
+        duration_years INT NOT NULL,
+        total_semesters INT NOT NULL,
+        statutory_body VARCHAR(32) NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS master_document_types (
+        doc_type_code VARCHAR(32) PRIMARY KEY,
+        title VARCHAR(128) NOT NULL,
+        mandatory_for VARCHAR(32) NOT NULL,
+        max_file_size_mb INT NOT NULL,
+        allowed_mime_types VARCHAR(128) NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS staff_basic_info (
+        id VARCHAR(64) PRIMARY KEY,
+        staff_id VARCHAR(64) UNIQUE,
+        employee_id VARCHAR(64) UNIQUE,
+        full_name VARCHAR(128) NOT NULL,
+        father_name VARCHAR(128),
+        dob VARCHAR(32),
+        gender VARCHAR(16),
+        date_of_joining VARCHAR(32),
+        date_of_resigning VARCHAR(32),
+        last_working_date VARCHAR(32),
+        category VARCHAR(64),
+        primary_designation VARCHAR(128),
+        department_id VARCHAR(64),
+        employee_status VARCHAR(32) DEFAULT 'ACTIVE',
+        login_enabled BOOLEAN DEFAULT TRUE,
+        must_change_password BOOLEAN DEFAULT FALSE,
+        custom_attr_1 VARCHAR(255),
+        custom_attr_2 VARCHAR(255),
+        custom_attr_3 VARCHAR(255),
+        custom_attr_4 VARCHAR(255),
+        custom_meta_json TEXT
+      );
+
+      CREATE TABLE IF NOT EXISTS staff_academic_journey (
+        id VARCHAR(64) PRIMARY KEY,
+        staff_id VARCHAR(64) NOT NULL,
+        staff_name VARCHAR(128) NOT NULL,
+        qualification_level VARCHAR(32) NOT NULL,
+        degree_name VARCHAR(128) NOT NULL,
+        awarding_university VARCHAR(128) NOT NULL,
+        year_of_passing INT NOT NULL,
+        specialization VARCHAR(128) NOT NULL,
+        scopus_publications INT DEFAULT 0,
+        sci_publications INT DEFAULT 0,
+        patents_count INT DEFAULT 0,
+        past_institutions_summary TEXT,
+        verified BOOLEAN DEFAULT FALSE,
+        created_at VARCHAR(64) NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS partners (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64),
+        partner_type VARCHAR(64),
+        firm_name VARCHAR(128) NOT NULL,
+        pan_number VARCHAR(32),
+        gst_number VARCHAR(32),
+        tan_number VARCHAR(32),
+        email VARCHAR(128),
+        phone VARCHAR(32),
+        address TEXT,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        custom_meta_json TEXT
+      );
+
+      CREATE TABLE IF NOT EXISTS enquiries (
+        id VARCHAR(64) PRIMARY KEY,
+        enquiry_no VARCHAR(64) UNIQUE,
+        student_name VARCHAR(128) NOT NULL,
+        gender VARCHAR(16),
+        father_name VARCHAR(128),
+        mobile VARCHAR(32),
+        email VARCHAR(128),
+        selected_course VARCHAR(64),
+        course_fee NUMERIC(12, 2),
+        admission_probability NUMERIC(5, 2),
+        status VARCHAR(64) DEFAULT 'new',
+        assigned_counselor_id VARCHAR(64),
+        assigned_counselor_name VARCHAR(128),
+        batch_id VARCHAR(64),
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        custom_meta_json TEXT
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_pg_users_uid ON users(enterprise_uid);
+      CREATE INDEX IF NOT EXISTS idx_pg_students_roll ON students(student_id);
+      CREATE INDEX IF NOT EXISTS idx_pg_student_fees_stu ON student_fees(student_id, status);
+      CREATE INDEX IF NOT EXISTS idx_pg_payments_stu ON payments(student_id);
+      CREATE INDEX IF NOT EXISTS idx_pg_audit_logs_time ON audit_logs(timestamp);
+      CREATE INDEX IF NOT EXISTS idx_pg_staff_emp_id ON staff_basic_info(employee_id);
+    `);
+  }
+
+  private async seedPostgresDefaults(): Promise<void> {
+    if (!this.pgPool) return;
+    const { rows } = await this.pgPool.query('SELECT COUNT(*) as count FROM users');
+    if (parseInt(rows[0]?.count || '0', 10) > 0) return;
+
+    console.log('[DB] Seeding default dataset into PostgreSQL enterprise database...');
+    for (const u of this.users) {
+      await this.pgPool.query(
+        'INSERT INTO users (id, username, email, password_hash, role, full_name, avatar_url, is_active, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (id) DO NOTHING',
+        [u.id, u.username, u.email, u.password_hash, u.role, u.full_name, u.avatar_url || null, u.is_active, u.created_at]
+      );
+    }
   }
 
   private async createMariaDBTables(): Promise<void> {
@@ -2946,6 +3292,28 @@ class DatabaseStore {
   }
 
   public async getHealthInfo(): Promise<any> {
+    if (this.mode === 'postgres' && this.pgPool) {
+      try {
+        const res = await this.pgPool.query('SELECT COUNT(*) as count FROM users');
+        return {
+          status: 'ok',
+          engine: 'PostgreSQL Enterprise Engine (pg)',
+          mode: 'postgres',
+          activeEngine: 'PostgreSQL 16+ Production Pool Active',
+          storageLocation: 'PostgreSQL Enterprise Multi-Tenant Cluster',
+          userCount: parseInt(res.rows[0]?.count || '0', 10),
+        };
+      } catch (err: any) {
+        return {
+          status: 'error',
+          engine: 'PostgreSQL Pool (Unreachable)',
+          mode: 'postgres',
+          activeEngine: 'PostgreSQL Connection Failed',
+          error: err.message,
+        };
+      }
+    }
+
     if (this.mode === 'mariadb' && this.mariaPool) {
       try {
         const [rows]: any = await this.mariaPool.query('SELECT COUNT(*) as count FROM users');
