@@ -147,7 +147,8 @@ export const Header: React.FC<HeaderProps> = ({
   }> = [];
 
   if (isAdmin) {
-    // Universal Provost & Institutional Registrar: Complete Governance Suite
+    // Universal Provost & Institutional Registrar: High-Demand Operational Governance Suite
+    // Ordered strictly by daily collegiate demand: Home -> Admissions -> Finance & Fees -> Students -> Academics & Exams -> Faculty & HR -> Governance
     menuSections = [
       {
         id: 'dashboard',
@@ -158,45 +159,6 @@ export const Header: React.FC<HeaderProps> = ({
           setOpenDrawer(null);
         },
         isActive: activeScreen === 'admin-dashboard',
-      },
-      {
-        id: 'examination',
-        label: 'Examination',
-        defaultScreen: 'examination' as ActiveScreen,
-        items: [
-          { id: 'examination' as ActiveScreen, label: 'University Examination Forms', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
-          { id: 'examination' as ActiveScreen, label: 'Reappear / Backlog Portal', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
-          { id: 'examination' as ActiveScreen, label: 'Admit Card & Gate Clearance', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
-          { id: 'examination' as ActiveScreen, label: 'Datesheet & Examination Timetable', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
-          { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz & Examination LMS' },
-          { id: 'fee-ledger' as ActiveScreen, label: 'Fee Clearance for Examination' },
-        ],
-        isActive: ['examination', 'student-quiz-lms'].includes(activeScreen as any),
-      },
-      {
-        id: 'academics',
-        label: 'Academics',
-        defaultScreen: 'academics' as ActiveScreen,
-        items: [
-          { id: 'academics' as ActiveScreen, label: 'Choice Based Credit System (CBCS)' },
-          { id: 'academics' as ActiveScreen, label: 'Evaluation & Sessional Scheme' },
-          { id: 'student-quiz-lms' as ActiveScreen, label: 'Continuous Assessment (CA) Quiz' },
-          { id: 'academics' as ActiveScreen, label: 'Curriculum Syllabi Archive' },
-        ],
-        isActive: ['academics'].includes(activeScreen as any),
-      },
-      {
-        id: 'students',
-        label: 'Students',
-        defaultScreen: 'manage-students' as ActiveScreen,
-        items: [
-          { id: 'manage-students' as ActiveScreen, label: 'Student Master Directory' },
-          { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault' },
-          { id: 'fee-ledger' as ActiveScreen, label: 'Tuition Fee Assessment & Ledger' },
-          { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships' },
-          { id: 'grievances' as ActiveScreen, label: 'Statutory Grievance Redressal' },
-        ],
-        isActive: ['manage-students', 'student-documents', 'fee-ledger', 'scholarships', 'grievances'].includes(activeScreen as any),
       },
       {
         id: 'crm',
@@ -211,32 +173,62 @@ export const Header: React.FC<HeaderProps> = ({
         isActive: ['enquiries', 'bulk-import', 'admissions', 'form-builder'].includes(activeScreen as any),
       },
       {
+        id: 'fees',
+        label: 'Finance & Fees',
+        defaultScreen: 'fee-ledger' as ActiveScreen,
+        items: [
+          { id: 'fee-ledger' as ActiveScreen, label: 'Tuition Fee Assessment & Ledger' },
+          { id: 'fee-ledger' as ActiveScreen, label: 'Fee Head Configuration & Schedules' },
+          { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships' },
+          { id: 'partner-portal' as ActiveScreen, label: 'Channel & Partner Accounts (Tax & Bank)' },
+        ],
+        isActive: ['fee-ledger', 'scholarships'].includes(activeScreen as any),
+      },
+      {
+        id: 'students',
+        label: 'Students',
+        defaultScreen: 'manage-students' as ActiveScreen,
+        items: [
+          { id: 'manage-students' as ActiveScreen, label: 'Student Master Directory' },
+          { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault' },
+          { id: 'partner-portal' as ActiveScreen, label: 'Corporate Placement Partners & Drives' },
+          { id: 'grievances' as ActiveScreen, label: 'Statutory Grievance Redressal' },
+        ],
+        isActive: ['manage-students', 'student-documents', 'grievances'].includes(activeScreen as any),
+      },
+      {
+        id: 'examination',
+        label: 'Academics & Exams',
+        defaultScreen: 'examination' as ActiveScreen,
+        items: [
+          { id: 'examination' as ActiveScreen, label: 'University Examination Forms', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+          { id: 'examination' as ActiveScreen, label: 'Reappear / Backlog Portal', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+          { id: 'examination' as ActiveScreen, label: 'Admit Card & Gate Clearance', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+          { id: 'examination' as ActiveScreen, label: 'Datesheet & Examination Timetable', action: () => { onNavigate('examination'); setOpenDrawer(null); } },
+          { id: 'academics' as ActiveScreen, label: 'Choice Based Credit System (CBCS)' },
+          { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz & Examination LMS' },
+          { id: 'academics' as ActiveScreen, label: 'Curriculum Syllabi Archive' },
+        ],
+        isActive: ['examination', 'academics', 'student-quiz-lms'].includes(activeScreen as any),
+      },
+      {
         id: 'staff',
         label: 'Faculty & HR',
         defaultScreen: 'staff-management' as ActiveScreen,
         items: [
           { id: 'staff-management' as ActiveScreen, label: 'Faculty & HRMS Directory' },
           { id: 'teacher-documents' as ActiveScreen, label: 'Faculty Dossier Vault' },
+          { id: 'staff-management' as ActiveScreen, label: 'Assign Counselor & Placement Guide' },
           { id: 'staff-academic-journey' as any, label: 'CAS Research Publications & Patents', action: onOpenStaffJourney },
         ],
         isActive: ['staff-management', 'teacher-documents'].includes(activeScreen as any),
-      },
-      {
-        id: 'partners',
-        label: 'Placements',
-        defaultScreen: 'partner-portal' as ActiveScreen,
-        action: () => {
-          onNavigate('partner-portal');
-          setOpenDrawer(null);
-        },
-        isActive: activeScreen === 'partner-portal',
       },
       {
         id: 'governance',
         label: 'Governance',
         defaultScreen: 'user-management' as ActiveScreen,
         items: [
-          { id: 'user-management' as ActiveScreen, label: 'User Accounts & Roles' },
+          { id: 'user-management' as ActiveScreen, label: 'User Accounts & Access Control' },
           { id: 'master-tables' as any, label: 'Statutory Master Tables', action: onOpenMasterTables },
           { id: 'audit-trail' as any, label: 'Cryptographic Audit Trail', action: onOpenAuditLogs },
           { id: 'reports' as ActiveScreen, label: 'Institutional MIS Reports' },
@@ -606,8 +598,8 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-50 select-none font-sans" ref={navRef}>
       {/* TIER 1: Prestigious Institutional Identity Banner (Cupertino Frosted Navy #00236f) */}
-      <div className="bg-[#00236f]/95 backdrop-blur-2xl text-white px-3 sm:px-6 py-2 border-b border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
-        {/* Left: Crest + Bilingual Institution Typography */}
+      <div className="bg-[#00236f]/95 backdrop-blur-2xl text-white px-3 sm:px-6 py-2 border-b border-white/10 flex flex-nowrap items-center justify-between gap-3 text-xs overflow-x-auto no-scrollbar">
+        {/* Left: Crest + Bilingual Institution Typography + Campus Cluster Indicator */}
         <div className="flex items-center gap-2.5 shrink-0">
           <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md border border-white/20 ring-1 ring-white/10 flex items-center justify-center text-amber-300 font-black text-[11px] shadow-sm">
             BFGI
@@ -627,6 +619,13 @@ export const Header: React.FC<HeaderProps> = ({
               Autonomous Campus ERP • PUP Patiala • MRSPTU • PU Affiliated
             </span>
           </button>
+
+          {/* Campus Cluster Node Pill */}
+          <div className="hidden 2xl:flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/15 text-[11px] text-slate-200 ml-2 select-none shadow-inner shrink-0">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+            <span className="text-amber-300 font-bold">Campus 01:</span>
+            <span className="text-white font-medium">Bathinda Main • Engg & Mgmt</span>
+          </div>
         </div>
 
         {/* Right: Operational Controls, Canonical Digit UID & Utilities */}
@@ -722,9 +721,9 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* TIER 2: Ultra-Sleek Apple Horizontal Ribbon & Mega Navigation Strip */}
       <div className="w-full bg-white/95 backdrop-blur-2xl border-b border-slate-200/80 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.03)] relative z-40">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 flex items-center h-11 justify-between gap-3">
+        <div className="w-full max-w-[1600px] mx-auto px-3 sm:px-6 flex items-center h-11 justify-between gap-3">
           {/* Left: Universal Back Pill + Main Navigation Hubs */}
-          <div className="flex items-center gap-1.5 h-full overflow-x-auto no-scrollbar py-1">
+          <div className="flex items-center gap-1.5 h-full overflow-x-auto no-scrollbar py-1 shrink-0">
             {/* Apple-Grade Universal Back Button (Visible when on any sub-screen) */}
             {canGoBack && onGoBack && (
               <button
@@ -740,7 +739,7 @@ export const Header: React.FC<HeaderProps> = ({
             )}
 
             {/* Continuous Horizontal Strip of Text Options (Responsive: Scrollable on mobile, Mega Flyout on Desktop) */}
-            <nav className="flex items-center gap-1 h-full shrink-0">
+            <nav className="flex items-center gap-1.5 h-full shrink-0">
               {menuSections.map(sec => {
                 const isDrawerOpen = openDrawer === sec.id;
                 const hasChildren = Boolean(sec.items && sec.items.length > 0);
@@ -748,7 +747,7 @@ export const Header: React.FC<HeaderProps> = ({
                 return (
                   <div
                     key={sec.id}
-                    className="relative h-full flex items-center"
+                    className="relative h-full flex items-center shrink-0"
                     onMouseEnter={() => hasChildren && handleMouseEnter(sec.id)}
                     onMouseLeave={handleMouseLeave}
                   >
@@ -766,13 +765,13 @@ export const Header: React.FC<HeaderProps> = ({
                           onNavigate(sec.defaultScreen);
                         }
                       }}
-                      className={`h-8 sm:h-full px-2.5 sm:px-3 text-xs font-semibold tracking-tight transition-colors flex items-center gap-1 cursor-pointer select-none relative rounded-lg sm:rounded-none ${
+                      className={`h-8 sm:h-full px-2.5 sm:px-3 text-xs font-semibold tracking-tight transition-colors flex items-center gap-1 cursor-pointer select-none relative rounded-lg sm:rounded-none shrink-0 ${
                         sec.isActive || isDrawerOpen
                           ? 'text-[#00236f] font-bold bg-slate-100 sm:bg-transparent'
                           : 'text-slate-600 hover:text-[#00236f] hover:bg-slate-50 sm:hover:bg-transparent'
                       }`}
                     >
-                      <span className="whitespace-nowrap">{sec.label}</span>
+                      <span className="whitespace-nowrap font-medium">{sec.label}</span>
                       {hasChildren && (
                         <span
                           role="button"
@@ -807,9 +806,9 @@ export const Header: React.FC<HeaderProps> = ({
                           }
                         }}
                         onMouseLeave={handleMouseLeave}
-                        className={`absolute top-full mt-1.5 bg-white/98 backdrop-blur-2xl border border-slate-200/90 shadow-[0_20px_45px_-10px_rgba(0,35,111,0.18),0_0_0_1px_rgba(0,35,111,0.04)] rounded-2xl p-3 z-50 animate-fadeIn select-none ${
+                        className={`absolute top-full mt-1.5 bg-white/98 backdrop-blur-2xl border border-slate-200/90 shadow-[0_20px_45px_-10px_rgba(0,35,111,0.18),0_0_0_1px_rgba(0,35,111,0.04)] rounded-2xl p-3 z-50 animate-flyout select-none ${
                           sec.items!.length > 4 ? 'w-[420px] sm:w-[480px]' : 'min-w-[280px] sm:min-w-[320px]'
-                        } ${sec.id === 'governance' || sec.id === 'partners' ? 'right-0 left-auto' : 'left-0'}`}
+                        } ${sec.id === 'governance' || sec.id === 'staff' ? 'right-0 left-auto' : 'left-0'}`}
                       >
                         {/* Section Header with Tripartite Branding */}
                         <div className="px-3 pt-1.5 pb-2 text-[11px] font-bold text-slate-500 tracking-wider uppercase border-b border-slate-100 flex items-center justify-between">
@@ -868,17 +867,59 @@ export const Header: React.FC<HeaderProps> = ({
             </nav>
           </div>
 
-          {/* Right: Institutional Session Term & Live Gateway Indicators (Fills Desktop Void) */}
+          {/* Right: Operational Quick Action Ribbon & Live Campus Status (Fills Desktop Void) */}
           <div className="hidden md:flex items-center gap-2 shrink-0 select-none">
-            {/* Term Badge */}
+            {/* Quick Intake / Lead Shortcut Button */}
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => onNavigate('enquiries')}
+                title="Quick Admissions Lead Entry"
+                className="h-7 px-2.5 bg-emerald-50 hover:bg-emerald-100/90 active:bg-emerald-200 text-emerald-800 border border-emerald-300/80 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-spring-fast cursor-pointer shadow-2xs group"
+              >
+                <span className="text-xs text-emerald-600 group-hover:scale-110 transition-transform leading-none">+</span>
+                <span>Quick Lead</span>
+              </button>
+            )}
+
+            {/* Quick Fee Collection Shortcut Button */}
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => onNavigate('fee-ledger')}
+                title="Collect Semester / Registration Fee"
+                className="h-7 px-2.5 bg-blue-50 hover:bg-blue-100/90 active:bg-blue-200 text-[#00236f] border border-blue-200 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-spring-fast cursor-pointer shadow-2xs group"
+              >
+                <span className="text-[10px] text-blue-700">₹</span>
+                <span>Collect Fee</span>
+              </button>
+            )}
+
+            {/* Quick Admit Card / Hall Ticket Shortcut */}
+            <button
+              type="button"
+              onClick={() => onOpenAdmitCard ? onOpenAdmitCard() : onNavigate('examination')}
+              title="Verify Gate Clearance & Admit Card"
+              className="h-7 px-2.5 bg-slate-100 hover:bg-slate-200/90 active:bg-slate-300 text-slate-800 border border-slate-200/90 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-spring-fast cursor-pointer shadow-2xs"
+            >
+              <span>Hall Ticket</span>
+            </button>
+
+            {/* Term Badge with Semester */}
             <div className="flex items-center gap-1.5 h-7 px-2.5 bg-slate-100/80 border border-slate-200 rounded-full text-[11px] font-semibold text-slate-700">
               <span className="text-[#00236f] font-bold">AY 2026-27</span>
               <span className="text-slate-400">•</span>
-              <span className="text-slate-600">Jan–Jun Term</span>
+              <span className="text-slate-600">Sem 4/6/8</span>
             </div>
 
-            {/* University Tag */}
-            <div className="hidden xl:flex items-center gap-1 h-7 px-2.5 bg-amber-500/10 border border-amber-500/20 rounded-full text-[10px] font-bold text-amber-900">
+            {/* Live Database Sync Status Pill */}
+            <div className="hidden xl:flex items-center gap-1.5 h-7 px-2.5 bg-emerald-50/70 border border-emerald-200 rounded-full text-[10px] font-semibold text-emerald-800">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>DB Sync: Online</span>
+            </div>
+
+            {/* Tripartite University Tag */}
+            <div className="hidden 2xl:flex items-center gap-1 h-7 px-2.5 bg-amber-500/10 border border-amber-500/20 rounded-full text-[10px] font-bold text-amber-900">
               <span className="text-amber-600 font-extrabold">UGC</span>
               <span>MRSPTU • PUP • PU</span>
             </div>

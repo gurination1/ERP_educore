@@ -157,4 +157,94 @@
   animation-play-state: paused;
 }
 
+/* =========================================================================
+   Apple / Linear 60/120fps Physics & Fluid Spring Easing Animations
+   ========================================================================= */
+
+@keyframes smoothFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes smoothScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes smoothFlyoutDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes smoothSheetUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.08);
+  }
+}
+
+/* Fluid Spring Utilities */
+.animate-fadeIn {
+  animation: smoothFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+.animate-scaleUp {
+  animation: smoothScaleUp 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+.animate-scaleIn {
+  animation: smoothScaleUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+.animate-flyout {
+  animation: smoothFlyoutDown 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+.animate-sheet {
+  animation: smoothSheetUp 0.36s cubic-bezier(0.32, 0.72, 0, 1) forwards !important;
+}
+
+/* Global Transition Utility Classes */
+.transition-spring {
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.transition-spring-fast {
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+
 
