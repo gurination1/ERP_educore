@@ -1643,6 +1643,250 @@ class DatabaseStore {
         verified TINYINT(1) DEFAULT 0,
         created_at VARCHAR(64) NOT NULL
       );
+
+      CREATE TABLE IF NOT EXISTS master_departments (
+        id VARCHAR(64) PRIMARY KEY,
+        dept_code VARCHAR(32) UNIQUE,
+        dept_name VARCHAR(128) NOT NULL,
+        tags_json TEXT,
+        head_of_dept VARCHAR(128),
+        established_year INT,
+        is_active TINYINT(1) DEFAULT 1
+      );
+
+      CREATE TABLE IF NOT EXISTS master_institution_types (
+        code VARCHAR(32) PRIMARY KEY,
+        name VARCHAR(128) NOT NULL,
+        regulatory_authority VARCHAR(64),
+        description TEXT
+      );
+
+      CREATE TABLE IF NOT EXISTS master_employee_statuses (
+        status_code VARCHAR(32) PRIMARY KEY,
+        status_name VARCHAR(64) NOT NULL,
+        description TEXT,
+        requires_dates TINYINT(1) DEFAULT 0
+      );
+
+      CREATE TABLE IF NOT EXISTS master_designation_changes (
+        type_code VARCHAR(32) PRIMARY KEY,
+        name VARCHAR(128) NOT NULL,
+        category VARCHAR(64)
+      );
+
+      CREATE TABLE IF NOT EXISTS master_erp_statuses (
+        status_code VARCHAR(32) PRIMARY KEY,
+        status_name VARCHAR(64) NOT NULL,
+        stage VARCHAR(64)
+      );
+
+      CREATE TABLE IF NOT EXISTS staff_basic_info (
+        id VARCHAR(64) PRIMARY KEY,
+        staff_id VARCHAR(64) UNIQUE,
+        employee_id VARCHAR(64) UNIQUE,
+        full_name VARCHAR(128) NOT NULL,
+        father_name VARCHAR(128),
+        dob VARCHAR(32),
+        gender VARCHAR(16),
+        date_of_joining VARCHAR(32),
+        date_of_resigning VARCHAR(32),
+        last_working_date VARCHAR(32),
+        category VARCHAR(64),
+        primary_designation VARCHAR(128),
+        department_id VARCHAR(64),
+        employee_status VARCHAR(32) DEFAULT 'ACTIVE',
+        login_enabled TINYINT(1) DEFAULT 1,
+        must_change_password TINYINT(1) DEFAULT 0,
+        custom_attr_1 VARCHAR(255),
+        custom_attr_2 VARCHAR(255),
+        custom_attr_3 VARCHAR(255),
+        custom_attr_4 VARCHAR(255),
+        custom_meta_json TEXT
+      );
+
+      CREATE TABLE IF NOT EXISTS staff_additional_info (
+        id VARCHAR(64) PRIMARY KEY,
+        staff_id VARCHAR(64) UNIQUE,
+        emergency_phone VARCHAR(32),
+        blood_group VARCHAR(16),
+        marital_status VARCHAR(32),
+        nationality VARCHAR(64),
+        pf_uan VARCHAR(64),
+        esi_number VARCHAR(64),
+        custom_meta_json TEXT
+      );
+
+      CREATE TABLE IF NOT EXISTS staff_addresses (
+        id VARCHAR(64) PRIMARY KEY,
+        staff_id VARCHAR(64) NOT NULL,
+        address_type VARCHAR(32),
+        address_line TEXT,
+        city VARCHAR(64),
+        state_gst VARCHAR(32),
+        pincode VARCHAR(16),
+        is_default TINYINT(1) DEFAULT 0
+      );
+
+      CREATE TABLE IF NOT EXISTS staff_bank_accounts (
+        id VARCHAR(64) PRIMARY KEY,
+        staff_id VARCHAR(64) NOT NULL,
+        bank_name VARCHAR(128),
+        account_number VARCHAR(64),
+        ifsc_code VARCHAR(32),
+        branch_name VARCHAR(128),
+        is_default TINYINT(1) DEFAULT 0
+      );
+
+      CREATE TABLE IF NOT EXISTS staff_qualifications (
+        id VARCHAR(64) PRIMARY KEY,
+        staff_id VARCHAR(64) NOT NULL,
+        qualification_title VARCHAR(128),
+        institution VARCHAR(128),
+        year_of_passing INT,
+        percentage_or_cgpa DOUBLE,
+        is_highest TINYINT(1) DEFAULT 0
+      );
+
+      CREATE TABLE IF NOT EXISTS staff_certifications (
+        id VARCHAR(64) PRIMARY KEY,
+        staff_id VARCHAR(64) NOT NULL,
+        certification_name VARCHAR(128),
+        issuing_body VARCHAR(128),
+        issue_year INT,
+        credential_id VARCHAR(128)
+      );
+
+      CREATE TABLE IF NOT EXISTS staff_experience (
+        id VARCHAR(64) PRIMARY KEY,
+        staff_id VARCHAR(64) NOT NULL,
+        organization_name VARCHAR(128),
+        designation VARCHAR(128),
+        start_date VARCHAR(32),
+        end_date VARCHAR(32),
+        is_latest TINYINT(1) DEFAULT 0
+      );
+
+      CREATE TABLE IF NOT EXISTS staff_org_journey (
+        id VARCHAR(64) PRIMARY KEY,
+        staff_id VARCHAR(64) NOT NULL,
+        event_type VARCHAR(64),
+        effective_date VARCHAR(32),
+        old_designation VARCHAR(128),
+        new_designation VARCHAR(128),
+        actor_id VARCHAR(64),
+        remarks TEXT,
+        created_at VARCHAR(64)
+      );
+
+      CREATE TABLE IF NOT EXISTS partners (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64),
+        partner_type VARCHAR(64),
+        firm_name VARCHAR(128) NOT NULL,
+        pan_number VARCHAR(32),
+        gst_number VARCHAR(32),
+        tan_number VARCHAR(32),
+        email VARCHAR(128),
+        phone VARCHAR(32),
+        address TEXT,
+        is_active TINYINT(1) DEFAULT 1,
+        created_at VARCHAR(64),
+        custom_meta_json TEXT
+      );
+
+      CREATE TABLE IF NOT EXISTS partner_contacts (
+        id VARCHAR(64) PRIMARY KEY,
+        partner_id VARCHAR(64) NOT NULL,
+        contact_name VARCHAR(128),
+        designation VARCHAR(128),
+        email VARCHAR(128),
+        phone VARCHAR(32),
+        is_default TINYINT(1) DEFAULT 0
+      );
+
+      CREATE TABLE IF NOT EXISTS partner_bank_accounts (
+        id VARCHAR(64) PRIMARY KEY,
+        partner_id VARCHAR(64) NOT NULL,
+        bank_name VARCHAR(128),
+        account_number VARCHAR(64),
+        ifsc_code VARCHAR(32),
+        branch_name VARCHAR(128),
+        is_default TINYINT(1) DEFAULT 0
+      );
+
+      CREATE TABLE IF NOT EXISTS partner_job_postings (
+        id VARCHAR(64) PRIMARY KEY,
+        partner_id VARCHAR(64) NOT NULL,
+        title VARCHAR(128) NOT NULL,
+        type VARCHAR(64),
+        stipend_salary VARCHAR(64),
+        eligible_departments VARCHAR(255),
+        min_cgpa DOUBLE,
+        description TEXT,
+        status VARCHAR(32) DEFAULT 'active',
+        created_at VARCHAR(64)
+      );
+
+      CREATE TABLE IF NOT EXISTS partner_applications (
+        id VARCHAR(64) PRIMARY KEY,
+        posting_id VARCHAR(64) NOT NULL,
+        student_id VARCHAR(64) NOT NULL,
+        student_name VARCHAR(128),
+        cgpa DOUBLE,
+        status VARCHAR(32) DEFAULT 'applied',
+        remarks TEXT,
+        applied_at VARCHAR(64)
+      );
+
+      CREATE TABLE IF NOT EXISTS bulk_upload_batches (
+        id VARCHAR(64) PRIMARY KEY,
+        upload_date VARCHAR(64),
+        filename VARCHAR(255),
+        total_rows INT DEFAULT 0,
+        fresh_count INT DEFAULT 0,
+        duplicate_count INT DEFAULT 0,
+        wrong_count INT DEFAULT 0,
+        source_label VARCHAR(128),
+        uploaded_by VARCHAR(64)
+      );
+
+      CREATE TABLE IF NOT EXISTS enquiries (
+        id VARCHAR(64) PRIMARY KEY,
+        enquiry_no VARCHAR(64) UNIQUE,
+        student_name VARCHAR(128) NOT NULL,
+        gender VARCHAR(16),
+        father_name VARCHAR(128),
+        mobile VARCHAR(32),
+        email VARCHAR(128),
+        selected_course VARCHAR(64),
+        course_fee DOUBLE,
+        admission_probability DOUBLE,
+        status VARCHAR(64) DEFAULT 'new',
+        assigned_counselor_id VARCHAR(64),
+        assigned_counselor_name VARCHAR(128),
+        batch_id VARCHAR(64),
+        created_at VARCHAR(64),
+        custom_meta_json TEXT
+      );
+
+      CREATE TABLE IF NOT EXISTS enquiry_interactions (
+        id VARCHAR(64) PRIMARY KEY,
+        enquiry_id VARCHAR(64) NOT NULL,
+        stage_name VARCHAR(64),
+        counselor_id VARCHAR(64),
+        remarks TEXT,
+        call_status VARCHAR(32),
+        probability_updated DOUBLE,
+        call_recording_url TEXT,
+        timestamp VARCHAR(64)
+      );
+
+      CREATE TABLE IF NOT EXISTS dialer_settings (
+        id VARCHAR(64) PRIMARY KEY,
+        is_enabled TINYINT(1) DEFAULT 0,
+        provider VARCHAR(64),
+        api_key_configured TINYINT(1) DEFAULT 0
+      );
     `);
 
     // Ensure newly added student columns exist in live MariaDB
@@ -1701,6 +1945,29 @@ class DatabaseStore {
     await safeAddColumn('students', 'last_followup_at VARCHAR(64)');
     await safeAddColumn('students', 'assigned_counselor_id VARCHAR(64)');
     await safeAddColumn('students', 'assigned_counselor_name VARCHAR(255)');
+
+    // Enterprise Performance Indexes (High Concurrency & Peak Throughput)
+    const safeCreateIndex = async (table: string, indexName: string, cols: string) => {
+      try {
+        await this.mariaPool!.query(`CREATE INDEX \`${indexName}\` ON \`${table}\` (${cols})`);
+      } catch (e: any) {
+        // Ignore duplicate index errors
+      }
+    };
+    await safeCreateIndex('users', 'idx_users_uid', 'enterprise_uid');
+    await safeCreateIndex('users', 'idx_users_role', 'role');
+    await safeCreateIndex('students', 'idx_students_roll', 'student_id');
+    await safeCreateIndex('students', 'idx_students_user_id', 'user_id');
+    await safeCreateIndex('students', 'idx_students_course_sem', 'course_id, current_semester');
+    await safeCreateIndex('students', 'idx_students_status', 'admission_status, fees_status');
+    await safeCreateIndex('student_fees', 'idx_student_fees_stu', 'student_id, status');
+    await safeCreateIndex('payments', 'idx_payments_stu', 'student_id, payment_date');
+    await safeCreateIndex('payments', 'idx_payments_receipt', 'receipt_no');
+    await safeCreateIndex('audit_logs', 'idx_audit_logs_time', 'timestamp');
+    await safeCreateIndex('audit_logs', 'idx_audit_logs_actor', 'actor_id');
+    await safeCreateIndex('staff_basic_info', 'idx_staff_emp_id', 'employee_id');
+    await safeCreateIndex('staff_basic_info', 'idx_staff_dept_status', 'department_id, employee_status');
+    await safeCreateIndex('enquiries', 'idx_enquiries_status', 'status, assigned_counselor_id');
 
     // Always sanitize legacy benchmark test candidate names in live MariaDB
     try {
@@ -2036,6 +2303,42 @@ class DatabaseStore {
       await this.mariaPool.query(
         'INSERT IGNORE INTO notices (id, title, summary, content, notice_date, category, is_pinned) VALUES (?, ?, ?, ?, ?, ?, ?)',
         [n.id, n.title, n.summary, n.content, n.notice_date, n.category, n.is_pinned ? 1 : 0]
+      );
+    }
+    for (const dept of this.master_departments) {
+      await this.mariaPool.query(
+        'INSERT IGNORE INTO master_departments (id, dept_code, dept_name, tags_json, head_of_dept, established_year, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [dept.id, dept.dept_code, dept.dept_name, dept.tags_json, dept.head_of_dept || null, dept.established_year, dept.is_active ? 1 : 0]
+      );
+    }
+    for (const inst of this.master_institution_types) {
+      await this.mariaPool.query(
+        'INSERT IGNORE INTO master_institution_types (code, name, regulatory_authority, description) VALUES (?, ?, ?, ?)',
+        [inst.code, inst.name, inst.regulatory_authority, inst.description]
+      );
+    }
+    for (const sb of this.staff_basic_info) {
+      await this.mariaPool.query(
+        'INSERT IGNORE INTO staff_basic_info (id, staff_id, employee_id, full_name, father_name, dob, gender, date_of_joining, date_of_resigning, last_working_date, category, primary_designation, department_id, employee_status, login_enabled, must_change_password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [sb.id, sb.staff_id, sb.employee_id, sb.full_name, sb.father_name || null, sb.dob || null, sb.gender || null, sb.date_of_joining || null, sb.date_of_resigning || null, sb.last_working_date || null, sb.category || null, sb.primary_designation, sb.department_id, sb.employee_status, sb.login_enabled ? 1 : 0, sb.must_change_password ? 1 : 0]
+      );
+    }
+    for (const p of this.partners) {
+      await this.mariaPool.query(
+        'INSERT IGNORE INTO partners (id, user_id, partner_type, firm_name, pan_number, gst_number, tan_number, email, phone, address, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [p.id, p.user_id || null, p.partner_type, p.firm_name, p.pan_number || null, p.gst_number || null, p.tan_number || null, p.email, p.phone, p.address, p.is_active ? 1 : 0, formatSqlDateTime(p.created_at)]
+      );
+    }
+    for (const enq of this.enquiries) {
+      await this.mariaPool.query(
+        'INSERT IGNORE INTO enquiries (id, enquiry_no, student_name, gender, father_name, mobile, email, selected_course, course_fee, admission_probability, status, assigned_counselor_id, assigned_counselor_name, batch_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [enq.id, enq.enquiry_no, enq.student_name, enq.gender || null, enq.father_name || null, enq.mobile || null, enq.email || null, enq.selected_course, enq.course_fee || 0, enq.admission_probability || 0, enq.status, enq.assigned_counselor_id || null, enq.assigned_counselor_name || null, enq.batch_id || null, formatSqlDateTime(enq.created_at)]
+      );
+    }
+    for (const log of this.audit_logs) {
+      await this.mariaPool.query(
+        'INSERT IGNORE INTO audit_logs (id, timestamp, actor_id, actor_name, actor_role, actor_ip, action, target_type, target_id, details, changes_diff, severity) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [log.id, formatSqlDateTime(log.timestamp), log.actor_id, log.actor_name, log.actor_role, log.actor_ip || null, log.action, log.target_type, log.target_id, log.details, log.changes_diff || null, log.severity]
       );
     }
   }
