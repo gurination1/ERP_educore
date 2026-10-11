@@ -40,6 +40,7 @@ import { UniversityExamPortalView } from './components/UniversityExamPortalView'
 import { TenantsManagementView } from './components/TenantsManagementView';
 import { PaymentGatewaysView } from './components/PaymentGatewaysView';
 import { FieldPermissionsView } from './components/FieldPermissionsView';
+import { SuperAdminDashboardView } from './components/SuperAdminDashboardView';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 interface LayoutProps {
@@ -120,7 +121,9 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
         return 'field-permissions';
       case '/dashboard':
       default:
-        return (currentUser?.role === 'admin' || currentUser?.role === 'super_admin')
+        return currentUser?.role === 'super_admin'
+          ? 'super-admin-dashboard'
+          : currentUser?.role === 'admin'
           ? 'admin-dashboard'
           : (currentUser?.role === 'staff' || currentUser?.role === 'counselor' || currentUser?.role === 'hod')
           ? 'staff-dashboard'
@@ -135,7 +138,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
   const handleNavigate = (screen: ActiveScreen) => {
     if (screen === 'fee-ledger') {
       navigate('/fees');
-    } else if (screen === 'student-dashboard' || screen === 'admin-dashboard' || screen === 'staff-dashboard') {
+    } else if (screen === 'student-dashboard' || screen === 'admin-dashboard' || screen === 'super-admin-dashboard' || screen === 'staff-dashboard') {
       navigate('/dashboard');
     } else {
       navigate(`/${screen}`);
@@ -169,6 +172,16 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
 
   const getBreadcrumbData = (path: string) => {
     switch (path) {
+      case '/dashboard':
+        return currentUser?.role === 'super_admin'
+          ? { category: 'Super Admin Architecture', title: 'Universal Provost & SaaS Master Cockpit' }
+          : currentUser?.role === 'admin'
+          ? { category: 'Operations & Governance', title: 'Institutional Executive Governance Cockpit' }
+          : currentUser?.role === 'staff' || currentUser?.role === 'hod'
+          ? { category: 'Faculty Desk', title: 'Academic Classroom & Sessional Console' }
+          : currentUser?.role === 'student'
+          ? { category: 'Scholar Home', title: 'Enrolled Scholar Academic Cockpit' }
+          : { category: 'Operations', title: 'Console Module' };
       case '/fees':
         return { category: 'Finance & Accounts', title: 'Fee Ledger & Collections' };
       case '/admissions':
@@ -528,7 +541,14 @@ function MainApp() {
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
               >
-                {(currentUser.role === 'admin' || currentUser.role === 'super_admin') ? (
+                {currentUser.role === 'super_admin' ? (
+                  <SuperAdminDashboardView
+                    currentUser={currentUser}
+                    onNavigate={handleScreenNavigate}
+                    onOpenMasterTables={() => setShowMasterTables(true)}
+                    onOpenAuditLogs={() => setShowAuditLogs(true)}
+                  />
+                ) : currentUser.role === 'admin' ? (
                   <AdminDashboardView
                     onNavigate={handleScreenNavigate}
                     onOpenEmailReminders={() => setIsEmailRemindersOpen(true)}

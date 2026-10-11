@@ -127,7 +127,9 @@ export const Header: React.FC<HeaderProps> = ({
   const userRole = currentUser?.role;
 
   const dashboardTarget: ActiveScreen =
-    isAdmin
+    isSuperAdmin
+      ? 'super-admin-dashboard'
+      : currentUser?.role === 'admin'
       ? 'admin-dashboard'
       : userRole === 'staff' || userRole === 'hod' || userRole === 'counselor'
       ? 'staff-dashboard'
@@ -152,12 +154,12 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'platform',
         label: 'Platform Overview',
-        defaultScreen: 'admin-dashboard',
+        defaultScreen: 'super-admin-dashboard',
         action: () => {
-          onNavigate('admin-dashboard');
+          onNavigate('super-admin-dashboard');
           setOpenDrawer(null);
         },
-        isActive: activeScreen === 'admin-dashboard',
+        isActive: activeScreen === 'super-admin-dashboard',
       },
       {
         id: 'tenants',

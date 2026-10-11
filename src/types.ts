@@ -545,6 +545,7 @@ export interface GrievanceItem {
 }
 
 export type ActiveScreen =
+  | 'super-admin-dashboard' // Dedicated Apex SaaS Platform Overview
   | 'student-dashboard' // Screen 1 & 2
   | 'login'             // Screen 3 & 4
   | 'admissions'        // Screen 5 & 6
