@@ -364,4 +364,88 @@ export const api = {
     apiRequest('/api/master/departments', { method: 'POST', body: JSON.stringify(dept) }),
   updateMasterDepartment: (id: string, updates: any) =>
     apiRequest(`/api/master/departments/${id}`, { method: 'PUT', body: JSON.stringify(updates) }),
+
+  // Multi-Tenant Campus Management (Lecture 3)
+  getTenants: () => apiRequest('/api/tenants'),
+  createTenant: (data: any) => apiRequest('/api/tenants', { method: 'POST', body: JSON.stringify(data) }),
+  toggleTenantFunctional: (id: string, is_functional: boolean) =>
+    apiRequest(`/api/tenants/${id}/toggle-functional`, { method: 'POST', body: JSON.stringify({ is_functional }) }),
+  impersonateTenant: (id: string) => apiRequest(`/api/tenants/${id}/impersonate`, { method: 'POST' }),
+
+  // Academic Topology (Batches, Sections, Curriculum, Allocations, Timetable)
+  getBatches: (courseId?: string) => apiRequest(`/api/academics/batches${courseId ? `?courseId=${courseId}` : ''}`),
+  createBatch: (data: any) => apiRequest('/api/academics/batches', { method: 'POST', body: JSON.stringify(data) }),
+  getSections: (batchId?: string) => apiRequest(`/api/academics/sections${batchId ? `?batchId=${batchId}` : ''}`),
+  createSection: (data: any) => apiRequest('/api/academics/sections', { method: 'POST', body: JSON.stringify(data) }),
+  transferStudentSection: (data: any) => apiRequest('/api/academics/sections/transfer', { method: 'POST', body: JSON.stringify(data) }),
+  getSubjects: (courseId?: string, termNumber?: number) => {
+    const params = new URLSearchParams();
+    if (courseId) params.append('courseId', courseId);
+    if (termNumber) params.append('termNumber', String(termNumber));
+    return apiRequest(`/api/academics/subjects?${params.toString()}`);
+  },
+  createSubject: (data: any) => apiRequest('/api/academics/subjects', { method: 'POST', body: JSON.stringify(data) }),
+  getFacultyAllocations: (filters?: any) => {
+    const params = new URLSearchParams(filters || {});
+    return apiRequest(`/api/academics/allocations?${params.toString()}`);
+  },
+  allocateFaculty: (data: any) => apiRequest('/api/academics/allocations', { method: 'POST', body: JSON.stringify(data) }),
+  handoverFaculty: (data: any) => apiRequest('/api/academics/allocations/handover', { method: 'POST', body: JSON.stringify(data) }),
+  getTimetableSlots: (filters?: any) => {
+    const params = new URLSearchParams(filters || {});
+    return apiRequest(`/api/academics/timetable?${params.toString()}`);
+  },
+  createTimetableSlot: (data: any) => apiRequest('/api/academics/timetable', { method: 'POST', body: JSON.stringify(data) }),
+  getAttendanceSettings: () => apiRequest('/api/academics/attendance-settings'),
+  updateAttendanceSettings: (backdated_lock_days: number) =>
+    apiRequest('/api/academics/attendance-settings', { method: 'PUT', body: JSON.stringify({ backdated_lock_days }) }),
+  recordAttendance: (data: any) => apiRequest('/api/academics/attendance/record', { method: 'POST', body: JSON.stringify(data) }),
+
+  // HRMS Payroll, Security Deductions & Exit NOC
+  getStaffPayroll: (staffId: string) => apiRequest(`/api/staff/${staffId}/payroll`),
+  updateStaffPayroll: (staffId: string, data: any) => apiRequest(`/api/staff/${staffId}/payroll`, { method: 'PUT', body: JSON.stringify(data) }),
+  getStaffSecurityDeduction: (staffId: string) => apiRequest(`/api/staff/${staffId}/security-deduction`),
+  recordSecurityInstallment: (staffId: string, installmentAmount: number) =>
+    apiRequest(`/api/staff/${staffId}/security-deduction/installment`, { method: 'POST', body: JSON.stringify({ installmentAmount }) }),
+  getStaffExitNoc: (staffId: string) => apiRequest(`/api/staff/${staffId}/noc`),
+  updateNocCheckpoint: (staffId: string, data: any) =>
+    apiRequest(`/api/staff/${staffId}/noc/checkpoint`, { method: 'PUT', body: JSON.stringify(data) }),
+  releaseSecurityRefund: (staffId: string, txRef?: string) =>
+    apiRequest(`/api/staff/${staffId}/noc/release-refund`, { method: 'POST', body: JSON.stringify({ txRef }) }),
+
+  // Student Progression Lifecycle
+  updateStudentProgression: (studentId: string, data: any) =>
+    apiRequest(`/api/students/${studentId}/progression`, { method: 'POST', body: JSON.stringify(data) }),
+
+  // Dynamic Payment Gateways
+  getPaymentGateways: (tenantId?: string) => {
+    const q = tenantId ? `?tenantId=${tenantId}` : '';
+    return apiRequest(`/api/finance/payment-gateways${q}`);
+  },
+  getActivePaymentGateway: (tenantId?: string) => {
+    const q = tenantId ? `?tenantId=${tenantId}` : '';
+    return apiRequest(`/api/finance/payment-gateways/active${q}`);
+  },
+  createPaymentGateway: (data: any) =>
+    apiRequest('/api/finance/payment-gateways', { method: 'POST', body: JSON.stringify(data) }),
+  togglePaymentGatewayMode: (id: string) =>
+    apiRequest(`/api/finance/payment-gateways/${id}/toggle-mode`, { method: 'POST' }),
+  activatePaymentGateway: (id: string, tenantId?: string) =>
+    apiRequest(`/api/finance/payment-gateways/${id}/activate`, { method: 'POST', body: JSON.stringify({ tenant_id: tenantId }) }),
+
+  // Staff Additional Roles
+  getStaffAdditionalRoles: (staffId: string) =>
+    apiRequest(`/api/staff/${staffId}/additional-roles`),
+  createStaffAdditionalRole: (staffId: string, data: any) =>
+    apiRequest(`/api/staff/${staffId}/additional-roles`, { method: 'POST', body: JSON.stringify(data) }),
+  deleteStaffAdditionalRole: (staffId: string, roleId: string) =>
+    apiRequest(`/api/staff/${staffId}/additional-roles/${roleId}`, { method: 'DELETE' }),
+
+  // Field-Level RBAC Permissions
+  getFieldPermissions: (entityType?: string) => {
+    const q = entityType ? `?entityType=${entityType}` : '';
+    return apiRequest(`/api/permissions/fields${q}`);
+  },
+  updateFieldPermission: (id: string, data: any) =>
+    apiRequest(`/api/permissions/fields/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
 };

@@ -37,6 +37,9 @@ import { PartnerPortalView } from './components/PartnerPortalView';
 import { BulkImportView } from './components/BulkImportView';
 import { EnquiriesView } from './components/EnquiriesView';
 import { UniversityExamPortalView } from './components/UniversityExamPortalView';
+import { TenantsManagementView } from './components/TenantsManagementView';
+import { PaymentGatewaysView } from './components/PaymentGatewaysView';
+import { FieldPermissionsView } from './components/FieldPermissionsView';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 interface LayoutProps {
@@ -109,6 +112,12 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
       case '/examination':
       case '/examination-portal':
         return 'examination';
+      case '/tenants':
+        return 'tenants';
+      case '/payment-gateways':
+        return 'payment-gateways';
+      case '/field-permissions':
+        return 'field-permissions';
       case '/dashboard':
       default:
         return (currentUser?.role === 'admin' || currentUser?.role === 'super_admin')
@@ -197,6 +206,12 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
       case '/examination':
       case '/examination-portal':
         return { category: 'Academics & Examination', title: 'University Examination & Gate Clearance Portal' };
+      case '/tenants':
+        return { category: 'Super Admin Architecture', title: 'Multi-Tenant Campuses & Provisioning' };
+      case '/payment-gateways':
+        return { category: 'Finance & Accounts', title: 'Payment Gateways & Current Accounts' };
+      case '/field-permissions':
+        return { category: 'Administration & RBAC', title: 'Field-Level Permissions Matrix' };
       default:
         return { category: 'Portal', title: 'Console Module' };
     }
@@ -978,6 +993,69 @@ function MainApp() {
                   onNavigateToBulkImport={() => navigate('/bulk-import')}
                   onNavigateToManageStudents={() => navigate('/manage-students')}
                 />
+              </AuthenticatedLayout>
+            )
+          }
+        />
+
+        <Route
+          path="/tenants"
+          element={
+            !currentUser ? (
+              <Navigate to="/" replace />
+            ) : !['super_admin', 'admin'].includes(currentUser.role) ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <AuthenticatedLayout
+                currentUser={currentUser}
+                onLogout={handleLogout}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              >
+                <TenantsManagementView
+                  currentUser={currentUser}
+                  onNavigate={handleScreenNavigate}
+                />
+              </AuthenticatedLayout>
+            )
+          }
+        />
+
+        <Route
+          path="/payment-gateways"
+          element={
+            !currentUser ? (
+              <Navigate to="/" replace />
+            ) : !['super_admin', 'admin', 'accounts'].includes(currentUser.role) ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <AuthenticatedLayout
+                currentUser={currentUser}
+                onLogout={handleLogout}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              >
+                <PaymentGatewaysView />
+              </AuthenticatedLayout>
+            )
+          }
+        />
+
+        <Route
+          path="/field-permissions"
+          element={
+            !currentUser ? (
+              <Navigate to="/" replace />
+            ) : !['super_admin', 'admin'].includes(currentUser.role) ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <AuthenticatedLayout
+                currentUser={currentUser}
+                onLogout={handleLogout}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              >
+                <FieldPermissionsView />
               </AuthenticatedLayout>
             )
           }

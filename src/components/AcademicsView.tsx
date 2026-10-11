@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { safeGoBack } from '../utils/navigation';
+import { api } from '../api/client';
 import { User } from '../types';
 
 interface AcademicsViewProps {
@@ -20,7 +21,7 @@ interface CourseItem {
   department: string;
   semester: number;
   credits: number;
-  ltp: string; // e.g. 3-1-0
+  ltp: string;
   instructor: string;
   description: string;
   units: SyllabusUnit[];
@@ -89,247 +90,368 @@ const COURSES: CourseItem[] = [
   {
     id: 'crs-cs402',
     code: 'CS-402',
-    title: 'Advanced Relational DBMS & MariaDB Internals',
+    title: 'Advanced Relational DBMS & PostgreSQL Internals',
     department: 'Computer Science & Engineering',
     semester: 4,
     credits: 4,
     ltp: '3-0-2',
     instructor: 'Dr. Ramesh Chandra (Academic Provost)',
-    description: 'In-depth study of storage engine architectures, B-tree indexes, ACID transaction isolation levels, write-ahead logging (WAL), query execution planners, and MariaDB replication.',
+    description: 'In-depth study of storage engine architectures, B-tree indexes, ACID transaction isolation levels, write-ahead logging (WAL), query execution planners, and PostgreSQL multi-tenancy.',
     units: [
       {
         unitNo: 'Unit I',
-        title: 'Storage Engines & File Structures',
-        hours: 10,
+        title: 'Database Storage Engines & Buffer Management',
+        hours: 11,
         topics: [
           'Relational database physical layout: Slotted pages, row records, and variable-length attributes',
-          'Storage engines: InnoDB vs Aria vs MyISAM, memory buffering, and buffer pool eviction algorithms',
-          'B+ Tree index organization, clustered vs secondary indexing, and composite search keys',
+          'Buffer pool replacement strategies: Clock sweep, LRU-K, and dirty page flushing mechanisms',
+          'File organizations: Heap files, sorted sequential files, and hash partitioning',
         ],
       },
       {
         unitNo: 'Unit II',
-        title: 'Advanced SQL & Query Processing',
-        hours: 11,
+        title: 'Indexing & Physical Query Optimization',
+        hours: 12,
         topics: [
-          'Window functions, Common Table Expressions (CTEs), and recursive hierarchical queries',
-          'Query parsing, logical plan rewriting, and cost-based physical plan generation',
-          'Hash joins, merge joins, index nested loops, and query profiling (EXPLAIN ANALYZE)',
+          'B+ Tree index search, insertion, node splitting, and concurrency latching protocols',
+          'Cost-based query optimizer architecture: Dynamic programming plan space enumeration',
+          'Hash join vs Sort-Merge join vs Indexed Nested Loop join algorithms',
         ],
       },
       {
         unitNo: 'Unit III',
-        title: 'Transaction Management & Concurrency',
+        title: 'ACID Concurrency & Write-Ahead Logging',
         hours: 12,
         topics: [
-          'ACID properties, Write-Ahead Logging (WAL), and ARIES recovery algorithm',
           'Multi-Version Concurrency Control (MVCC), snapshot isolation, and repeatable read anomalies',
-          'Two-Phase Locking (2PL), deadlock detection, wait-for graphs, and timeout mitigation',
+          'ARIES recovery protocol: Analysis pass, Redo phase, and Undo pass algorithms',
+          'Two-Phase Locking (2PL), deadlock detection graphs, and optimistic concurrency control',
         ],
       },
       {
         unitNo: 'Unit IV',
-        title: 'Distributed DB & High Availability',
-        hours: 12,
+        title: 'Distributed Databases & PostgreSQL Sharding',
+        hours: 10,
         topics: [
-          'Galera Cluster synchronous multi-master replication in MariaDB',
-          'Semi-synchronous replication, binlog positions, and GTID failover mechanics',
           'Horizontal table partitioning, sharding architectures, and distributed connection pooling',
+          'PostgreSQL schema-per-tenant isolation models and read replicas',
+          'Point-in-time recovery (PITR) and enterprise backup verification pipelines',
         ],
       },
     ],
     textbooks: [
       'Database System Concepts (7th Edition) - Abraham Silberschatz, Henry F. Korth, S. Sudarshan',
-      'High Performance MySQL / MariaDB (4th Edition) - Silvia Botros & Jeremy Tinley',
+      'PostgreSQL: Up and Running - Regina Obe & Leo Hsu',
       'Database Management Systems - Raghu Ramakrishnan & Johannes Gehrke',
-    ],
-  },
-  {
-    id: 'crs-cs403',
-    code: 'CS-403',
-    title: 'Design & Analysis of Algorithms',
-    department: 'Computer Science & Engineering',
-    semester: 4,
-    credits: 4,
-    ltp: '3-1-0',
-    instructor: 'Prof. K. Venkatesh',
-    description: 'Rigorous algorithmic paradigms: divide and conquer, dynamic programming, greedy methods, amortized analysis, graph algorithms, and NP-completeness proofs.',
-    units: [
-      {
-        unitNo: 'Unit I',
-        title: 'Asymptotic Analysis & Recurrences',
-        hours: 10,
-        topics: [
-          'Big-O, Big-Omega, Big-Theta notations and mathematical limits',
-          'Solving recurrences: Master Theorem, recursion tree method, and substitution',
-          'Amortized analysis: Aggregate method, accounting method, and potential method',
-        ],
-      },
-      {
-        unitNo: 'Unit II',
-        title: 'Divide-and-Conquer & Greedy Paradigms',
-        hours: 11,
-        topics: [
-          'Strassen matrix multiplication, closest pair of points, and median finding in linear time',
-          'Greedy choice property & optimal substructure: Huffman coding, fractional knapsack',
-          'Minimum Spanning Trees: Kruskal and Prim algorithms with Disjoint Set Union (DSU)',
-        ],
-      },
-      {
-        unitNo: 'Unit III',
-        title: 'Dynamic Programming & Graph Algorithms',
-        hours: 12,
-        topics: [
-          'Matrix chain multiplication, 0/1 Knapsack, Longest Common Subsequence (LCS), and Bellman-Ford',
-          'All-pairs shortest paths: Floyd-Warshall and Johnson algorithms',
-          'Maximum network flow: Ford-Fulkerson method and Edmonds-Karp algorithm',
-        ],
-      },
-      {
-        unitNo: 'Unit IV',
-        title: 'Tractability & NP-Completeness',
-        hours: 12,
-        topics: [
-          'Complexity classes: P, NP, NP-Hard, and NP-Complete',
-          'Polynomial-time reductions: 3-SAT to Clique, Vertex Cover, and Hamiltonian Cycle',
-          'Approximation algorithms: Traveling Salesperson Problem (TSP) and Vertex Cover 2-approximation',
-        ],
-      },
-    ],
-    textbooks: [
-      'Introduction to Algorithms (CLRS 4th Edition) - Cormen, Leiserson, Rivest, Stein',
-      'Algorithm Design - Jon Kleinberg & Éva Tardos',
-    ],
-  },
-  {
-    id: 'crs-cs404',
-    code: 'CS-404',
-    title: 'Operating Systems & Unix Kernel Programming',
-    department: 'Computer Science & Engineering',
-    semester: 4,
-    credits: 4,
-    ltp: '3-0-2',
-    instructor: 'Prof. Ananya Sen',
-    description: 'Process life-cycle, POSIX threads, semaphores, monitors, virtual memory paging, disk scheduling, and Linux kernel system call programming.',
-    units: [
-      {
-        unitNo: 'Unit I',
-        title: 'Process Management & Multithreading',
-        hours: 10,
-        topics: [
-          'Process Control Block (PCB), context switching overhead, and fork/exec system calls',
-          'CPU scheduling algorithms: CFS (Completely Fair Scheduler), Round Robin, Multi-level feedback queues',
-          'POSIX threads (pthreads), user-level vs kernel-level threads, and race condition synchronization',
-        ],
-      },
-      {
-        unitNo: 'Unit II',
-        title: 'Synchronization & Deadlocks',
-        hours: 11,
-        topics: [
-          'Critical section problem, Peterson algorithm, mutex locks, counting semaphores, and condition variables',
-          'Classical synchronization problems: Dining Philosophers, Readers-Writers, Producer-Consumer',
-          'Deadlock characterization (Coffman conditions), Banker algorithm for avoidance, and recovery strategies',
-        ],
-      },
-      {
-        unitNo: 'Unit III',
-        title: 'Memory Hierarchy & Virtual Memory',
-        hours: 12,
-        topics: [
-          'Address binding, dynamic linking, logical vs physical address spaces, and Memory Management Unit (MMU)',
-          'Paging: Page tables, Translation Lookaside Buffer (TLB), inverted page tables, and multi-level paging',
-          'Page replacement algorithms: LRU, Clock algorithm, FIFO, and thrashing prevention through working set model',
-        ],
-      },
-      {
-        unitNo: 'Unit IV',
-        title: 'File Systems & Linux I/O Architecture',
-        hours: 12,
-        topics: [
-          'Virtual File System (VFS), Inodes, directory structures, and file allocation methods (Ext4)',
-          'Disk scheduling algorithms: SCAN, C-SCAN, LOOK, and SSD wear-leveling controllers',
-          'Linux kernel modules: Writing a character device driver and registering kernel interrupts',
-        ],
-      },
-    ],
-    textbooks: [
-      'Operating System Concepts (10th Edition) - Silberschatz, Galvin, Gagne',
-      'Modern Operating Systems (4th Edition) - Andrew S. Tanenbaum & Herbert Bos',
     ],
   },
 ];
 
-export const AcademicsView: React.FC<AcademicsViewProps> = () => {
+type AcademicTab =
+  | 'syllabus'
+  | 'batches'
+  | 'sections'
+  | 'subjects'
+  | 'allocations'
+  | 'timetable'
+  | 'attendance';
+
+export const AcademicsView: React.FC<AcademicsViewProps> = ({ currentUser }) => {
+  const [activeTab, setActiveTab] = useState<AcademicTab>('syllabus');
   const [selectedCourse, setSelectedCourse] = useState<CourseItem | null>(null);
-  const [downloadSuccess, setDownloadSuccess] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // Batches state
+  const [batches, setBatches] = useState<any[]>([]);
+  const [isAddBatchOpen, setIsAddBatchOpen] = useState(false);
+  const [newBatch, setNewBatch] = useState({
+    course_id: 'cse',
+    batch_name: '2024-2028',
+    start_year: 2024,
+    end_year: 2028,
+    academic_system: 'semester' as 'semester' | 'annual',
+    active_terms: [1, 2],
+  });
+
+  // Sections state
+  const [sections, setSections] = useState<any[]>([]);
+  const [isAddSectionOpen, setIsAddSectionOpen] = useState(false);
+  const [newSection, setNewSection] = useState({
+    batch_id: 'batch-cse-2024',
+    section_name: 'A',
+    capacity: 60,
+  });
+
+  // Section Transfer state
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [transferData, setTransferData] = useState({
+    student_id: 'stu-rec-aryan',
+    target_section_id: 'sec-cse-b',
+    reason: 'Elective stream re-balancing',
+  });
+
+  // Subjects state
+  const [subjects, setSubjects] = useState<any[]>([]);
+  const [isAddSubjectOpen, setIsAddSubjectOpen] = useState(false);
+  const [newSubject, setNewSubject] = useState({
+    course_id: 'cse',
+    subject_name: 'Cloud Infrastructure Engineering',
+    term_number: 1,
+    subject_type: 'compulsory' as any,
+    take_exam: true,
+    show_in_report_card: true,
+    take_attendance: true,
+    credits: 4.0,
+    max_marks: 100,
+    pass_marks: 40,
+  });
+
+  // Allocations & Handover state
+  const [allocations, setAllocations] = useState<any[]>([]);
+  const [isHandoverModalOpen, setIsHandoverModalOpen] = useState(false);
+  const [selectedAllocation, setSelectedAllocation] = useState<any | null>(null);
+  const [handoverData, setHandoverData] = useState({
+    new_faculty_id: 'usr-staff-02',
+    handover_date: new Date().toISOString().split('T')[0],
+    reason: 'Senior mentor mid-semester assignment reallocation',
+  });
+
+  // Timetable state
+  const [timetableSlots, setTimetableSlots] = useState<any[]>([]);
+  const [isAddSlotOpen, setIsAddSlotOpen] = useState(false);
+  const [newSlot, setNewSlot] = useState({
+    batch_id: 'batch-cse-2024',
+    section_id: 'sec-cse-a',
+    subject_id: 'sub-cs-101',
+    faculty_id: 'usr-staff-01',
+    day_of_week: 'Monday',
+    start_time: '09:00',
+    end_time: '10:00',
+    room_number: 'Room 101',
+    is_combined_class: false,
+  });
+
+  // Attendance Settings state
+  const [attendanceSettings, setAttendanceSettings] = useState<{ backdated_lock_days: number }>({ backdated_lock_days: 20 });
+  const [lockThreshold, setLockThreshold] = useState<number>(20);
+
+  useEffect(() => {
+    loadAcademicData();
+  }, [activeTab]);
+
+  const loadAcademicData = async () => {
+    try {
+      if (activeTab === 'batches') {
+        const res = await api.getBatches();
+        if (res.success) setBatches(res.batches || []);
+      } else if (activeTab === 'sections') {
+        const [resSec, resBat] = await Promise.all([api.getSections(), api.getBatches()]);
+        if (resSec.success) setSections(resSec.sections || []);
+        if (resBat.success) setBatches(resBat.batches || []);
+      } else if (activeTab === 'subjects') {
+        const res = await api.getSubjects();
+        if (res.success) setSubjects(res.subjects || []);
+      } else if (activeTab === 'allocations') {
+        const res = await api.getFacultyAllocations();
+        if (res.success) setAllocations(res.allocations || []);
+      } else if (activeTab === 'timetable') {
+        const res = await api.getTimetableSlots();
+        if (res.success) setTimetableSlots(res.slots || []);
+      } else if (activeTab === 'attendance') {
+        const res = await api.getAttendanceSettings();
+        if (res.success && res.settings) {
+          setAttendanceSettings(res.settings);
+          setLockThreshold(res.settings.backdated_lock_days);
+        }
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message });
+    }
+  };
+
+  const handleCreateBatch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await api.createBatch({
+        ...newBatch,
+        total_terms: newBatch.academic_system === 'annual' ? 4 : 8,
+        active_terms_json: JSON.stringify(newBatch.active_terms),
+      });
+      if (res.success) {
+        setBatches(prev => [res.batch, ...prev]);
+        setIsAddBatchOpen(false);
+        setFeedback({ type: 'success', message: `Batch ${res.batch.batch_name} created.` });
+      } else {
+        setFeedback({ type: 'error', message: res.error || 'Failed to create batch' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message });
+    }
+  };
+
+  const handleCreateSection = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await api.createSection(newSection);
+      if (res.success) {
+        setSections(prev => [res.section, ...prev]);
+        setIsAddSectionOpen(false);
+        setFeedback({ type: 'success', message: `Section ${res.section.section_name} created.` });
+      } else {
+        setFeedback({ type: 'error', message: res.error || 'Failed to create section' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message });
+    }
+  };
+
+  const handleSectionTransfer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await api.transferStudentSection(transferData);
+      if (res.success) {
+        setIsTransferModalOpen(false);
+        setFeedback({
+          type: 'success',
+          message: `Non-destructive section transfer complete for student ${transferData.student_id}. Cumulative attendance and fees preserved.`,
+        });
+      } else {
+        setFeedback({ type: 'error', message: res.error || 'Failed to transfer student' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message });
+    }
+  };
+
+  const handleCreateSubject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await api.createSubject(newSubject);
+      if (res.success) {
+        setSubjects(prev => [res.subject, ...prev]);
+        setIsAddSubjectOpen(false);
+        setFeedback({ type: 'success', message: `Subject ${res.subject.subject_code} (${res.subject.subject_name}) registered in matrix.` });
+      } else {
+        setFeedback({ type: 'error', message: res.error || 'Failed to create subject' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message });
+    }
+  };
+
+  const handleHandoverAllocation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedAllocation) return;
+    try {
+      const res = await api.handoverFaculty({
+        allocation_id: selectedAllocation.id,
+        new_faculty_id: handoverData.new_faculty_id,
+        handover_date: handoverData.handover_date,
+        reason: handoverData.reason,
+      });
+      if (res.success) {
+        setIsHandoverModalOpen(false);
+        setSelectedAllocation(null);
+        setFeedback({
+          type: 'success',
+          message: `Faculty subject handover recorded. Successor ${handoverData.new_faculty_id} assigned from next day.`,
+        });
+        loadAcademicData();
+      } else {
+        setFeedback({ type: 'error', message: res.error || 'Handover failed' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message });
+    }
+  };
+
+  const handleCreateTimetableSlot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await api.createTimetableSlot(newSlot);
+      if (res.success) {
+        setTimetableSlots(prev => [res.slot, ...prev]);
+        setIsAddSlotOpen(false);
+        setFeedback({ type: 'success', message: `Timetable slot scheduled for ${res.slot.day_of_week} at ${res.slot.start_time}.` });
+      } else {
+        setFeedback({ type: 'error', message: res.error || 'Slot conflict or failed' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message });
+    }
+  };
+
+  const handleSaveAttendanceSettings = async () => {
+    try {
+      const res = await api.updateAttendanceSettings(lockThreshold);
+      if (res.success) {
+        setAttendanceSettings(res.settings);
+        setFeedback({
+          type: 'success',
+          message: `Anti-Fraud Attendance Lock updated to ${lockThreshold} days backdated maximum.`,
+        });
+      } else {
+        setFeedback({ type: 'error', message: res.error || 'Failed to update attendance lock threshold' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message });
+    }
+  };
 
   const handleDownloadSyllabus = (course: CourseItem) => {
     const textContent = `
 ================================================================================
-UNIVERSITY ACADEMIC COUNCIL & EXAMINATION BOARD (PUP / MRSPTU / PU)
-BABA FARID COLLEGE OF ENGINEERING & TECHNOLOGY (BFGI)
-DEPARTMENT OF ${course.department.toUpperCase()}
-OFFICIAL COURSE SYLLABUS & CURRICULUM SCHEME (CBCS 2025-26)
+OFFICIAL UNIVERSITY SYLLABUS & CURRICULUM SPECIFICATION
+Autonomous Collegiate Board of Studies • Scheme: Choice Based Credit System (CBCS)
 ================================================================================
 
-COURSE CODE: ${course.code}
-COURSE TITLE: ${course.title}
-SEMESTER: Semester ${course.semester}
-CREDITS: ${course.credits} Credits (L-T-P: ${course.ltp})
-COURSE INSTRUCTOR: ${course.instructor}
+Degree Program: Bachelor of Technology (Computer Science & Engineering)
+Affiliation: Panjab University (PU) • MRSPTU • PUP Patiala
 
-COURSE OVERVIEW:
+Subject Code: ${course.code}
+Subject Title: ${course.title}
+Department: ${course.department}
+Semester: Semester ${course.semester}
+Credits: ${course.credits} Credits (Lecture-Tutorial-Practical: ${course.ltp})
+Course Instructor / Faculty: ${course.instructor}
+
+COURSE SYNOPSIS:
 ${course.description}
 
+CURRICULUM UNITS & BREAKDOWN:
+${course.units.map(u => `
+${u.unitNo}: ${u.title} (${u.hours} Lecture Hours)
 --------------------------------------------------------------------------------
-DETAILED SYLLABUS MODULES:
---------------------------------------------------------------------------------
-${course.units
-  .map(
-    u => `
-[${u.unitNo}: ${u.title}] (Contact Hours: ${u.hours})
 ${u.topics.map((t, idx) => `  ${idx + 1}. ${t}`).join('\n')}
-`
-  )
-  .join('\n')}
+`).join('\n')}
 
---------------------------------------------------------------------------------
-RECOMMENDED TEXTBOOKS & REFERENCE LITERATURE:
---------------------------------------------------------------------------------
+PRESCRIBED TEXTBOOKS & STATUTORY REFERENCES:
 ${course.textbooks.map((b, idx) => `  [${idx + 1}] ${b}`).join('\n')}
 
---------------------------------------------------------------------------------
-EVALUATION SCHEME (STATUTORY CBCS UNIVERSITY CRITERIA):
---------------------------------------------------------------------------------
-  1. Internal Continuous Assessment: 60 Marks (Passing Cutoff: 24/60)
-     - Mid-Semester Test 1 (MST-1): 24 Marks
-     - Mid-Semester Test 2 (MST-2): 24 Marks
-     - Continuous Lab / Assignments / Attendance: 12 Marks
-  2. External End-Semester University Examination: 40 Marks (Passing Cutoff: 16/40)
-  3. Minimum Attendance Requirement: 75% Mandatory (Statutory Ordinance 7.4)
+EVALUATION SCHEME:
+  - Mid-Semester Tests (MST-1 & MST-2): 48 Marks
+  - Continuous Assessments / Assignments / Lab: 12 Marks
+  - External End-Semester University Exam: 40 Marks
+  - Minimum Mandatory Attendance Cutoff: 75% (Ordinance 7.4)
 
-Controller of Examinations & Academic Council
-EduCore ERP • Institutional Record Generated on ${new Date().toISOString().slice(0, 10)}
-================================================================================
+Record Generated on ${new Date().toISOString().slice(0, 10)}
 `.trim();
 
     const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `University_Syllabus_${course.code}_${new Date().getFullYear()}.txt`;
+    a.download = `Syllabus_${course.code}_${new Date().getFullYear()}.txt`;
     document.body.appendChild(a);
     a.click();
     a.remove();
     window.URL.revokeObjectURL(url);
 
-    setDownloadSuccess(`Official syllabus for ${course.code} downloaded successfully.`);
-    setTimeout(() => setDownloadSuccess(null), 4000);
+    setFeedback({ type: 'success', message: `Official syllabus for ${course.code} downloaded successfully.` });
   };
 
   return (
-    <div id="academics-curriculum-screen" className="space-y-3 animate-fadeIn text-xs">
+    <div id="academics-curriculum-screen" className="space-y-4 animate-fadeIn text-xs">
       {/* Page Header Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-slate-200/70">
         <div className="flex items-center gap-2">
@@ -342,250 +464,987 @@ EduCore ERP • Institutional Record Generated on ${new Date().toISOString().sli
             ‹
           </button>
           <h2 className="font-extrabold text-sm text-[#00236f] tracking-tight">
-            Academics & Course Curriculum
+            Academic Topology & Curriculum Matrix
           </h2>
           <span className="text-[10px] text-slate-300 font-semibold">•</span>
-          <span className="text-[11px] text-slate-600 font-medium">Choice Based Credit System (CBCS)</span>
+          <span className="text-[11px] text-slate-600 font-medium">5-Level Hierarchy (Lecture 3 Senior Mentor Architecture)</span>
         </div>
 
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold px-2.5 py-0.5 bg-[#ffedd5] text-[#00236f] rounded-full border border-[#ea580c]">
             Session 2025-26
           </span>
-          <span className="text-[10px] font-bold px-2.5 py-0.5 bg-[#00236f]/10 text-[#00236f] rounded-full">
-            Semester 4 (Regular)
+          <span className="text-[10px] font-bold px-2.5 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full">
+            PostgreSQL Active Engine
           </span>
         </div>
       </div>
 
-      {/* Download Alert Toast */}
-      {downloadSuccess && (
-        <div className="p-3.5 bg-[#ffedd5] border border-[#ea580c] text-[#00236f] rounded-xl text-xs font-bold flex items-center gap-2">
-          <span className="font-bold text-[10px]">✓</span>
-          <span>{downloadSuccess}</span>
+      {/* Feedback Toast */}
+      {feedback && (
+        <div
+          className={`p-3 rounded-xl flex items-center justify-between text-xs font-semibold shadow-2xs ${
+            feedback.type === 'success'
+              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+              : 'bg-rose-50 text-rose-800 border border-rose-200'
+          }`}
+        >
+          <span>{feedback.message}</span>
+          <button onClick={() => setFeedback(null)} className="px-2 py-0.5 text-[10px] font-bold hover:bg-black/5 rounded">
+            Dismiss
+          </button>
         </div>
       )}
 
-      {/* Academic Highlights Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="p-4 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
-          <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#757682]">
-            Degree Program
-          </h4>
-          <p className="text-base font-bold text-[#191c1d] mt-1.5">
-            B.Tech Computer Science & Engg.
-          </p>
-          <span className="text-xs text-[#757682] mt-0.5 block">
-            4-Year Full-Time • AICTE & Multi-University Affiliated
-          </span>
-        </div>
-
-        <div className="p-4 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
-          <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#757682]">
-            Evaluation Ratio
-          </h4>
-          <p className="text-base font-bold text-[#191c1d] mt-1.5">
-            60% Internal • 40% University
-          </p>
-          <span className="text-xs text-[#757682] mt-0.5 block">
-            MST-1 (24) + MST-2 (24) + Assessment (12)
-          </span>
-        </div>
-
-        <div className="p-4 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
-          <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#757682]">
-            Statutory Attendance Rule
-          </h4>
-          <p className="text-base font-bold text-[#191c1d] mt-1.5">
-            75% Mandatory Cutoff
-          </p>
-          <span className="text-xs text-[#757682] mt-0.5 block">
-            Statutory Ordinance 7.4 Hall Ticket Requirement
-          </span>
-        </div>
+      {/* Horizontal Tabs Ribbon (Cupertino Segmented Control) */}
+      <div className="flex items-center gap-1.5 p-1 bg-slate-200/60 rounded-xl overflow-x-auto text-xs font-semibold border border-slate-200">
+        <button
+          onClick={() => setActiveTab('syllabus')}
+          className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === 'syllabus'
+              ? 'bg-white text-[#00236f] shadow-xs font-bold'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          Curriculum & Syllabus
+        </button>
+        <button
+          onClick={() => setActiveTab('batches')}
+          className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === 'batches'
+              ? 'bg-white text-[#00236f] shadow-xs font-bold'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          Batches (L4)
+        </button>
+        <button
+          onClick={() => setActiveTab('sections')}
+          className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === 'sections'
+              ? 'bg-white text-[#00236f] shadow-xs font-bold'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          Sections & Transfers (L5)
+        </button>
+        <button
+          onClick={() => setActiveTab('subjects')}
+          className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === 'subjects'
+              ? 'bg-white text-[#00236f] shadow-xs font-bold'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          Subject Matrix
+        </button>
+        <button
+          onClick={() => setActiveTab('allocations')}
+          className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === 'allocations'
+              ? 'bg-white text-[#00236f] shadow-xs font-bold'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          Faculty Handover
+        </button>
+        <button
+          onClick={() => setActiveTab('timetable')}
+          className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === 'timetable'
+              ? 'bg-white text-[#00236f] shadow-xs font-bold'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          Time Table & CC
+        </button>
+        <button
+          onClick={() => setActiveTab('attendance')}
+          className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === 'attendance'
+              ? 'bg-white text-[#00236f] shadow-xs font-bold'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          Attendance Lock
+        </button>
       </div>
 
-      {/* Courses Grid */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-bold text-[#191c1d]">
-          Prescribed Theory & Practical Courses
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {COURSES.map(course => (
-            <div
-              key={course.id}
-              className="bg-white rounded-xl border border-[#e1e3e4] shadow-xs p-6 flex flex-col justify-between space-y-4 hover:border-[#00236f]/40 transition-colors"
-            >
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-0.5 rounded text-[11px] font-extrabold bg-[#dce1ff] text-[#00236f]">
-                    {course.code}
-                  </span>
-                  <span className="text-xs font-bold text-[#757682]">
-                    Credits: {course.credits} ({course.ltp})
-                  </span>
-                </div>
-
-                <h4 className="text-lg font-bold text-[#191c1d] mt-3">
-                  {course.title}
-                </h4>
-
-                <p className="text-xs text-[#757682] mt-1">
-                  Instructor: {course.instructor}
-                </p>
-
-                <p className="text-xs text-[#444651] mt-3 line-clamp-2">
-                  {course.description}
-                </p>
-
-                <div className="mt-4 pt-3 border-t border-[#f3f4f5] flex flex-wrap gap-2 text-[11px] text-[#757682]">
-                  <span className="bg-[#f8f9fa] px-2 py-1 rounded border border-[#edeeef]">
-                    4 Units • 45 Lecture Hours
-                  </span>
-                  <span className="bg-[#f8f9fa] px-2 py-1 rounded border border-[#edeeef]">
-                    CBCS Core Subject
-                  </span>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-[#f3f4f5] flex items-center justify-between gap-3">
-                <button
-                  type="button"
-                  onClick={() => setSelectedCourse(course)}
-                  className="text-xs font-bold text-[#00236f] hover:underline flex items-center gap-1 cursor-pointer"
-                >
-                  <span>View Detailed Syllabus →</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleDownloadSyllabus(course)}
-                  className="px-3 py-1.5 bg-[#f3f4f5] hover:bg-[#e1e3e4] text-[#191c1d] rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <span>Download (.txt)</span>
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Syllabus Detail Modal */}
-      {selectedCourse && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-[#e1e3e4] overflow-hidden">
-            {/* Modal Header */}
-            <div className="p-6 border-b border-[#e1e3e4] flex items-center justify-between bg-[#f8f9fa]">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 bg-[#00236f] text-white rounded text-xs font-bold">
-                    {selectedCourse.code}
-                  </span>
-                  <span className="text-xs font-semibold text-[#757682]">
-                    Credits: {selectedCourse.credits} (L-T-P: {selectedCourse.ltp})
-                  </span>
-                </div>
-                <h3 className="text-lg font-bold text-[#191c1d] mt-1">
-                  {selectedCourse.title}
-                </h3>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedCourse(null)}
-                  className="px-2.5 py-1 rounded-full bg-slate-200/70 hover:bg-slate-300 text-slate-700 text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
-                >
-                  <span className="font-bold text-sm leading-none">‹</span>
-                  <span>Back</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedCourse(null)}
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-[#757682] hover:bg-[#edeeef] cursor-pointer"
-                  title="Close"
-                >
-                  <span className="font-bold text-[10px]">✕</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-6 overflow-y-auto space-y-6 text-xs">
-              <div>
-                <h4 className="font-bold text-[#191c1d] text-sm uppercase tracking-wider text-[#757682] mb-1">
-                  Course Synopsis
-                </h4>
-                <p className="text-[#444651] leading-relaxed">
-                  {selectedCourse.description}
-                </p>
-              </div>
-
-              {/* Units Breakdown */}
-              <div className="space-y-4">
-                <h4 className="font-bold text-[#191c1d] text-sm uppercase tracking-wider text-[#757682]">
-                  Curriculum Modules (CBCS)
-                </h4>
-                <div className="space-y-3">
-                  {selectedCourse.units.map(unit => (
-                    <div key={unit.unitNo} className="p-3.5 bg-[#f8f9fa] rounded-xl border border-[#edeeef] space-y-2">
-                      <div className="flex items-center justify-between">
-                        <strong className="text-[#00236f] font-bold text-xs">
-                          {unit.unitNo}: {unit.title}
-                        </strong>
-                        <span className="text-[10px] text-[#757682] font-semibold">
-                          {unit.hours} Hours
-                        </span>
-                      </div>
-                      <ul className="list-disc list-inside space-y-1 text-[#444651] pl-1">
-                        {unit.topics.map((t, idx) => (
-                          <li key={idx}>{t}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Textbooks */}
-              <div>
-                <h4 className="font-bold text-[#191c1d] text-sm uppercase tracking-wider text-[#757682] mb-2">
-                  Prescribed Textbooks & References
-                </h4>
-                <ul className="space-y-1.5 text-[#444651]">
-                  {selectedCourse.textbooks.map((b, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <span className="text-[#00236f] font-bold">[{idx + 1}]</span>
-                      <span>{b}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-4 bg-[#f8f9fa] border-t border-[#e1e3e4] flex items-center justify-between">
-              <span className="text-xs text-[#757682]">
-                Official Syllabus Document • Statutory CBCS 2025-26
+      {/* ======================================================== */}
+      {/* TAB 1: CURRICULUM & SYLLABUS                             */}
+      {/* ======================================================== */}
+      {activeTab === 'syllabus' && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 bg-white rounded-xl border border-slate-200/80 shadow-xs">
+              <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                Degree Program
+              </h4>
+              <p className="text-base font-bold text-slate-900 mt-1">
+                B.Tech Computer Science & Engg.
+              </p>
+              <span className="text-xs text-slate-500 mt-0.5 block">
+                4-Year Full-Time • AICTE & Tripartite Affiliated
               </span>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedCourse(null)}
-                  className="px-4 py-2 bg-white border border-[#c5c5d3] text-[#444651] rounded-lg text-xs font-semibold hover:bg-[#f3f4f5] cursor-pointer"
-                >
-                  Close
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDownloadSyllabus(selectedCourse)}
-                  className="px-4 py-2 bg-[#00236f] text-white rounded-lg text-xs font-bold hover:bg-[#1e3a8a] flex items-center gap-1.5 cursor-pointer shadow-xs"
-                >
-                  <span className="font-bold text-[10px]">[DL]</span>
-                  <span>Download Document</span>
-                </button>
+            </div>
+
+            <div className="p-4 bg-white rounded-xl border border-slate-200/80 shadow-xs">
+              <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                Evaluation Ratio
+              </h4>
+              <p className="text-base font-bold text-slate-900 mt-1">
+                60% Internal • 40% University
+              </p>
+              <span className="text-xs text-slate-500 mt-0.5 block">
+                MST-1 (24) + MST-2 (24) + Assessment (12)
+              </span>
+            </div>
+
+            <div className="p-4 bg-white rounded-xl border border-slate-200/80 shadow-xs">
+              <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                Statutory Attendance Rule
+              </h4>
+              <p className="text-base font-bold text-slate-900 mt-1">
+                75% Mandatory Cutoff
+              </p>
+              <span className="text-xs text-slate-500 mt-0.5 block">
+                Statutory Ordinance 7.4 Hall Ticket Requirement
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {COURSES.map(course => (
+              <div
+                key={course.id}
+                className="bg-white rounded-xl border border-slate-200/80 shadow-xs p-5 flex flex-col justify-between space-y-3 hover:border-[#00236f]/30 transition-colors"
+              >
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="px-2 py-0.5 rounded text-[11px] font-extrabold bg-[#00236f]/10 text-[#00236f]">
+                      {course.code}
+                    </span>
+                    <span className="text-xs font-bold text-slate-500">
+                      Credits: {course.credits} ({course.ltp})
+                    </span>
+                  </div>
+
+                  <h4 className="text-base font-bold text-slate-900 mt-2">
+                    {course.title}
+                  </h4>
+
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Instructor: {course.instructor}
+                  </p>
+
+                  <p className="text-xs text-slate-600 mt-2 line-clamp-2">
+                    {course.description}
+                  </p>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCourse(course)}
+                    className="text-xs font-bold text-[#00236f] hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>View Units & Modules →</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadSyllabus(course)}
+                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <span>Download (.txt)</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 2: BATCHES (Level 4: Semester vs Annual)             */}
+      {/* ======================================================== */}
+      {activeTab === 'batches' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-slate-900 text-sm">Academic Batches (Level 4 Topology)</h3>
+              <p className="text-slate-500 text-xs">Configure Semester vs Annual systems and toggle active terms.</p>
+            </div>
+            <button
+              onClick={() => setIsAddBatchOpen(true)}
+              className="px-3 py-1.5 bg-[#00236f] text-white rounded-lg font-semibold hover:bg-[#001950] transition-colors"
+            >
+              + Create Batch
+            </button>
+          </div>
+
+          <div className="bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-xs">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 border-b border-slate-200 font-semibold text-slate-700">
+                <tr>
+                  <th className="px-4 py-2.5">Batch Name</th>
+                  <th className="px-4 py-2.5">Course</th>
+                  <th className="px-4 py-2.5">Start / End Year</th>
+                  <th className="px-4 py-2.5">Academic System</th>
+                  <th className="px-4 py-2.5">Active Terms</th>
+                  <th className="px-4 py-2.5">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {batches.map(b => (
+                  <tr key={b.id} className="hover:bg-slate-50/50">
+                    <td className="px-4 py-3 font-bold text-slate-900">{b.batch_name}</td>
+                    <td className="px-4 py-3 uppercase text-slate-600 font-mono">{b.course_id}</td>
+                    <td className="px-4 py-3">{b.start_year} – {b.end_year}</td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${b.academic_system === 'annual' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}`}>
+                        {b.academic_system} ({b.total_terms} terms)
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 font-mono text-slate-600">
+                      {b.active_terms_json || 'Terms 1, 2'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                        Active
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 3: SECTIONS & NON-DESTRUCTIVE TRANSFERS (Level 5)    */}
+      {/* ======================================================== */}
+      {activeTab === 'sections' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-slate-900 text-sm">Sections & Class Rosters (Level 5 Topology)</h3>
+              <p className="text-slate-500 text-xs">Section capacity and non-destructive transfers preserving cumulative attendance & fee ledgers.</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsTransferModalOpen(true)}
+                className="px-3 py-1.5 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-lg font-semibold hover:bg-indigo-100 transition-colors"
+              >
+                Transfer Student Section ⇄
+              </button>
+              <button
+                onClick={() => setIsAddSectionOpen(true)}
+                className="px-3 py-1.5 bg-[#00236f] text-white rounded-lg font-semibold hover:bg-[#001950] transition-colors"
+              >
+                + Add Section
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-xs">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 border-b border-slate-200 font-semibold text-slate-700">
+                <tr>
+                  <th className="px-4 py-2.5">Section Name</th>
+                  <th className="px-4 py-2.5">Parent Batch</th>
+                  <th className="px-4 py-2.5">Capacity</th>
+                  <th className="px-4 py-2.5">Data Integrity Protection</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {sections.map(s => (
+                  <tr key={s.id} className="hover:bg-slate-50/50">
+                    <td className="px-4 py-3 font-bold text-slate-900 text-sm">Section {s.section_name}</td>
+                    <td className="px-4 py-3 font-mono text-slate-600">{s.batch_id}</td>
+                    <td className="px-4 py-3">{s.capacity} Students</td>
+                    <td className="px-4 py-3 text-slate-500">
+                      <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                        ✓ Preserves Cumulative Attendance & Fee Heads
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 4: SUBJECT MATRIX (Formula: [NAME]_[COURSE]_[TERM])   */}
+      {/* ======================================================== */}
+      {activeTab === 'subjects' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-slate-900 text-sm">Curriculum & Subject Matrix</h3>
+              <p className="text-slate-500 text-xs">Formula: <code className="bg-slate-100 px-1 py-0.5 rounded font-bold">[NAME]_[COURSE]_[TERM]</code> (e.g. HIST_101_01). Evaluation flags take_exam & show_in_report_card.</p>
+            </div>
+            <button
+              onClick={() => setIsAddSubjectOpen(true)}
+              className="px-3 py-1.5 bg-[#00236f] text-white rounded-lg font-semibold hover:bg-[#001950] transition-colors"
+            >
+              + Add Subject to Matrix
+            </button>
+          </div>
+
+          <div className="bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-xs">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 border-b border-slate-200 font-semibold text-slate-700">
+                <tr>
+                  <th className="px-4 py-2.5">Subject Code (Formula)</th>
+                  <th className="px-4 py-2.5">Subject Title</th>
+                  <th className="px-4 py-2.5">Term</th>
+                  <th className="px-4 py-2.5">Credits</th>
+                  <th className="px-4 py-2.5">Evaluation Flags</th>
+                  <th className="px-4 py-2.5">Marks Scheme</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {subjects.map(sub => (
+                  <tr key={sub.id} className="hover:bg-slate-50/50">
+                    <td className="px-4 py-3 font-mono font-bold text-blue-700">{sub.subject_code}</td>
+                    <td className="px-4 py-3 font-semibold text-slate-900">{sub.subject_name}</td>
+                    <td className="px-4 py-3 font-medium">Term {sub.term_number}</td>
+                    <td className="px-4 py-3 font-bold">{sub.credits}</td>
+                    <td className="px-4 py-3 space-x-1.5 flex flex-wrap gap-1">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${sub.take_exam ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}`}>
+                        {sub.take_exam ? 'Exam: Yes' : 'Exam: No'}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${sub.show_in_report_card ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-600'}`}>
+                        {sub.show_in_report_card ? 'Report: Yes' : 'Report: No'}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${sub.take_attendance !== false ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'}`}>
+                        {sub.take_attendance !== false ? 'Attendance: Yes' : 'Attendance: No (FC Auto-Present)'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-slate-600">
+                      Max {sub.max_marks} / Pass {sub.pass_marks}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 5: FACULTY ALLOCATIONS & HANDOVER DATES              */}
+      {/* ======================================================== */}
+      {activeTab === 'allocations' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-slate-900 text-sm">Faculty Subject Allocations & Handover Dates</h3>
+              <p className="text-slate-500 text-xs">Track faculty assignment validity dates (valid_from, valid_until) and trigger mid-term successor handovers.</p>
+            </div>
+          </div>
+
+          <div className="bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-xs">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 border-b border-slate-200 font-semibold text-slate-700">
+                <tr>
+                  <th className="px-4 py-2.5">Faculty In-Charge</th>
+                  <th className="px-4 py-2.5">Subject</th>
+                  <th className="px-4 py-2.5">Batch / Section</th>
+                  <th className="px-4 py-2.5">Validity Dates</th>
+                  <th className="px-4 py-2.5">Status</th>
+                  <th className="px-4 py-2.5 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {allocations.map(al => (
+                  <tr key={al.id} className="hover:bg-slate-50/50">
+                    <td className="px-4 py-3 font-semibold text-slate-900">{al.faculty_id}</td>
+                    <td className="px-4 py-3 font-mono text-blue-700 font-bold">{al.subject_id}</td>
+                    <td className="px-4 py-3 text-slate-600">{al.batch_id} {al.section_id ? `(${al.section_id})` : ''}</td>
+                    <td className="px-4 py-3 font-mono text-slate-600">
+                      {al.valid_from} → {al.valid_until || 'Present'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${al.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}`}>
+                        {al.is_active ? 'Active In-Charge' : 'Relieved'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      {al.is_active && (
+                        <button
+                          onClick={() => {
+                            setSelectedAllocation(al);
+                            setIsHandoverModalOpen(true);
+                          }}
+                          className="px-2.5 py-1 text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg border border-amber-200"
+                        >
+                          Handover Subject
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 6: TIME TABLE & COMBINED CLASSES (CC)                */}
+      {/* ======================================================== */}
+      {activeTab === 'timetable' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-slate-900 text-sm">Time Table & Combined Classes (CC)</h3>
+              <p className="text-slate-500 text-xs">Conflict-checked weekly timetable slots. Merged multi-batch lectures tagged with CC for unified attendance.</p>
+            </div>
+            <button
+              onClick={() => setIsAddSlotOpen(true)}
+              className="px-3 py-1.5 bg-[#00236f] text-white rounded-lg font-semibold hover:bg-[#001950] transition-colors"
+            >
+              + Add Slot
+            </button>
+          </div>
+
+          <div className="bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-xs">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 border-b border-slate-200 font-semibold text-slate-700">
+                <tr>
+                  <th className="px-4 py-2.5">Day</th>
+                  <th className="px-4 py-2.5">Time Interval</th>
+                  <th className="px-4 py-2.5">Subject</th>
+                  <th className="px-4 py-2.5">Faculty</th>
+                  <th className="px-4 py-2.5">Room</th>
+                  <th className="px-4 py-2.5">Batch</th>
+                  <th className="px-4 py-2.5">Combined Class</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {timetableSlots.map(slot => (
+                  <tr key={slot.id} className="hover:bg-slate-50/50">
+                    <td className="px-4 py-3 font-bold text-slate-900">{slot.day_of_week}</td>
+                    <td className="px-4 py-3 font-mono text-slate-600">{slot.start_time} - {slot.end_time}</td>
+                    <td className="px-4 py-3 font-semibold text-blue-700">{slot.subject_id}</td>
+                    <td className="px-4 py-3 text-slate-700">{slot.faculty_id}</td>
+                    <td className="px-4 py-3 font-medium text-slate-800">{slot.room_number}</td>
+                    <td className="px-4 py-3 font-mono text-slate-600">{slot.batch_id}</td>
+                    <td className="px-4 py-3">
+                      {slot.is_combined_class ? (
+                        <span className="px-2 py-0.5 rounded font-black text-[10px] bg-amber-500 text-white shadow-2xs">
+                          CC (Combined)
+                        </span>
+                      ) : (
+                        <span className="text-slate-400 font-normal">Regular</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 7: ATTENDANCE GOVERNANCE & ANTI-FRAUD LOCK           */}
+      {/* ======================================================== */}
+      {activeTab === 'attendance' && (
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-6">
+          <div>
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">
+              Anti-Fraud Attendance Governance
+            </span>
+            <h3 className="text-lg font-bold text-slate-900 mt-2">
+              Backdated Attendance Submission Lockout Threshold
+            </h3>
+            <p className="text-xs text-slate-500 mt-1 max-w-2xl">
+              As decreed in Senior Mentor Lecture 3, backdated attendance tampering is strictly blocked by ordinance.
+              Attendance dates exceeding the configured threshold cannot be marked or modified by faculty staff.
+            </p>
+          </div>
+
+          <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 max-w-xl space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-2">
+                Backdated Grace Threshold (Days)
+              </label>
+              <div className="grid grid-cols-3 gap-3">
+                {[10, 20, 30].map(days => (
+                  <button
+                    key={days}
+                    type="button"
+                    onClick={() => setLockThreshold(days)}
+                    className={`py-2 px-4 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                      lockThreshold === days
+                        ? 'bg-[#00236f] text-white border-[#00236f] shadow-xs'
+                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    {days} Days Lock
+                  </button>
+                ))}
               </div>
             </div>
+
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-xs text-slate-500 font-medium">
+                Current Active Threshold: <strong className="text-slate-900">{attendanceSettings.backdated_lock_days} Days</strong>
+              </span>
+              <button
+                type="button"
+                onClick={handleSaveAttendanceSettings}
+                className="px-4 py-2 bg-[#00236f] text-white rounded-xl text-xs font-bold hover:bg-[#001950] transition-colors cursor-pointer"
+              >
+                Save Lockout Ordinance
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modals: Create Batch */}
+      {isAddBatchOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
+            <div className="px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+              <h4 className="font-bold text-slate-900">Create Academic Batch (Level 4)</h4>
+              <button onClick={() => setIsAddBatchOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+            </div>
+            <form onSubmit={handleCreateBatch} className="p-5 space-y-3">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Batch Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={newBatch.batch_name}
+                  onChange={e => setNewBatch(prev => ({ ...prev, batch_name: e.target.value }))}
+                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Start Year</label>
+                  <input
+                    type="number"
+                    value={newBatch.start_year}
+                    onChange={e => setNewBatch(prev => ({ ...prev, start_year: parseInt(e.target.value, 10) }))}
+                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">End Year</label>
+                  <input
+                    type="number"
+                    value={newBatch.end_year}
+                    onChange={e => setNewBatch(prev => ({ ...prev, end_year: parseInt(e.target.value, 10) }))}
+                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Academic System</label>
+                <select
+                  value={newBatch.academic_system}
+                  onChange={e => setNewBatch(prev => ({ ...prev, academic_system: e.target.value as any }))}
+                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                >
+                  <option value="semester">Semester System (8 Terms)</option>
+                  <option value="annual">Annual System (4 Terms)</option>
+                </select>
+              </div>
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button type="button" onClick={() => setIsAddBatchOpen(false)} className="px-3 py-1.5 text-xs text-slate-600">Cancel</button>
+                <button type="submit" className="px-4 py-1.5 text-xs font-bold text-white bg-[#00236f] rounded-lg">Create</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modals: Non-destructive Section Transfer */}
+      {isTransferModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
+            <div className="px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+              <h4 className="font-bold text-slate-900">Non-Destructive Section Transfer</h4>
+              <button onClick={() => setIsTransferModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+            </div>
+            <form onSubmit={handleSectionTransfer} className="p-5 space-y-3">
+              <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-[11px]">
+                🛡️ All historical attendance percentages and fee accounts remain intact without destructive wipes.
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Student ID / Roll No *</label>
+                <input
+                  type="text"
+                  required
+                  value={transferData.student_id}
+                  onChange={e => setTransferData(prev => ({ ...prev, student_id: e.target.value }))}
+                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Target Section *</label>
+                <select
+                  value={transferData.target_section_id}
+                  onChange={e => setTransferData(prev => ({ ...prev, target_section_id: e.target.value }))}
+                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                >
+                  <option value="sec-cse-a">Section A (Room 101)</option>
+                  <option value="sec-cse-b">Section B (Room 102)</option>
+                  <option value="sec-ece-a">ECE Section A</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Administrative Reason</label>
+                <input
+                  type="text"
+                  value={transferData.reason}
+                  onChange={e => setTransferData(prev => ({ ...prev, reason: e.target.value }))}
+                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button type="button" onClick={() => setIsTransferModalOpen(false)} className="px-3 py-1.5 text-xs text-slate-600">Cancel</button>
+                <button type="submit" className="px-4 py-1.5 text-xs font-bold text-white bg-[#00236f] rounded-lg">Execute Transfer</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modals: Handover Faculty */}
+      {isHandoverModalOpen && selectedAllocation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
+            <div className="px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+              <h4 className="font-bold text-slate-900">Faculty Subject Handover</h4>
+              <button onClick={() => setIsHandoverModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+            </div>
+            <form onSubmit={handleHandoverAllocation} className="p-5 space-y-3">
+              <p className="text-xs text-slate-600">
+                Relieving <strong>{selectedAllocation.faculty_id}</strong> for subject <strong>{selectedAllocation.subject_id}</strong>. Successor takes charge automatically from the next calendar day.
+              </p>
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Successor Faculty ID *</label>
+                <input
+                  type="text"
+                  required
+                  value={handoverData.new_faculty_id}
+                  onChange={e => setHandoverData(prev => ({ ...prev, new_faculty_id: e.target.value }))}
+                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Handover Effective Date *</label>
+                <input
+                  type="date"
+                  required
+                  value={handoverData.handover_date}
+                  onChange={e => setHandoverData(prev => ({ ...prev, handover_date: e.target.value }))}
+                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Reason for Handover</label>
+                <input
+                  type="text"
+                  value={handoverData.reason}
+                  onChange={e => setHandoverData(prev => ({ ...prev, reason: e.target.value }))}
+                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button type="button" onClick={() => setIsHandoverModalOpen(false)} className="px-3 py-1.5 text-xs text-slate-600">Cancel</button>
+                <button type="submit" className="px-4 py-1.5 text-xs font-bold text-white bg-amber-600 rounded-lg">Confirm Handover</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Add Subject */}
+      {isAddSubjectOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden">
+            <div className="px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+              <div>
+                <h4 className="font-bold text-slate-900 text-sm">Add Curriculum Subject</h4>
+                <p className="text-[11px] text-slate-500 font-mono">Formula: [NAME]_[COURSE]_[TERM]</p>
+              </div>
+              <button onClick={() => setIsAddSubjectOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+            </div>
+            <form onSubmit={handleCreateSubject} className="p-5 space-y-3.5">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Course Code *</label>
+                  <select
+                    value={newSubject.course_id}
+                    onChange={e => setNewSubject(prev => ({ ...prev, course_id: e.target.value }))}
+                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                  >
+                    <option value="cse">CSE (B.Tech Computer Science)</option>
+                    <option value="ece">ECE (B.Tech Electronics)</option>
+                    <option value="mech">MECH (Mechanical)</option>
+                    <option value="civil">CIVIL (Civil Engg)</option>
+                    <option value="mba">MBA (Management)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Term / Semester *</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    required
+                    value={newSubject.term_number}
+                    onChange={e => setNewSubject(prev => ({ ...prev, term_number: parseInt(e.target.value) || 1 }))}
+                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Subject Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Distributed Database Systems"
+                  value={newSubject.subject_name}
+                  onChange={e => setNewSubject(prev => ({ ...prev, subject_name: e.target.value }))}
+                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Subject Classification *</label>
+                  <select
+                    value={newSubject.subject_type}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setNewSubject(prev => ({
+                        ...prev,
+                        subject_type: val as any,
+                        take_attendance: val === 'free_period' ? false : prev.take_attendance,
+                        take_exam: val === 'free_period' ? false : prev.take_exam,
+                        show_in_report_card: val === 'free_period' ? false : prev.show_in_report_card,
+                      }));
+                    }}
+                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg font-semibold"
+                  >
+                    <option value="compulsory">Compulsory Theory</option>
+                    <option value="elective">Elective</option>
+                    <option value="practical">Practical / Lab</option>
+                    <option value="free_period">Free Period (FC - Auto Present)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Credits *</label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    max="10"
+                    required
+                    value={newSubject.credits}
+                    onChange={e => setNewSubject(prev => ({ ...prev, credits: parseFloat(e.target.value) || 0 }))}
+                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                  />
+                </div>
+              </div>
+
+              {/* 3 Evaluation Checkboxes (Karanvir Sir Mandatory Rule) */}
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                <span className="text-[11px] font-bold text-slate-900 block">Evaluation & Attendance Gates:</span>
+                <div className="space-y-1.5">
+                  <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newSubject.take_exam}
+                      onChange={e => setNewSubject(prev => ({ ...prev, take_exam: e.target.checked }))}
+                      className="rounded text-[#00236f] focus:ring-[#00236f]"
+                    />
+                    <span><strong>take_exam</strong> — Subject requires university/internal examination</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newSubject.show_in_report_card}
+                      onChange={e => setNewSubject(prev => ({ ...prev, show_in_report_card: e.target.checked }))}
+                      className="rounded text-[#00236f] focus:ring-[#00236f]"
+                    />
+                    <span><strong>show_in_report_card</strong> — Display on academic transcript & grade sheet</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newSubject.take_attendance}
+                      onChange={e => setNewSubject(prev => ({ ...prev, take_attendance: e.target.checked }))}
+                      className="rounded text-[#00236f] focus:ring-[#00236f]"
+                    />
+                    <span><strong>take_attendance</strong> — Track daily lecture attendance (Uncheck for FC / Free Period)</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Max Marks</label>
+                  <input
+                    type="number"
+                    value={newSubject.max_marks}
+                    onChange={e => setNewSubject(prev => ({ ...prev, max_marks: parseInt(e.target.value) || 100 }))}
+                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Pass Marks</label>
+                  <input
+                    type="number"
+                    value={newSubject.pass_marks}
+                    onChange={e => setNewSubject(prev => ({ ...prev, pass_marks: parseInt(e.target.value) || 40 }))}
+                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button type="button" onClick={() => setIsAddSubjectOpen(false)} className="px-3 py-1.5 text-xs text-slate-600">Cancel</button>
+                <button type="submit" className="px-4 py-1.5 text-xs font-bold text-white bg-[#00236f] rounded-lg">Register Subject</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Add Timetable Slot */}
+      {isAddSlotOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
+            <div className="px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+              <div>
+                <h4 className="font-bold text-slate-900 text-sm">Add Timetable Lecture Slot</h4>
+                <p className="text-[11px] text-slate-500 font-mono">Conflict detection & Combined Classes (CC)</p>
+              </div>
+              <button onClick={() => setIsAddSlotOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+            </div>
+            <form onSubmit={handleCreateTimetableSlot} className="p-5 space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Batch ID *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newSlot.batch_id}
+                    onChange={e => setNewSlot(prev => ({ ...prev, batch_id: e.target.value }))}
+                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Section ID</label>
+                  <input
+                    type="text"
+                    value={newSlot.section_id}
+                    onChange={e => setNewSlot(prev => ({ ...prev, section_id: e.target.value }))}
+                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Subject Code / ID *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. CS101 or sub-cs-101"
+                  value={newSlot.subject_id}
+                  onChange={e => setNewSlot(prev => ({ ...prev, subject_id: e.target.value }))}
+                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Faculty ID *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. usr-staff-01"
+                  value={newSlot.faculty_id}
+                  onChange={e => setNewSlot(prev => ({ ...prev, faculty_id: e.target.value }))}
+                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg font-mono"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Day *</label>
+                  <select
+                    value={newSlot.day_of_week}
+                    onChange={e => setNewSlot(prev => ({ ...prev, day_of_week: e.target.value }))}
+                    className="w-full px-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                  >
+                    {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map(d => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Start *</label>
+                  <input
+                    type="time"
+                    required
+                    value={newSlot.start_time}
+                    onChange={e => setNewSlot(prev => ({ ...prev, start_time: e.target.value }))}
+                    className="w-full px-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">End *</label>
+                  <input
+                    type="time"
+                    required
+                    value={newSlot.end_time}
+                    onChange={e => setNewSlot(prev => ({ ...prev, end_time: e.target.value }))}
+                    className="w-full px-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Room / Lab Number</label>
+                <input
+                  type="text"
+                  value={newSlot.room_number}
+                  onChange={e => setNewSlot(prev => ({ ...prev, room_number: e.target.value }))}
+                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                />
+              </div>
+
+              <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-xl">
+                <label className="flex items-center gap-2 text-xs text-blue-900 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newSlot.is_combined_class}
+                    onChange={e => setNewSlot(prev => ({ ...prev, is_combined_class: e.target.checked }))}
+                    className="rounded text-[#00236f] focus:ring-[#00236f]"
+                  />
+                  <span><strong>Combined Class (CC)</strong> — Merge across multiple batches into single lecture</span>
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button type="button" onClick={() => setIsAddSlotOpen(false)} className="px-3 py-1.5 text-xs text-slate-600">Cancel</button>
+                <button type="submit" className="px-4 py-1.5 text-xs font-bold text-white bg-[#00236f] rounded-lg">Schedule Slot</button>
+              </div>
+            </form>
           </div>
         </div>
       )}

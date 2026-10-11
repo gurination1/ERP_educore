@@ -1,0 +1,45 @@
+{
+  "collapse-filter": false,
+  "search": "",
+  "showTags": true,
+  "showAttachments": false,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "colorGroups": [
+    {
+      "query": "tag:#architecture or tag:#tenant",
+      "color": {
+        "a": 1,
+        "rgb": 9133814
+      }
+    },
+    {
+      "query": "tag:#academics or tag:#topology",
+      "color": {
+        "a": 1,
+        "rgb": 1096001
+      }
+    },
+    {
+      "query": "tag:#hrms or tag:#payroll",
+      "color": {
+        "a": 1,
+        "rgb": 16109323
+      }
+    },
+    {
+      "query": "tag:#finance or tag:#payment",
+      "color": {
+        "a": 1,
+        "rgb": 15485081
+      }
+    },
+    {
+      "query": "tag:#database or tag:#postgres",
+      "color": {
+        "a": 1,
+        "rgb": 6514417
+      }
+    }
+  ]
+}

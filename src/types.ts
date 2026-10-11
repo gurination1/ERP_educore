@@ -568,9 +568,12 @@ export type ActiveScreen =
   | 'bulk-import'       // Flexible Bulk CSV/Excel Column Mapper
   | 'enquiries'         // Pre-Admission CRM & Auto-Dialer
   | 'examination'       // University Examination Portal (MRSPTU / PUP / PU)
+  | 'tenants'           // Multi-Tenant Campus Directory & Provisioning (Lecture 3)
   | 'audit-trail'
   | 'academic-journey'
-  | 'master-tables';
+  | 'master-tables'
+  | 'field-permissions'
+  | 'payment-gateways';
 
 export interface DocumentRecord {
   id: string;

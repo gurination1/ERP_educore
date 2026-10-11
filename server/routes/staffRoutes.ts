@@ -283,3 +283,139 @@ staffRouter.post('/:id/org-journey', authenticateToken, requireRole('admin'), as
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
+// ====================================================
+// 13. HRMS PAYROLL STRUCTURE & ALLOWANCES (Lecture 3)
+// ====================================================
+staffRouter.get('/:id/payroll', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const staffId = req.params.id;
+    const payroll = await db.getStaffPayroll(staffId);
+    res.json({ success: true, staffId, payroll });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+staffRouter.put('/:id/payroll', authenticateToken, requireRole('admin', 'super_admin', 'accounts'), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const staffId = req.params.id;
+    const actorId = req.user?.id || 'usr-admin-01';
+    const updated = await db.updateStaffPayroll(staffId, req.body, actorId);
+    res.json({ success: true, message: 'Payroll structure updated successfully', payroll: updated });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ====================================================
+// 14. STAFF SECURITY DEDUCTION SCHEDULE & AUTO-LOCK (Lecture 3)
+// ====================================================
+staffRouter.get('/:id/security-deduction', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const staffId = req.params.id;
+    const sec = await db.getStaffSecurityDeduction(staffId);
+    res.json({ success: true, staffId, securityDeduction: sec });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+staffRouter.post('/:id/security-deduction/installment', authenticateToken, requireRole('admin', 'super_admin', 'accounts'), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const staffId = req.params.id;
+    const { installmentAmount } = req.body;
+    const actorId = req.user?.id || 'usr-admin-01';
+    const amount = typeof installmentAmount === 'number' ? installmentAmount : 5000;
+    const updated = await db.recordSecurityDeductionInstallment(staffId, amount, actorId);
+    res.json({ success: true, message: `Security deduction installment of ₹${amount} recorded`, securityDeduction: updated });
+  } catch (err: any) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// ====================================================
+// 15. 5-POINT ONLINE EXIT NOC & REFUND UNLOCK (Lecture 3)
+// ====================================================
+staffRouter.get('/:id/noc', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const staffId = req.params.id;
+    const noc = await db.getStaffExitNoc(staffId);
+    res.json({ success: true, staffId, noc });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+staffRouter.put('/:id/noc/checkpoint', authenticateToken, requireRole('admin', 'super_admin', 'hod', 'accounts'), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const staffId = req.params.id;
+    const { checkpoint, cleared, remarks } = req.body;
+    if (!['library', 'lab', 'accounts', 'it', 'hr'].includes(checkpoint)) {
+      res.status(400).json({ success: false, error: 'Invalid checkpoint. Must be library, lab, accounts, it, or hr.' });
+      return;
+    }
+    const actorId = req.user?.id || 'usr-admin-01';
+    const updated = await db.updateStaffNocCheckpoint(staffId, checkpoint, !!cleared, remarks || '', actorId);
+    res.json({ success: true, message: `Department clearance for ${checkpoint.toUpperCase()} updated`, noc: updated });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+staffRouter.post('/:id/noc/release-refund', authenticateToken, requireRole('admin', 'super_admin', 'accounts'), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const staffId = req.params.id;
+    const { txRef } = req.body;
+    const result = await db.releaseSecurityDepositRefund(staffId, 30000, txRef || `TX-REFUND-${Date.now()}`, actorId);
+    res.json({ success: true, message: 'Security deposit refund released successfully', noc: result });
+  } catch (err: any) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// ====================================================
+// 16. STAFF ADDITIONAL ROLES (Multi-Role Support - Lecture 3)
+// ====================================================
+staffRouter.get('/:id/additional-roles', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const roles = await db.getStaffAdditionalRoles(req.params.id);
+    res.json({ success: true, count: roles.length, roles });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+const createAdditionalRoleSchema = z.object({
+  school_dept_name: z.string().min(1),
+  role_title: z.string().min(1),
+  role_category: z.enum(['teaching', 'non_teaching', 'administrative']).default('teaching'),
+  is_active: z.boolean().default(true),
+});
+
+staffRouter.post('/:id/additional-roles', authenticateToken, requireRole('super_admin', 'admin', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const parse = createAdditionalRoleSchema.safeParse(req.body);
+    if (!parse.success) {
+      res.status(400).json({ success: false, error: parse.error.errors.map(e => e.message).join(', ') });
+      return;
+    }
+    const role = await db.createStaffAdditionalRole({
+      staff_id: req.params.id,
+      ...parse.data,
+    });
+    res.status(201).json({ success: true, message: 'Additional role allocated', role });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+staffRouter.delete('/:id/additional-roles/:roleId', authenticateToken, requireRole('super_admin', 'admin', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    await db.deleteStaffAdditionalRole(req.params.roleId);
+    res.json({ success: true, message: 'Additional role removed' });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+

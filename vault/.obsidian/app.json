@@ -1,0 +1,10 @@
+{
+  "legacyEditor": false,
+  "livePreview": true,
+  "useMarkdownLinks": false,
+  "showLineNumber": true,
+  "readableLineLength": true,
+  "autoPairBrackets": true,
+  "autoPairMarkdown": true,
+  "spellcheck": false
+}

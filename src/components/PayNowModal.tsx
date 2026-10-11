@@ -36,6 +36,11 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [studentDetails, setStudentDetails] = useState<any>(null);
+  const [gatewayStatus, setGatewayStatus] = useState<{
+    can_pay: boolean;
+    restriction_reason?: string;
+    active_gateway?: any;
+  }>({ can_pay: true });
 
   const activeStudentId = student?.id || student?.student_id || student?.user_id;
 
@@ -43,6 +48,19 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
   useEffect(() => {
     setIsLoading(true);
     setErrorMsg(null);
+
+    // Check payment gateway mode (Karanvir Sir rule: Sandbox disables Pay button for standard students)
+    api.getActivePaymentGateway().then(gwRes => {
+      if (gwRes.success) {
+        setGatewayStatus({
+          can_pay: gwRes.can_pay ?? true,
+          restriction_reason: gwRes.restriction_reason,
+          active_gateway: gwRes.active_gateway,
+        });
+      }
+    }).catch(err => {
+      console.warn('Could not check gateway test mode status:', err);
+    });
 
     const targetId = activeStudentId || 'me';
     api.getFeeLedger(targetId).then(res => {
@@ -146,6 +164,10 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
 
   const handlePay = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!gatewayStatus.can_pay) {
+      setErrorMsg(gatewayStatus.restriction_reason || 'Payment gateway in Test Mode. Online fee collection is restricted for standard students.');
+      return;
+    }
     if (totalAmount <= 0) {
       setErrorMsg('Please select at least one fee head with an amount greater than ₹0.');
       return;
@@ -456,6 +478,18 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
             </span>
           </div>
 
+          {!gatewayStatus.can_pay && (
+            <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-amber-900 text-xs flex items-start gap-2.5 animate-fadeIn">
+              <span className="text-base font-bold text-amber-600 shrink-0">⚠️</span>
+              <div>
+                <p className="font-bold">Gateway in Sandbox / Maintenance Mode</p>
+                <p className="text-[11px] text-amber-800 mt-0.5">
+                  {gatewayStatus.restriction_reason || 'Live online fee settlement is temporarily restricted for this student profile.'}
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="pt-2 flex justify-end gap-2">
             <button
               type="button"
@@ -466,8 +500,8 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
             </button>
             <button
               type="submit"
-              disabled={isProcessing || totalAmount <= 0}
-              className="px-6 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white font-bold rounded-lg transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer"
+              disabled={isProcessing || totalAmount <= 0 || !gatewayStatus.can_pay}
+              className="px-6 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white font-bold rounded-lg transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
               <span className="font-bold text-[10px]">✓</span>
               <span>{isProcessing ? 'Processing Transaction...' : `Confirm & Pay ₹ ${totalAmount.toLocaleString('en-IN')}`}</span>

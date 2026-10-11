@@ -826,3 +826,24 @@ studentRouter.patch('/:id/status', authenticateToken, requireRole('admin'), asyn
   });
 });
 
+// ====================================================
+// STUDENT PROGRESSION LIFECYCLE (Lecture 3)
+// Statuses: active | promoted | demoted | struck_off | deactivated
+// ====================================================
+studentRouter.post('/:id/progression', authenticateToken, requireRole('admin', 'hod', 'super_admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { new_status, new_term, reason, order_no } = req.body;
+    if (!new_status || !['active', 'promoted', 'demoted', 'struck_off', 'deactivated'].includes(new_status)) {
+      res.status(400).json({ success: false, error: 'new_status must be one of: active, promoted, demoted, struck_off, deactivated' });
+      return;
+    }
+    const actorId = req.user?.id || 'usr-admin-01';
+    const result = await db.updateStudentProgression(id, new_status, new_term, reason || 'Academic progression ordinance review', order_no || `ORD-${Date.now()}`, actorId);
+    res.json({ success: true, message: `Student progression status updated to ${new_status.toUpperCase()}`, data: result });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+

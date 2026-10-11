@@ -16,7 +16,33 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
   const [departmentFilter, setDepartmentFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'overview' | 'addresses' | 'banks' | 'qualifications' | 'experience' | 'journey'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'payroll' | 'exit-noc' | 'addresses' | 'banks' | 'qualifications' | 'experience' | 'journey' | 'additional-roles'>('overview');
+
+  // Multi-Role Allocation (Lecture 3: Teaching, Non-Teaching, Administrative across Schools)
+  const [additionalRoles, setAdditionalRoles] = useState<any[]>([]);
+  const [newRoleForm, setNewRoleForm] = useState({
+    role_name: '',
+    role_type: 'teaching' as 'teaching' | 'non-teaching' | 'administrative',
+    department_id: '',
+    school_id: '',
+    remarks: '',
+  });
+  const [isAddingRole, setIsAddingRole] = useState(false);
+
+  // HRMS Payroll & Security Deductions (Lecture 3)
+  const [payrollData, setPayrollData] = useState<any | null>(null);
+  const [securityData, setSecurityData] = useState<any | null>(null);
+  const [nocData, setNocData] = useState<any | null>(null);
+  const [isEditingPayroll, setIsEditingPayroll] = useState(false);
+  const [payrollForm, setPayrollForm] = useState({
+    basic_pay: 55000,
+    hra: 15000,
+    special_allowance: 10000,
+    pf_applicable: true,
+    esi_applicable: false,
+    voluntary_pf_amount: 0,
+    tds_deduction: 3500,
+  });
 
   // Modals
   const [showStatusModal, setShowStatusModal] = useState(false);
@@ -65,9 +91,36 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
 
   const fetchProfile = async (id: string) => {
     setProfileLoading(true);
-    const res = await api.getStaffProfile(id);
-    if (res.success && res.profile) {
-      setStaffProfile(res.profile);
+    const [profRes, payRes, secRes, nocRes, rolesRes] = await Promise.all([
+      api.getStaffProfile(id),
+      api.getStaffPayroll(id),
+      api.getStaffSecurityDeduction(id),
+      api.getStaffExitNoc(id),
+      api.getStaffAdditionalRoles(id),
+    ]);
+    if (profRes.success && profRes.profile) {
+      setStaffProfile(profRes.profile);
+    }
+    if (rolesRes.success && rolesRes.roles) {
+      setAdditionalRoles(rolesRes.roles);
+    }
+    if (payRes.success && payRes.payroll) {
+      setPayrollData(payRes.payroll);
+      setPayrollForm({
+        basic_pay: payRes.payroll.basic_pay,
+        hra: payRes.payroll.hra,
+        special_allowance: payRes.payroll.special_allowance,
+        pf_applicable: payRes.payroll.pf_applicable,
+        esi_applicable: payRes.payroll.esi_applicable,
+        voluntary_pf_amount: payRes.payroll.voluntary_pf_amount,
+        tds_deduction: payRes.payroll.tds_deduction,
+      });
+    }
+    if (secRes.success && secRes.securityDeduction) {
+      setSecurityData(secRes.securityDeduction);
+    }
+    if (nocRes.success && nocRes.noc) {
+      setNocData(nocRes.noc);
     }
     setProfileLoading(false);
   };
@@ -139,6 +192,110 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
       setTimeout(() => setActionSuccessMsg(null), 5000);
     } else {
       setActionErrorMsg(res.error || 'Failed to onboard staff');
+    }
+  };
+
+  const handleSavePayroll = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStaffId) return;
+    const res = await api.updateStaffPayroll(selectedStaffId, payrollForm);
+    if (res.success && res.payroll) {
+      setPayrollData(res.payroll);
+      setIsEditingPayroll(false);
+      setActionSuccessMsg('Payroll structure updated successfully.');
+      setTimeout(() => setActionSuccessMsg(null), 4000);
+    } else {
+      setActionErrorMsg(res.error || 'Failed to update payroll');
+      setTimeout(() => setActionErrorMsg(null), 4000);
+    }
+  };
+
+  const handleRecordSecurityDeduction = async () => {
+    if (!selectedStaffId) return;
+    const res = await api.recordSecurityInstallment(selectedStaffId, 5000);
+    if (res.success && res.securityDeduction) {
+      setSecurityData(res.securityDeduction);
+      setActionSuccessMsg('Recorded ₹5,000 security deduction installment.');
+      setTimeout(() => setActionSuccessMsg(null), 4000);
+    } else {
+      setActionErrorMsg(res.error || 'Failed to record security installment');
+      setTimeout(() => setActionErrorMsg(null), 4000);
+    }
+  };
+
+  const handleToggleNocCheckpoint = async (checkpoint: string, currentCleared: boolean) => {
+    if (!selectedStaffId) return;
+    const remarks = prompt(`Enter remarks for ${checkpoint.toUpperCase()} clearance:`, currentCleared ? 'Revoked' : 'All equipment and clearance verified') || '';
+    const res = await api.updateNocCheckpoint(selectedStaffId, { checkpoint, cleared: !currentCleared, remarks });
+    if (res.success && res.noc) {
+      setNocData(res.noc);
+      setActionSuccessMsg(`Updated ${checkpoint.toUpperCase()} clearance checkpoint.`);
+      setTimeout(() => setActionSuccessMsg(null), 4000);
+    } else {
+      setActionErrorMsg(res.error || 'Failed to update clearance checkpoint');
+      setTimeout(() => setActionErrorMsg(null), 4000);
+    }
+  };
+
+  const handleReleaseSecurityRefund = async () => {
+    if (!selectedStaffId) return;
+    const tx = prompt('Enter Bank / Ledger Transaction Reference for Refund Release:', `TX-REFUND-${Date.now().toString().slice(-6)}`);
+    if (!tx) return;
+    const res = await api.releaseSecurityRefund(selectedStaffId, tx);
+    if (res.success && res.noc) {
+      setNocData(res.noc);
+      if (securityData) setSecurityData({ ...securityData, status: 'refunded' });
+      setActionSuccessMsg(`Security Deposit Refund Released! Tx: ${tx}`);
+      setTimeout(() => setActionSuccessMsg(null), 6000);
+    } else {
+      setActionErrorMsg(res.error || 'Failed to release refund');
+      setTimeout(() => setActionErrorMsg(null), 4000);
+    }
+  };
+
+  const handleAddRole = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStaffId || !newRoleForm.role_name) return;
+    try {
+      const res = await api.createStaffAdditionalRole(selectedStaffId, newRoleForm);
+      if (res.success && res.role) {
+        setAdditionalRoles(prev => [res.role, ...prev]);
+        setIsAddingRole(false);
+        setNewRoleForm({
+          role_name: '',
+          role_type: 'teaching',
+          department_id: '',
+          school_id: '',
+          remarks: '',
+        });
+        setActionSuccessMsg('Additional institutional role allocated successfully.');
+        setTimeout(() => setActionSuccessMsg(null), 4000);
+      } else {
+        setActionErrorMsg(res.error || 'Failed to allocate role.');
+        setTimeout(() => setActionErrorMsg(null), 4000);
+      }
+    } catch (err: any) {
+      setActionErrorMsg(err.message);
+      setTimeout(() => setActionErrorMsg(null), 4000);
+    }
+  };
+
+  const handleDeleteRole = async (roleId: string) => {
+    if (!selectedStaffId) return;
+    if (!confirm('Are you sure you want to relieve this additional role?')) return;
+    try {
+      const res = await api.deleteStaffAdditionalRole(selectedStaffId, roleId);
+      if (res.success) {
+        setAdditionalRoles(prev => prev.filter(r => r.id !== roleId));
+        setActionSuccessMsg('Role relieved successfully.');
+        setTimeout(() => setActionSuccessMsg(null), 4000);
+      } else {
+        setActionErrorMsg(res.error || 'Failed to relieve role.');
+        setTimeout(() => setActionErrorMsg(null), 4000);
+      }
+    } catch (err: any) {
+      setActionErrorMsg(err.message);
+      setTimeout(() => setActionErrorMsg(null), 4000);
     }
   };
 
@@ -379,11 +536,14 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
               <div className="flex border-b border-gray-200 text-[10px] font-bold gap-1">
                 {[
                   { id: 'overview', label: 'BASIC INFO' },
+                  { id: 'payroll', label: 'PAYROLL & SECURITY' },
+                  { id: 'exit-noc', label: 'EXIT NOC (5-PT)' },
                   { id: 'addresses', label: `ADDRESSES (${staffProfile.addresses.length})` },
                   { id: 'banks', label: `BANK ACCOUNTS (${staffProfile.bankAccounts.length})` },
                   { id: 'qualifications', label: `QUALIFICATIONS (${staffProfile.qualifications.length})` },
                   { id: 'experience', label: `EXPERIENCE (${staffProfile.experience.length})` },
                   { id: 'journey', label: `ORG JOURNEY (${staffProfile.orgJourney.length})` },
+                  { id: 'additional-roles', label: `ADDITIONAL ROLES (${additionalRoles.length})` },
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -593,6 +753,391 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                       </div>
                     ))
                   )}
+                </div>
+              )}
+
+              {activeTab === 'additional-roles' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-xs">Multi-Role Allocation & Dual Charges</h4>
+                      <p className="text-[10px] text-slate-500">
+                        Manage teaching, non-teaching, and administrative responsibilities across campus departments and schools.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsAddingRole(!isAddingRole)}
+                      className="px-2.5 py-1 text-[10px] font-bold bg-[#00236f] text-white rounded hover:bg-[#001950] transition"
+                    >
+                      {isAddingRole ? 'Cancel' : '+ Allocate New Role'}
+                    </button>
+                  </div>
+
+                  {isAddingRole && (
+                    <form onSubmit={handleAddRole} className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-700">Role Title / Designation *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Dean Student Welfare or Hostel Warden"
+                            value={newRoleForm.role_name}
+                            onChange={e => setNewRoleForm(prev => ({ ...prev, role_name: e.target.value }))}
+                            className="w-full text-[11px] p-1.5 border border-slate-300 rounded bg-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-700">Role Classification *</label>
+                          <select
+                            value={newRoleForm.role_type}
+                            onChange={e => setNewRoleForm(prev => ({ ...prev, role_type: e.target.value as any }))}
+                            className="w-full text-[11px] p-1.5 border border-slate-300 rounded bg-white"
+                          >
+                            <option value="teaching">Teaching Faculty (Adjunct / Cross-Dept)</option>
+                            <option value="administrative">Administrative Officer (Dean / Head / Proctor)</option>
+                            <option value="non-teaching">Non-Teaching Operations / Hostel</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-700">Department / Cell</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Mechanical Engg or Examination Cell"
+                            value={newRoleForm.department_id}
+                            onChange={e => setNewRoleForm(prev => ({ ...prev, department_id: e.target.value }))}
+                            className="w-full text-[11px] p-1.5 border border-slate-300 rounded bg-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-700">School / Entity Code</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. SCH-LAW or SCH-PHARM"
+                            value={newRoleForm.school_id}
+                            onChange={e => setNewRoleForm(prev => ({ ...prev, school_id: e.target.value }))}
+                            className="w-full text-[11px] p-1.5 border border-slate-300 rounded bg-white"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-700">Administrative Remarks</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Order Ref #REG/2024/093 with 20% honorarium"
+                          value={newRoleForm.remarks}
+                          onChange={e => setNewRoleForm(prev => ({ ...prev, remarks: e.target.value }))}
+                          className="w-full text-[11px] p-1.5 border border-slate-300 rounded bg-white"
+                        />
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-1 border-t border-slate-200">
+                        <button
+                          type="button"
+                          onClick={() => setIsAddingRole(false)}
+                          className="px-2.5 py-1 text-[10px] font-bold text-slate-600 hover:text-slate-800"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-3 py-1 text-[10px] font-bold bg-[#00236f] text-white rounded hover:bg-[#001950]"
+                        >
+                          Confirm Role Allocation
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  <div className="space-y-2">
+                    {additionalRoles.length === 0 ? (
+                      <div className="text-gray-400 py-6 text-center text-xs">
+                        No additional institutional roles assigned to this staff member.
+                      </div>
+                    ) : (
+                      additionalRoles.map((role: any) => (
+                        <div
+                          key={role.id}
+                          className="border border-slate-200 p-2.5 rounded bg-slate-50/70 flex justify-between items-center text-[10px]"
+                        >
+                          <div className="space-y-0.5">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-[#00236f] text-xs">{role.role_name}</span>
+                              <span className="bg-blue-100 text-[#00236f] px-1.5 py-0.2 rounded text-[8px] font-bold uppercase">
+                                {role.role_type}
+                              </span>
+                              {role.is_active && (
+                                <span className="bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded text-[8px] font-bold">
+                                  ACTIVE CHARGE
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-slate-600 flex gap-3 text-[10px]">
+                              {role.department_id && <span>Dept: <strong>{role.department_id}</strong></span>}
+                              {role.school_id && <span>School: <strong>{role.school_id}</strong></span>}
+                              {role.assigned_date && <span>Since: {role.assigned_date}</span>}
+                            </div>
+                            {role.remarks && <p className="text-slate-500 italic mt-0.5">{role.remarks}</p>}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteRole(role.id)}
+                            className="px-2 py-1 text-[9px] font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded hover:bg-rose-100"
+                          >
+                            Relieve Role
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'payroll' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-xs">Payroll Structure & Statutory Allowances</h4>
+                      <p className="text-[10px] text-slate-500">Basic pay, HRA, Provident Fund (PF), ESI, Voluntary PF, and TDS deductions.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingPayroll(!isEditingPayroll)}
+                      className="px-2.5 py-1 text-[10px] font-bold bg-[#00236f] text-white rounded hover:bg-[#001950] transition"
+                    >
+                      {isEditingPayroll ? 'Cancel Edit' : 'Configure Structure'}
+                    </button>
+                  </div>
+
+                  {isEditingPayroll ? (
+                    <form onSubmit={handleSavePayroll} className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-700">Basic Pay (₹)</label>
+                          <input
+                            type="number"
+                            value={payrollForm.basic_pay}
+                            onChange={e => setPayrollForm({ ...payrollForm, basic_pay: parseFloat(e.target.value) || 0 })}
+                            className="w-full p-1.5 bg-white border border-slate-200 rounded text-xs font-mono"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-700">HRA Allowance (₹)</label>
+                          <input
+                            type="number"
+                            value={payrollForm.hra}
+                            onChange={e => setPayrollForm({ ...payrollForm, hra: parseFloat(e.target.value) || 0 })}
+                            className="w-full p-1.5 bg-white border border-slate-200 rounded text-xs font-mono"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-700">Special Allowance (₹)</label>
+                          <input
+                            type="number"
+                            value={payrollForm.special_allowance}
+                            onChange={e => setPayrollForm({ ...payrollForm, special_allowance: parseFloat(e.target.value) || 0 })}
+                            className="w-full p-1.5 bg-white border border-slate-200 rounded text-xs font-mono"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-700">Voluntary PF (₹)</label>
+                          <input
+                            type="number"
+                            value={payrollForm.voluntary_pf_amount}
+                            onChange={e => setPayrollForm({ ...payrollForm, voluntary_pf_amount: parseFloat(e.target.value) || 0 })}
+                            className="w-full p-1.5 bg-white border border-slate-200 rounded text-xs font-mono"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-700">TDS Deduction (₹)</label>
+                          <input
+                            type="number"
+                            value={payrollForm.tds_deduction}
+                            onChange={e => setPayrollForm({ ...payrollForm, tds_deduction: parseFloat(e.target.value) || 0 })}
+                            className="w-full p-1.5 bg-white border border-slate-200 rounded text-xs font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4 pt-1">
+                        <label className="flex items-center gap-1.5 text-[10px] font-bold text-slate-700 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={payrollForm.pf_applicable}
+                            onChange={e => setPayrollForm({ ...payrollForm, pf_applicable: e.target.checked })}
+                            className="rounded border-slate-300"
+                          />
+                          <span>Provident Fund (PF - 12% Basic) Applicable</span>
+                        </label>
+                        <label className="flex items-center gap-1.5 text-[10px] font-bold text-slate-700 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={payrollForm.esi_applicable}
+                            onChange={e => setPayrollForm({ ...payrollForm, esi_applicable: e.target.checked })}
+                            className="rounded border-slate-300"
+                          />
+                          <span>ESI (0.75% Gross) Applicable</span>
+                        </label>
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
+                        <button type="button" onClick={() => setIsEditingPayroll(false)} className="px-2.5 py-1 text-[10px] font-semibold text-slate-600">Cancel</button>
+                        <button type="submit" className="px-3 py-1 text-[10px] font-bold bg-emerald-600 text-white rounded">Save Payroll</button>
+                      </div>
+                    </form>
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px]">
+                      <div className="p-2.5 bg-slate-50 rounded border border-slate-100">
+                        <span className="text-slate-400 block font-medium">BASIC PAY:</span>
+                        <span className="text-xs font-bold text-slate-900 mt-0.5 block font-mono">₹{payrollData?.basic_pay || 55000}</span>
+                      </div>
+                      <div className="p-2.5 bg-slate-50 rounded border border-slate-100">
+                        <span className="text-slate-400 block font-medium">HRA ALLOWANCE:</span>
+                        <span className="text-xs font-bold text-slate-900 mt-0.5 block font-mono">₹{payrollData?.hra || 15000}</span>
+                      </div>
+                      <div className="p-2.5 bg-slate-50 rounded border border-slate-100">
+                        <span className="text-slate-400 block font-medium">GROSS SALARY:</span>
+                        <span className="text-xs font-bold text-slate-900 mt-0.5 block font-mono">₹{payrollData?.gross_salary || 80000}</span>
+                      </div>
+                      <div className="p-2.5 bg-emerald-50 rounded border border-emerald-200">
+                        <span className="text-emerald-700 block font-bold">NET TAKE-HOME:</span>
+                        <span className="text-xs font-black text-emerald-800 mt-0.5 block font-mono">₹{payrollData?.net_salary || 70200}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Security Deposit Deduction Schedule (Lecture 3) */}
+                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-900 text-xs">Security Deposit Deduction Schedule</span>
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
+                          securityData?.is_locked ? 'bg-indigo-100 text-indigo-800' : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {securityData?.is_locked ? 'Target Achieved & Locked' : 'Active Deduction Schedule'}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleRecordSecurityDeduction}
+                        disabled={securityData?.is_locked}
+                        className={`px-2.5 py-1 text-[10px] font-bold rounded transition ${
+                          securityData?.is_locked
+                            ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                            : 'bg-[#00236f] text-white hover:bg-[#001950]'
+                        }`}
+                      >
+                        {securityData?.is_locked ? 'Schedule Completed' : '+ Deduct ₹5,000 Installment'}
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 text-[10px]">
+                      <div className="p-2 bg-white rounded border border-slate-200">
+                        <span className="text-slate-400 block font-medium">TOTAL TARGET:</span>
+                        <span className="font-mono font-bold text-slate-900">₹{securityData?.target_amount || 30000}</span>
+                      </div>
+                      <div className="p-2 bg-white rounded border border-slate-200">
+                        <span className="text-slate-400 block font-medium">DEDUCTED TO DATE:</span>
+                        <span className="font-mono font-bold text-emerald-700">₹{securityData?.deducted_so_far || 0}</span>
+                      </div>
+                      <div className="p-2 bg-white rounded border border-slate-200">
+                        <span className="text-slate-400 block font-medium">REMAINING TARGET:</span>
+                        <span className="font-mono font-bold text-rose-700">₹{securityData?.remaining_amount !== undefined ? securityData.remaining_amount : 30000}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'exit-noc' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-xs">5-Point Online Departmental Exit NOC Clearance</h4>
+                      <p className="text-[10px] text-slate-500">
+                        Mandatory online checklist as decreed in Senior Mentor Lecture 3. All 5 departments must clear prior to unlocking the security deposit refund.
+                      </p>
+                    </div>
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                      nocData?.all_cleared ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                    }`}>
+                      {nocData?.all_cleared ? 'All 5 Departments Cleared' : 'Clearance Incomplete'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {[
+                      { key: 'library', name: '1. Library Directorate', cleared: !!nocData?.library_cleared, remarks: nocData?.library_remarks },
+                      { key: 'lab', name: '2. Science & Computer Laboratory', cleared: !!nocData?.lab_cleared, remarks: nocData?.lab_remarks },
+                      { key: 'accounts', name: '3. Accounts & Finance Department', cleared: !!nocData?.accounts_cleared, remarks: nocData?.accounts_remarks },
+                      { key: 'it', name: '4. Information Technology Systems', cleared: !!nocData?.it_cleared, remarks: nocData?.it_remarks },
+                      { key: 'hr', name: '5. Human Resources & Registrar Office', cleared: !!nocData?.hr_cleared, remarks: nocData?.hr_remarks },
+                    ].map(chk => (
+                      <div key={chk.key} className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between text-[11px]">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-900">{chk.name}</span>
+                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                              chk.cleared ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'
+                            }`}>
+                              {chk.cleared ? 'CLEARED' : 'PENDING'}
+                            </span>
+                          </div>
+                          {chk.remarks && (
+                            <p className="text-[10px] text-slate-500 mt-0.5 italic">Remarks: {chk.remarks}</p>
+                          )}
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleToggleNocCheckpoint(chk.key, chk.cleared)}
+                          className={`px-2 py-1 rounded text-[10px] font-bold transition ${
+                            chk.cleared
+                              ? 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100'
+                              : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                          }`}
+                        >
+                          {chk.cleared ? 'Revoke' : 'Clear Department'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Security Deposit Refund Release Button Gate (Lecture 3) */}
+                  <div className="p-4 bg-indigo-50/60 rounded-xl border border-indigo-200 flex items-center justify-between">
+                    <div>
+                      <span className="font-bold text-indigo-900 text-xs block">Security Deposit Refund Authorization</span>
+                      <span className="text-[10px] text-indigo-700">
+                        {nocData?.security_refund_released
+                          ? `✓ Security Deposit Refund of ₹${nocData.security_refund_amount || 30000} released on ${nocData.security_refund_date || 'today'} (Tx: ${nocData.security_refund_tx_ref || 'REFUND-001'}).`
+                          : nocData?.all_cleared
+                          ? 'All 5 departmental checkpoints verified. Authorization gate UNLOCKED.'
+                          : 'Gate locked. All 5 departments must submit clearance first.'}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleReleaseSecurityRefund}
+                      disabled={!nocData?.all_cleared || nocData?.security_refund_released}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-xs ${
+                        nocData?.security_refund_released
+                          ? 'bg-emerald-600 text-white cursor-default'
+                          : nocData?.all_cleared
+                          ? 'bg-[#00236f] text-white hover:bg-[#001950] cursor-pointer active:scale-95'
+                          : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300'
+                      }`}
+                    >
+                      {nocData?.security_refund_released
+                        ? 'Refund Disbursed ✓'
+                        : 'Release Security Deposit Refund ↗'}
+                    </button>
+                  </div>
                 </div>
               )}
             </>

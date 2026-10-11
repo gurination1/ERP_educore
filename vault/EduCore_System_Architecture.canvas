@@ -1,0 +1,160 @@
+{
+  "nodes": [
+    {
+      "id": "node-saas",
+      "type": "text",
+      "text": "## SaaS Super Admin\n- Client Tenant Onboarding\n- Functional Database Replication\n- One-Click Impersonation (Open Button)\n- Subdomain / Host Routing",
+      "x": -400,
+      "y": -300,
+      "width": 320,
+      "height": 180,
+      "color": "4"
+    },
+    {
+      "id": "node-db",
+      "type": "text",
+      "text": "## PostgreSQL Native Engine\n- Dedicated Tenant Schemas\n- 5-Domain Architecture\n- Append-Only Audit Trail\n- Migratable DDL",
+      "x": 0,
+      "y": -300,
+      "width": 300,
+      "height": 180,
+      "color": "5"
+    },
+    {
+      "id": "node-top",
+      "type": "text",
+      "text": "## 5-Level Academic Topology\n- L1: Entity (School / College)\n- L2: Department\n- L3: Course\n- L4: Batch (Semester vs Annual)\n- L5: Section & Non-destructive Transfers",
+      "x": 400,
+      "y": -300,
+      "width": 320,
+      "height": 200,
+      "color": "1"
+    },
+    {
+      "id": "node-curr",
+      "type": "text",
+      "text": "## Curriculum & Subject Matrix\n- Formula: `[NAME]_[COURSE]_[TERM]`\n- Checkboxes: `take_exam`, `show_in_report_card`, `take_attendance`\n- Free Period (`FC`) Support\n- Faculty Allocation Handover Dates",
+      "x": 400,
+      "y": 0,
+      "width": 340,
+      "height": 220,
+      "color": "2"
+    },
+    {
+      "id": "node-tt",
+      "type": "text",
+      "text": "## Timetable & Combined Classes (CC)\n- Faculty Slot Conflict Detector\n- Multi-Batch CC Tagging\n- Parallel Elective Split (CC1..CC4)\n- Unified Faculty Attendance Desk",
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 200,
+      "color": "3"
+    },
+    {
+      "id": "node-att",
+      "type": "text",
+      "text": "## Attendance Anti-Fraud Lock\n- Institutional Config (10, 20, 30 days)\n- Immutable Historical Records\n- Free Period FC Auto-Present\n- 75% Examination Gate Cleared",
+      "x": -400,
+      "y": 0,
+      "width": 320,
+      "height": 200,
+      "color": "6"
+    },
+    {
+      "id": "node-hrms",
+      "type": "text",
+      "text": "## HRMS Payroll & Deductions\n- Basic, HRA, Net, TDS Structure\n- PF, ESI, Voluntary PF Toggles\n- Security Deduction Auto-Lock\n- Multi-Bank Account Allocation",
+      "x": -400,
+      "y": 300,
+      "width": 320,
+      "height": 220,
+      "color": "4"
+    },
+    {
+      "id": "node-noc",
+      "type": "text",
+      "text": "## Online 5-Point Exit NOC\n- Library Clearance\n- Accounts / Advance Dues\n- Department / HOD Lab Assets\n- IT Equipment & Email Surrender\n- HR Exit & Unlock Security Refund",
+      "x": 0,
+      "y": 300,
+      "width": 320,
+      "height": 220,
+      "color": "1"
+    },
+    {
+      "id": "node-pay",
+      "type": "text",
+      "text": "## Dynamic Payment Gateways\n- Multi-Gateway (Pharmacy vs Law A/Cs)\n- Live vs Test Sandbox Switch\n- Selective Student UID Test Access\n- Anti-Slop Gateway Disconnect",
+      "x": 400,
+      "y": 300,
+      "width": 320,
+      "height": 220,
+      "color": "5"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "fromNode": "node-saas",
+      "fromSide": "right",
+      "toNode": "node-db",
+      "toSide": "left",
+      "label": "provisions"
+    },
+    {
+      "id": "e2",
+      "fromNode": "node-db",
+      "fromSide": "right",
+      "toNode": "node-top",
+      "toSide": "left",
+      "label": "persists"
+    },
+    {
+      "id": "e3",
+      "fromNode": "node-top",
+      "fromSide": "bottom",
+      "toNode": "node-curr",
+      "toSide": "top",
+      "label": "organizes"
+    },
+    {
+      "id": "e4",
+      "fromNode": "node-curr",
+      "fromSide": "left",
+      "toNode": "node-tt",
+      "toSide": "right",
+      "label": "schedules"
+    },
+    {
+      "id": "e5",
+      "fromNode": "node-tt",
+      "fromSide": "left",
+      "toNode": "node-att",
+      "toSide": "right",
+      "label": "registers"
+    },
+    {
+      "id": "e6",
+      "fromNode": "node-saas",
+      "fromSide": "bottom",
+      "toNode": "node-hrms",
+      "toSide": "top",
+      "label": "governs"
+    },
+    {
+      "id": "e7",
+      "fromNode": "node-hrms",
+      "fromSide": "right",
+      "toNode": "node-noc",
+      "toSide": "left",
+      "label": "validates exit"
+    },
+    {
+      "id": "e8",
+      "fromNode": "node-noc",
+      "fromSide": "right",
+      "toNode": "node-pay",
+      "toSide": "left",
+      "label": "refunds"
+    }
+  ]
+}

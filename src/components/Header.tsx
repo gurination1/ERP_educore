@@ -162,13 +162,19 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'tenants',
         label: 'Tenants & Campuses',
-        defaultScreen: 'admin-dashboard',
+        defaultScreen: 'tenants' as any,
+        action: () => {
+          onNavigate('tenants' as any);
+          setOpenDrawer(null);
+        },
         items: [
+          { id: 'tenants' as any, label: 'Multi-Tenant Institutions & Subdomains', action: () => { onNavigate('tenants' as any); setOpenDrawer(null); } },
+          { id: 'payment-gateways' as ActiveScreen, label: 'Payment Gateways & Current Accounts' },
           { id: 'master-tables' as any, label: 'Multi-College Institutional Campuses', action: onOpenMasterTables },
           { id: 'master-tables' as any, label: 'Affiliated Universities (PUP / MRSPTU / PU)', action: onOpenMasterTables },
           { id: 'master-tables' as any, label: 'Academic Departments Catalog', action: onOpenMasterTables },
         ],
-        isActive: false,
+        isActive: activeScreen === ('tenants' as any) || activeScreen === 'payment-gateways',
       },
       {
         id: 'access',
@@ -176,10 +182,11 @@ export const Header: React.FC<HeaderProps> = ({
         defaultScreen: 'user-management',
         items: [
           { id: 'user-management' as ActiveScreen, label: 'Universal User Directory & Security' },
+          { id: 'field-permissions' as ActiveScreen, label: 'Field-Level Permissions Matrix' },
           { id: 'user-management' as ActiveScreen, label: 'Apex Institutional Role Delegation' },
           { id: 'user-management' as ActiveScreen, label: 'Universal Password Override & Security' },
         ],
-        isActive: activeScreen === 'user-management',
+        isActive: activeScreen === 'user-management' || activeScreen === 'field-permissions',
       },
       {
         id: 'architecture',
@@ -246,10 +253,11 @@ export const Header: React.FC<HeaderProps> = ({
         defaultScreen: 'fee-ledger' as ActiveScreen,
         items: [
           { id: 'fee-ledger' as ActiveScreen, label: 'Tuition Fee Assessment & Ledger' },
+          { id: 'payment-gateways' as ActiveScreen, label: 'Payment Gateways (Test / Live Accounts)' },
           { id: 'fee-ledger' as ActiveScreen, label: 'Fee Head Configuration & Schedules' },
           { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships' },
         ],
-        isActive: ['fee-ledger', 'scholarships'].includes(activeScreen as any),
+        isActive: ['fee-ledger', 'scholarships', 'payment-gateways'].includes(activeScreen as any),
       },
       {
         id: 'students',
@@ -295,11 +303,12 @@ export const Header: React.FC<HeaderProps> = ({
         defaultScreen: 'user-management' as ActiveScreen,
         items: [
           { id: 'user-management' as ActiveScreen, label: 'Campus User Accounts & Access' },
+          { id: 'field-permissions' as ActiveScreen, label: 'Field-Level Permissions Matrix' },
           { id: 'master-tables' as any, label: 'Statutory Master Tables', action: onOpenMasterTables },
           { id: 'audit-trail' as any, label: 'Cryptographic Audit Trail', action: onOpenAuditLogs },
           { id: 'reports' as ActiveScreen, label: 'Institutional MIS Reports' },
         ],
-        isActive: ['user-management', 'reports'].includes(activeScreen as any),
+        isActive: ['user-management', 'reports', 'field-permissions'].includes(activeScreen as any),
       },
     ];
   } else if (userRole === 'partner') {

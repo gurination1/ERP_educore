@@ -456,6 +456,697 @@ export interface DialerSettings {
   api_key_configured: boolean;
 }
 
+export interface TenantRecord {
+  id: string;
+  client_id: string;
+  short_code: string;
+  client_name: string;
+  subdomain: string;
+  entity_type: 'college' | 'school' | 'department';
+  db_name: string;
+  is_functional: boolean;
+  admin_username: string;
+  admin_email: string;
+  admin_password_hash?: string;
+  contact_person?: string;
+  contact_phone?: string;
+  subscription_tier: string;
+  created_at: string;
+  last_impersonated_at?: string;
+}
+
+export interface AcademicBatch {
+  id: string;
+  course_id: string;
+  batch_name: string;
+  start_year: number;
+  end_year: number;
+  academic_system: 'semester' | 'annual';
+  total_terms: number;
+  active_terms_json: string;
+  current_term: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface AcademicSection {
+  id: string;
+  batch_id: string;
+  section_name: string;
+  capacity: number;
+  created_at: string;
+}
+
+export interface AcademicSubject {
+  id: string;
+  course_id: string;
+  subject_name: string;
+  subject_code: string;
+  term_number: number;
+  subject_type: 'compulsory' | 'elective' | 'extra' | 'free_period';
+  take_exam: boolean;
+  show_in_report_card: boolean;
+  take_attendance?: boolean;
+  credits: number;
+  max_marks: number;
+  pass_marks: number;
+  created_at: string;
+}
+
+export interface PaymentGatewayConfig {
+  id: string;
+  tenant_id: string;
+  gateway_name: string;
+  account_title: string;
+  credentials_json?: string;
+  mode: 'live' | 'test';
+  is_active: boolean;
+  test_allowed_uids_json?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StaffAdditionalRole {
+  id: string;
+  staff_id: string;
+  school_dept_name: string;
+  role_title: string;
+  role_category: 'teaching' | 'non_teaching' | 'administrative';
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface FieldPermissionRule {
+  id: string;
+  entity_type: 'student' | 'staff';
+  field_key: string;
+  field_label: string;
+  category: string;
+  admin_view: boolean;
+  admin_edit: boolean;
+  staff_view: boolean;
+  staff_edit: boolean;
+  student_view: boolean;
+  student_edit: boolean;
+  updated_at: string;
+}
+
+export interface FacultySubjectAllocation {
+  id: string;
+  faculty_id: string;
+  faculty_name?: string;
+  subject_id: string;
+  subject_code?: string;
+  subject_name?: string;
+  batch_id: string;
+  section_id?: string;
+  section_name?: string;
+  valid_from: string;
+  valid_until?: string;
+  is_active: boolean;
+  handover_to_faculty_id?: string;
+  handover_reason?: string;
+  created_at: string;
+}
+
+export interface TimetableSlot {
+  id: string;
+  batch_id: string;
+  section_id: string;
+  subject_id: string;
+  faculty_id: string;
+  faculty_name?: string;
+  day_of_week: string;
+  start_time: string;
+  end_time: string;
+  room_number?: string;
+  is_combined_class: boolean;
+  linked_batch_ids_json?: string;
+  created_at: string;
+}
+
+export interface AttendanceRecord {
+  id: string;
+  batch_id: string;
+  section_id?: string;
+  subject_id: string;
+  faculty_id: string;
+  attendance_date: string;
+  slot_time?: string;
+  is_combined_class: boolean;
+  student_attendance_json: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AttendanceSettings {
+  id: string;
+  backdated_lock_days: number;
+  updated_at: string;
+}
+
+export interface StudentProgressionHistory {
+  id: string;
+  student_id: string;
+  previous_status: string;
+  new_status: 'active' | 'promoted' | 'demoted' | 'struck_off' | 'deactivated';
+  previous_term?: number;
+  new_term?: number;
+  reason: string;
+  order_no?: string;
+  changed_by: string;
+  created_at: string;
+}
+
+export interface StaffPayrollStructure {
+  id: string;
+  staff_id: string;
+  basic_pay: number;
+  hra: number;
+  special_allowance: number;
+  gross_salary: number;
+  pf_applicable: boolean;
+  pf_amount: number;
+  esi_applicable: boolean;
+  esi_amount: number;
+  voluntary_pf_amount: number;
+  tds_deduction: number;
+  net_salary: number;
+  updated_at: string;
+}
+
+export interface StaffSecurityDeduction {
+  id: string;
+  staff_id: string;
+  target_amount: number;
+  monthly_deduction: number;
+  deducted_so_far: number;
+  remaining_amount: number;
+  is_locked: boolean;
+  status: 'active' | 'completed' | 'refunded' | 'forfeited';
+  created_at: string;
+  locked_at?: string;
+}
+
+export interface StaffExitNoc {
+  id: string;
+  staff_id: string;
+  resignation_date: string;
+  last_working_date: string;
+  library_cleared: boolean;
+  library_remarks?: string;
+  accounts_cleared: boolean;
+  accounts_remarks?: string;
+  hod_cleared: boolean;
+  hod_remarks?: string;
+  it_cleared: boolean;
+  it_remarks?: string;
+  hr_cleared: boolean;
+  hr_remarks?: string;
+  all_cleared: boolean;
+  security_refund_released: boolean;
+  security_refund_amount: number;
+  security_refund_date?: string;
+  security_refund_tx_ref?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export const DEFAULT_TENANTS: TenantRecord[] = [
+  {
+    id: 'ten-bfgi-01',
+    client_id: 'CL_BFGI',
+    short_code: 'BFGI',
+    client_name: 'Baba Farid Group of Institutions (Bathinda)',
+    subdomain: 'bfgi.gurudotcom',
+    entity_type: 'college',
+    db_name: 'db_bfgi',
+    is_functional: true,
+    admin_username: 'admin_bfgi',
+    admin_email: 'registrar@bfgi.gurudotcom',
+    contact_person: 'Er. Gurmeet Singh Dhaliwal (Chairman)',
+    contact_phone: '+91 98765 43210',
+    subscription_tier: 'enterprise_platinum',
+    created_at: '2025-01-10T10:00:00Z',
+    last_impersonated_at: '2025-02-01T14:30:00Z',
+  },
+  {
+    id: 'ten-sanawar-02',
+    client_id: 'CL_SANAWAR',
+    short_code: 'SANAWAR',
+    client_name: 'The Lawrence School Sanawar (Kasauli Hills)',
+    subdomain: 'sanawar.gurudotcom',
+    entity_type: 'school',
+    db_name: 'db_sanawar',
+    is_functional: true,
+    admin_username: 'admin_sanawar',
+    admin_email: 'bursar@sanawar.gurudotcom',
+    contact_person: 'Himmat Singh Dhillon (Headmaster)',
+    contact_phone: '+91 98160 55555',
+    subscription_tier: 'heritage_premier',
+    created_at: '2025-01-12T11:00:00Z',
+  },
+  {
+    id: 'ten-gndec-03',
+    client_id: 'CL_GNDEC',
+    short_code: 'GNDEC',
+    client_name: 'Guru Nanak Dev Engineering College (Ludhiana)',
+    subdomain: 'gndec.gurudotcom',
+    entity_type: 'college',
+    db_name: 'db_gndec',
+    is_functional: false,
+    admin_username: 'admin_gndec',
+    admin_email: 'principal@gndec.gurudotcom',
+    contact_person: 'Dr. Sehijpal Singh (Principal)',
+    contact_phone: '+91 98722 19123',
+    subscription_tier: 'autonomous_enterprise',
+    created_at: '2025-02-01T09:00:00Z',
+  },
+];
+
+export const DEFAULT_BATCHES: AcademicBatch[] = [
+  {
+    id: 'batch-cse-2024',
+    course_id: 'cse',
+    batch_name: 'B.Tech CSE (2024-2028)',
+    start_year: 2024,
+    end_year: 2028,
+    academic_system: 'semester',
+    total_terms: 8,
+    active_terms_json: JSON.stringify([1, 2, 3, 4]),
+    current_term: 3,
+    is_active: true,
+    created_at: '2024-07-01T00:00:00Z',
+  },
+  {
+    id: 'batch-bca-2024',
+    course_id: 'bca',
+    batch_name: 'BCA (2024-2027)',
+    start_year: 2024,
+    end_year: 2027,
+    academic_system: 'semester',
+    total_terms: 6,
+    active_terms_json: JSON.stringify([1, 2]),
+    current_term: 2,
+    is_active: true,
+    created_at: '2024-07-01T00:00:00Z',
+  },
+  {
+    id: 'batch-agri-2024',
+    course_id: 'agri',
+    batch_name: 'B.Sc Agriculture (2024-2028)',
+    start_year: 2024,
+    end_year: 2028,
+    academic_system: 'annual',
+    total_terms: 4,
+    active_terms_json: JSON.stringify([1, 2]),
+    current_term: 1,
+    is_active: true,
+    created_at: '2024-07-01T00:00:00Z',
+  },
+];
+
+export const DEFAULT_SECTIONS: AcademicSection[] = [
+  { id: 'sec-cse-a', batch_id: 'batch-cse-2024', section_name: 'A', capacity: 60, created_at: '2024-07-01T00:00:00Z' },
+  { id: 'sec-cse-b', batch_id: 'batch-cse-2024', section_name: 'B', capacity: 60, created_at: '2024-07-01T00:00:00Z' },
+  { id: 'sec-cse-c', batch_id: 'batch-cse-2024', section_name: 'C', capacity: 60, created_at: '2024-07-01T00:00:00Z' },
+  { id: 'sec-bca-a', batch_id: 'batch-bca-2024', section_name: 'A', capacity: 60, created_at: '2024-07-01T00:00:00Z' },
+  { id: 'sec-agri-a', batch_id: 'batch-agri-2024', section_name: 'A', capacity: 60, created_at: '2024-07-01T00:00:00Z' },
+];
+
+export const DEFAULT_SUBJECTS: AcademicSubject[] = [
+  {
+    id: 'sub-cs-101',
+    course_id: 'cse',
+    subject_name: 'Programming Fundamentals in C',
+    subject_code: 'CS_101_01',
+    term_number: 1,
+    subject_type: 'compulsory',
+    take_exam: true,
+    show_in_report_card: true,
+    credits: 4.0,
+    max_marks: 100,
+    pass_marks: 40,
+    created_at: '2024-07-01T00:00:00Z',
+  },
+  {
+    id: 'sub-hist-101',
+    course_id: 'cse',
+    subject_name: 'History of Science & Civilization',
+    subject_code: 'HIST_101_01',
+    term_number: 1,
+    subject_type: 'compulsory',
+    take_exam: true,
+    show_in_report_card: true,
+    credits: 3.0,
+    max_marks: 100,
+    pass_marks: 40,
+    created_at: '2024-07-01T00:00:00Z',
+  },
+  {
+    id: 'sub-math-201',
+    course_id: 'cse',
+    subject_name: 'Discrete Mathematics & Graph Theory',
+    subject_code: 'MATH_201_03',
+    term_number: 3,
+    subject_type: 'compulsory',
+    take_exam: true,
+    show_in_report_card: true,
+    credits: 4.0,
+    max_marks: 100,
+    pass_marks: 40,
+    created_at: '2024-07-01T00:00:00Z',
+  },
+  {
+    id: 'sub-ai-301',
+    course_id: 'cse',
+    subject_name: 'Applied Machine Learning & Neural Nets',
+    subject_code: 'AI_301_05',
+    term_number: 5,
+    subject_type: 'elective',
+    take_exam: true,
+    show_in_report_card: true,
+    credits: 4.0,
+    max_marks: 100,
+    pass_marks: 40,
+    created_at: '2024-07-01T00:00:00Z',
+  },
+  {
+    id: 'sub-env-101',
+    course_id: 'cse',
+    subject_name: 'Environmental Sciences & Sustainability',
+    subject_code: 'ENV_101_01',
+    term_number: 1,
+    subject_type: 'extra',
+    take_exam: false,
+    show_in_report_card: true,
+    credits: 2.0,
+    max_marks: 50,
+    pass_marks: 20,
+    created_at: '2024-07-01T00:00:00Z',
+  },
+  {
+    id: 'sub-fc-01',
+    course_id: 'cse',
+    subject_name: 'Free Period / Library Self-Study (FC)',
+    subject_code: 'FC_CSE_01',
+    term_number: 1,
+    subject_type: 'free_period',
+    take_exam: false,
+    show_in_report_card: false,
+    take_attendance: false,
+    credits: 0.0,
+    max_marks: 0,
+    pass_marks: 0,
+    created_at: '2024-07-01T00:00:00Z',
+  },
+];
+
+export const DEFAULT_FACULTY_ALLOCATIONS: FacultySubjectAllocation[] = [
+  {
+    id: 'fsa-001',
+    faculty_id: 'usr-staff-01',
+    subject_id: 'sub-cs-101',
+    subject_code: 'CS_101_01',
+    subject_name: 'Programming Fundamentals in C',
+    batch_id: 'batch-cse-2024',
+    section_id: 'sec-cse-a',
+    section_name: 'Section A',
+    valid_from: '2025-08-01',
+    valid_until: '2025-10-15',
+    is_active: false,
+    handover_to_faculty_id: 'usr-hod-01',
+    handover_reason: 'Medical CAS leave and research grant relocation',
+    created_at: '2025-08-01T09:00:00Z',
+  },
+  {
+    id: 'fsa-002',
+    faculty_id: 'usr-hod-01',
+    subject_id: 'sub-cs-101',
+    subject_code: 'CS_101_01',
+    subject_name: 'Programming Fundamentals in C',
+    batch_id: 'batch-cse-2024',
+    section_id: 'sec-cse-a',
+    section_name: 'Section A',
+    valid_from: '2025-10-16',
+    valid_until: undefined,
+    is_active: true,
+    created_at: '2025-10-16T09:00:00Z',
+  },
+];
+
+export const DEFAULT_TIMETABLE_SLOTS: TimetableSlot[] = [
+  {
+    id: 'slot-001',
+    batch_id: 'batch-cse-2024',
+    section_id: 'sec-cse-a',
+    subject_id: 'sub-cs-101',
+    faculty_id: 'usr-staff-01',
+    day_of_week: 'Monday',
+    start_time: '09:00',
+    end_time: '10:00',
+    room_number: 'LH-101',
+    is_combined_class: true,
+    linked_batch_ids_json: JSON.stringify(['sec-cse-a', 'sec-cse-b']),
+    created_at: '2025-08-01T09:00:00Z',
+  },
+  {
+    id: 'slot-002',
+    batch_id: 'batch-cse-2024',
+    section_id: 'sec-cse-a',
+    subject_id: 'sub-math-201',
+    faculty_id: 'usr-hod-01',
+    day_of_week: 'Tuesday',
+    start_time: '10:00',
+    end_time: '11:00',
+    room_number: 'LH-102',
+    is_combined_class: false,
+    created_at: '2025-08-01T09:00:00Z',
+  },
+];
+
+export const DEFAULT_PAYROLL_STRUCTURES: StaffPayrollStructure[] = [
+  {
+    id: 'pay-staff-01',
+    staff_id: 'usr-staff-01',
+    basic_pay: 55000,
+    hra: 16500,
+    special_allowance: 12000,
+    gross_salary: 83500,
+    pf_applicable: true,
+    pf_amount: 6600,
+    esi_applicable: false,
+    esi_amount: 0,
+    voluntary_pf_amount: 2500,
+    tds_deduction: 4200,
+    net_salary: 70200,
+    updated_at: '2025-01-01T00:00:00Z',
+  },
+];
+
+export const DEFAULT_SECURITY_DEDUCTIONS: StaffSecurityDeduction[] = [
+  {
+    id: 'sec-ded-staff-01',
+    staff_id: 'usr-staff-01',
+    target_amount: 30000,
+    monthly_deduction: 5000,
+    deducted_so_far: 30000,
+    remaining_amount: 0,
+    is_locked: true,
+    status: 'completed',
+    created_at: '2024-07-01T00:00:00Z',
+    locked_at: '2024-12-31T23:59:59Z',
+  },
+];
+
+export const DEFAULT_EXIT_NOC: StaffExitNoc[] = [
+  {
+    id: 'noc-staff-01',
+    staff_id: 'usr-staff-01',
+    resignation_date: '2025-01-15',
+    last_working_date: '2025-02-15',
+    library_cleared: true,
+    library_remarks: 'All 4 borrowed textbooks returned in good condition.',
+    accounts_cleared: true,
+    accounts_remarks: 'Salary advance and departmental imprest verified nil dues.',
+    hod_cleared: true,
+    hod_remarks: 'Laboratory equipment and exam answer scripts handed over to HOD.',
+    it_cleared: true,
+    it_remarks: 'Official institutional email deactivated; Dell laptop returned.',
+    hr_cleared: true,
+    hr_remarks: 'Exit interview conducted; ID card surrendered.',
+    all_cleared: true,
+    security_refund_released: true,
+    security_refund_amount: 30000,
+    security_refund_date: '2025-02-16',
+    security_refund_tx_ref: 'NEFT-PB-20250216-99128',
+    created_at: '2025-01-15T10:00:00Z',
+    updated_at: '2025-02-16T12:00:00Z',
+  },
+];
+
+export const DEFAULT_PAYMENT_GATEWAYS: PaymentGatewayConfig[] = [
+  {
+    id: 'gw-rzp-01',
+    tenant_id: 'ten-bfgi-01',
+    gateway_name: 'RAZORPAY',
+    account_title: 'BFGI College Main Tuition Account (HDFC Bank)',
+    credentials_json: JSON.stringify({ key_id: 'rzp_test_EduCore9291', key_secret: 'sec_live_9291_bfgi' }),
+    mode: 'test',
+    is_active: true,
+    test_allowed_uids_json: JSON.stringify(['STU2024001', 'STU2024002', 'admin_bfgi', 'usr-admin-01']),
+    created_at: '2025-01-10T10:00:00Z',
+    updated_at: '2025-01-10T10:00:00Z',
+  },
+  {
+    id: 'gw-hdfc-02',
+    tenant_id: 'ten-bfgi-01',
+    gateway_name: 'HDFC_PAYU',
+    account_title: 'Pharmacy & Nursing Separate Current A/C (ICICI Bank)',
+    credentials_json: JSON.stringify({ merchant_id: 'HDFC_PHARM_2026', salt_key: 'hdfc_salt_sec_991' }),
+    mode: 'live',
+    is_active: false,
+    test_allowed_uids_json: JSON.stringify([]),
+    created_at: '2025-01-10T10:00:00Z',
+    updated_at: '2025-01-10T10:00:00Z',
+  },
+  {
+    id: 'gw-cashfree-03',
+    tenant_id: 'ten-sanawar-02',
+    gateway_name: 'CASHFREE',
+    account_title: 'Sanawar Heritage Boarding Collection A/C (SBI Kasauli)',
+    credentials_json: JSON.stringify({ app_id: 'cf_app_sanawar_01', secret_key: 'cf_sec_sanawar_882' }),
+    mode: 'live',
+    is_active: true,
+    test_allowed_uids_json: JSON.stringify([]),
+    created_at: '2025-01-12T11:00:00Z',
+    updated_at: '2025-01-12T11:00:00Z',
+  },
+];
+
+export const DEFAULT_FIELD_PERMISSIONS: FieldPermissionRule[] = [
+  {
+    id: 'fp-stu-01',
+    entity_type: 'student',
+    field_key: 'stu_aadhaar',
+    field_label: 'Aadhaar / National Identity UID',
+    category: 'Personal Identification',
+    admin_view: true, admin_edit: true,
+    staff_view: true, staff_edit: false,
+    student_view: true, student_edit: false,
+    updated_at: '2025-01-01T00:00:00Z',
+  },
+  {
+    id: 'fp-stu-02',
+    entity_type: 'student',
+    field_key: 'stu_phone',
+    field_label: 'Primary Contact Mobile & WhatsApp',
+    category: 'Personal Identification',
+    admin_view: true, admin_edit: true,
+    staff_view: true, staff_edit: true,
+    student_view: true, student_edit: true,
+    updated_at: '2025-01-01T00:00:00Z',
+  },
+  {
+    id: 'fp-stu-03',
+    entity_type: 'student',
+    field_key: 'stu_fee_ledger',
+    field_label: 'Cumulative Fee Dues & Ledger Breakdown',
+    category: 'Financial Dues',
+    admin_view: true, admin_edit: true,
+    staff_view: false, staff_edit: false,
+    student_view: true, student_edit: false,
+    updated_at: '2025-01-01T00:00:00Z',
+  },
+  {
+    id: 'fp-stu-04',
+    entity_type: 'student',
+    field_key: 'stu_marks',
+    field_label: 'Internal Assessment & Sessional Marks',
+    category: 'Academic Records',
+    admin_view: true, admin_edit: true,
+    staff_view: true, staff_edit: true,
+    student_view: true, student_edit: false,
+    updated_at: '2025-01-01T00:00:00Z',
+  },
+  {
+    id: 'fp-stu-05',
+    entity_type: 'student',
+    field_key: 'stu_docs',
+    field_label: 'Verified Certificates (10th/12th/Domicile)',
+    category: 'Document Vault',
+    admin_view: true, admin_edit: true,
+    staff_view: true, staff_edit: false,
+    student_view: true, student_edit: false,
+    updated_at: '2025-01-01T00:00:00Z',
+  },
+  {
+    id: 'fp-stf-01',
+    entity_type: 'staff',
+    field_key: 'stf_salary',
+    field_label: 'Basic, HRA & Net Salary Structure',
+    category: 'Compensation & Payroll',
+    admin_view: true, admin_edit: true,
+    staff_view: true, staff_edit: false,
+    student_view: false, student_edit: false,
+    updated_at: '2025-01-01T00:00:00Z',
+  },
+  {
+    id: 'fp-stf-02',
+    entity_type: 'staff',
+    field_key: 'stf_pf_esi',
+    field_label: 'PF / ESI / Voluntary PF Coverage',
+    category: 'Statutory Benefits',
+    admin_view: true, admin_edit: true,
+    staff_view: true, staff_edit: false,
+    student_view: false, student_edit: false,
+    updated_at: '2025-01-01T00:00:00Z',
+  },
+  {
+    id: 'fp-stf-03',
+    entity_type: 'staff',
+    field_key: 'stf_security_deposit',
+    field_label: 'Security Deduction Schedule & Lock Status',
+    category: 'HR Security Deposit',
+    admin_view: true, admin_edit: true,
+    staff_view: true, staff_edit: false,
+    student_view: false, student_edit: false,
+    updated_at: '2025-01-01T00:00:00Z',
+  },
+  {
+    id: 'fp-stf-04',
+    entity_type: 'staff',
+    field_key: 'stf_bank_details',
+    field_label: 'Salary Credit Bank A/C & IFSC Code',
+    category: 'Banking & Disbursal',
+    admin_view: true, admin_edit: true,
+    staff_view: true, staff_edit: true,
+    student_view: false, student_edit: false,
+    updated_at: '2025-01-01T00:00:00Z',
+  },
+];
+
+export const DEFAULT_STAFF_ADDITIONAL_ROLES: StaffAdditionalRole[] = [
+  {
+    id: 'sar-01',
+    staff_id: 'usr-staff-01',
+    school_dept_name: 'School of Humanities & Social Sciences',
+    role_title: 'Guest Lecturer - Competitive Exam Reasoning',
+    role_category: 'teaching',
+    is_active: true,
+    created_at: '2024-08-01T00:00:00Z',
+  },
+  {
+    id: 'sar-02',
+    staff_id: 'usr-staff-01',
+    school_dept_name: 'Innovation & Entrepreneurship Cell (E-Cell)',
+    role_title: 'Faculty Mentor & Incubation Coordinator',
+    role_category: 'non_teaching',
+    is_active: true,
+    created_at: '2024-09-01T00:00:00Z',
+  },
+];
+
 export const DEFAULT_MASTER_DEPARTMENTS: MasterDepartment[] = [
   { id: 'dept-cse', dept_code: 'CSE', dept_name: 'Computer Science & Engineering', tags_json: JSON.stringify(['Engineering', 'IT', 'Software', 'AI', 'UG', 'PG']), head_of_dept: 'Dr. Balwinder Singh', established_year: 2005, is_active: true },
   { id: 'dept-agri', dept_code: 'AGRI', dept_name: 'Agriculture & Horticulture Sciences', tags_json: JSON.stringify(['Agriculture', 'Agronomy', 'Soil Science', 'Horticulture', 'UG']), head_of_dept: 'Dr. Harbhajan Randhawa', established_year: 2012, is_active: true },
@@ -1003,6 +1694,9 @@ export interface Student {
   admission_year: number;
   admission_status: 'inquiry' | 'registered' | 'draft' | 'submitted' | 'pending' | 'verified' | 'fee_pending' | 'provisionally_admitted' | 'approved' | 'enrolled' | 'rejected';
   status?: 'active' | 'suspended' | 'inactive' | 'withdrawn' | 'expelled';
+  progression_status?: 'active' | 'promoted' | 'demoted' | 'struck_off' | 'deactivated';
+  batch_id?: string;
+  section_id?: string;
   admission_remarks?: string;
   fees_status: 'paid' | 'due' | 'overdue' | 'cancelled' | 'partial';
   attendance_percentage: number;
@@ -1241,6 +1935,22 @@ class DatabaseStore {
   public enquiry_interactions: EnquiryInteraction[] = [];
   public dialer_settings: DialerSettings = { id: 'default', is_enabled: true, provider: 'exotel', api_key_configured: true };
 
+  public tenants: TenantRecord[] = [];
+  public batches: AcademicBatch[] = [];
+  public sections: AcademicSection[] = [];
+  public subjects: AcademicSubject[] = [];
+  public faculty_allocations: FacultySubjectAllocation[] = [];
+  public timetable_slots: TimetableSlot[] = [];
+  public attendance_records: AttendanceRecord[] = [];
+  public attendance_settings: AttendanceSettings = { id: 'default', backdated_lock_days: 20, updated_at: new Date().toISOString() };
+  public student_progression_history: StudentProgressionHistory[] = [];
+  public staff_payroll_structures: StaffPayrollStructure[] = [];
+  public staff_security_deductions: StaffSecurityDeduction[] = [];
+  public staff_exit_noc: StaffExitNoc[] = [];
+  public payment_gateways: PaymentGatewayConfig[] = [];
+  public staff_additional_roles: StaffAdditionalRole[] = [];
+  public field_permissions: FieldPermissionRule[] = [];
+
   public mode: 'postgres' | 'mariadb' | 'sqlite' = 'sqlite';
   private dbPath: string = process.env.DB_PATH || path.join(process.cwd(), 'database', 'educore.sqlite');
   private sqlDb: SqlJsDatabase | null = null;
@@ -1257,9 +1967,9 @@ class DatabaseStore {
 
     const seedPath = path.join(process.cwd(), 'database', 'educore-seed.sqlite');
 
-    // 0. Try PostgreSQL connection if PGHOST / POSTGRES_URL / DATABASE_URL (postgres://) is configured
-    const pgUrl = process.env.POSTGRES_URL || (process.env.DATABASE_URL?.startsWith('postgres://') || process.env.DATABASE_URL?.startsWith('postgresql://') ? process.env.DATABASE_URL : '');
-    const pgHost = process.env.PGHOST || '';
+    // 0. Try PostgreSQL connection (Primary & mandatory multi-tenant engine)
+    const pgUrl = process.env.POSTGRES_URL || (process.env.DATABASE_URL?.startsWith('postgres://') || process.env.DATABASE_URL?.startsWith('postgresql://') ? process.env.DATABASE_URL : '') || 'postgresql://postgres@127.0.0.1:5432/educore';
+    const pgHost = process.env.PGHOST || '127.0.0.1';
     if (pgUrl || pgHost) {
       try {
         const pool = new pg.Pool({
@@ -1498,6 +2208,9 @@ class DatabaseStore {
         last_followup_at VARCHAR(64),
         assigned_counselor_id VARCHAR(64),
         assigned_counselor_name VARCHAR(255),
+        progression_status VARCHAR(32) DEFAULT 'active',
+        batch_id VARCHAR(64) DEFAULT 'batch-cse-2024',
+        section_id VARCHAR(64) DEFAULT 'sec-cse-a',
         created_at TIMESTAMPTZ DEFAULT NOW()
       );
 
@@ -1686,25 +2399,391 @@ class DatabaseStore {
         custom_meta_json TEXT
       );
 
+      CREATE TABLE IF NOT EXISTS tenants (
+        id VARCHAR(64) PRIMARY KEY,
+        client_id VARCHAR(32) UNIQUE NOT NULL,
+        short_code VARCHAR(32) UNIQUE NOT NULL,
+        client_name VARCHAR(128) NOT NULL,
+        subdomain VARCHAR(64) UNIQUE NOT NULL,
+        entity_type VARCHAR(32) DEFAULT 'college',
+        db_name VARCHAR(64) NOT NULL,
+        is_functional BOOLEAN DEFAULT FALSE,
+        admin_username VARCHAR(64) NOT NULL,
+        admin_email VARCHAR(128) NOT NULL,
+        admin_password_hash VARCHAR(255) NOT NULL,
+        contact_person VARCHAR(128),
+        contact_phone VARCHAR(32),
+        subscription_tier VARCHAR(32) DEFAULT 'enterprise',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        last_impersonated_at TIMESTAMPTZ
+      );
+
+      CREATE TABLE IF NOT EXISTS batches (
+        id VARCHAR(64) PRIMARY KEY,
+        course_id VARCHAR(64) NOT NULL,
+        batch_name VARCHAR(64) NOT NULL,
+        start_year INT NOT NULL,
+        end_year INT NOT NULL,
+        academic_system VARCHAR(32) DEFAULT 'semester',
+        total_terms INT DEFAULT 8,
+        active_terms_json TEXT,
+        current_term INT DEFAULT 1,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS sections (
+        id VARCHAR(64) PRIMARY KEY,
+        batch_id VARCHAR(64) NOT NULL,
+        section_name VARCHAR(32) NOT NULL,
+        capacity INT DEFAULT 60,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS subjects (
+        id VARCHAR(64) PRIMARY KEY,
+        course_id VARCHAR(64) NOT NULL,
+        subject_name VARCHAR(128) NOT NULL,
+        subject_code VARCHAR(64) UNIQUE NOT NULL,
+        term_number INT NOT NULL,
+        subject_type VARCHAR(32) DEFAULT 'compulsory',
+        take_exam BOOLEAN DEFAULT TRUE,
+        show_in_report_card BOOLEAN DEFAULT TRUE,
+        credits NUMERIC(4, 1) DEFAULT 4.0,
+        max_marks INT DEFAULT 100,
+        pass_marks INT DEFAULT 40,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS faculty_subject_allocations (
+        id VARCHAR(64) PRIMARY KEY,
+        faculty_id VARCHAR(64) NOT NULL,
+        subject_id VARCHAR(64) NOT NULL,
+        batch_id VARCHAR(64) NOT NULL,
+        section_id VARCHAR(64),
+        valid_from VARCHAR(32) NOT NULL,
+        valid_until VARCHAR(32),
+        is_active BOOLEAN DEFAULT TRUE,
+        handover_to_faculty_id VARCHAR(64),
+        handover_reason TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS timetable_slots (
+        id VARCHAR(64) PRIMARY KEY,
+        batch_id VARCHAR(64) NOT NULL,
+        section_id VARCHAR(64) NOT NULL,
+        subject_id VARCHAR(64) NOT NULL,
+        faculty_id VARCHAR(64) NOT NULL,
+        day_of_week VARCHAR(16) NOT NULL,
+        start_time VARCHAR(16) NOT NULL,
+        end_time VARCHAR(16) NOT NULL,
+        room_number VARCHAR(32),
+        is_combined_class BOOLEAN DEFAULT FALSE,
+        linked_batch_ids_json TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS attendance_records (
+        id VARCHAR(64) PRIMARY KEY,
+        batch_id VARCHAR(64) NOT NULL,
+        section_id VARCHAR(64),
+        subject_id VARCHAR(64) NOT NULL,
+        faculty_id VARCHAR(64) NOT NULL,
+        attendance_date VARCHAR(32) NOT NULL,
+        slot_time VARCHAR(32),
+        is_combined_class BOOLEAN DEFAULT FALSE,
+        student_attendance_json TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS attendance_settings (
+        id VARCHAR(64) PRIMARY KEY,
+        backdated_lock_days INT DEFAULT 20,
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS student_progression_history (
+        id VARCHAR(64) PRIMARY KEY,
+        student_id VARCHAR(64) NOT NULL,
+        previous_status VARCHAR(32),
+        new_status VARCHAR(32) NOT NULL,
+        previous_term INT,
+        new_term INT,
+        reason TEXT,
+        order_no VARCHAR(64),
+        changed_by VARCHAR(64),
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS staff_payroll_structures (
+        id VARCHAR(64) PRIMARY KEY,
+        staff_id VARCHAR(64) UNIQUE NOT NULL,
+        basic_pay NUMERIC(12, 2) NOT NULL DEFAULT 0,
+        hra NUMERIC(12, 2) NOT NULL DEFAULT 0,
+        special_allowance NUMERIC(12, 2) DEFAULT 0,
+        gross_salary NUMERIC(12, 2) NOT NULL DEFAULT 0,
+        pf_applicable BOOLEAN DEFAULT TRUE,
+        pf_amount NUMERIC(12, 2) DEFAULT 0,
+        esi_applicable BOOLEAN DEFAULT FALSE,
+        esi_amount NUMERIC(12, 2) DEFAULT 0,
+        voluntary_pf_amount NUMERIC(12, 2) DEFAULT 0,
+        tds_deduction NUMERIC(12, 2) DEFAULT 0,
+        net_salary NUMERIC(12, 2) NOT NULL DEFAULT 0,
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS staff_security_deductions (
+        id VARCHAR(64) PRIMARY KEY,
+        staff_id VARCHAR(64) UNIQUE NOT NULL,
+        target_amount NUMERIC(12, 2) NOT NULL DEFAULT 30000,
+        monthly_deduction NUMERIC(12, 2) NOT NULL DEFAULT 5000,
+        deducted_so_far NUMERIC(12, 2) NOT NULL DEFAULT 0,
+        remaining_amount NUMERIC(12, 2) NOT NULL DEFAULT 30000,
+        is_locked BOOLEAN DEFAULT FALSE,
+        status VARCHAR(32) DEFAULT 'active',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        locked_at TIMESTAMPTZ
+      );
+
+      CREATE TABLE IF NOT EXISTS staff_exit_noc (
+        id VARCHAR(64) PRIMARY KEY,
+        staff_id VARCHAR(64) UNIQUE NOT NULL,
+        resignation_date VARCHAR(32) NOT NULL,
+        last_working_date VARCHAR(32) NOT NULL,
+        library_cleared BOOLEAN DEFAULT FALSE,
+        library_remarks TEXT,
+        accounts_cleared BOOLEAN DEFAULT FALSE,
+        accounts_remarks TEXT,
+        hod_cleared BOOLEAN DEFAULT FALSE,
+        hod_remarks TEXT,
+        it_cleared BOOLEAN DEFAULT FALSE,
+        it_remarks TEXT,
+        hr_cleared BOOLEAN DEFAULT FALSE,
+        hr_remarks TEXT,
+        all_cleared BOOLEAN DEFAULT FALSE,
+        security_refund_released BOOLEAN DEFAULT FALSE,
+        security_refund_amount NUMERIC(12, 2) DEFAULT 0,
+        security_refund_date VARCHAR(32),
+        security_refund_tx_ref VARCHAR(128),
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
       CREATE INDEX IF NOT EXISTS idx_pg_users_uid ON users(enterprise_uid);
       CREATE INDEX IF NOT EXISTS idx_pg_students_roll ON students(student_id);
       CREATE INDEX IF NOT EXISTS idx_pg_student_fees_stu ON student_fees(student_id, status);
       CREATE INDEX IF NOT EXISTS idx_pg_payments_stu ON payments(student_id);
       CREATE INDEX IF NOT EXISTS idx_pg_audit_logs_time ON audit_logs(timestamp);
       CREATE INDEX IF NOT EXISTS idx_pg_staff_emp_id ON staff_basic_info(employee_id);
+      CREATE INDEX IF NOT EXISTS idx_pg_tenants_subdomain ON tenants(subdomain);
+      CREATE INDEX IF NOT EXISTS idx_pg_subjects_code ON subjects(subject_code);
+
+      ALTER TABLE students ADD COLUMN IF NOT EXISTS progression_status VARCHAR(32) DEFAULT 'active';
+      ALTER TABLE students ADD COLUMN IF NOT EXISTS batch_id VARCHAR(64) DEFAULT 'batch-cse-2024';
+      ALTER TABLE students ADD COLUMN IF NOT EXISTS section_id VARCHAR(64) DEFAULT 'sec-cse-a';
+      ALTER TABLE subjects ADD COLUMN IF NOT EXISTS take_attendance BOOLEAN DEFAULT TRUE;
+
+      CREATE TABLE IF NOT EXISTS payment_gateways (
+        id VARCHAR(64) PRIMARY KEY,
+        tenant_id VARCHAR(64) NOT NULL DEFAULT 'ten-bfgi-01',
+        gateway_name VARCHAR(64) NOT NULL,
+        account_title VARCHAR(128) NOT NULL,
+        credentials_json TEXT,
+        mode VARCHAR(16) DEFAULT 'test',
+        is_active BOOLEAN DEFAULT false,
+        test_allowed_uids_json TEXT DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS staff_additional_roles (
+        id VARCHAR(64) PRIMARY KEY,
+        staff_id VARCHAR(64) NOT NULL,
+        school_dept_name VARCHAR(128) NOT NULL,
+        role_title VARCHAR(128) NOT NULL,
+        role_category VARCHAR(32) DEFAULT 'teaching',
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS field_permissions (
+        id VARCHAR(64) PRIMARY KEY,
+        entity_type VARCHAR(32) NOT NULL,
+        field_key VARCHAR(64) NOT NULL,
+        field_label VARCHAR(128) NOT NULL,
+        category VARCHAR(64) NOT NULL,
+        admin_view BOOLEAN DEFAULT TRUE,
+        admin_edit BOOLEAN DEFAULT TRUE,
+        staff_view BOOLEAN DEFAULT TRUE,
+        staff_edit BOOLEAN DEFAULT FALSE,
+        student_view BOOLEAN DEFAULT TRUE,
+        student_edit BOOLEAN DEFAULT FALSE,
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_pg_payment_gateways_tenant ON payment_gateways(tenant_id);
+      CREATE INDEX IF NOT EXISTS idx_pg_staff_roles_staff ON staff_additional_roles(staff_id);
+      CREATE INDEX IF NOT EXISTS idx_pg_field_perm_entity ON field_permissions(entity_type);
     `);
   }
 
   private async seedPostgresDefaults(): Promise<void> {
     if (!this.pgPool) return;
-    const { rows } = await this.pgPool.query('SELECT COUNT(*) as count FROM users');
-    if (parseInt(rows[0]?.count || '0', 10) > 0) return;
 
-    console.log('[DB] Seeding default dataset into PostgreSQL enterprise database...');
+    console.log('[DB] Synchronizing enterprise dataset into PostgreSQL database...');
+
+    // 1. Seed users
     for (const u of this.users) {
       await this.pgPool.query(
-        'INSERT INTO users (id, username, email, password_hash, role, full_name, avatar_url, is_active, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (id) DO NOTHING',
-        [u.id, u.username, u.email, u.password_hash, u.role, u.full_name, u.avatar_url || null, u.is_active, u.created_at]
+        'INSERT INTO users (id, username, email, password_hash, role, full_name, avatar_url, is_active, department, designation, employee_id, enterprise_uid, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) ON CONFLICT (id) DO NOTHING',
+        [u.id, u.username, u.email, u.password_hash, u.role, u.full_name, u.avatar_url || null, u.is_active, u.department || null, u.designation || null, u.employee_id || null, u.enterprise_uid || null, u.created_at]
+      );
+    }
+
+    // 2. Seed courses
+    for (const c of this.courses) {
+      await this.pgPool.query(
+        'INSERT INTO courses (id, code, name, department, duration_years, total_semesters, base_tuition_fee) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO NOTHING',
+        [c.id, c.code, c.name, c.department, c.duration_years, c.total_semesters, c.base_tuition_fee]
+      );
+    }
+
+    // 3. Seed students
+    for (const s of this.students) {
+      await this.pgPool.query(
+        `INSERT INTO students (id, user_id, student_id, first_name, last_name, gender, dob, email, phone, guardian_name, guardian_relation, guardian_phone, course_id, session_id, current_semester, admission_year, admission_status, fees_status, attendance_percentage, total_classes, attended_classes, progression_status, batch_id, section_id, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)
+         ON CONFLICT (id) DO NOTHING`,
+        [s.id, s.user_id || null, s.student_id, s.first_name, s.last_name, s.gender, s.dob, s.email, s.phone, s.guardian_name, s.guardian_relation, s.guardian_phone, s.course_id, s.session_id, s.current_semester, s.admission_year, s.admission_status, s.fees_status, s.attendance_percentage, s.total_classes, s.attended_classes, s.progression_status || 'active', s.batch_id || 'batch-cse-2024', s.section_id || 'sec-cse-a', s.created_at]
+      );
+    }
+
+    // 4. Seed Tenants
+    for (const t of DEFAULT_TENANTS) {
+      await this.pgPool.query(
+        `INSERT INTO tenants (id, client_id, short_code, client_name, subdomain, entity_type, db_name, is_functional, admin_username, admin_email, admin_password_hash, contact_person, contact_phone, subscription_tier, created_at, last_impersonated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+         ON CONFLICT (id) DO NOTHING`,
+        [t.id, t.client_id, t.short_code, t.client_name, t.subdomain, t.entity_type, t.db_name, t.is_functional, t.admin_username, t.admin_email, t.admin_password_hash || bcrypt.hashSync('admin123', 10), t.contact_person || null, t.contact_phone || null, t.subscription_tier, t.created_at, t.last_impersonated_at || null]
+      );
+    }
+
+    // 5. Seed Batches
+    for (const b of DEFAULT_BATCHES) {
+      await this.pgPool.query(
+        `INSERT INTO batches (id, course_id, batch_name, start_year, end_year, academic_system, total_terms, active_terms_json, current_term, is_active, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+         ON CONFLICT (id) DO NOTHING`,
+        [b.id, b.course_id, b.batch_name, b.start_year, b.end_year, b.academic_system, b.total_terms, b.active_terms_json, b.current_term, b.is_active, b.created_at]
+      );
+    }
+
+    // 6. Seed Sections
+    for (const sec of DEFAULT_SECTIONS) {
+      await this.pgPool.query(
+        `INSERT INTO sections (id, batch_id, section_name, capacity, created_at)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (id) DO NOTHING`,
+        [sec.id, sec.batch_id, sec.section_name, sec.capacity, sec.created_at]
+      );
+    }
+
+    // 7. Seed Subjects
+    for (const sub of DEFAULT_SUBJECTS) {
+      await this.pgPool.query(
+        `INSERT INTO subjects (id, course_id, subject_name, subject_code, term_number, subject_type, take_exam, show_in_report_card, take_attendance, credits, max_marks, pass_marks, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+         ON CONFLICT (id) DO UPDATE SET take_attendance = EXCLUDED.take_attendance, take_exam = EXCLUDED.take_exam, show_in_report_card = EXCLUDED.show_in_report_card`,
+        [sub.id, sub.course_id, sub.subject_name, sub.subject_code, sub.term_number, sub.subject_type, sub.take_exam, sub.show_in_report_card, sub.take_attendance ?? true, sub.credits, sub.max_marks, sub.pass_marks, sub.created_at]
+      );
+    }
+
+    // 8. Seed Faculty Allocations
+    for (const fa of DEFAULT_FACULTY_ALLOCATIONS) {
+      await this.pgPool.query(
+        `INSERT INTO faculty_subject_allocations (id, faculty_id, subject_id, batch_id, section_id, valid_from, valid_until, is_active, handover_to_faculty_id, handover_reason, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+         ON CONFLICT (id) DO NOTHING`,
+        [fa.id, fa.faculty_id, fa.subject_id, fa.batch_id, fa.section_id || null, fa.valid_from, fa.valid_until || null, fa.is_active, fa.handover_to_faculty_id || null, fa.handover_reason || null, fa.created_at]
+      );
+    }
+
+    // 9. Seed Timetable Slots
+    for (const ts of DEFAULT_TIMETABLE_SLOTS) {
+      await this.pgPool.query(
+        `INSERT INTO timetable_slots (id, batch_id, section_id, subject_id, faculty_id, day_of_week, start_time, end_time, room_number, is_combined_class, linked_batch_ids_json, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+         ON CONFLICT (id) DO NOTHING`,
+        [ts.id, ts.batch_id, ts.section_id, ts.subject_id, ts.faculty_id, ts.day_of_week, ts.start_time, ts.end_time, ts.room_number || null, ts.is_combined_class, ts.linked_batch_ids_json || null, ts.created_at]
+      );
+    }
+
+    // 10. Seed Attendance Settings
+    await this.pgPool.query(
+      `INSERT INTO attendance_settings (id, backdated_lock_days, updated_at)
+       VALUES ('default', 20, NOW())
+       ON CONFLICT (id) DO NOTHING`
+    );
+
+    // 11. Seed Staff Payroll
+    for (const pr of DEFAULT_PAYROLL_STRUCTURES) {
+      await this.pgPool.query(
+        `INSERT INTO staff_payroll_structures (id, staff_id, basic_pay, hra, special_allowance, gross_salary, pf_applicable, pf_amount, esi_applicable, esi_amount, voluntary_pf_amount, tds_deduction, net_salary, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+         ON CONFLICT (staff_id) DO NOTHING`,
+        [pr.id, pr.staff_id, pr.basic_pay, pr.hra, pr.special_allowance, pr.gross_salary, pr.pf_applicable, pr.pf_amount, pr.esi_applicable, pr.esi_amount, pr.voluntary_pf_amount, pr.tds_deduction, pr.net_salary, pr.updated_at]
+      );
+    }
+
+    // 12. Seed Staff Security Deductions
+    for (const sd of DEFAULT_SECURITY_DEDUCTIONS) {
+      await this.pgPool.query(
+        `INSERT INTO staff_security_deductions (id, staff_id, target_amount, monthly_deduction, deducted_so_far, remaining_amount, is_locked, status, created_at, locked_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         ON CONFLICT (staff_id) DO NOTHING`,
+        [sd.id, sd.staff_id, sd.target_amount, sd.monthly_deduction, sd.deducted_so_far, sd.remaining_amount, sd.is_locked, sd.status, sd.created_at, sd.locked_at || null]
+      );
+    }
+
+    // 13. Seed Staff Exit NOC
+    for (const noc of DEFAULT_EXIT_NOC) {
+      await this.pgPool.query(
+        `INSERT INTO staff_exit_noc (id, staff_id, resignation_date, last_working_date, library_cleared, library_remarks, accounts_cleared, accounts_remarks, hod_cleared, hod_remarks, it_cleared, it_remarks, hr_cleared, hr_remarks, all_cleared, security_refund_released, security_refund_amount, security_refund_date, security_refund_tx_ref, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
+         ON CONFLICT (staff_id) DO NOTHING`,
+        [noc.id, noc.staff_id, noc.resignation_date, noc.last_working_date, noc.library_cleared, noc.library_remarks || null, noc.accounts_cleared, noc.accounts_remarks || null, noc.hod_cleared, noc.hod_remarks || null, noc.it_cleared, noc.it_remarks || null, noc.hr_cleared, noc.hr_remarks || null, noc.all_cleared, noc.security_refund_released, noc.security_refund_amount, noc.security_refund_date || null, noc.security_refund_tx_ref || null, noc.created_at, noc.updated_at]
+      );
+    }
+
+    // 14. Seed Payment Gateways
+    for (const gw of DEFAULT_PAYMENT_GATEWAYS) {
+      await this.pgPool.query(
+        `INSERT INTO payment_gateways (id, tenant_id, gateway_name, account_title, credentials_json, mode, is_active, test_allowed_uids_json, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         ON CONFLICT (id) DO NOTHING`,
+        [gw.id, gw.tenant_id, gw.gateway_name, gw.account_title, gw.credentials_json || null, gw.mode, gw.is_active, gw.test_allowed_uids_json || '[]', gw.created_at, gw.updated_at]
+      );
+    }
+
+    // 15. Seed Staff Additional Roles
+    for (const role of DEFAULT_STAFF_ADDITIONAL_ROLES) {
+      await this.pgPool.query(
+        `INSERT INTO staff_additional_roles (id, staff_id, school_dept_name, role_title, role_category, is_active, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         ON CONFLICT (id) DO NOTHING`,
+        [role.id, role.staff_id, role.school_dept_name, role.role_title, role.role_category, role.is_active, role.created_at]
+      );
+    }
+
+    // 16. Seed Field Permissions
+    for (const fp of DEFAULT_FIELD_PERMISSIONS) {
+      await this.pgPool.query(
+        `INSERT INTO field_permissions (id, entity_type, field_key, field_label, category, admin_view, admin_edit, staff_view, staff_edit, student_view, student_edit, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+         ON CONFLICT (id) DO NOTHING`,
+        [fp.id, fp.entity_type, fp.field_key, fp.field_label, fp.category, fp.admin_view, fp.admin_edit, fp.staff_view, fp.staff_edit, fp.student_view, fp.student_edit, fp.updated_at]
       );
     }
   }
@@ -2233,6 +3312,178 @@ class DatabaseStore {
         provider VARCHAR(64),
         api_key_configured TINYINT(1) DEFAULT 0
       );
+
+      CREATE TABLE IF NOT EXISTS tenants (
+        id VARCHAR(64) PRIMARY KEY,
+        client_id VARCHAR(32) UNIQUE NOT NULL,
+        short_code VARCHAR(32) UNIQUE NOT NULL,
+        client_name VARCHAR(128) NOT NULL,
+        subdomain VARCHAR(64) UNIQUE NOT NULL,
+        entity_type VARCHAR(32) DEFAULT 'college',
+        db_name VARCHAR(64) NOT NULL,
+        is_functional TINYINT(1) DEFAULT 0,
+        admin_username VARCHAR(64) NOT NULL,
+        admin_email VARCHAR(128) NOT NULL,
+        admin_password_hash VARCHAR(255) NOT NULL,
+        contact_person VARCHAR(128),
+        contact_phone VARCHAR(32),
+        subscription_tier VARCHAR(32) DEFAULT 'enterprise',
+        created_at VARCHAR(64) NOT NULL,
+        last_impersonated_at VARCHAR(64)
+      );
+
+      CREATE TABLE IF NOT EXISTS batches (
+        id VARCHAR(64) PRIMARY KEY,
+        course_id VARCHAR(64) NOT NULL,
+        batch_name VARCHAR(64) NOT NULL,
+        start_year INT NOT NULL,
+        end_year INT NOT NULL,
+        academic_system VARCHAR(32) DEFAULT 'semester',
+        total_terms INT DEFAULT 8,
+        active_terms_json TEXT,
+        current_term INT DEFAULT 1,
+        is_active TINYINT(1) DEFAULT 1,
+        created_at VARCHAR(64) NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS sections (
+        id VARCHAR(64) PRIMARY KEY,
+        batch_id VARCHAR(64) NOT NULL,
+        section_name VARCHAR(32) NOT NULL,
+        capacity INT DEFAULT 60,
+        created_at VARCHAR(64) NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS subjects (
+        id VARCHAR(64) PRIMARY KEY,
+        course_id VARCHAR(64) NOT NULL,
+        subject_name VARCHAR(128) NOT NULL,
+        subject_code VARCHAR(64) UNIQUE NOT NULL,
+        term_number INT NOT NULL,
+        subject_type VARCHAR(32) DEFAULT 'compulsory',
+        take_exam TINYINT(1) DEFAULT 1,
+        show_in_report_card TINYINT(1) DEFAULT 1,
+        credits DOUBLE DEFAULT 4.0,
+        max_marks INT DEFAULT 100,
+        pass_marks INT DEFAULT 40,
+        created_at VARCHAR(64) NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS faculty_subject_allocations (
+        id VARCHAR(64) PRIMARY KEY,
+        faculty_id VARCHAR(64) NOT NULL,
+        subject_id VARCHAR(64) NOT NULL,
+        batch_id VARCHAR(64) NOT NULL,
+        section_id VARCHAR(64),
+        valid_from VARCHAR(32) NOT NULL,
+        valid_until VARCHAR(32),
+        is_active TINYINT(1) DEFAULT 1,
+        handover_to_faculty_id VARCHAR(64),
+        handover_reason TEXT,
+        created_at VARCHAR(64) NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS timetable_slots (
+        id VARCHAR(64) PRIMARY KEY,
+        batch_id VARCHAR(64) NOT NULL,
+        section_id VARCHAR(64) NOT NULL,
+        subject_id VARCHAR(64) NOT NULL,
+        faculty_id VARCHAR(64) NOT NULL,
+        day_of_week VARCHAR(16) NOT NULL,
+        start_time VARCHAR(16) NOT NULL,
+        end_time VARCHAR(16) NOT NULL,
+        room_number VARCHAR(32),
+        is_combined_class TINYINT(1) DEFAULT 0,
+        linked_batch_ids_json TEXT,
+        created_at VARCHAR(64) NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS attendance_records (
+        id VARCHAR(64) PRIMARY KEY,
+        batch_id VARCHAR(64) NOT NULL,
+        section_id VARCHAR(64),
+        subject_id VARCHAR(64) NOT NULL,
+        faculty_id VARCHAR(64) NOT NULL,
+        attendance_date VARCHAR(32) NOT NULL,
+        slot_time VARCHAR(32),
+        is_combined_class TINYINT(1) DEFAULT 0,
+        student_attendance_json TEXT NOT NULL,
+        created_at VARCHAR(64) NOT NULL,
+        updated_at VARCHAR(64) NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS attendance_settings (
+        id VARCHAR(64) PRIMARY KEY,
+        backdated_lock_days INT DEFAULT 20,
+        updated_at VARCHAR(64) NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS student_progression_history (
+        id VARCHAR(64) PRIMARY KEY,
+        student_id VARCHAR(64) NOT NULL,
+        previous_status VARCHAR(32),
+        new_status VARCHAR(32) NOT NULL,
+        previous_term INT,
+        new_term INT,
+        reason TEXT,
+        order_no VARCHAR(64),
+        changed_by VARCHAR(64),
+        created_at VARCHAR(64) NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS staff_payroll_structures (
+        id VARCHAR(64) PRIMARY KEY,
+        staff_id VARCHAR(64) UNIQUE NOT NULL,
+        basic_pay DOUBLE NOT NULL DEFAULT 0,
+        hra DOUBLE NOT NULL DEFAULT 0,
+        special_allowance DOUBLE DEFAULT 0,
+        gross_salary DOUBLE NOT NULL DEFAULT 0,
+        pf_applicable TINYINT(1) DEFAULT 1,
+        pf_amount DOUBLE DEFAULT 0,
+        esi_applicable TINYINT(1) DEFAULT 0,
+        esi_amount DOUBLE DEFAULT 0,
+        voluntary_pf_amount DOUBLE DEFAULT 0,
+        tds_deduction DOUBLE DEFAULT 0,
+        net_salary DOUBLE NOT NULL DEFAULT 0,
+        updated_at VARCHAR(64) NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS staff_security_deductions (
+        id VARCHAR(64) PRIMARY KEY,
+        staff_id VARCHAR(64) UNIQUE NOT NULL,
+        target_amount DOUBLE NOT NULL DEFAULT 30000,
+        monthly_deduction DOUBLE NOT NULL DEFAULT 5000,
+        deducted_so_far DOUBLE NOT NULL DEFAULT 0,
+        remaining_amount DOUBLE NOT NULL DEFAULT 30000,
+        is_locked TINYINT(1) DEFAULT 0,
+        status VARCHAR(32) DEFAULT 'active',
+        created_at VARCHAR(64) NOT NULL,
+        locked_at VARCHAR(64)
+      );
+
+      CREATE TABLE IF NOT EXISTS staff_exit_noc (
+        id VARCHAR(64) PRIMARY KEY,
+        staff_id VARCHAR(64) UNIQUE NOT NULL,
+        resignation_date VARCHAR(32) NOT NULL,
+        last_working_date VARCHAR(32) NOT NULL,
+        library_cleared TINYINT(1) DEFAULT 0,
+        library_remarks TEXT,
+        accounts_cleared TINYINT(1) DEFAULT 0,
+        accounts_remarks TEXT,
+        hod_cleared TINYINT(1) DEFAULT 0,
+        hod_remarks TEXT,
+        it_cleared TINYINT(1) DEFAULT 0,
+        it_remarks TEXT,
+        hr_cleared TINYINT(1) DEFAULT 0,
+        hr_remarks TEXT,
+        all_cleared TINYINT(1) DEFAULT 0,
+        security_refund_released TINYINT(1) DEFAULT 0,
+        security_refund_amount DOUBLE DEFAULT 0,
+        security_refund_date VARCHAR(32),
+        security_refund_tx_ref VARCHAR(128),
+        created_at VARCHAR(64) NOT NULL,
+        updated_at VARCHAR(64) NOT NULL
+      );
     `);
 
     // Ensure newly added student columns exist in live MariaDB
@@ -2250,6 +3501,9 @@ class DatabaseStore {
     await safeAddColumn('users', 'enterprise_uid VARCHAR(64)');
 
     // Students table additions
+    await safeAddColumn('students', "progression_status VARCHAR(32) DEFAULT 'active'");
+    await safeAddColumn('students', 'batch_id VARCHAR(64)');
+    await safeAddColumn('students', 'section_id VARCHAR(64)');
     await safeAddColumn('students', 'mother_name VARCHAR(64)');
     await safeAddColumn('students', 'address TEXT');
     await safeAddColumn('students', 'city VARCHAR(64)');
@@ -6292,6 +7546,20 @@ class DatabaseStore {
     this.enquiries = [...DEFAULT_ENQUIRIES];
     this.enquiry_interactions = [...DEFAULT_ENQUIRY_INTERACTIONS];
 
+    this.tenants = [...DEFAULT_TENANTS];
+    this.batches = [...DEFAULT_BATCHES];
+    this.sections = [...DEFAULT_SECTIONS];
+    this.subjects = [...DEFAULT_SUBJECTS];
+    this.faculty_allocations = [...DEFAULT_FACULTY_ALLOCATIONS];
+    this.timetable_slots = [...DEFAULT_TIMETABLE_SLOTS];
+    this.staff_payroll_structures = [...DEFAULT_PAYROLL_STRUCTURES];
+    this.staff_security_deductions = [...DEFAULT_SECURITY_DEDUCTIONS];
+    this.staff_exit_noc = [...DEFAULT_EXIT_NOC];
+    this.payment_gateways = [...DEFAULT_PAYMENT_GATEWAYS];
+    this.staff_additional_roles = [...DEFAULT_STAFF_ADDITIONAL_ROLES];
+    this.field_permissions = [...DEFAULT_FIELD_PERMISSIONS];
+    this.attendance_settings = { id: 'default', backdated_lock_days: 20, updated_at: new Date().toISOString() };
+
     // Ensure all seed users have enterprise_uid
     for (const u of this.users) {
       if (!u.enterprise_uid) {
@@ -6299,6 +7567,1094 @@ class DatabaseStore {
       }
     }
   }
+
+  // ----------------------------------------------------
+  // MULTI-TENANT SAAS GOVERNANCE & PROVISIONING (Lecture 3)
+  // ----------------------------------------------------
+  public async getTenants(): Promise<TenantRecord[]> {
+    if (this.pgPool) {
+      const { rows } = await this.pgPool.query('SELECT * FROM tenants ORDER BY created_at DESC');
+      if (rows.length > 0) return rows;
+    }
+    return this.tenants;
+  }
+
+  public async getTenantById(id: string): Promise<TenantRecord | null> {
+    if (this.pgPool) {
+      const { rows } = await this.pgPool.query('SELECT * FROM tenants WHERE id = $1 OR client_id = $1 OR short_code = $1', [id]);
+      if (rows.length > 0) return rows[0];
+    }
+    return this.tenants.find(t => t.id === id || t.client_id === id || t.short_code === id) || null;
+  }
+
+  public async createTenant(tenant: Partial<TenantRecord>): Promise<TenantRecord> {
+    const id = tenant.id || `ten-${Date.now()}`;
+    const short_code = (tenant.short_code || `CL${Math.floor(100 + Math.random() * 899)}`).toUpperCase();
+    const client_id = tenant.client_id || `CL_${short_code}`;
+    const client_name = tenant.client_name || 'New Collegiate Institution';
+    const subdomain = tenant.subdomain || `${short_code.toLowerCase()}.gurudotcom`;
+    const entity_type = tenant.entity_type || 'college';
+    const db_name = tenant.db_name || `db_${short_code.toLowerCase()}`;
+    const is_functional = !!tenant.is_functional;
+    const admin_username = tenant.admin_username || `admin_${short_code.toLowerCase()}`;
+    const admin_email = tenant.admin_email || `admin@${short_code.toLowerCase()}.gurudotcom`;
+    const admin_password_hash = tenant.admin_password_hash || bcrypt.hashSync('admin123', 10);
+    const subscription_tier = tenant.subscription_tier || 'enterprise';
+    const created_at = new Date().toISOString();
+
+    const record: TenantRecord = {
+      id, client_id, short_code, client_name, subdomain, entity_type,
+      db_name, is_functional, admin_username, admin_email, admin_password_hash,
+      contact_person: tenant.contact_person, contact_phone: tenant.contact_phone,
+      subscription_tier, created_at,
+    };
+
+    if (this.pgPool) {
+      await this.pgPool.query(
+        `INSERT INTO tenants (id, client_id, short_code, client_name, subdomain, entity_type, db_name, is_functional, admin_username, admin_email, admin_password_hash, contact_person, contact_phone, subscription_tier, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+         ON CONFLICT (id) DO UPDATE SET is_functional = EXCLUDED.is_functional, client_name = EXCLUDED.client_name`,
+        [id, client_id, short_code, client_name, subdomain, entity_type, db_name, is_functional, admin_username, admin_email, admin_password_hash, tenant.contact_person || null, tenant.contact_phone || null, subscription_tier, created_at]
+      );
+    }
+    const idx = this.tenants.findIndex(t => t.id === id);
+    if (idx >= 0) this.tenants[idx] = record;
+    else this.tenants.unshift(record);
+
+    return record;
+  }
+
+  public async toggleTenantFunctional(id: string, is_functional: boolean): Promise<TenantRecord> {
+    const existing = await this.getTenantById(id);
+    if (!existing) throw new Error(`Tenant ${id} not found.`);
+
+    existing.is_functional = is_functional;
+    if (this.pgPool) {
+      await this.pgPool.query('UPDATE tenants SET is_functional = $1 WHERE id = $2', [is_functional, existing.id]);
+    }
+    const idx = this.tenants.findIndex(t => t.id === existing.id);
+    if (idx >= 0) this.tenants[idx].is_functional = is_functional;
+
+    await this.createAuditLog({
+      actor_id: 'usr-super-01',
+      actor_name: 'Universal Provost (Super Admin)',
+      actor_role: 'super_admin',
+      action: is_functional ? 'TENANT_DB_PROVISIONED' : 'TENANT_DEACTIVATED',
+      target_type: 'system',
+      target_id: existing.id,
+      details: is_functional
+        ? `Provisioned client database ${existing.db_name} for ${existing.client_name} (${existing.subdomain}). Cloned master statutory tables.`
+        : `Deactivated tenant ${existing.client_name} (${existing.short_code}).`,
+      severity: 'critical',
+    });
+
+    return existing;
+  }
+
+  public async impersonateTenant(id: string): Promise<{ tenant: TenantRecord; adminUser: User }> {
+    const tenant = await this.getTenantById(id);
+    if (!tenant) throw new Error(`Tenant ${id} not found.`);
+
+    const now = new Date().toISOString();
+    tenant.last_impersonated_at = now;
+    if (this.pgPool) {
+      await this.pgPool.query('UPDATE tenants SET last_impersonated_at = $1 WHERE id = $2', [now, tenant.id]);
+    }
+
+    // Find or provision client administrator account
+    let admin = await this.findUserByUsernameOrEmail(tenant.admin_username);
+    if (!admin) {
+      admin = await this.findUserByUsernameOrEmail(tenant.admin_email);
+    }
+    if (!admin) {
+      admin = {
+        id: `usr-adm-${tenant.short_code.toLowerCase()}`,
+        username: tenant.admin_username,
+        email: tenant.admin_email,
+        password_hash: tenant.admin_password_hash || bcrypt.hashSync('admin123', 10),
+        role: 'admin',
+        full_name: `${tenant.client_name} Institutional Admin`,
+        is_active: true,
+        department: 'Registrar & Directorate Office',
+        designation: 'Institutional Registrar & Admin',
+        employee_id: `ADM-${tenant.short_code}`,
+        enterprise_uid: generateEnterpriseUID('admin', '03', '01', undefined, tenant.short_code.slice(0, 2)),
+        created_at: now,
+      };
+      await this.createUser(admin);
+    }
+
+    await this.createAuditLog({
+      actor_id: 'usr-super-01',
+      actor_name: 'Universal Provost (Super Admin)',
+      actor_role: 'super_admin',
+      action: 'SUPER_ADMIN_ONE_CLICK_IMPERSONATION',
+      target_type: 'user',
+      target_id: admin.id,
+      details: `Universal Super Admin apex one-click direct impersonation into client ${tenant.client_name} (${tenant.short_code}). Bypassed login credentials.`,
+      severity: 'critical',
+    });
+
+    return { tenant, adminUser: admin };
+  }
+
+  // ----------------------------------------------------
+  // ACADEMIC TOPOLOGY: BATCHES & SECTIONS (Lecture 3)
+  // ----------------------------------------------------
+  public async getBatches(courseId?: string): Promise<AcademicBatch[]> {
+    if (this.pgPool) {
+      const q = courseId
+        ? 'SELECT * FROM batches WHERE course_id = $1 ORDER BY start_year DESC'
+        : 'SELECT * FROM batches ORDER BY start_year DESC';
+      const params = courseId ? [courseId] : [];
+      const { rows } = await this.pgPool.query(q, params);
+      if (rows.length > 0) return rows;
+    }
+    return courseId ? this.batches.filter(b => b.course_id === courseId) : this.batches;
+  }
+
+  public async createBatch(batch: Partial<AcademicBatch>): Promise<AcademicBatch> {
+    const id = batch.id || `batch-${Date.now()}`;
+    const course_id = batch.course_id || 'cse';
+    const start_year = batch.start_year || 2024;
+    const end_year = batch.end_year || 2028;
+    const batch_name = batch.batch_name || `${start_year}-${end_year}`;
+    const academic_system = batch.academic_system || 'semester';
+    const total_terms = batch.total_terms || (academic_system === 'annual' ? 4 : 8);
+    const active_terms_json = batch.active_terms_json || JSON.stringify([1, 2]);
+    const current_term = batch.current_term || 1;
+    const is_active = batch.is_active !== undefined ? !!batch.is_active : true;
+    const created_at = new Date().toISOString();
+
+    const record: AcademicBatch = {
+      id, course_id, batch_name, start_year, end_year,
+      academic_system, total_terms, active_terms_json, current_term,
+      is_active, created_at,
+    };
+
+    if (this.pgPool) {
+      await this.pgPool.query(
+        `INSERT INTO batches (id, course_id, batch_name, start_year, end_year, academic_system, total_terms, active_terms_json, current_term, is_active, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+         ON CONFLICT (id) DO UPDATE SET batch_name = EXCLUDED.batch_name, active_terms_json = EXCLUDED.active_terms_json`,
+        [id, course_id, batch_name, start_year, end_year, academic_system, total_terms, active_terms_json, current_term, is_active, created_at]
+      );
+    }
+    const idx = this.batches.findIndex(b => b.id === id);
+    if (idx >= 0) this.batches[idx] = record;
+    else this.batches.unshift(record);
+
+    return record;
+  }
+
+  public async getSections(batchId?: string): Promise<AcademicSection[]> {
+    if (this.pgPool) {
+      const q = batchId
+        ? 'SELECT * FROM sections WHERE batch_id = $1 ORDER BY section_name ASC'
+        : 'SELECT * FROM sections ORDER BY section_name ASC';
+      const params = batchId ? [batchId] : [];
+      const { rows } = await this.pgPool.query(q, params);
+      if (rows.length > 0) return rows;
+    }
+    return batchId ? this.sections.filter(s => s.batch_id === batchId) : this.sections;
+  }
+
+  public async createSection(section: Partial<AcademicSection>): Promise<AcademicSection> {
+    const id = section.id || `sec-${Date.now()}`;
+    const batch_id = section.batch_id || 'batch-cse-2024';
+    const section_name = (section.section_name || 'A').toUpperCase();
+    const capacity = section.capacity || 60;
+    const created_at = new Date().toISOString();
+
+    const record: AcademicSection = { id, batch_id, section_name, capacity, created_at };
+
+    if (this.pgPool) {
+      await this.pgPool.query(
+        `INSERT INTO sections (id, batch_id, section_name, capacity, created_at)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (id) DO UPDATE SET section_name = EXCLUDED.section_name, capacity = EXCLUDED.capacity`,
+        [id, batch_id, section_name, capacity, created_at]
+      );
+    }
+    const idx = this.sections.findIndex(s => s.id === id);
+    if (idx >= 0) this.sections[idx] = record;
+    else this.sections.push(record);
+
+    return record;
+  }
+
+  public async transferStudentSection(studentId: string, targetSectionId: string, reason: string, changedBy: string): Promise<any> {
+    const student = await this.getStudentById(studentId);
+    if (!student) throw new Error(`Student ${studentId} not found.`);
+
+    const prevSection = student.section_id || 'unassigned';
+    student.section_id = targetSectionId;
+
+    if (this.pgPool) {
+      await this.pgPool.query('UPDATE students SET section_id = $1 WHERE id = $2 OR student_id = $2', [targetSectionId, student.id]);
+    }
+
+    await this.createAuditLog({
+      actor_id: changedBy,
+      actor_name: changedBy,
+      actor_role: 'admin',
+      action: 'STUDENT_SECTION_TRANSFER',
+      target_type: 'student',
+      target_id: student.id,
+      details: `Non-destructive section transfer from ${prevSection} to ${targetSectionId}. Preserved all cumulative attendance (${student.attended_classes}/${student.total_classes}) and fee ledgers. Reason: ${reason}`,
+      severity: 'info',
+    });
+
+    return { success: true, student, previous_section: prevSection, new_section: targetSectionId };
+  }
+
+  // ----------------------------------------------------
+  // CURRICULUM, SUBJECT MATRIX & NOMENCLATURE (Lecture 3)
+  // Formula: [NAME]_[COURSE]_[TERM] (e.g. HIST_101_01)
+  // Flags: take_exam, show_in_report_card
+  // ----------------------------------------------------
+  public async getSubjects(courseId?: string, termNumber?: number): Promise<AcademicSubject[]> {
+    if (this.pgPool) {
+      let q = 'SELECT * FROM subjects WHERE 1=1';
+      const params: any[] = [];
+      if (courseId) {
+        params.push(courseId);
+        q += ` AND course_id = $${params.length}`;
+      }
+      if (termNumber) {
+        params.push(termNumber);
+        q += ` AND term_number = $${params.length}`;
+      }
+      q += ' ORDER BY term_number ASC, subject_code ASC';
+      const { rows } = await this.pgPool.query(q, params);
+      if (rows.length > 0) return rows;
+    }
+    let list = this.subjects;
+    if (courseId) list = list.filter(s => s.course_id === courseId);
+    if (termNumber) list = list.filter(s => s.term_number === termNumber);
+    return list;
+  }
+
+  public async createSubject(subject: Partial<AcademicSubject>): Promise<AcademicSubject> {
+    const id = subject.id || `subj-${Date.now()}`;
+    const course_id = subject.course_id || 'cse';
+    const term_number = subject.term_number || 1;
+    const subject_name = subject.subject_name || 'Subject Name';
+    const termCode = String(term_number).padStart(2, '0');
+    const courseCode = course_id.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const nameCode = subject_name.split(' ')[0].toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4) || 'SUBJ';
+    // Strict Coding Formula: [NAME]_[COURSE]_[TERM]
+    const subject_code = subject.subject_code || `${nameCode}_${courseCode}_${termCode}`;
+    const subject_type = subject.subject_type || 'compulsory';
+    const take_exam = subject.take_exam !== undefined ? !!subject.take_exam : (subject_type !== 'free_period');
+    const show_in_report_card = subject.show_in_report_card !== undefined ? !!subject.show_in_report_card : (subject_type !== 'free_period');
+    const take_attendance = subject.take_attendance !== undefined ? !!subject.take_attendance : (subject_type !== 'free_period');
+    const credits = subject.credits !== undefined ? subject.credits : (subject_type === 'free_period' ? 0.0 : 4.0);
+    const max_marks = subject.max_marks !== undefined ? subject.max_marks : (subject_type === 'free_period' ? 0 : 100);
+    const pass_marks = subject.pass_marks !== undefined ? subject.pass_marks : (subject_type === 'free_period' ? 0 : 40);
+    const created_at = new Date().toISOString();
+
+    const record: AcademicSubject = {
+      id, course_id, subject_name, subject_code, term_number,
+      subject_type, take_exam, show_in_report_card, take_attendance, credits,
+      max_marks, pass_marks, created_at,
+    };
+
+    if (this.pgPool) {
+      await this.pgPool.query(
+        `INSERT INTO subjects (id, course_id, subject_name, subject_code, term_number, subject_type, take_exam, show_in_report_card, take_attendance, credits, max_marks, pass_marks, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+         ON CONFLICT (id) DO UPDATE SET subject_name = EXCLUDED.subject_name, take_exam = EXCLUDED.take_exam, show_in_report_card = EXCLUDED.show_in_report_card, take_attendance = EXCLUDED.take_attendance`,
+        [id, course_id, subject_name, subject_code, term_number, subject_type, take_exam, show_in_report_card, take_attendance, credits, max_marks, pass_marks, created_at]
+      );
+    }
+    const idx = this.subjects.findIndex(s => s.id === id);
+    if (idx >= 0) this.subjects[idx] = record;
+    else this.subjects.push(record);
+
+    return record;
+  }
+
+  // ----------------------------------------------------
+  // FACULTY ALLOCATION & HANDOVER DATES (Lecture 3)
+  // ----------------------------------------------------
+  public async getFacultyAllocations(filters?: { facultyId?: string; subjectId?: string; batchId?: string }): Promise<FacultySubjectAllocation[]> {
+    if (this.pgPool) {
+      let q = 'SELECT * FROM faculty_subject_allocations WHERE 1=1';
+      const params: any[] = [];
+      if (filters?.facultyId) {
+        params.push(filters.facultyId);
+        q += ` AND faculty_id = $${params.length}`;
+      }
+      if (filters?.subjectId) {
+        params.push(filters.subjectId);
+        q += ` AND subject_id = $${params.length}`;
+      }
+      if (filters?.batchId) {
+        params.push(filters.batchId);
+        q += ` AND batch_id = $${params.length}`;
+      }
+      q += ' ORDER BY valid_from DESC';
+      const { rows } = await this.pgPool.query(q, params);
+      if (rows.length > 0) return rows;
+    }
+    let list = this.faculty_allocations;
+    if (filters?.facultyId) list = list.filter(a => a.faculty_id === filters.facultyId);
+    if (filters?.subjectId) list = list.filter(a => a.subject_id === filters.subjectId);
+    if (filters?.batchId) list = list.filter(a => a.batch_id === filters.batchId);
+    return list;
+  }
+
+  public async allocateFaculty(allocation: Partial<FacultySubjectAllocation>): Promise<FacultySubjectAllocation> {
+    const id = allocation.id || `fsa-${Date.now()}`;
+    const faculty_id = allocation.faculty_id || 'usr-staff-01';
+    const subject_id = allocation.subject_id || 'sub-cs-101';
+    const batch_id = allocation.batch_id || 'batch-cse-2024';
+    const section_id = allocation.section_id || 'sec-cse-a';
+    const valid_from = allocation.valid_from || new Date().toISOString().split('T')[0];
+    const valid_until = allocation.valid_until || undefined;
+    const is_active = allocation.is_active !== undefined ? !!allocation.is_active : true;
+    const created_at = new Date().toISOString();
+
+    const record: FacultySubjectAllocation = {
+      id, faculty_id, subject_id, batch_id, section_id,
+      valid_from, valid_until, is_active, created_at,
+    };
+
+    if (this.pgPool) {
+      await this.pgPool.query(
+        `INSERT INTO faculty_subject_allocations (id, faculty_id, subject_id, batch_id, section_id, valid_from, valid_until, is_active, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         ON CONFLICT (id) DO UPDATE SET valid_until = EXCLUDED.valid_until, is_active = EXCLUDED.is_active`,
+        [id, faculty_id, subject_id, batch_id, section_id, valid_from, valid_until || null, is_active, created_at]
+      );
+    }
+    const idx = this.faculty_allocations.findIndex(a => a.id === id);
+    if (idx >= 0) this.faculty_allocations[idx] = record;
+    else this.faculty_allocations.push(record);
+
+    return record;
+  }
+
+  public async handoverFaculty(allocationId: string, newFacultyId: string, handoverDate: string, reason: string): Promise<any> {
+    const existing = this.faculty_allocations.find(a => a.id === allocationId);
+    if (!existing) throw new Error(`Faculty allocation ${allocationId} not found.`);
+
+    existing.valid_until = handoverDate;
+    existing.is_active = false;
+    existing.handover_to_faculty_id = newFacultyId;
+    existing.handover_reason = reason;
+
+    if (this.pgPool) {
+      await this.pgPool.query(
+        'UPDATE faculty_subject_allocations SET valid_until = $1, is_active = false, handover_to_faculty_id = $2, handover_reason = $3 WHERE id = $4',
+        [handoverDate, newFacultyId, reason, existing.id]
+      );
+    }
+
+    // Successor allocation starts next day
+    const nextDay = new Date(Date.parse(handoverDate) + 86400000).toISOString().split('T')[0];
+    const newAllocation = await this.allocateFaculty({
+      faculty_id: newFacultyId,
+      subject_id: existing.subject_id,
+      batch_id: existing.batch_id,
+      section_id: existing.section_id,
+      valid_from: nextDay,
+      valid_until: undefined,
+      is_active: true,
+    });
+
+    await this.createAuditLog({
+      actor_id: 'usr-admin-01',
+      actor_name: 'Registrar & Provost',
+      actor_role: 'admin',
+      action: 'FACULTY_SUBJECT_HANDOVER',
+      target_type: 'staff',
+      target_id: newFacultyId,
+      details: `Academic handover for subject ${existing.subject_id}. Relieved faculty ${existing.faculty_id} on ${handoverDate}; successor ${newFacultyId} assumed charge on ${nextDay}. Reason: ${reason}`,
+      severity: 'info',
+    });
+
+    return { relievedAllocation: existing, successorAllocation: newAllocation };
+  }
+
+  // ----------------------------------------------------
+  // TIME TABLE & COMBINED CLASSES (CC) (Lecture 3)
+  // ----------------------------------------------------
+  public async getTimetableSlots(filters?: { batchId?: string; facultyId?: string; dayOfWeek?: string }): Promise<TimetableSlot[]> {
+    if (this.pgPool) {
+      let q = 'SELECT * FROM timetable_slots WHERE 1=1';
+      const params: any[] = [];
+      if (filters?.batchId) {
+        params.push(filters.batchId);
+        q += ` AND batch_id = $${params.length}`;
+      }
+      if (filters?.facultyId) {
+        params.push(filters.facultyId);
+        q += ` AND faculty_id = $${params.length}`;
+      }
+      if (filters?.dayOfWeek) {
+        params.push(filters.dayOfWeek);
+        q += ` AND day_of_week = $${params.length}`;
+      }
+      q += ' ORDER BY day_of_week ASC, start_time ASC';
+      const { rows } = await this.pgPool.query(q, params);
+      if (rows.length > 0) return rows;
+    }
+    let list = this.timetable_slots;
+    if (filters?.batchId) list = list.filter(s => s.batch_id === filters.batchId);
+    if (filters?.facultyId) list = list.filter(s => s.faculty_id === filters.facultyId);
+    if (filters?.dayOfWeek) list = list.filter(s => s.day_of_week === filters.dayOfWeek);
+    return list;
+  }
+
+  public async createTimetableSlot(slot: Partial<TimetableSlot>): Promise<TimetableSlot> {
+    const id = slot.id || `slot-${Date.now()}`;
+    const batch_id = slot.batch_id || 'batch-cse-2024';
+    const section_id = slot.section_id || 'sec-cse-a';
+    const subject_id = slot.subject_id || 'sub-cs-101';
+    const faculty_id = slot.faculty_id || 'usr-staff-01';
+    const day_of_week = slot.day_of_week || 'Monday';
+    const start_time = slot.start_time || '09:00';
+    const end_time = slot.end_time || '10:00';
+    const room_number = slot.room_number || 'Room 101';
+    const is_combined_class = !!slot.is_combined_class;
+    const linked_batch_ids_json = slot.linked_batch_ids_json || (is_combined_class ? JSON.stringify([batch_id]) : undefined);
+    const created_at = new Date().toISOString();
+
+    // Conflict Detector: check faculty overlapping slots
+    const allSlots = await this.getTimetableSlots();
+    const facultyConflict = allSlots.find(s =>
+      s.id !== id &&
+      s.faculty_id === faculty_id &&
+      s.day_of_week === day_of_week &&
+      s.start_time === start_time &&
+      !is_combined_class
+    );
+    if (facultyConflict) {
+      throw new Error(`Time Table Conflict: Faculty ${faculty_id} is already scheduled in ${facultyConflict.room_number || 'another room'} for batch ${facultyConflict.batch_id} on ${day_of_week} at ${start_time}.`);
+    }
+
+    const roomConflict = allSlots.find(s =>
+      s.id !== id &&
+      s.room_number === room_number &&
+      s.day_of_week === day_of_week &&
+      s.start_time === start_time &&
+      !is_combined_class
+    );
+    if (roomConflict) {
+      throw new Error(`Time Table Conflict: Room ${room_number} is already occupied by batch ${roomConflict.batch_id} on ${day_of_week} at ${start_time}.`);
+    }
+
+    const record: TimetableSlot = {
+      id, batch_id, section_id, subject_id, faculty_id,
+      day_of_week, start_time, end_time, room_number,
+      is_combined_class, linked_batch_ids_json, created_at,
+    };
+
+    if (this.pgPool) {
+      await this.pgPool.query(
+        `INSERT INTO timetable_slots (id, batch_id, section_id, subject_id, faculty_id, day_of_week, start_time, end_time, room_number, is_combined_class, linked_batch_ids_json, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+         ON CONFLICT (id) DO UPDATE SET start_time = EXCLUDED.start_time, end_time = EXCLUDED.end_time, is_combined_class = EXCLUDED.is_combined_class`,
+        [id, batch_id, section_id, subject_id, faculty_id, day_of_week, start_time, end_time, room_number, is_combined_class, linked_batch_ids_json || null, created_at]
+      );
+    }
+    const idx = this.timetable_slots.findIndex(s => s.id === id);
+    if (idx >= 0) this.timetable_slots[idx] = record;
+    else this.timetable_slots.push(record);
+
+    return record;
+  }
+
+  // ----------------------------------------------------
+  // ATTENDANCE & ANTI-FRAUD BACKDATED LOCKOUT (Lecture 3)
+  // Configurable: 10, 20, 30 days
+  // ----------------------------------------------------
+  public async getAttendanceSettings(): Promise<AttendanceSettings> {
+    if (this.pgPool) {
+      const { rows } = await this.pgPool.query('SELECT * FROM attendance_settings WHERE id = $1', ['default']);
+      if (rows.length > 0) return rows[0];
+    }
+    return this.attendance_settings;
+  }
+
+  public async updateAttendanceSettings(days: number): Promise<AttendanceSettings> {
+    this.attendance_settings.backdated_lock_days = days;
+    this.attendance_settings.updated_at = new Date().toISOString();
+    if (this.pgPool) {
+      await this.pgPool.query(
+        `INSERT INTO attendance_settings (id, backdated_lock_days, updated_at)
+         VALUES ('default', $1, NOW())
+         ON CONFLICT (id) DO UPDATE SET backdated_lock_days = EXCLUDED.backdated_lock_days, updated_at = NOW()`,
+        [days]
+      );
+    }
+    return this.attendance_settings;
+  }
+
+  public async recordAttendance(data: {
+    batch_id: string;
+    section_id?: string;
+    subject_id: string;
+    faculty_id: string;
+    attendance_date: string;
+    slot_time?: string;
+    is_combined_class?: boolean;
+    student_attendance: Array<{ student_id: string; status: 'present' | 'absent' | 'leave' }>;
+  }): Promise<AttendanceRecord> {
+    const settings = await this.getAttendanceSettings();
+    const lockDays = settings.backdated_lock_days || 20;
+
+    // Anti-Fraud Backdated Lock check
+    const attDate = new Date(data.attendance_date).getTime();
+    const now = Date.now();
+    const diffDays = Math.floor((now - attDate) / (1000 * 60 * 60 * 24));
+    if (diffDays > lockDays) {
+      throw new Error(`Attendance modification locked: Exceeds the ${lockDays}-day statutory anti-fraud backdated limit. Date submitted was ${diffDays} days ago.`);
+    }
+
+    const id = `att-${Date.now()}`;
+    const record: AttendanceRecord = {
+      id,
+      batch_id: data.batch_id,
+      section_id: data.section_id,
+      subject_id: data.subject_id,
+      faculty_id: data.faculty_id,
+      attendance_date: data.attendance_date,
+      slot_time: data.slot_time || '09:00-10:00',
+      is_combined_class: !!data.is_combined_class,
+      student_attendance_json: JSON.stringify(data.student_attendance),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    if (this.pgPool) {
+      await this.pgPool.query(
+        `INSERT INTO attendance_records (id, batch_id, section_id, subject_id, faculty_id, attendance_date, slot_time, is_combined_class, student_attendance_json, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+        [id, data.batch_id, data.section_id || null, data.subject_id, data.faculty_id, data.attendance_date, data.slot_time || null, !!data.is_combined_class, record.student_attendance_json, record.created_at, record.updated_at]
+      );
+    }
+    this.attendance_records.unshift(record);
+
+    // Update cumulative counts on students
+    for (const item of data.student_attendance) {
+      const student = await this.getStudentById(item.student_id);
+      if (student) {
+        student.total_classes = (student.total_classes || 0) + 1;
+        if (item.status === 'present') {
+          student.attended_classes = (student.attended_classes || 0) + 1;
+        }
+        student.attendance_percentage = Math.round((student.attended_classes / student.total_classes) * 100);
+        if (this.pgPool) {
+          await this.pgPool.query(
+            'UPDATE students SET total_classes = $1, attended_classes = $2, attendance_percentage = $3 WHERE id = $4 OR student_id = $4',
+            [student.total_classes, student.attended_classes, student.attendance_percentage, student.id]
+          );
+        }
+      }
+    }
+
+    return record;
+  }
+
+  // ----------------------------------------------------
+  // STUDENT PROGRESSION LIFECYCLE (Lecture 3)
+  // Statuses: active, promoted, demoted, struck_off, deactivated
+  // ----------------------------------------------------
+  public async updateStudentProgression(
+    studentId: string,
+    newStatus: 'active' | 'promoted' | 'demoted' | 'struck_off' | 'deactivated',
+    reasonOrOptions?: any,
+    changedByLegacy?: string,
+    newTermLegacy?: any
+  ): Promise<any> {
+    const student = await this.getStudentById(studentId);
+    if (!student) throw new Error(`Student ${studentId} not found.`);
+
+    let reason = 'Academic progression ordinance review';
+    let changedBy = 'usr-admin-01';
+    let newTerm: number | undefined = undefined;
+
+    if (reasonOrOptions && typeof reasonOrOptions === 'object') {
+      if (reasonOrOptions.reason) reason = reasonOrOptions.reason;
+      if (reasonOrOptions.changedBy) changedBy = reasonOrOptions.changedBy;
+      if (reasonOrOptions.newTerm !== undefined) {
+        const p = parseInt(String(reasonOrOptions.newTerm), 10);
+        if (!isNaN(p)) newTerm = p;
+      }
+    } else {
+      if (typeof reasonOrOptions === 'string') reason = reasonOrOptions;
+      if (changedByLegacy) changedBy = changedByLegacy;
+      if (newTermLegacy !== undefined) {
+        const p = parseInt(String(newTermLegacy), 10);
+        if (!isNaN(p)) newTerm = p;
+      }
+    }
+
+    const prevStatus = student.progression_status || 'active';
+    const prevTerm = typeof student.current_semester === 'number' ? student.current_semester : parseInt(String(student.current_semester || 1), 10);
+    student.progression_status = newStatus;
+    if (newTerm !== undefined) {
+      student.current_semester = newTerm;
+    }
+
+    const historyId = `sph-${Date.now()}`;
+    const historyRecord: StudentProgressionHistory = {
+      id: historyId,
+      student_id: student.id,
+      previous_status: prevStatus,
+      new_status: newStatus,
+      previous_term: prevTerm,
+      new_term: student.current_semester,
+      reason,
+      changed_by: changedBy,
+      created_at: new Date().toISOString(),
+    };
+
+    if (this.pgPool) {
+      await this.pgPool.query(
+        'UPDATE students SET progression_status = $1, current_semester = $2 WHERE id = $3 OR student_id = $3',
+        [newStatus, student.current_semester, student.id]
+      );
+      await this.pgPool.query(
+        `INSERT INTO student_progression_history (id, student_id, previous_status, new_status, previous_term, new_term, reason, changed_by, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [historyId, student.id, prevStatus, newStatus, prevTerm, student.current_semester, reason, changedBy, historyRecord.created_at]
+      );
+    }
+    this.student_progression_history.unshift(historyRecord);
+
+    await this.createAuditLog({
+      actor_id: changedBy,
+      actor_name: changedBy,
+      actor_role: 'admin',
+      action: `STUDENT_PROGRESSION_${newStatus.toUpperCase()}`,
+      target_type: 'student',
+      target_id: student.id,
+      details: `Student ${student.first_name} ${student.last_name} (${student.student_id}) progression changed: ${prevStatus} -> ${newStatus}. Term: ${prevTerm} -> ${student.current_semester}. Reason: ${reason}`,
+      severity: newStatus === 'struck_off' ? 'critical' : 'info',
+    });
+
+    return { student, history: historyRecord };
+  }
+
+  // ----------------------------------------------------
+  // HRMS PAYROLL, SECURITY DEDUCTIONS & EXIT NOC (Lecture 3)
+  // ----------------------------------------------------
+  public async getStaffPayroll(staffId: string): Promise<StaffPayrollStructure | null> {
+    if (this.pgPool) {
+      const { rows } = await this.pgPool.query('SELECT * FROM staff_payroll_structures WHERE staff_id = $1', [staffId]);
+      if (rows.length > 0) return rows[0];
+    }
+    return this.staff_payroll_structures.find(p => p.staff_id === staffId) || null;
+  }
+
+  public async updateStaffPayroll(staffId: string, data: Partial<StaffPayrollStructure>): Promise<StaffPayrollStructure> {
+    const basic_pay = data.basic_pay !== undefined ? data.basic_pay : 50000;
+    const hra = data.hra !== undefined ? data.hra : 15000;
+    const special_allowance = data.special_allowance !== undefined ? data.special_allowance : 10000;
+    const gross_salary = basic_pay + hra + special_allowance;
+    const pf_applicable = data.pf_applicable !== undefined ? !!data.pf_applicable : true;
+    const pf_amount = pf_applicable ? Math.round(basic_pay * 0.12) : 0;
+    const esi_applicable = data.esi_applicable !== undefined ? !!data.esi_applicable : false;
+    const esi_amount = esi_applicable ? Math.round(gross_salary * 0.0075) : 0;
+    const voluntary_pf_amount = data.voluntary_pf_amount !== undefined ? data.voluntary_pf_amount : 0;
+    const tds_deduction = data.tds_deduction !== undefined ? data.tds_deduction : 3500;
+    const net_salary = gross_salary - pf_amount - esi_amount - voluntary_pf_amount - tds_deduction;
+    const updated_at = new Date().toISOString();
+    const id = data.id || `pay-${staffId}`;
+
+    const record: StaffPayrollStructure = {
+      id, staff_id: staffId, basic_pay, hra, special_allowance, gross_salary,
+      pf_applicable, pf_amount, esi_applicable, esi_amount, voluntary_pf_amount,
+      tds_deduction, net_salary, updated_at,
+    };
+
+    if (this.pgPool) {
+      await this.pgPool.query(
+        `INSERT INTO staff_payroll_structures (id, staff_id, basic_pay, hra, special_allowance, gross_salary, pf_applicable, pf_amount, esi_applicable, esi_amount, voluntary_pf_amount, tds_deduction, net_salary, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+         ON CONFLICT (staff_id) DO UPDATE SET basic_pay = EXCLUDED.basic_pay, hra = EXCLUDED.hra, gross_salary = EXCLUDED.gross_salary, pf_applicable = EXCLUDED.pf_applicable, pf_amount = EXCLUDED.pf_amount, voluntary_pf_amount = EXCLUDED.voluntary_pf_amount, net_salary = EXCLUDED.net_salary, updated_at = NOW()`,
+        [id, staffId, basic_pay, hra, special_allowance, gross_salary, pf_applicable, pf_amount, esi_applicable, esi_amount, voluntary_pf_amount, tds_deduction, net_salary, updated_at]
+      );
+    }
+    const idx = this.staff_payroll_structures.findIndex(p => p.staff_id === staffId);
+    if (idx >= 0) this.staff_payroll_structures[idx] = record;
+    else this.staff_payroll_structures.push(record);
+
+    return record;
+  }
+
+  public async getStaffSecurityDeduction(staffId: string): Promise<StaffSecurityDeduction | null> {
+    if (this.pgPool) {
+      const { rows } = await this.pgPool.query('SELECT * FROM staff_security_deductions WHERE staff_id = $1', [staffId]);
+      if (rows.length > 0) return rows[0];
+    }
+    return this.staff_security_deductions.find(s => s.staff_id === staffId) || null;
+  }
+
+  public async recordSecurityDeductionInstallment(staffId: string, installmentAmount: number): Promise<StaffSecurityDeduction> {
+    let existing = await this.getStaffSecurityDeduction(staffId);
+    if (!existing) {
+      existing = {
+        id: `sec-ded-${staffId}`,
+        staff_id: staffId,
+        target_amount: 30000,
+        monthly_deduction: installmentAmount || 5000,
+        deducted_so_far: 0,
+        remaining_amount: 30000,
+        is_locked: false,
+        status: 'active',
+        created_at: new Date().toISOString(),
+      };
+    }
+
+    if (existing.is_locked) {
+      throw new Error(`Security Deposit Deductions already completed and LOCKED at ₹${existing.deducted_so_far} target.`);
+    }
+
+    existing.deducted_so_far += installmentAmount;
+    existing.remaining_amount = Math.max(0, existing.target_amount - existing.deducted_so_far);
+    if (existing.remaining_amount === 0) {
+      existing.is_locked = true;
+      existing.status = 'completed';
+      existing.locked_at = new Date().toISOString();
+    }
+
+    if (this.pgPool) {
+      await this.pgPool.query(
+        `INSERT INTO staff_security_deductions (id, staff_id, target_amount, monthly_deduction, deducted_so_far, remaining_amount, is_locked, status, created_at, locked_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         ON CONFLICT (staff_id) DO UPDATE SET deducted_so_far = EXCLUDED.deducted_so_far, remaining_amount = EXCLUDED.remaining_amount, is_locked = EXCLUDED.is_locked, status = EXCLUDED.status, locked_at = EXCLUDED.locked_at`,
+        [existing.id, staffId, existing.target_amount, existing.monthly_deduction, existing.deducted_so_far, existing.remaining_amount, existing.is_locked, existing.status, existing.created_at, existing.locked_at || null]
+      );
+    }
+    const idx = this.staff_security_deductions.findIndex(s => s.staff_id === staffId);
+    if (idx >= 0) this.staff_security_deductions[idx] = existing;
+    else this.staff_security_deductions.push(existing);
+
+    return existing;
+  }
+
+  public async getStaffExitNoc(staffId: string): Promise<StaffExitNoc | null> {
+    if (this.pgPool) {
+      const { rows } = await this.pgPool.query('SELECT * FROM staff_exit_noc WHERE staff_id = $1', [staffId]);
+      if (rows.length > 0) return rows[0];
+    }
+    return this.staff_exit_noc.find(n => n.staff_id === staffId) || null;
+  }
+
+  public async updateStaffNocCheckpoint(
+    staffId: string,
+    department: 'library' | 'accounts' | 'hod' | 'it' | 'hr',
+    cleared: boolean,
+    remarks?: string
+  ): Promise<StaffExitNoc> {
+    let noc = await this.getStaffExitNoc(staffId);
+    if (!noc) {
+      noc = {
+        id: `noc-${staffId}`,
+        staff_id: staffId,
+        resignation_date: new Date().toISOString().split('T')[0],
+        last_working_date: new Date().toISOString().split('T')[0],
+        library_cleared: false,
+        accounts_cleared: false,
+        hod_cleared: false,
+        it_cleared: false,
+        hr_cleared: false,
+        all_cleared: false,
+        security_refund_released: false,
+        security_refund_amount: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+    }
+
+    if (department === 'library') { noc.library_cleared = cleared; noc.library_remarks = remarks; }
+    if (department === 'accounts') { noc.accounts_cleared = cleared; noc.accounts_remarks = remarks; }
+    if (department === 'hod') { noc.hod_cleared = cleared; noc.hod_remarks = remarks; }
+    if (department === 'it') { noc.it_cleared = cleared; noc.it_remarks = remarks; }
+    if (department === 'hr') { noc.hr_cleared = cleared; noc.hr_remarks = remarks; }
+
+    noc.all_cleared = !!(noc.library_cleared && noc.accounts_cleared && noc.hod_cleared && noc.it_cleared && noc.hr_cleared);
+    noc.updated_at = new Date().toISOString();
+
+    if (this.pgPool) {
+      await this.pgPool.query(
+        `INSERT INTO staff_exit_noc (id, staff_id, resignation_date, last_working_date, library_cleared, library_remarks, accounts_cleared, accounts_remarks, hod_cleared, hod_remarks, it_cleared, it_remarks, hr_cleared, hr_remarks, all_cleared, security_refund_released, security_refund_amount, security_refund_date, security_refund_tx_ref, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
+         ON CONFLICT (staff_id) DO UPDATE SET library_cleared = EXCLUDED.library_cleared, library_remarks = EXCLUDED.library_remarks, accounts_cleared = EXCLUDED.accounts_cleared, accounts_remarks = EXCLUDED.accounts_remarks, hod_cleared = EXCLUDED.hod_cleared, hod_remarks = EXCLUDED.hod_remarks, it_cleared = EXCLUDED.it_cleared, it_remarks = EXCLUDED.it_remarks, hr_cleared = EXCLUDED.hr_cleared, hr_remarks = EXCLUDED.hr_remarks, all_cleared = EXCLUDED.all_cleared, updated_at = NOW()`,
+        [noc.id, staffId, noc.resignation_date, noc.last_working_date, noc.library_cleared, noc.library_remarks || null, noc.accounts_cleared, noc.accounts_remarks || null, noc.hod_cleared, noc.hod_remarks || null, noc.it_cleared, noc.it_remarks || null, noc.hr_cleared, noc.hr_remarks || null, noc.all_cleared, noc.security_refund_released, noc.security_refund_amount, noc.security_refund_date || null, noc.security_refund_tx_ref || null, noc.created_at, noc.updated_at]
+      );
+    }
+    const idx = this.staff_exit_noc.findIndex(n => n.staff_id === staffId);
+    if (idx >= 0) this.staff_exit_noc[idx] = noc;
+    else this.staff_exit_noc.push(noc);
+
+    return noc;
+  }
+
+  public async releaseSecurityDepositRefund(staffId: string, refundAmount: number, txRef: string, adminId: string): Promise<StaffExitNoc> {
+    const noc = await this.getStaffExitNoc(staffId);
+    if (!noc || !noc.all_cleared) {
+      throw new Error('Security Refund Gate Blocked: All 5 departmental Exit NOC checkpoints (Library, Accounts, HOD, IT, HR) must be cleared prior to releasing deposit.');
+    }
+
+    noc.security_refund_released = true;
+    noc.security_refund_amount = refundAmount;
+    noc.security_refund_date = new Date().toISOString().split('T')[0];
+    noc.security_refund_tx_ref = txRef;
+    noc.updated_at = new Date().toISOString();
+
+    if (this.pgPool) {
+      await this.pgPool.query(
+        'UPDATE staff_exit_noc SET security_refund_released = true, security_refund_amount = $1, security_refund_date = $2, security_refund_tx_ref = $3, updated_at = NOW() WHERE staff_id = $4',
+        [refundAmount, noc.security_refund_date, txRef, staffId]
+      );
+      await this.pgPool.query(
+        "UPDATE staff_security_deductions SET status = 'refunded' WHERE staff_id = $1",
+        [staffId]
+      );
+    }
+
+    const sec = this.staff_security_deductions.find(s => s.staff_id === staffId);
+    if (sec) sec.status = 'refunded';
+
+    await this.createAuditLog({
+      actor_id: adminId,
+      actor_name: adminId,
+      actor_role: 'admin',
+      action: 'SECURITY_DEPOSIT_REFUND_RELEASED',
+      target_type: 'staff',
+      target_id: staffId,
+      details: `Released full security deposit refund of ₹${refundAmount} for staff ${staffId} following complete 5-point departmental Exit NOC clearance. Transaction Ref: ${txRef}.`,
+      severity: 'critical',
+    });
+
+    return noc;
+  }
+
+  // ----------------------------------------------------
+  // DYNAMIC PAYMENT GATEWAYS (Lecture 3 Part 2)
+  // ----------------------------------------------------
+  public async getPaymentGateways(tenantId?: string): Promise<PaymentGatewayConfig[]> {
+    if (this.pgPool) {
+      let q = 'SELECT * FROM payment_gateways';
+      const params: any[] = [];
+      if (tenantId) {
+        q += ' WHERE tenant_id = $1';
+        params.push(tenantId);
+      }
+      q += ' ORDER BY created_at ASC';
+      const { rows } = await this.pgPool.query(q, params);
+      if (rows.length > 0) return rows;
+    }
+    let list = this.payment_gateways;
+    if (tenantId) list = list.filter(g => g.tenant_id === tenantId);
+    return list;
+  }
+
+  public async getPaymentGatewayById(id: string): Promise<PaymentGatewayConfig | null> {
+    if (this.pgPool) {
+      const { rows } = await this.pgPool.query('SELECT * FROM payment_gateways WHERE id = $1', [id]);
+      if (rows.length > 0) return rows[0];
+    }
+    return this.payment_gateways.find(g => g.id === id) || null;
+  }
+
+  public async getActivePaymentGateway(tenantId?: string): Promise<PaymentGatewayConfig | null> {
+    if (this.pgPool) {
+      let q = 'SELECT * FROM payment_gateways WHERE is_active = true';
+      const params: any[] = [];
+      if (tenantId) {
+        q += ' AND tenant_id = $1';
+        params.push(tenantId);
+      }
+      q += ' LIMIT 1';
+      const { rows } = await this.pgPool.query(q, params);
+      if (rows.length > 0) return rows[0];
+    }
+    return this.payment_gateways.find(g => g.is_active && (!tenantId || g.tenant_id === tenantId)) || null;
+  }
+
+  public async createPaymentGateway(data: Partial<PaymentGatewayConfig>): Promise<PaymentGatewayConfig> {
+    const id = data.id || `gw-${Date.now()}`;
+    const tenant_id = data.tenant_id || 'ten-bfgi-01';
+    const gateway_name = data.gateway_name || 'RAZORPAY';
+    const account_title = data.account_title || 'Institutional Current Account';
+    const credentials_json = data.credentials_json || '{}';
+    const mode = data.mode || 'test';
+    const is_active = !!data.is_active;
+    const test_allowed_uids_json = data.test_allowed_uids_json || '[]';
+    const created_at = new Date().toISOString();
+    const updated_at = created_at;
+
+    const record: PaymentGatewayConfig = {
+      id, tenant_id, gateway_name, account_title, credentials_json,
+      mode, is_active, test_allowed_uids_json, created_at, updated_at
+    };
+
+    if (this.pgPool) {
+      if (is_active) {
+        await this.pgPool.query('UPDATE payment_gateways SET is_active = false WHERE tenant_id = $1', [tenant_id]);
+      }
+      await this.pgPool.query(
+        `INSERT INTO payment_gateways (id, tenant_id, gateway_name, account_title, credentials_json, mode, is_active, test_allowed_uids_json, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         ON CONFLICT (id) DO UPDATE SET account_title = EXCLUDED.account_title, mode = EXCLUDED.mode, is_active = EXCLUDED.is_active, test_allowed_uids_json = EXCLUDED.test_allowed_uids_json, updated_at = NOW()`,
+        [id, tenant_id, gateway_name, account_title, credentials_json, mode, is_active, test_allowed_uids_json, created_at, updated_at]
+      );
+    }
+    if (is_active) {
+      this.payment_gateways.forEach(g => { if (g.tenant_id === tenant_id) g.is_active = false; });
+    }
+    const idx = this.payment_gateways.findIndex(g => g.id === id);
+    if (idx >= 0) this.payment_gateways[idx] = record;
+    else this.payment_gateways.push(record);
+
+    return record;
+  }
+
+  public async togglePaymentGatewayMode(id: string): Promise<PaymentGatewayConfig> {
+    const gw = await this.getPaymentGatewayById(id);
+    if (!gw) throw new Error('Payment gateway not found');
+    const newMode: 'live' | 'test' = gw.mode === 'live' ? 'test' : 'live';
+    gw.mode = newMode;
+    gw.updated_at = new Date().toISOString();
+
+    if (this.pgPool) {
+      await this.pgPool.query('UPDATE payment_gateways SET mode = $1, updated_at = NOW() WHERE id = $2', [newMode, id]);
+    }
+    const idx = this.payment_gateways.findIndex(g => g.id === id);
+    if (idx >= 0) this.payment_gateways[idx].mode = newMode;
+
+    return gw;
+  }
+
+  public async activatePaymentGateway(id: string, tenantId?: string): Promise<PaymentGatewayConfig> {
+    const gw = await this.getPaymentGatewayById(id);
+    if (!gw) throw new Error('Payment gateway not found');
+    const tid = tenantId || gw.tenant_id;
+
+    if (this.pgPool) {
+      await this.pgPool.query('UPDATE payment_gateways SET is_active = false WHERE tenant_id = $1', [tid]);
+      await this.pgPool.query('UPDATE payment_gateways SET is_active = true, updated_at = NOW() WHERE id = $1', [id]);
+    }
+    this.payment_gateways.forEach(g => {
+      if (g.tenant_id === tid) g.is_active = (g.id === id);
+    });
+    gw.is_active = true;
+    return gw;
+  }
+
+  // ----------------------------------------------------
+  // STAFF ADDITIONAL ROLES (Lecture 3 Part 2)
+  // ----------------------------------------------------
+  public async getStaffAdditionalRoles(staffId: string): Promise<StaffAdditionalRole[]> {
+    if (this.pgPool) {
+      const { rows } = await this.pgPool.query('SELECT * FROM staff_additional_roles WHERE staff_id = $1 ORDER BY created_at ASC', [staffId]);
+      if (rows.length > 0) return rows;
+    }
+    return this.staff_additional_roles.filter(r => r.staff_id === staffId);
+  }
+
+  public async createStaffAdditionalRole(role: Partial<StaffAdditionalRole>): Promise<StaffAdditionalRole> {
+    const id = role.id || `sar-${Date.now()}`;
+    const staff_id = role.staff_id || '';
+    const school_dept_name = role.school_dept_name || 'General';
+    const role_title = role.role_title || 'Additional Role';
+    const role_category = role.role_category || 'teaching';
+    const is_active = role.is_active !== undefined ? !!role.is_active : true;
+    const created_at = new Date().toISOString();
+
+    const record: StaffAdditionalRole = {
+      id, staff_id, school_dept_name, role_title, role_category, is_active, created_at
+    };
+
+    if (this.pgPool) {
+      await this.pgPool.query(
+        `INSERT INTO staff_additional_roles (id, staff_id, school_dept_name, role_title, role_category, is_active, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [id, staff_id, school_dept_name, role_title, role_category, is_active, created_at]
+      );
+    }
+    this.staff_additional_roles.push(record);
+    return record;
+  }
+
+  public async deleteStaffAdditionalRole(id: string): Promise<boolean> {
+    if (this.pgPool) {
+      await this.pgPool.query('DELETE FROM staff_additional_roles WHERE id = $1', [id]);
+    }
+    this.staff_additional_roles = this.staff_additional_roles.filter(r => r.id !== id);
+    return true;
+  }
+
+  // ----------------------------------------------------
+  // FIELD-LEVEL RBAC PERMISSIONS (Lecture 3 Part 2)
+  // ----------------------------------------------------
+  public async getFieldPermissions(entityType?: 'student' | 'staff'): Promise<FieldPermissionRule[]> {
+    if (this.pgPool) {
+      let q = 'SELECT * FROM field_permissions';
+      const params: any[] = [];
+      if (entityType) {
+        q += ' WHERE entity_type = $1';
+        params.push(entityType);
+      }
+      q += ' ORDER BY category ASC, field_label ASC';
+      const { rows } = await this.pgPool.query(q, params);
+      if (rows.length > 0) return rows;
+    }
+    let list = this.field_permissions;
+    if (entityType) list = list.filter(fp => fp.entity_type === entityType);
+    return list;
+  }
+
+  public async updateFieldPermission(id: string, updates: Partial<FieldPermissionRule>): Promise<FieldPermissionRule> {
+    const perm = this.field_permissions.find(p => p.id === id);
+    let current = perm;
+
+    if (this.pgPool) {
+      const { rows } = await this.pgPool.query('SELECT * FROM field_permissions WHERE id = $1', [id]);
+      if (rows.length > 0) current = rows[0];
+    }
+    if (!current) throw new Error('Field permission rule not found');
+
+    // Rule from Karanvir Sir: If View is false, Edit MUST be false
+    const staff_view = updates.staff_view !== undefined ? !!updates.staff_view : current.staff_view;
+    const staff_edit = staff_view ? (updates.staff_edit !== undefined ? !!updates.staff_edit : current.staff_edit) : false;
+
+    const student_view = updates.student_view !== undefined ? !!updates.student_view : current.student_view;
+    const student_edit = student_view ? (updates.student_edit !== undefined ? !!updates.student_edit : current.student_edit) : false;
+
+    const admin_view = true; // Admin always views
+    const admin_edit = updates.admin_edit !== undefined ? !!updates.admin_edit : current.admin_edit;
+    const updated_at = new Date().toISOString();
+
+    const merged: FieldPermissionRule = {
+      ...current,
+      staff_view, staff_edit,
+      student_view, student_edit,
+      admin_view, admin_edit,
+      updated_at
+    };
+
+    if (this.pgPool) {
+      await this.pgPool.query(
+        `UPDATE field_permissions
+         SET staff_view = $1, staff_edit = $2, student_view = $3, student_edit = $4, admin_view = $5, admin_edit = $6, updated_at = NOW()
+         WHERE id = $7`,
+        [staff_view, staff_edit, student_view, student_edit, admin_view, admin_edit, id]
+      );
+    }
+    const idx = this.field_permissions.findIndex(p => p.id === id);
+    if (idx >= 0) this.field_permissions[idx] = merged;
+
+    return merged;
+  }
 }
 
 export const db = new DatabaseStore();
+export default db;

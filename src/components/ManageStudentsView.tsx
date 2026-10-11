@@ -25,6 +25,38 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
   const [yearFilter, setYearFilter] = useState('All Years');
   const [statusFilter, setStatusFilter] = useState('All Statuses');
 
+  // Progression Lifecycle State (Lecture 3)
+  const [selectedProgressionStudent, setSelectedProgressionStudent] = useState<StudentProfile | null>(null);
+  const [isProgressionModalOpen, setIsProgressionModalOpen] = useState(false);
+  const [progressionForm, setProgressionForm] = useState({
+    new_status: 'promoted' as 'active' | 'promoted' | 'demoted' | 'struck_off' | 'deactivated',
+    new_term: 2,
+    order_no: '',
+    reason: '',
+  });
+  const [progressionMsg, setProgressionMsg] = useState<string | null>(null);
+
+  const handleUpdateProgression = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProgressionStudent) return;
+    try {
+      const res = await api.updateStudentProgression(selectedProgressionStudent.id, progressionForm);
+      if (res.success) {
+        setIsProgressionModalOpen(false);
+        setProgressionMsg(`Progression status updated for ${selectedProgressionStudent.first_name}: ${progressionForm.new_status.toUpperCase()}`);
+        setTimeout(() => setProgressionMsg(null), 5000);
+        const refreshed = await api.getStudents({ page: currentPage, limit: 5 });
+        if (refreshed.success && refreshed.students) {
+          setStudents(refreshed.students);
+        }
+      } else {
+        alert(res.error || 'Failed to update progression');
+      }
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
   // Load Initial Students
   useEffect(() => {
     setIsLoading(true);
@@ -306,6 +338,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
                   <th className="py-3 px-4">Student ID</th>
                   <th className="py-3 px-4">Name</th>
                   <th className="py-3 px-4">Course</th>
+                  <th className="py-3 px-4">Progression</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4">Fees Status</th>
                   <th className="py-3 px-4 text-right">Action</th>
@@ -314,13 +347,13 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
               <tbody className="divide-y divide-[#f3f4f5] text-xs">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-[#757682]">
+                    <td colSpan={7} className="py-8 text-center text-[#757682]">
                       Loading student records...
                     </td>
                   </tr>
                 ) : students.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-[#757682]">
+                    <td colSpan={7} className="py-8 text-center text-[#757682]">
                       No student records found matching the active filters.
                     </td>
                   </tr>
@@ -358,6 +391,23 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
                         <td className="py-3.5 px-4">
                           <span
                             className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                              s.progression_status === 'promoted'
+                                ? 'bg-indigo-100 text-indigo-800'
+                                : s.progression_status === 'demoted'
+                                ? 'bg-amber-100 text-amber-800'
+                                : s.progression_status === 'struck_off'
+                                ? 'bg-rose-100 text-rose-800'
+                                : s.progression_status === 'deactivated'
+                                ? 'bg-slate-200 text-slate-700'
+                                : 'bg-emerald-100 text-emerald-800'
+                            }`}
+                          >
+                            ● {s.progression_status || 'Active'}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                               isAccountActive
                                 ? 'bg-emerald-100 text-emerald-800'
                                 : 'bg-rose-100 text-rose-800'
@@ -381,6 +431,23 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
                         </td>
                         <td className="py-3.5 px-4 text-right">
                           <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedProgressionStudent(s);
+                                setProgressionForm({
+                                  new_status: 'promoted',
+                                  new_term: (s.current_semester || 1) + 1,
+                                  order_no: `ORD-${Date.now().toString().slice(-6)}`,
+                                  reason: 'Passed CBCS ordinance clearance',
+                                });
+                                setIsProgressionModalOpen(true);
+                              }}
+                              className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded font-semibold text-xs inline-flex items-center gap-1 cursor-pointer"
+                              title="Update academic progression lifecycle"
+                            >
+                              <span>Progression ⇄</span>
+                            </button>
                             <button
                               type="button"
                               onClick={() => onSelectStudent(s)}
@@ -454,6 +521,102 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Progression Toast Notification */}
+      {progressionMsg && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#00236f] text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 text-xs font-semibold animate-fade-in border border-blue-400">
+          <span>✓ {progressionMsg}</span>
+          <button onClick={() => setProgressionMsg(null)} className="font-bold opacity-70 hover:opacity-100">✕</button>
+        </div>
+      )}
+
+      {/* Student Progression Lifecycle Modal (Lecture 3) */}
+      {isProgressionModalOpen && selectedProgressionStudent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden text-xs">
+            <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+              <div>
+                <h4 className="font-bold text-slate-900 text-sm">Academic Progression Lifecycle</h4>
+                <p className="text-[11px] text-slate-500">
+                  {selectedProgressionStudent.first_name} {selectedProgressionStudent.last_name} ({selectedProgressionStudent.student_id})
+                </p>
+              </div>
+              <button onClick={() => setIsProgressionModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold text-sm">✕</button>
+            </div>
+
+            <form onSubmit={handleUpdateProgression} className="p-5 space-y-3.5">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Target Progression Status (Statutory Ordinance) *
+                </label>
+                <select
+                  value={progressionForm.new_status}
+                  onChange={e => setProgressionForm({ ...progressionForm, new_status: e.target.value as any })}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800"
+                >
+                  <option value="promoted">Promoted (Advance to Next Academic Term)</option>
+                  <option value="demoted">Demoted (Detained in Current Term)</option>
+                  <option value="struck_off">Struck Off (Disciplinary / Attendance Cutoff)</option>
+                  <option value="deactivated">Deactivated (Suspended Login & Enrollment)</option>
+                  <option value="active">Active (Normal Collegiate Standing)</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Next Term / Semester</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="12"
+                    value={progressionForm.new_term}
+                    onChange={e => setProgressionForm({ ...progressionForm, new_term: parseInt(e.target.value, 10) || 1 })}
+                    className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Gazette / Order No</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. ORD-2025-081"
+                    value={progressionForm.order_no}
+                    onChange={e => setProgressionForm({ ...progressionForm, order_no: e.target.value })}
+                    className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Reason / Board of Studies Minutes</label>
+                <textarea
+                  rows={2}
+                  value={progressionForm.reason}
+                  onChange={e => setProgressionForm({ ...progressionForm, reason: e.target.value })}
+                  placeholder="e.g. Successfully cleared minimum SGPA and statutory ordinance examination credits."
+                  className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl resize-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsProgressionModalOpen(false)}
+                  className="px-3.5 py-1.5 text-slate-600 hover:bg-slate-100 rounded-xl font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-[#00236f] text-white rounded-xl font-bold hover:bg-[#001950] transition shadow-xs"
+                >
+                  Confirm Progression Update
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
