@@ -2043,6 +2043,7 @@ class DatabaseStore {
           connectTimeout: 5000,
           waitForConnections: true,
           connectionLimit: 10,
+          multipleStatements: true,
         });
 
         const conn = await pool.getConnection();
