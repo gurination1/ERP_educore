@@ -231,6 +231,7 @@ export const api = {
 
   // Analytical Reports
   getAdmissionsByCourseReport: () => apiRequest('/api/reports/admissions-by-course'),
+  getAcademicWorkloadReport: () => apiRequest('/api/reports/academic-workload'),
 
   // Admin Extreme Powers: User & Staff Role Management
   getUsers: (params: Record<string, any> = {}) => {

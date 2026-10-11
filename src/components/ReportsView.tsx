@@ -20,8 +20,11 @@ interface CourseDistributionItem {
 }
 
 export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
+  const [activeTab, setActiveTab] = useState<'financial' | 'academic_workload'>('academic_workload');
   const [distribution, setDistribution] = useState<CourseDistributionItem[]>([]);
   const [kpiData, setKpiData] = useState<any>(null);
+  const [workloadData, setWorkloadData] = useState<any>(null);
+  const [deptFilter, setDeptFilter] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const [exportMessage, setExportMessage] = useState<string | null>(null);
@@ -33,9 +36,10 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
   const loadReportsData = async () => {
     setIsLoading(true);
     try {
-      const [distRes, kpiRes] = await Promise.all([
+      const [distRes, kpiRes, workRes] = await Promise.all([
         api.getAdmissionsByCourseReport(),
         api.getFeeKPIs(),
+        api.getAcademicWorkloadReport(),
       ]);
 
       if (distRes.success && distRes.distribution) {
@@ -43,6 +47,9 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
       }
       if (kpiRes.success && kpiRes.kpi) {
         setKpiData(kpiRes.kpi);
+      }
+      if (workRes.success) {
+        setWorkloadData(workRes);
       }
     } catch (err) {
       console.error('Failed to load reports:', err);
@@ -135,160 +142,425 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
         </div>
       )}
 
-      {/* Dynamic KPI Highlights */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-        <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
-          <span className="text-[11px] font-bold text-[#757682] uppercase tracking-wider block">
-            Institutional Revenue
+      {/* Navigation Tabs */}
+      <div className="flex border-b border-slate-200 gap-4">
+        <button
+          onClick={() => setActiveTab('academic_workload')}
+          className={`pb-3 px-2 text-xs font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
+            activeTab === 'academic_workload'
+              ? 'border-[#00236f] text-[#00236f]'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <span>ACADEMIC TOPOLOGY & WORKLOAD AUDIT</span>
+          <span className="px-1.5 py-0.5 text-[10px] bg-indigo-100 text-indigo-700 rounded-full font-extrabold">
+            LECTURE 3
           </span>
-          <p className="text-2xl font-extrabold text-[#00236f] mt-1">
-            {kpiData?.totalCollectedFormatted || '₹ 2.4 Cr'}
-          </p>
-          <span className="text-xs text-[#00236f] font-semibold mt-1 block">
-            {kpiData?.totalCollectedGrowth || 'Reconciled in MariaDB'}
-          </span>
-        </div>
-
-        <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
-          <span className="text-[11px] font-bold text-[#757682] uppercase tracking-wider block">
-            Overdue Balance
-          </span>
-          <p className="text-2xl font-extrabold text-[#ba1a1a] mt-1">
-            {kpiData?.pendingDuesFormatted || '₹ 18 L'}
-          </p>
-          <span className="text-xs text-[#757682] mt-1 block">
-            Fee recovery follow-up pending
-          </span>
-        </div>
-
-        <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
-          <span className="text-[11px] font-bold text-[#757682] uppercase tracking-wider block">
-            Total Enrollments
-          </span>
-          <p className="text-2xl font-extrabold text-[#191c1d] mt-1">
-            {kpiData?.totalStudents || '1,432'}
-          </p>
-          <span className="text-xs text-[#00236f] font-semibold mt-1 block">
-            Active Fall 2025 Roster
-          </span>
-        </div>
-
-        <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
-          <span className="text-[11px] font-bold text-[#757682] uppercase tracking-wider block">
-            Fee Concessions
-          </span>
-          <p className="text-2xl font-extrabold text-[#755b00] mt-1">
-            {kpiData?.pendingApprovals ? `${kpiData.pendingApprovals} Pending` : '12 Pending'}
-          </p>
-          <span className="text-xs text-[#757682] mt-1 block">
-            Scholarship waivers applied
-          </span>
-        </div>
+        </button>
+        <button
+          onClick={() => setActiveTab('financial')}
+          className={`pb-3 px-2 text-xs font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
+            activeTab === 'financial'
+              ? 'border-[#00236f] text-[#00236f]'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <span>FINANCIAL REVENUE & ENROLLMENT LEDGER</span>
+        </button>
       </div>
 
-      {/* Live Department Enrollment & Fee Distribution Table */}
-      <div className="bg-white rounded-xl border border-[#e1e3e4] shadow-xs overflow-hidden space-y-4">
-        <div className="p-5 border-b border-[#f3f4f5] flex items-center justify-between">
-          <div>
-            <h3 className="text-base font-bold text-[#191c1d]">
-              Course-Wise Enrollment & Revenue Distribution
-            </h3>
-            <p className="text-xs text-[#757682] mt-0.5">
-              Live audit data aggregated from student fees and admissions ledger
-            </p>
-          </div>
-          <button
-            onClick={loadReportsData}
-            className="text-xs font-bold text-[#00236f] hover:underline flex items-center gap-1 cursor-pointer"
-          >
-            <span className="font-bold text-[10px]">[REFRESH]</span>
-            <span>Refresh Table</span>
-          </button>
-        </div>
+      {activeTab === 'academic_workload' ? (
+        <div className="space-y-6">
+          {/* Lecture 3 Academic KPI Highlights */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+            <div className="p-5 bg-white rounded-xl border border-indigo-100 shadow-xs">
+              <span className="text-[11px] font-bold text-indigo-600 uppercase tracking-wider block">
+                Combined Classes (CC)
+              </span>
+              <p className="text-2xl font-extrabold text-[#00236f] mt-1">
+                {workloadData?.summary?.totalCombinedClasses ?? 0}
+              </p>
+              <span className="text-xs text-slate-500 mt-1 block">
+                Multi-batch synchronized slots
+              </span>
+            </div>
 
-        {isLoading ? (
-          <div className="p-12 text-center text-xs text-[#757682]">
-            Loading audit metrics...
+            <div className="p-5 bg-white rounded-xl border border-slate-200 shadow-xs">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+                Total Academic Subjects
+              </span>
+              <p className="text-2xl font-extrabold text-slate-800 mt-1">
+                {workloadData?.summary?.totalSubjects ?? 0}
+              </p>
+              <span className="text-xs text-emerald-600 font-semibold mt-1 block">
+                3-Flag evaluation matrix
+              </span>
+            </div>
+
+            <div className="p-5 bg-white rounded-xl border border-slate-200 shadow-xs">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+                Teaching Faculty Members
+              </span>
+              <p className="text-2xl font-extrabold text-slate-800 mt-1">
+                {workloadData?.summary?.totalTeachers ?? 0}
+              </p>
+              <span className="text-xs text-slate-500 mt-1 block">
+                Teaching & additional roles
+              </span>
+            </div>
+
+            <div className="p-5 bg-white rounded-xl border border-slate-200 shadow-xs">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+                Free Period (FC) Sessions
+              </span>
+              <p className="text-2xl font-extrabold text-amber-700 mt-1">
+                {workloadData?.summary?.totalFreePeriodSlots ?? 0}
+              </p>
+              <span className="text-xs text-amber-700 font-semibold mt-1 block">
+                Auto-present (no exam/attendance)
+              </span>
+            </div>
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead className="bg-[#f8f9fa] text-[#757682] uppercase tracking-wider text-[10px] font-bold border-b border-[#e1e3e4]">
-                <tr>
-                  <th className="p-3.5">Course Code & Name</th>
-                  <th className="p-3.5">Department</th>
-                  <th className="p-3.5 text-center">Enrolled</th>
-                  <th className="p-3.5 text-center">Fully Paid</th>
-                  <th className="p-3.5 text-center">Fee Due</th>
-                  <th className="p-3.5 text-right">Total Collected</th>
-                  <th className="p-3.5 text-right">Total Outstanding</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#f3f4f5]">
-                {distribution.map(item => (
-                  <tr key={item.courseId} className="hover:bg-[#f8f9fa] transition-colors">
-                    <td className="p-3.5">
-                      <strong className="text-[#191c1d] block text-xs">{item.courseCode}</strong>
-                      <span className="text-[11px] text-[#757682]">{item.courseName}</span>
-                    </td>
-                    <td className="p-3.5 text-[#444651]">{item.department}</td>
-                    <td className="p-3.5 text-center font-bold text-[#191c1d]">{item.studentCount}</td>
-                    <td className="p-3.5 text-center">
-                      <span className="px-2 py-0.5 bg-[#ffedd5] text-[#00236f] rounded font-bold">
-                        {item.paidCount}
-                      </span>
-                    </td>
-                    <td className="p-3.5 text-center">
-                      <span className="px-2 py-0.5 bg-[#ffdad6] text-[#ba1a1a] rounded font-bold">
-                        {item.dueCount}
-                      </span>
-                    </td>
-                    <td className="p-3.5 text-right font-extrabold text-[#00236f]">
-                      ₹ {item.totalCollected.toLocaleString('en-IN')}
-                    </td>
-                    <td className="p-3.5 text-right font-extrabold text-[#ba1a1a]">
-                      ₹ {item.totalDue.toLocaleString('en-IN')}
-                    </td>
+
+          {/* Teacher-Subject Workload Distribution Table */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">
+                  Faculty-Subject Workload Distribution Matrix
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Subjects assigned to each teacher, weekly periods, and combined class allocations
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <select
+                  value={deptFilter}
+                  onChange={e => setDeptFilter(e.target.value)}
+                  className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 bg-white"
+                >
+                  <option value="all">All Departments</option>
+                  {workloadData?.departments?.map((d: any) => (
+                    <option key={d.department} value={d.department}>{d.department}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={loadReportsData}
+                  className="text-xs font-bold text-[#00236f] hover:underline"
+                >
+                  [REFRESH]
+                </button>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider text-[10px] font-bold border-b border-slate-200">
+                  <tr>
+                    <th className="p-3.5">Faculty Member</th>
+                    <th className="p-3.5">Department</th>
+                    <th className="p-3.5">Designation</th>
+                    <th className="p-3.5">Assigned Subjects</th>
+                    <th className="p-3.5 text-center">Weekly Periods</th>
+                    <th className="p-3.5 text-center">Combined Classes</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {workloadData?.teacherAssignments
+                    ?.filter((t: any) => deptFilter === 'all' || t.department?.toLowerCase() === deptFilter.toLowerCase())
+                    .map((teacher: any) => (
+                      <tr key={teacher.staff_id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="p-3.5">
+                          <strong className="text-slate-900 block text-xs">{teacher.full_name}</strong>
+                          <span className="text-[11px] text-slate-500">ID: {teacher.employee_id || teacher.staff_id}</span>
+                        </td>
+                        <td className="p-3.5 text-slate-700 font-semibold">{teacher.department || 'N/A'}</td>
+                        <td className="p-3.5 text-slate-600">{teacher.primary_designation || 'Faculty'}</td>
+                        <td className="p-3.5">
+                          <div className="flex flex-wrap gap-1">
+                            {teacher.assigned_subjects?.length > 0 ? (
+                              teacher.assigned_subjects.map((sub: any) => (
+                                <span
+                                  key={sub.id}
+                                  className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                                    sub.code?.startsWith('FC_')
+                                      ? 'bg-amber-50 text-amber-800 border-amber-200'
+                                      : 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                                  }`}
+                                  title={sub.name}
+                                >
+                                  {sub.code || sub.name}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-[11px] text-slate-400 italic">No assigned subjects</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-3.5 text-center font-extrabold text-slate-800">
+                          {teacher.weekly_slots_count} hrs
+                        </td>
+                        <td className="p-3.5 text-center">
+                          <span className={`px-2 py-0.5 rounded font-bold text-[11px] ${
+                            teacher.combined_slots_count > 0 ? 'bg-indigo-100 text-indigo-800' : 'text-slate-400'
+                          }`}>
+                            {teacher.combined_slots_count}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        )}
-      </div>
 
-      {/* Statutory Audit Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs space-y-2">
-          <h4 className="text-sm font-bold text-[#191c1d]">Statutory University Exam Eligibility Audit</h4>
-          <p className="text-xs text-[#757682]">
-            Mandatory check of 75% attendance cutoff under University Ordinance 7.4 and zero-dues clearance.
-          </p>
-          <span className="inline-block pt-2 text-xs font-bold text-[#00236f]">
-            Status: Synchronized with Hall Ticket Engine
-          </span>
-        </div>
+          {/* Combined Classes Timetable Roster */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="p-5 border-b border-slate-100">
+              <h3 className="text-base font-bold text-slate-900">
+                Combined Classes (CC) & Elective Parallel Roster
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Lecture periods combining multiple batches under common instructors
+              </p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider text-[10px] font-bold border-b border-slate-200">
+                  <tr>
+                    <th className="p-3.5">Subject & Code</th>
+                    <th className="p-3.5">Faculty In-Charge</th>
+                    <th className="p-3.5">Timing & Day</th>
+                    <th className="p-3.5">Lecture Room</th>
+                    <th className="p-3.5">Batches Merged</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {workloadData?.combinedClassesDetail?.length > 0 ? (
+                    workloadData.combinedClassesDetail.map((cc: any) => (
+                      <tr key={cc.id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="p-3.5">
+                          <strong className="text-slate-900 block text-xs">{cc.subject_name}</strong>
+                          <span className="text-[10px] text-indigo-700 font-bold">{cc.subject_code}</span>
+                        </td>
+                        <td className="p-3.5 text-slate-700 font-semibold">{cc.faculty_name}</td>
+                        <td className="p-3.5 text-slate-600">
+                          <span className="font-bold text-slate-800">{cc.day_of_week}</span> ({cc.start_time} - {cc.end_time})
+                        </td>
+                        <td className="p-3.5">
+                          <span className="px-2 py-0.5 bg-slate-100 text-slate-800 rounded font-bold">
+                            {cc.room_number}
+                          </span>
+                        </td>
+                        <td className="p-3.5">
+                          <div className="flex gap-1 flex-wrap">
+                            <span className="px-1.5 py-0.5 bg-indigo-50 text-indigo-700 rounded text-[10px] font-bold">
+                              Primary: {cc.batch_id}
+                            </span>
+                            {cc.linked_batches?.map((b: string) => (
+                              <span key={b} className="px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px]">
+                                + {b}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="p-6 text-center text-xs text-slate-400">
+                        No combined classes currently scheduled. Toggle "Combined Class (CC)" when adding timetable slots.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-        <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs space-y-2">
-          <h4 className="text-sm font-bold text-[#191c1d]">Punjab Domicile 85% Quota Roster</h4>
-          <p className="text-xs text-[#757682]">
-            Verified Punjab resident quota registrations across all B.Tech and degree programs.
-          </p>
-          <span className="inline-block pt-2 text-xs font-bold text-[#00236f]">
-            Status: Department verified
-          </span>
+          {/* Department Hierarchy Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {workloadData?.departments?.map((dept: any) => (
+              <div key={dept.department} className="p-5 bg-white rounded-xl border border-slate-200 shadow-xs space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-slate-900">{dept.department}</h4>
+                  <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-[10px] font-bold rounded">
+                    {dept.courses_count} Courses
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500">
+                  {dept.subjects_count} Subjects • {dept.teachers_count} Faculty Members • {dept.combined_slots_count} CC Slots
+                </p>
+                <div className="pt-2 flex flex-wrap gap-1">
+                  {dept.course_list?.map((c: any) => (
+                    <span key={c.id} className="text-[10px] px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded">
+                      {c.code}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+      ) : (
+        <div className="space-y-6">
+          {/* Dynamic KPI Highlights */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+            <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
+              <span className="text-[11px] font-bold text-[#757682] uppercase tracking-wider block">
+                Institutional Revenue
+              </span>
+              <p className="text-2xl font-extrabold text-[#00236f] mt-1">
+                {kpiData?.totalCollectedFormatted || '₹ 2.4 Cr'}
+              </p>
+              <span className="text-xs text-[#00236f] font-semibold mt-1 block">
+                {kpiData?.totalCollectedGrowth || 'Reconciled in PostgreSQL 18.6'}
+              </span>
+            </div>
 
-        <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs space-y-2">
-          <h4 className="text-sm font-bold text-[#191c1d]">Fee Waiver & Scholarship Disbursals</h4>
-          <p className="text-xs text-[#757682]">
-            Institutional scholarship grants credited against academic tuition fee heads.
-          </p>
-          <span className="inline-block pt-2 text-xs font-bold text-[#00236f]">
-            Status: Fully Reconciled
-          </span>
+            <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
+              <span className="text-[11px] font-bold text-[#757682] uppercase tracking-wider block">
+                Overdue Balance
+              </span>
+              <p className="text-2xl font-extrabold text-[#ba1a1a] mt-1">
+                {kpiData?.pendingDuesFormatted || '₹ 18 L'}
+              </p>
+              <span className="text-xs text-[#757682] mt-1 block">
+                Fee recovery follow-up pending
+              </span>
+            </div>
+
+            <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
+              <span className="text-[11px] font-bold text-[#757682] uppercase tracking-wider block">
+                Total Enrollments
+              </span>
+              <p className="text-2xl font-extrabold text-[#191c1d] mt-1">
+                {kpiData?.totalStudents || '1,432'}
+              </p>
+              <span className="text-xs text-[#00236f] font-semibold mt-1 block">
+                Active Fall 2025 Roster
+              </span>
+            </div>
+
+            <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs">
+              <span className="text-[11px] font-bold text-[#757682] uppercase tracking-wider block">
+                Fee Concessions
+              </span>
+              <p className="text-2xl font-extrabold text-[#755b00] mt-1">
+                {kpiData?.pendingApprovals ? `${kpiData.pendingApprovals} Pending` : '12 Pending'}
+              </p>
+              <span className="text-xs text-[#757682] mt-1 block">
+                Scholarship waivers applied
+              </span>
+            </div>
+          </div>
+
+          {/* Live Department Enrollment & Fee Distribution Table */}
+          <div className="bg-white rounded-xl border border-[#e1e3e4] shadow-xs overflow-hidden space-y-4">
+            <div className="p-5 border-b border-[#f3f4f5] flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-[#191c1d]">
+                  Course-Wise Enrollment & Revenue Distribution
+                </h3>
+                <p className="text-xs text-[#757682] mt-0.5">
+                  Live audit data aggregated from student fees and admissions ledger
+                </p>
+              </div>
+              <button
+                onClick={loadReportsData}
+                className="text-xs font-bold text-[#00236f] hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                <span className="font-bold text-[10px]">[REFRESH]</span>
+                <span>Refresh Table</span>
+              </button>
+            </div>
+
+            {isLoading ? (
+              <div className="p-12 text-center text-xs text-[#757682]">
+                Loading audit metrics...
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-[#f8f9fa] text-[#757682] uppercase tracking-wider text-[10px] font-bold border-b border-[#e1e3e4]">
+                    <tr>
+                      <th className="p-3.5">Course Code & Name</th>
+                      <th className="p-3.5">Department</th>
+                      <th className="p-3.5 text-center">Enrolled</th>
+                      <th className="p-3.5 text-center">Fully Paid</th>
+                      <th className="p-3.5 text-center">Fee Due</th>
+                      <th className="p-3.5 text-right">Total Collected</th>
+                      <th className="p-3.5 text-right">Total Outstanding</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#f3f4f5]">
+                    {distribution.map(item => (
+                      <tr key={item.courseId} className="hover:bg-[#f8f9fa] transition-colors">
+                        <td className="p-3.5">
+                          <strong className="text-[#191c1d] block text-xs">{item.courseCode}</strong>
+                          <span className="text-[11px] text-[#757682]">{item.courseName}</span>
+                        </td>
+                        <td className="p-3.5 text-[#444651]">{item.department}</td>
+                        <td className="p-3.5 text-center font-bold text-[#191c1d]">{item.studentCount}</td>
+                        <td className="p-3.5 text-center">
+                          <span className="px-2 py-0.5 bg-[#ffedd5] text-[#00236f] rounded font-bold">
+                            {item.paidCount}
+                          </span>
+                        </td>
+                        <td className="p-3.5 text-center">
+                          <span className="px-2 py-0.5 bg-[#ffdad6] text-[#ba1a1a] rounded font-bold">
+                            {item.dueCount}
+                          </span>
+                        </td>
+                        <td className="p-3.5 text-right font-extrabold text-[#00236f]">
+                          ₹ {item.totalCollected.toLocaleString('en-IN')}
+                        </td>
+                        <td className="p-3.5 text-right font-extrabold text-[#ba1a1a]">
+                          ₹ {item.totalDue.toLocaleString('en-IN')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Statutory Audit Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs space-y-2">
+              <h4 className="text-sm font-bold text-[#191c1d]">Statutory University Exam Eligibility Audit</h4>
+              <p className="text-xs text-[#757682]">
+                Mandatory check of 75% attendance cutoff under University Ordinance 7.4 and zero-dues clearance.
+              </p>
+              <span className="inline-block pt-2 text-xs font-bold text-[#00236f]">
+                Status: Synchronized with Hall Ticket Engine
+              </span>
+            </div>
+
+            <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs space-y-2">
+              <h4 className="text-sm font-bold text-[#191c1d]">Punjab Domicile 85% Quota Roster</h4>
+              <p className="text-xs text-[#757682]">
+                Verified Punjab resident quota registrations across all B.Tech and degree programs.
+              </p>
+              <span className="inline-block pt-2 text-xs font-bold text-[#00236f]">
+                Status: Department verified
+              </span>
+            </div>
+
+            <div className="p-5 bg-white rounded-xl border border-[#e1e3e4] shadow-xs space-y-2">
+              <h4 className="text-sm font-bold text-[#191c1d]">Fee Waiver & Scholarship Disbursals</h4>
+              <p className="text-xs text-[#757682]">
+                Institutional scholarship grants credited against academic tuition fee heads.
+              </p>
+              <span className="inline-block pt-2 text-xs font-bold text-[#00236f]">
+                Status: Fully Reconciled
+              </span>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+
     </div>
   );
 };

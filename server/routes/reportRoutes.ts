@@ -65,3 +65,121 @@ reportRouter.get('/admissions-by-course', authenticateToken, requireRole('admin'
 
   res.json({ success: true, distribution });
 });
+
+// Academic Workload & Hierarchy Audit Report (Lecture 3 Requirement)
+// Reports for: Number of combined classes, subjects, teachers, and subjects assigned to each teacher across School/Dept/Course/Class levels
+reportRouter.get('/academic-workload', authenticateToken, requireRole('admin', 'staff', 'hod', 'super_admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const [courses, subjects, slots, allocations, staffList, users] = await Promise.all([
+      db.getCourses(),
+      db.getSubjects(),
+      db.getTimetableSlots(),
+      db.getFacultyAllocations(),
+      db.getStaffList(),
+      db.getUsers(),
+    ]);
+
+    const teachingStaff = staffList.filter(s => {
+      const u = users.find(usr => usr.id === s.staff_id || usr.username === s.staff_id || usr.employee_id === s.employee_id);
+      return u?.role === 'staff' || u?.role === 'hod' || s.primary_designation?.toLowerCase().includes('professor') || s.primary_designation?.toLowerCase().includes('lecturer');
+    });
+
+    const combinedSlots = slots.filter(s => s.is_combined_class);
+    const freePeriodSubjects = subjects.filter(sub => sub.subject_code?.startsWith('FC_') || sub.take_attendance === false);
+    const freePeriodSlotIds = new Set(freePeriodSubjects.map(f => f.id));
+    const freePeriodSlots = slots.filter(s => freePeriodSlotIds.has(s.subject_id));
+
+    // Teacher breakdown
+    const teacherAssignments = teachingStaff.map(t => {
+      const teacherAllocations = allocations.filter(a => a.faculty_id === t.staff_id);
+      const teacherSlots = slots.filter(s => s.faculty_id === t.staff_id);
+      const teacherCombinedSlots = teacherSlots.filter(s => s.is_combined_class);
+
+      const assignedSubjectIds = Array.from(new Set([
+        ...teacherAllocations.map(a => a.subject_id),
+        ...teacherSlots.map(s => s.subject_id),
+      ]));
+
+      const assignedSubjectObjects = assignedSubjectIds.map(subId => {
+        const found = subjects.find(s => s.id === subId);
+        return found ? { id: found.id, code: found.subject_code, name: found.subject_name, type: found.subject_type } : { id: subId, code: subId, name: subId, type: 'compulsory' };
+      });
+
+      return {
+        staff_id: t.staff_id,
+        employee_id: t.employee_id,
+        full_name: t.full_name,
+        department: t.department_id,
+        primary_designation: t.primary_designation,
+        assigned_subjects: assignedSubjectObjects,
+        assigned_subjects_count: assignedSubjectObjects.length,
+        weekly_slots_count: teacherSlots.length,
+        combined_slots_count: teacherCombinedSlots.length,
+      };
+    });
+
+    // Department breakdown
+    const departmentMap: Record<string, any> = {};
+    for (const c of courses) {
+      const dept = c.department || 'General Academics';
+      if (!departmentMap[dept]) {
+        departmentMap[dept] = {
+          department: dept,
+          courses_count: 0,
+          subjects_count: 0,
+          teachers_count: 0,
+          combined_slots_count: 0,
+          course_list: [],
+        };
+      }
+      departmentMap[dept].courses_count += 1;
+      const deptSubjects = subjects.filter(s => s.course_id === c.id);
+      departmentMap[dept].subjects_count += deptSubjects.length;
+      departmentMap[dept].course_list.push({ id: c.id, code: c.code, name: c.name });
+    }
+
+    for (const dept of Object.keys(departmentMap)) {
+      departmentMap[dept].teachers_count = teachingStaff.filter(t => t.department_id?.toLowerCase() === dept.toLowerCase()).length;
+      departmentMap[dept].combined_slots_count = combinedSlots.filter(s => {
+        const sub = subjects.find(sub => sub.id === s.subject_id);
+        const crs = courses.find(c => c.id === sub?.course_id);
+        return crs?.department?.toLowerCase() === dept.toLowerCase();
+      }).length;
+    }
+
+    // Combined classes list
+    const combinedClassesDetail = combinedSlots.map(slot => {
+      const subject = subjects.find(s => s.id === slot.subject_id);
+      const teacher = teachingStaff.find(t => t.staff_id === slot.faculty_id);
+      return {
+        id: slot.id,
+        subject_name: subject?.subject_name || slot.subject_id,
+        subject_code: subject?.subject_code || 'CC',
+        faculty_name: teacher?.full_name || slot.faculty_id,
+        day_of_week: slot.day_of_week,
+        start_time: slot.start_time,
+        end_time: slot.end_time,
+        room_number: slot.room_number,
+        batch_id: slot.batch_id,
+        linked_batches: slot.linked_batch_ids_json ? JSON.parse(slot.linked_batch_ids_json) : [],
+      };
+    });
+
+    res.json({
+      success: true,
+      summary: {
+        totalCombinedClasses: combinedSlots.length,
+        totalSubjects: subjects.length,
+        totalTeachers: teachingStaff.length,
+        totalWeeklySlots: slots.length,
+        totalFreePeriodSlots: freePeriodSlots.length,
+      },
+      teacherAssignments,
+      departments: Object.values(departmentMap),
+      combinedClassesDetail,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+

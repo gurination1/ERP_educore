@@ -117,6 +117,7 @@ const createSubjectSchema = z.object({
   subject_type: z.enum(['compulsory', 'elective', 'lab', 'project', 'audit']).default('compulsory'),
   take_exam: z.boolean().default(true),
   show_in_report_card: z.boolean().default(true),
+  take_attendance: z.boolean().default(true),
   credits: z.number().min(0).max(10).default(4.0),
   max_marks: z.number().int().min(10).max(200).default(100),
   pass_marks: z.number().int().min(5).max(100).default(40),
