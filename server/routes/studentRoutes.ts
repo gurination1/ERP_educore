@@ -839,7 +839,12 @@ studentRouter.post('/:id/progression', authenticateToken, requireRole('admin', '
       return;
     }
     const actorId = req.user?.id || 'usr-admin-01';
-    const result = await db.updateStudentProgression(id, new_status, new_term, reason || 'Academic progression ordinance review', order_no || `ORD-${Date.now()}`, actorId);
+    const result = await db.updateStudentProgression(id, new_status, {
+      reason: reason || 'Academic progression ordinance review',
+      newTerm: new_term,
+      changedBy: actorId,
+      orderNo: order_no || `ORD-${Date.now()}`
+    });
     res.json({ success: true, message: `Student progression status updated to ${new_status.toUpperCase()}`, data: result });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });

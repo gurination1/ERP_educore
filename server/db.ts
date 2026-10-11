@@ -784,6 +784,7 @@ export const DEFAULT_SUBJECTS: AcademicSubject[] = [
     subject_type: 'compulsory',
     take_exam: true,
     show_in_report_card: true,
+    take_attendance: true,
     credits: 4.0,
     max_marks: 100,
     pass_marks: 40,
@@ -798,6 +799,7 @@ export const DEFAULT_SUBJECTS: AcademicSubject[] = [
     subject_type: 'compulsory',
     take_exam: true,
     show_in_report_card: true,
+    take_attendance: true,
     credits: 3.0,
     max_marks: 100,
     pass_marks: 40,
@@ -812,6 +814,7 @@ export const DEFAULT_SUBJECTS: AcademicSubject[] = [
     subject_type: 'compulsory',
     take_exam: true,
     show_in_report_card: true,
+    take_attendance: true,
     credits: 4.0,
     max_marks: 100,
     pass_marks: 40,
@@ -826,6 +829,7 @@ export const DEFAULT_SUBJECTS: AcademicSubject[] = [
     subject_type: 'elective',
     take_exam: true,
     show_in_report_card: true,
+    take_attendance: true,
     credits: 4.0,
     max_marks: 100,
     pass_marks: 40,
@@ -840,6 +844,7 @@ export const DEFAULT_SUBJECTS: AcademicSubject[] = [
     subject_type: 'extra',
     take_exam: false,
     show_in_report_card: true,
+    take_attendance: true,
     credits: 2.0,
     max_marks: 50,
     pass_marks: 20,
@@ -7814,6 +7819,7 @@ class DatabaseStore {
   // Flags: take_exam, show_in_report_card
   // ----------------------------------------------------
   public async getSubjects(courseId?: string, termNumber?: number): Promise<AcademicSubject[]> {
+    let result: AcademicSubject[] = [];
     if (this.pgPool) {
       let q = 'SELECT * FROM subjects WHERE 1=1';
       const params: any[] = [];
@@ -7827,12 +7833,20 @@ class DatabaseStore {
       }
       q += ' ORDER BY term_number ASC, subject_code ASC';
       const { rows } = await this.pgPool.query(q, params);
-      if (rows.length > 0) return rows;
+      if (rows.length > 0) result = rows;
     }
-    let list = this.subjects;
-    if (courseId) list = list.filter(s => s.course_id === courseId);
-    if (termNumber) list = list.filter(s => s.term_number === termNumber);
-    return list;
+    if (result.length === 0) {
+      let list = this.subjects;
+      if (courseId) list = list.filter(s => s.course_id === courseId);
+      if (termNumber) list = list.filter(s => s.term_number === termNumber);
+      result = list;
+    }
+    return result.map(s => ({
+      ...s,
+      take_attendance: s.take_attendance !== undefined ? Boolean(s.take_attendance) : (s.subject_type !== 'free_period'),
+      take_exam: Boolean(s.take_exam),
+      show_in_report_card: Boolean(s.show_in_report_card),
+    }));
   }
 
   public async createSubject(subject: Partial<AcademicSubject>): Promise<AcademicSubject> {

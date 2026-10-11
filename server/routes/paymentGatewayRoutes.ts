@@ -46,15 +46,18 @@ paymentGatewayRouter.get('/payment-gateways/active', authenticateToken, async (r
       }
     }
 
+    const gatewaySummary = {
+      id: gateway.id,
+      gateway_name: gateway.gateway_name,
+      account_title: gateway.account_title,
+      mode: gateway.mode,
+      is_active: gateway.is_active,
+    };
+
     res.json({
       success: true,
-      active_gateway: {
-        id: gateway.id,
-        gateway_name: gateway.gateway_name,
-        account_title: gateway.account_title,
-        mode: gateway.mode,
-        is_active: gateway.is_active,
-      },
+      active_gateway: gatewaySummary,
+      gateway: gatewaySummary,
       can_pay,
       restriction_reason,
     });
