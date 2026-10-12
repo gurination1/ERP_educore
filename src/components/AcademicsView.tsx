@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { api } from '../api/client';
 import { User } from '../types';
@@ -157,7 +158,16 @@ type AcademicTab =
   | 'attendance';
 
 export const AcademicsView: React.FC<AcademicsViewProps> = ({ currentUser }) => {
-  const [activeTab, setActiveTab] = useState<AcademicTab>('syllabus');
+  const [searchParams] = useSearchParams();
+  const rawTab = searchParams.get('tab');
+  const urlTab = (rawTab === 'cbcs' ? 'syllabus' : rawTab) as AcademicTab | null;
+  const [activeTab, setActiveTab] = useState<AcademicTab>(urlTab || 'syllabus');
+
+  useEffect(() => {
+    if (urlTab) {
+      setActiveTab(urlTab);
+    }
+  }, [urlTab]);
   const [selectedCourse, setSelectedCourse] = useState<CourseItem | null>(null);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 

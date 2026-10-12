@@ -38,6 +38,20 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
     }
   }, [student]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('view') === 'attendance') {
+      setTimeout(() => {
+        const el = document.getElementById('student-attendance-section');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.classList.add('ring-2', 'ring-[#00236f]', 'transition-all');
+          setTimeout(() => el.classList.remove('ring-2', 'ring-[#00236f]'), 3000);
+        }
+      }, 200);
+    }
+  }, []);
+
   if (!student) {
     return (
       <div className="p-12 max-w-7xl mx-auto flex flex-col items-center justify-center min-h-[40vh] space-y-3 text-xs">
@@ -320,7 +334,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         </div>
 
         {/* Attendance Summary */}
-        <div className="bg-white apple-glass-card rounded-xl p-3.5 border border-slate-200/80 shadow-2xs space-y-2">
+        <div id="student-attendance-section" className="bg-white apple-glass-card rounded-xl p-3.5 border border-slate-200/80 shadow-2xs space-y-2">
           <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
             <span className="font-bold text-[#00236f] tracking-tight text-xs">Attendance Monitor</span>
             <span className={`px-2 py-0.2 rounded-full text-[9px] font-semibold ${

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { User } from '../types';
 import { api } from '../api/client';
@@ -12,7 +13,17 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
   currentUser,
   initialTab = 'regular',
 }) => {
-  const [activeTab, setActiveTab] = useState<'regular' | 'reappear' | 'admit-card' | 'datesheet' | 'results'>(initialTab);
+  const [searchParams] = useSearchParams();
+  const urlTab = searchParams.get('tab') as 'regular' | 'reappear' | 'admit-card' | 'datesheet' | 'results' | null;
+  const [activeTab, setActiveTab] = useState<'regular' | 'reappear' | 'admit-card' | 'datesheet' | 'results'>(urlTab || initialTab);
+
+  useEffect(() => {
+    if (urlTab) {
+      setActiveTab(urlTab);
+    } else if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [urlTab, initialTab]);
   const [students, setStudents] = useState<any[]>([]);
   const [selectedStudentId, setSelectedStudentId] = useState<string>('stu-rec-aryan');
   const [studentProfile, setStudentProfile] = useState<any | null>(null);

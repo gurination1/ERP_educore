@@ -50,6 +50,8 @@ interface LayoutProps {
   onSearchChange: (q: string) => void;
   onOpenAuditLogs?: () => void;
   onOpenMasterTables?: (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents') => void;
+  onOpenPayModal?: () => void;
+  onOpenAdmitCard?: () => void;
   children: React.ReactNode;
 }
 
@@ -60,6 +62,8 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
   onSearchChange,
   onOpenAuditLogs: propOnOpenAuditLogs,
   onOpenMasterTables: propOnOpenMasterTables,
+  onOpenPayModal: propOnOpenPayModal,
+  onOpenAdmitCard: propOnOpenAdmitCard,
   children,
 }) => {
   const navigate = useNavigate();
@@ -88,6 +92,8 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
       setInternalShowMasterTables(true);
     }
   };
+  const handleOpenAdmit = propOnOpenAdmitCard || (() => setShowAdmitCard(true));
+  const handleOpenPay = propOnOpenPayModal;
 
   const getActiveScreenFromPath = (path: string): ActiveScreen => {
     switch (path) {
@@ -161,14 +167,23 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
 
   const handleNavigate = (screen: any) => {
     const screenStr = String(screen);
-    if (screenStr === 'fee-ledger') {
-      navigate('/fees');
-    } else if (screenStr === 'student-dashboard' || screenStr === 'admin-dashboard' || screenStr === 'super-admin-dashboard' || screenStr === 'staff-dashboard') {
-      navigate('/dashboard');
-    } else if (screenStr.startsWith('/')) {
-      navigate(screenStr);
+    const [pathPart, queryPart] = screenStr.split('?');
+    const qs = queryPart ? `?${queryPart}` : '';
+
+    if (pathPart === 'fee-ledger' || pathPart === 'fees') {
+      navigate(`/fees${qs}`);
+    } else if (
+      pathPart === 'student-dashboard' ||
+      pathPart === 'admin-dashboard' ||
+      pathPart === 'super-admin-dashboard' ||
+      pathPart === 'staff-dashboard' ||
+      pathPart === 'dashboard'
+    ) {
+      navigate(`/dashboard${qs}`);
+    } else if (pathPart.startsWith('/')) {
+      navigate(`${pathPart}${qs}`);
     } else {
-      navigate(`/${screenStr}`);
+      navigate(`/${pathPart}${qs}`);
     }
   };
 
@@ -273,6 +288,8 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
       <Header
         currentUser={currentUser}
         activeScreen={currentScreenId}
+        currentPath={location.pathname}
+        currentSearch={location.search}
         onNavigate={handleNavigate}
         canGoBack={canGoBack}
         onGoBack={handleGoBack}
@@ -285,7 +302,8 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
         onOpenAuditLogs={handleAudit}
         onOpenMasterTables={handleMaster}
         onOpenStaffJourney={() => setShowStaffJourney(true)}
-        onOpenAdmitCard={() => setShowAdmitCard(true)}
+        onOpenAdmitCard={handleOpenAdmit}
+        onOpenPayModal={handleOpenPay}
       />
 
       <main className="flex-1 min-w-0 w-full max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4 pb-12">
@@ -501,18 +519,23 @@ function MainApp() {
   };
 
   const handleScreenNavigate = (target: string) => {
-    if (target === 'fee-ledger' || target === 'fees') {
-      navigate('/fees');
-    } else if (target === 'student-dashboard' || target === 'admin-dashboard' || target === 'staff-dashboard' || target === 'dashboard') {
-      navigate('/dashboard');
-    } else if (target === 'student-documents') {
-      navigate('/student-documents');
-    } else if (target === 'teacher-documents') {
-      navigate('/teacher-documents');
-    } else if (target === 'student-quiz-lms') {
-      navigate('/student-quiz-lms');
+    const [pathPart, queryPart] = String(target).split('?');
+    const qs = queryPart ? `?${queryPart}` : '';
+
+    if (pathPart === 'fee-ledger' || pathPart === 'fees') {
+      navigate(`/fees${qs}`);
+    } else if (
+      pathPart === 'student-dashboard' ||
+      pathPart === 'admin-dashboard' ||
+      pathPart === 'super-admin-dashboard' ||
+      pathPart === 'staff-dashboard' ||
+      pathPart === 'dashboard'
+    ) {
+      navigate(`/dashboard${qs}`);
+    } else if (pathPart.startsWith('/')) {
+      navigate(`${pathPart}${qs}`);
     } else {
-      navigate(`/${target}`);
+      navigate(`/${pathPart}${qs}`);
     }
   };
 
@@ -584,6 +607,12 @@ function MainApp() {
                 onSearchChange={setSearchQuery}
                 onOpenMasterTables={handleOpenMasterTables}
                 onOpenAuditLogs={handleOpenAuditLogs}
+                onOpenPayModal={() => {
+                  setTargetPayFeeId(undefined);
+                  setTargetPayStudent(currentStudent);
+                  setIsPayModalOpen(true);
+                }}
+                onOpenAdmitCard={() => setIsAdmitCardOpen(true)}
               >
                 {currentUser.role === 'super_admin' ? (
                   <SuperAdminDashboardView
@@ -652,6 +681,12 @@ function MainApp() {
                 onLogout={handleLogout}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
+                onOpenPayModal={() => {
+                  setTargetPayFeeId(undefined);
+                  setTargetPayStudent(currentStudent);
+                  setIsPayModalOpen(true);
+                }}
+                onOpenAdmitCard={() => setIsAdmitCardOpen(true)}
               >
                 <FeeLedgerView
                   currentUser={currentUser}
@@ -820,7 +855,7 @@ function MainApp() {
           element={
             !currentUser ? (
               <Navigate to="/" replace />
-            ) : !['admin', 'super_admin', 'staff', 'accounts', 'hod'].includes(currentUser.role) ? (
+            ) : !['admin', 'super_admin', 'staff', 'accounts', 'hod', 'hr'].includes(currentUser.role) ? (
               <Navigate to="/dashboard" replace />
             ) : (
               <AuthenticatedLayout
@@ -1031,7 +1066,7 @@ function MainApp() {
           element={
             !currentUser ? (
               <Navigate to="/" replace />
-            ) : !['admin', 'super_admin', 'staff', 'hod'].includes(currentUser.role) ? (
+            ) : !['admin', 'super_admin', 'staff', 'hod', 'hr'].includes(currentUser.role) ? (
               <Navigate to="/dashboard" replace />
             ) : (
               <AuthenticatedLayout
@@ -1069,7 +1104,7 @@ function MainApp() {
           element={
             !currentUser ? (
               <Navigate to="/" replace />
-            ) : !['admin', 'super_admin', 'hod'].includes(currentUser.role) ? (
+            ) : !['admin', 'super_admin', 'hod', 'hr'].includes(currentUser.role) ? (
               <Navigate to="/dashboard" replace />
             ) : (
               <AuthenticatedLayout

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { User } from '../types';
 import { api } from '../api/client';
@@ -8,6 +9,10 @@ interface PartnerPortalViewProps {
 }
 
 export const PartnerPortalView: React.FC<PartnerPortalViewProps> = ({ currentUser }) => {
+  const [searchParams] = useSearchParams();
+  const rawTab = searchParams.get('tab');
+  const urlTab = (rawTab === 'drives' ? 'jobs' : rawTab) as 'partners' | 'jobs' | 'talent' | 'applications' | null;
+
   const [partners, setPartners] = useState<any[]>([]);
   const [selectedPartnerId, setSelectedPartnerId] = useState<string | null>(null);
   const [partnerDetails, setPartnerDetails] = useState<any | null>(null);
@@ -15,8 +20,14 @@ export const PartnerPortalView: React.FC<PartnerPortalViewProps> = ({ currentUse
   const [allJobs, setAllJobs] = useState<any[]>([]);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [jobApplications, setJobApplications] = useState<any[]>([]);
-  const [activeSection, setActiveSection] = useState<'partners' | 'jobs' | 'talent' | 'applications'>('partners');
+  const [activeSection, setActiveSection] = useState<'partners' | 'jobs' | 'talent' | 'applications'>(urlTab || 'partners');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (urlTab) {
+      setActiveSection(urlTab);
+    }
+  }, [urlTab]);
 
   // Filters
   const [talentMinCgpa, setTalentMinCgpa] = useState<number>(7.0);

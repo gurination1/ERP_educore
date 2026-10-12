@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { api } from '../api/client';
 import { StudentProfile, User } from '../types';
@@ -16,10 +17,17 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
   onOpenPayModal,
   onOpenReceiptModal,
 }) => {
+  const [searchParams] = useSearchParams();
   const isActualAdmin = currentUser ? (currentUser.role === 'admin' || currentUser.role === 'super_admin' || currentUser.role === 'accounts') : !currentStudent;
   const isStaff = currentUser?.role === 'staff';
   const isStudent = currentUser?.role === 'student' || (!isActualAdmin && !isStaff);
   const canSearchStudents = isActualAdmin || isStaff;
+
+  useEffect(() => {
+    if (searchParams.get('pay') === 'true') {
+      onOpenPayModal();
+    }
+  }, [searchParams]);
 
   const [studentList, setStudentList] = useState<any[]>([]);
   const [selectedStudentId, setSelectedStudentId] = useState<string>(currentStudent?.id || 'stu-rec-aryan');
