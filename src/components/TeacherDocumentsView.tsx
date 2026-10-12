@@ -236,15 +236,21 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
               <select
                 value={newType}
                 onChange={e => {
-                  setNewType(e.target.value);
-                  const titleMap: Record<string, string> = {
-                    DOC_CONFERENCE: 'International Conference First Page Reprint',
-                    DOC_BOOK_CHAPTER: 'Scopus Indexed Book Chapter (ISBN)',
-                    DOC_CONSULTANCY: 'Industrial Consultancy Project Grant Deed',
-                    DOC_FDP_CERT: 'AICTE ATAL FDP 1-Week Completion Certificate',
-                    DOC_REVIEWER: 'SCI Journal Editorial Reviewer Certificate',
-                  };
-                  setNewTitle(titleMap[e.target.value] || 'Faculty Research Asset');
+                  const val = e.target.value;
+                  setNewType(val);
+                  if (val === 'DOC_OTHERS') {
+                    // Recording 160: When user chooses 'Others', clear title for user custom input
+                    setNewTitle('');
+                  } else {
+                    const titleMap: Record<string, string> = {
+                      DOC_CONFERENCE: 'International Conference First Page Reprint',
+                      DOC_BOOK_CHAPTER: 'Scopus Indexed Book Chapter (ISBN)',
+                      DOC_CONSULTANCY: 'Industrial Consultancy Project Grant Deed',
+                      DOC_FDP_CERT: 'AICTE ATAL FDP 1-Week Completion Certificate',
+                      DOC_REVIEWER: 'SCI Journal Editorial Reviewer Certificate',
+                    };
+                    setNewTitle(titleMap[val] || 'Faculty Research Asset');
+                  }
                 }}
                 className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#00236f]"
               >
@@ -253,16 +259,19 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
                 <option value="DOC_CONSULTANCY">Industry Consultancy & Testing Report</option>
                 <option value="DOC_FDP_CERT">AICTE ATAL / NPTEL FDP Certificate</option>
                 <option value="DOC_REVIEWER">SCI / Scopus Journal Reviewer Honor</option>
+                <option value="DOC_OTHERS">Others / Custom Institutional Document</option>
               </select>
             </div>
 
             <div>
               <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1">
-                Document / Paper Title
+                Document / Paper Title {newType === 'DOC_OTHERS' && <span className="text-[#ea580c] font-normal">(Required for Others)</span>}
               </label>
               <input
                 type="text"
                 value={newTitle}
+                placeholder={newType === 'DOC_OTHERS' ? 'Enter document title (e.g. PostDoc Research Fellowship Award)' : 'Document Title'}
+                required
                 onChange={e => setNewTitle(e.target.value)}
                 className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#00236f]"
               />

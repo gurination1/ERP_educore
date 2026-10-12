@@ -236,15 +236,21 @@ export const StudentDocumentsView: React.FC<StudentDocumentsViewProps> = ({ curr
               <select
                 value={uploadType}
                 onChange={e => {
-                  setUploadType(e.target.value);
-                  const titleMap: Record<string, string> = {
-                    DOC_MIGRATION: 'Migration / Character Certificate',
-                    DOC_GAP: 'Gap Year Affidavit',
-                    DOC_CASTE: 'Caste Certificate (SC/ST/OBC)',
-                    DOC_MEDICAL: 'Medical Fitness Certificate',
-                    DOC_HOSTEL_UNDERTAKING: 'Hostel Rules & Conduct Undertaking',
-                  };
-                  setUploadTitle(titleMap[e.target.value] || 'Regulatory Document');
+                  const val = e.target.value;
+                  setUploadType(val);
+                  if (val === 'DOC_OTHERS') {
+                    // Recording 160: When user chooses 'Others', clear title for user custom input
+                    setUploadTitle('');
+                  } else {
+                    const titleMap: Record<string, string> = {
+                      DOC_MIGRATION: 'Migration / Character Certificate',
+                      DOC_GAP: 'Gap Year Affidavit',
+                      DOC_CASTE: 'Caste Certificate (SC/ST/OBC)',
+                      DOC_MEDICAL: 'Medical Fitness Certificate',
+                      DOC_HOSTEL_UNDERTAKING: 'Hostel Rules & Conduct Undertaking',
+                    };
+                    setUploadTitle(titleMap[val] || 'Regulatory Document');
+                  }
                 }}
                 className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-medium"
               >
@@ -253,16 +259,19 @@ export const StudentDocumentsView: React.FC<StudentDocumentsViewProps> = ({ curr
                 <option value="DOC_CASTE">Caste Certificate (SC/ST/OBC)</option>
                 <option value="DOC_MEDICAL">Medical Fitness Certificate</option>
                 <option value="DOC_HOSTEL_UNDERTAKING">Hostel Undertaking & Dues Bond</option>
+                <option value="DOC_OTHERS">Others / Custom Institutional Document</option>
               </select>
             </div>
 
             <div>
               <label className="block text-[11px] font-bold text-[#191c1d] uppercase mb-1">
-                Document Title
+                Document Title {uploadType === 'DOC_OTHERS' && <span className="text-[#ea580c] font-normal">(Required for Others)</span>}
               </label>
               <input
                 type="text"
                 value={uploadTitle}
+                placeholder={uploadType === 'DOC_OTHERS' ? 'Enter document title (e.g. State Domicile / Sports Certificate)' : 'Document Title'}
+                required
                 onChange={e => setUploadTitle(e.target.value)}
                 className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
               />

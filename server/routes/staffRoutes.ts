@@ -367,6 +367,7 @@ staffRouter.post('/:id/noc/release-refund', authenticateToken, requireRole('admi
   try {
     const staffId = req.params.id;
     const { txRef } = req.body;
+    const actorId = req.user?.id || 'usr-admin-01';
     const result = await db.releaseSecurityDepositRefund(staffId, 30000, txRef || `TX-REFUND-${Date.now()}`, actorId);
     res.json({ success: true, message: 'Security deposit refund released successfully', noc: result });
   } catch (err: any) {

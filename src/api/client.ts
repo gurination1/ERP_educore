@@ -255,6 +255,8 @@ export const api = {
     apiRequest(`/api/users/${id}`, { method: 'DELETE' }),
   overrideUser: (id: string, updates: any) =>
     apiRequest(`/api/users/${id}/override`, { method: 'PATCH', body: JSON.stringify(updates) }),
+  getUserSoftwareJourney: (userId: string) =>
+    apiRequest(`/api/users/${userId}/software-journey`),
 
   // Immutable Audit Logs & Master Tables
   getAuditLogs: (params: Record<string, any> = {}) => {

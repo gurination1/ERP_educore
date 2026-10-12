@@ -445,3 +445,14 @@ userRouter.patch('/:id/override', authenticateToken, requireRole('super_admin'),
     user: updated,
   });
 });
+
+// 8. Software Journey & User Life History (Recording 160 Mandate)
+userRouter.get('/:id/software-journey', authenticateToken, requireRole('admin', 'super_admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const journey = await db.getUserSoftwareJourney(id);
+    res.json({ success: true, ...journey });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});

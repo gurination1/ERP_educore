@@ -30,6 +30,16 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
     lastWorkingDate: '',
     reason: '',
   });
+  // Software Journey Modal State (Recording 160 Mandate)
+  const [isJourneyModalOpen, setIsJourneyModalOpen] = useState(false);
+  const [journeyUser, setJourneyUser] = useState<User | null>(null);
+  const [journeyData, setJourneyData] = useState<{
+    softwareJourney: any[];
+    activityLogs: any[];
+    linkedStaffJourney?: any[];
+  } | null>(null);
+  const [journeyLoading, setJourneyLoading] = useState(false);
+  const [journeyTab, setJourneyTab] = useState<'journey' | 'activity' | 'staff'>('journey');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [apexOverrideForm, setApexOverrideForm] = useState({
     fullName: '',
@@ -327,6 +337,27 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
     setSelectedUser(user);
     setNewPassword(generatePassword());
     setIsResetPasswordModalOpen(true);
+  };
+
+  const openSoftwareJourneyModal = async (user: User) => {
+    setJourneyUser(user);
+    setIsJourneyModalOpen(true);
+    setJourneyLoading(true);
+    setJourneyTab('journey');
+    try {
+      const res = await api.getUserSoftwareJourney(user.id);
+      if (res.success) {
+        setJourneyData({
+          softwareJourney: res.softwareJourney || [],
+          activityLogs: res.activityLogs || [],
+          linkedStaffJourney: res.linkedStaffJourney || [],
+        });
+      }
+    } catch (err: any) {
+      console.error('Error fetching software journey:', err);
+    } finally {
+      setJourneyLoading(false);
+    }
   };
 
   const handleResetPasswordSubmit = async (e: React.FormEvent) => {
@@ -715,6 +746,15 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                           >
                             <span>⚙</span>
                             <span>GOVERN</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openSoftwareJourneyModal(user)}
+                            className="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-[#00236f] rounded border border-blue-300 font-bold text-[10px] cursor-pointer flex items-center gap-1 shadow-2xs transition-colors"
+                            title="View User Software Journey & Forensic Activity Trail (Recording 160)"
+                          >
+                            <span>📜</span>
+                            <span>JOURNEY</span>
                           </button>
                           <button
                             type="button"
@@ -1450,6 +1490,237 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Software Journey & User Forensic Audit (Recording 160 Mandate) */}
+      {isJourneyModalOpen && journeyUser && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+            {/* Header Ribbon */}
+            <div className="px-6 py-4 border-b border-slate-200 bg-linear-to-r from-[#00236f] to-[#1e3a8a] text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-lg font-bold font-mono">
+                  {journeyUser.full_name.charAt(0)}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-extrabold tracking-tight">{journeyUser.full_name}</h3>
+                    <span className="font-mono text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold">
+                      @{journeyUser.username}
+                    </span>
+                    <span className="font-mono text-[10px] bg-emerald-500/30 text-emerald-200 border border-emerald-400/30 px-2 py-0.5 rounded-full font-bold">
+                      UID: {journeyUser.enterprise_uid || 'N/A'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-blue-100/80 font-medium mt-0.5">
+                    {journeyUser.designation || 'Staff'} • {journeyUser.department || 'General Administration'} • Role: <strong className="uppercase">{journeyUser.role}</strong>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsJourneyModalOpen(false)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-white/80 hover:bg-white/10 hover:text-white transition-all cursor-pointer font-bold text-xs"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Sub-Header Tabs */}
+            <div className="px-6 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setJourneyTab('journey')}
+                  className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                    journeyTab === 'journey'
+                      ? 'bg-[#00236f] text-white shadow-2xs'
+                      : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  📜 Software Journey ({journeyData?.softwareJourney.length || 0})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setJourneyTab('activity')}
+                  className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                    journeyTab === 'activity'
+                      ? 'bg-[#00236f] text-white shadow-2xs'
+                      : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  🔍 Forensic Activity Logs ({journeyData?.activityLogs.length || 0})
+                </button>
+                {journeyData?.linkedStaffJourney && journeyData.linkedStaffJourney.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setJourneyTab('staff')}
+                    className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                      journeyTab === 'staff'
+                        ? 'bg-[#00236f] text-white shadow-2xs'
+                        : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    🏢 Staff Promotions & Career ({journeyData.linkedStaffJourney.length})
+                  </button>
+                )}
+              </div>
+              <span className="text-[11px] font-mono text-slate-500 font-semibold">
+                Permanent Append-Only DB
+              </span>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50 space-y-4">
+              {journeyLoading ? (
+                <div className="py-16 text-center">
+                  <div className="w-8 h-8 border-3 border-[#00236f] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                  <p className="text-xs font-bold text-slate-600">Retrieving immutable software journey & forensic audit logs...</p>
+                </div>
+              ) : journeyTab === 'journey' ? (
+                /* Software Journey Timeline */
+                <div className="space-y-3">
+                  <div className="bg-blue-50/70 border border-blue-200/80 rounded-xl p-3 text-xs text-blue-900 flex items-start gap-2">
+                    <span className="text-base shrink-0">ℹ️</span>
+                    <div>
+                      <strong className="font-bold">Historical Software Journey Protection:</strong> As dictated in Lecture Recording 160, user role mutations, administrative promotions, or status changes never erase historical logs. Every transition records actor identity, timestamp, device fingerprint, and authorization details.
+                    </div>
+                  </div>
+
+                  <div className="relative pl-6 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+                    {journeyData?.softwareJourney.map((milestone, idx) => (
+                      <div key={milestone.id || idx} className="relative bg-white rounded-xl p-4 border border-slate-200/90 shadow-2xs space-y-2">
+                        {/* Timeline Node Bullet */}
+                        <div className={`absolute -left-[27px] top-4 w-3.5 h-3.5 rounded-full border-2 border-white shadow-xs ${
+                          milestone.event_type.includes('PROVISION')
+                            ? 'bg-emerald-600 ring-2 ring-emerald-200'
+                            : milestone.event_type.includes('DEACTIVATE') || milestone.severity === 'critical'
+                            ? 'bg-rose-600 ring-2 ring-rose-200'
+                            : 'bg-[#00236f] ring-2 ring-blue-200'
+                        }`}></div>
+
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded-md font-mono text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                              {milestone.event_type}
+                            </span>
+                            <span className="text-xs font-bold text-[#00236f]">
+                              By {milestone.actor_name} ({milestone.actor_id})
+                            </span>
+                          </div>
+                          <span className="text-[11px] font-mono text-slate-500 font-medium">
+                            {new Date(milestone.timestamp).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                          </span>
+                        </div>
+
+                        <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                          {milestone.details}
+                        </p>
+
+                        {milestone.changes_diff && (
+                          <div className="bg-slate-50 rounded-lg p-2 font-mono text-[10px] text-slate-600 border border-slate-200/80 overflow-x-auto">
+                            <strong>Mutated Payload:</strong> {milestone.changes_diff}
+                          </div>
+                        )}
+
+                        <div className="pt-1 flex flex-wrap items-center justify-between gap-2 text-[10px] text-slate-500 font-mono">
+                          <div className="flex items-center gap-3">
+                            <span>📱 Device: <strong>{milestone.device}</strong></span>
+                            <span>🌐 IP: <strong>{milestone.ip_address}</strong></span>
+                            <span>💻 OS: <strong>{milestone.platform}</strong></span>
+                          </div>
+                          <span className="font-sans font-bold uppercase text-[9px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
+                            Severity: {milestone.severity}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : journeyTab === 'activity' ? (
+                /* Activity Logs Performed By User */
+                <div className="space-y-3">
+                  <div className="bg-slate-100 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 flex items-start gap-2">
+                    <span className="text-base shrink-0">🕵️</span>
+                    <div>
+                      <strong className="font-bold">CBI Forensic Activity Audit:</strong> Full append-only log of operations executed by this user account across EduCore panels (attendance entry, grade submission, fee collections, user updates).
+                    </div>
+                  </div>
+
+                  {journeyData?.activityLogs && journeyData.activityLogs.length > 0 ? (
+                    <div className="space-y-2">
+                      {journeyData.activityLogs.map((act, i) => (
+                        <div key={act.id || i} className="bg-white rounded-xl p-3 border border-slate-200 shadow-2xs space-y-1.5 text-xs">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-bold text-[#00236f]">{act.action}</span>
+                            <span className="text-[10px] font-mono text-slate-500">
+                              {new Date(act.timestamp).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}
+                            </span>
+                          </div>
+                          <p className="text-slate-700 text-[11px]">{act.details}</p>
+                          <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 pt-1 border-t border-slate-100">
+                            <span>Target: {act.target_type} ({act.target_id})</span>
+                            <span>IP: {act.actor_ip || '172.16.4.12'}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-12 text-center text-slate-500 text-xs">
+                      No operational mutation activities recorded by this user account yet.
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* Linked Staff Org Journey */
+                <div className="space-y-3">
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 flex items-start gap-2">
+                    <span className="text-base shrink-0">🏛️</span>
+                    <div>
+                      <strong className="font-bold">Organizational Career Transitions:</strong> Tracking promotions, demotions, additional roles, and role switches within institution departments.
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    {journeyData?.linkedStaffJourney?.map((ev, i) => (
+                      <div key={ev.id || i} className="bg-white rounded-xl p-3.5 border border-slate-200 shadow-2xs space-y-1.5 text-xs">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="px-2 py-0.5 rounded font-bold uppercase text-[10px] bg-blue-100 text-[#00236f]">
+                            {ev.event_type}
+                          </span>
+                          <span className="text-[10px] font-mono text-slate-500">
+                            Effective: {ev.effective_date}
+                          </span>
+                        </div>
+                        <div className="text-xs font-bold text-slate-800">
+                          {ev.old_designation ? `${ev.old_designation} ➔ ${ev.new_designation}` : ev.new_designation}
+                        </div>
+                        <p className="text-[11px] text-slate-600 italic">“{ev.remarks}”</p>
+                        <div className="text-[10px] font-mono text-slate-500 pt-1 border-t border-slate-100">
+                          Authorized by: {ev.actor_id}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-3 bg-white border-t border-slate-200 flex items-center justify-between text-xs">
+              <span className="text-slate-500 text-[11px]">
+                EduCore Forensic Governance Engine • AICTE/UGC Regulatory Grade
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsJourneyModalOpen(false)}
+                className="px-4 py-2 bg-[#00236f] hover:bg-[#001744] text-white font-bold rounded-lg text-xs shadow-2xs cursor-pointer transition-all"
+              >
+                Close Audit Dossier
+              </button>
+            </div>
           </div>
         </div>
       )}
