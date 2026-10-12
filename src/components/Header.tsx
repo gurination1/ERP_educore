@@ -204,10 +204,46 @@ export const Header: React.FC<HeaderProps> = ({
           onNavigate('master-architecture' as any);
         },
         items: [
-          { id: 'master-gst' as any, label: 'State GST Codes (GST-01 to 37)', action: () => { onOpenMasterTables?.('states'); setOpenDrawer(null); } },
-          { id: 'master-types' as any, label: 'Enterprise User Type Codes (1001-9001)', action: () => { onOpenMasterTables?.('userTypes'); setOpenDrawer(null); } },
-          { id: 'master-degrees' as any, label: 'Approved Degrees (AICTE / UGC / PCI)', action: () => { onOpenMasterTables?.('degrees'); setOpenDrawer(null); } },
-          { id: 'master-docs' as any, label: 'Statutory Document Types & MIME Rules', action: () => { onOpenMasterTables?.('documents'); setOpenDrawer(null); } },
+          {
+            id: 'master-gst' as any,
+            label: 'State GST Codes (GST-01 to 37)',
+            action: () => {
+              if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+              setOpenDrawer(null);
+              onNavigate('master-architecture?tab=states' as any);
+              onOpenMasterTables?.('states');
+            },
+          },
+          {
+            id: 'master-types' as any,
+            label: 'Enterprise User Type Codes (1001-9001)',
+            action: () => {
+              if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+              setOpenDrawer(null);
+              onNavigate('master-architecture?tab=userTypes' as any);
+              onOpenMasterTables?.('userTypes');
+            },
+          },
+          {
+            id: 'master-degrees' as any,
+            label: 'Approved Degrees (AICTE / UGC / PCI)',
+            action: () => {
+              if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+              setOpenDrawer(null);
+              onNavigate('master-architecture?tab=degrees' as any);
+              onOpenMasterTables?.('degrees');
+            },
+          },
+          {
+            id: 'master-docs' as any,
+            label: 'Statutory Document Types & MIME Rules',
+            action: () => {
+              if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+              setOpenDrawer(null);
+              onNavigate('master-architecture?tab=documents' as any);
+              onOpenMasterTables?.('documents');
+            },
+          },
         ],
         isActive: activeScreen === ('master-architecture' as any),
       },
@@ -221,8 +257,26 @@ export const Header: React.FC<HeaderProps> = ({
           onNavigate('audit-logs' as any);
         },
         items: [
-          { id: 'audit-stream' as any, label: 'Immutable Audit Log Stream', action: () => { onOpenAuditLogs?.(); setOpenDrawer(null); } },
-          { id: 'audit-forensics' as any, label: 'Security & Actor Difference Forensics', action: () => { onOpenAuditLogs?.(); setOpenDrawer(null); } },
+          {
+            id: 'audit-stream' as any,
+            label: 'Immutable Audit Log Stream',
+            action: () => {
+              if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+              setOpenDrawer(null);
+              onNavigate('audit-logs' as any);
+              onOpenAuditLogs?.();
+            },
+          },
+          {
+            id: 'audit-forensics' as any,
+            label: 'Security & Actor Difference Forensics',
+            action: () => {
+              if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+              setOpenDrawer(null);
+              onNavigate('audit-logs?filter=security' as any);
+              onOpenAuditLogs?.();
+            },
+          },
         ],
         isActive: activeScreen === ('audit-logs' as any),
       },

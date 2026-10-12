@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { AuditLogItem } from '../types';
 
@@ -9,12 +10,25 @@ interface AuditTrailModalProps {
 }
 
 export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClose, isEmbeddedView = false }) => {
+  const [searchParams] = useSearchParams();
+  const urlFilter = searchParams.get('filter');
+  const urlRole = searchParams.get('role');
+
   const [logs, setLogs] = useState<AuditLogItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState('all');
-  const [severityFilter, setSeverityFilter] = useState('all');
+  const [roleFilter, setRoleFilter] = useState(urlRole || 'all');
+  const [severityFilter, setSeverityFilter] = useState(urlFilter === 'security' ? 'critical' : 'all');
   const [selectedLog, setSelectedLog] = useState<AuditLogItem | null>(null);
+
+  useEffect(() => {
+    if (urlFilter === 'security') {
+      setSeverityFilter('critical');
+    }
+    if (urlRole) {
+      setRoleFilter(urlRole);
+    }
+  }, [urlFilter, urlRole]);
 
   const fetchLogs = async () => {
     setIsLoading(true);

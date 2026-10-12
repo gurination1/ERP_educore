@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { MasterState, MasterUserType, MasterDegree, MasterDocumentType } from '../types';
 
@@ -10,7 +11,9 @@ interface MasterTablesModalProps {
 }
 
 export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, onClose, initialTab, isEmbeddedView = false }) => {
-  const [activeTab, setActiveTab] = useState<'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents'>(initialTab || 'states');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlTab = searchParams.get('tab') as 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents' | null;
+  const [activeTab, setActiveTab] = useState<'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents'>(urlTab || initialTab || 'states');
   const [data, setData] = useState<{
     states: MasterState[];
     userTypes: MasterUserType[];
@@ -22,10 +25,12 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (initialTab) {
+    if (urlTab) {
+      setActiveTab(urlTab);
+    } else if (initialTab) {
       setActiveTab(initialTab);
     }
-  }, [initialTab, isOpen]);
+  }, [urlTab, initialTab, isOpen]);
 
   const masterDepartments = [
     { code: 'CSE', name: 'Computer Science & Engineering', head: 'Dr. Hardeep Singh', facultyCount: 28, programs: 'B.Tech, M.Tech, BCA, MCA', type: 'Engineering & Technology' },

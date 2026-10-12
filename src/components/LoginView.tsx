@@ -221,14 +221,50 @@ export const LoginView: React.FC<LoginViewProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  setSelectedRole('admin');
+                  setSelectedRole('hr');
                   setUsername('8001-01-03-01');
                   setPassword('hr123');
                 }}
-                className="col-span-2 p-2 text-left bg-white hover:bg-emerald-50/60 border border-slate-200/90 rounded-xl text-emerald-800 flex items-center justify-between cursor-pointer transition shadow-2xs hover:border-emerald-300"
+                className="p-2 text-left bg-white hover:bg-emerald-50/60 border border-slate-200/90 rounded-xl text-emerald-800 flex items-center justify-between cursor-pointer transition shadow-2xs hover:border-emerald-300"
               >
-                <span className="font-bold text-[10px]">[HRMS & ESTABLISHMENT]</span>
-                <span className="text-slate-500 text-[10px]">8001-01-03-01 / hr123</span>
+                <span className="font-bold text-[10px]">[HRMS]</span>
+                <span className="text-slate-500 text-[10px]">8001-01-03-01</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedRole('accounts');
+                  setUsername('5001-05-03-01');
+                  setPassword('accounts123');
+                }}
+                className="p-2 text-left bg-white hover:bg-blue-50/60 border border-slate-200/90 rounded-xl text-[#00236f] flex items-center justify-between cursor-pointer transition shadow-2xs hover:border-blue-300"
+              >
+                <span className="font-bold text-[10px]">[ACCOUNTS]</span>
+                <span className="text-slate-500 text-[10px]">5001-05-03-01</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedRole('counselor');
+                  setUsername('6001-02-03-01');
+                  setPassword('counselor123');
+                }}
+                className="p-2 text-left bg-white hover:bg-amber-50/60 border border-slate-200/90 rounded-xl text-amber-800 flex items-center justify-between cursor-pointer transition shadow-2xs hover:border-amber-300"
+              >
+                <span className="font-bold text-[10px]">[COUNSELOR]</span>
+                <span className="text-slate-500 text-[10px]">6001-02-03-01</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedRole('hod');
+                  setUsername('3001-01-03-01');
+                  setPassword('hod123');
+                }}
+                className="p-2 text-left bg-white hover:bg-indigo-50/60 border border-slate-200/90 rounded-xl text-indigo-800 flex items-center justify-between cursor-pointer transition shadow-2xs hover:border-indigo-300"
+              >
+                <span className="font-bold text-[10px]">[HOD-CSE]</span>
+                <span className="text-slate-500 text-[10px]">3001-01-03-01</span>
               </button>
               <button
                 type="button"

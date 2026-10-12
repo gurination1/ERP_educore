@@ -150,6 +150,8 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
       setActiveTab(urlTab);
     } else if (initialTab) {
       setActiveTab(initialTab);
+    } else {
+      setActiveTab('overview');
     }
   }, [urlTab, initialTab]);
 
@@ -479,6 +481,38 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
           </div>
         </div>
       )}
+
+      {/* HR Executive Command KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Faculty & Staff</span>
+          <div className="flex items-baseline gap-2 mt-1">
+            <span className="text-xl font-black text-[#00236f]">{staffList.length}</span>
+            <span className="text-[10px] text-emerald-600 font-semibold">{staffList.filter(s => s.employee_status === 'ACTIVE').length} Active</span>
+          </div>
+        </div>
+        <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Fresher vs Rejoiner</span>
+          <div className="flex items-baseline gap-2 mt-1">
+            <span className="text-xl font-black text-indigo-900">{staffList.filter(s => s.category === 'fresher').length}</span>
+            <span className="text-[10px] text-slate-500 font-medium">Freshers • {staffList.filter(s => s.category === 'rejoiner').length} Rejoiners</span>
+          </div>
+        </div>
+        <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Security Deposit Deductions</span>
+          <div className="flex items-baseline gap-2 mt-1">
+            <span className="text-xl font-black text-emerald-700">₹{((staffList.length * 15000) / 1000).toFixed(0)}k</span>
+            <span className="text-[10px] text-slate-500 font-medium">₹5,000/mo schedule</span>
+          </div>
+        </div>
+        <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Exit NOC Pipeline</span>
+          <div className="flex items-baseline gap-2 mt-1">
+            <span className="text-xl font-black text-amber-700">{staffList.filter(s => s.employee_status === 'RESIGNED').length}</span>
+            <span className="text-[10px] text-amber-800 font-medium">Clearance Pending</span>
+          </div>
+        </div>
+      </div>
 
       {/* Two Column Layout: Staff List on Left, Multi-Table Inspector on Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">

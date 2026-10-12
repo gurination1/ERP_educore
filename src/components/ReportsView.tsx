@@ -136,7 +136,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
             </h2>
             <p className="text-sm text-[#444651] mt-1">
               {isSuperAdmin
-                ? 'Real-time PostgreSQL 18.6 connection pool health, MariaDB dual-cluster mirror, and 5-domain database sharding'
+                ? 'Real-time PostgreSQL 18.6 connection pool health, MariaDB dual-cluster mirror, and 1-database-per-college architecture'
                 : 'Departmental enrollment verification, fee reconciliation, and statutory university compliance'}
             </p>
           </div>
@@ -149,7 +149,6 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
             disabled={isExporting}
             className="px-4 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer disabled:opacity-60"
           >
-            
             <span>{isExporting ? 'Generating CSV...' : 'Export Master Data (CSV)'}</span>
           </button>
         )}
@@ -158,7 +157,6 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
       {/* Export feedback toast */}
       {exportMessage && (
         <div className="p-3.5 bg-[#ffedd5] border border-[#ea580c] text-[#00236f] rounded-xl text-xs font-bold flex items-center gap-2">
-          
           <span>{exportMessage}</span>
         </div>
       )}
@@ -166,44 +164,55 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
       {/* Navigation Tabs */}
       <div className="flex border-b border-slate-200 gap-4">
         {isSuperAdmin ? (
-          <button
-            onClick={() => setActiveTab('platform_telemetry')}
-            className={`pb-3 px-2 text-xs font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
-              activeTab === 'platform_telemetry'
-                ? 'border-[#00236f] text-[#00236f]'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <span>PLATFORM INFRASTRUCTURE & DB TELEMETRY</span>
-            <span className="px-1.5 py-0.5 text-[10px] bg-emerald-100 text-emerald-800 rounded-full font-extrabold">
-              99.98% SLA
-            </span>
-          </button>
+          <>
+            <button
+              onClick={() => setActiveTab('platform_telemetry')}
+              className={`pb-3 px-2 text-xs font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
+                activeTab === 'platform_telemetry'
+                  ? 'border-[#00236f] text-[#00236f]'
+                  : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <span>PLATFORM INFRASTRUCTURE & 1-DB-PER-COLLEGE TELEMETRY</span>
+              <span className="px-1.5 py-0.5 text-[10px] bg-emerald-100 text-emerald-800 rounded-full font-extrabold">
+                99.98% SLA
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveTab('financial')}
+              className={`pb-3 px-2 text-xs font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
+                activeTab === 'financial'
+                  ? 'border-[#00236f] text-[#00236f]'
+                  : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <span>CROSS-CAMPUS REVENUE & GLOBAL SCHOLAR CENSUS</span>
+            </button>
+          </>
         ) : (
-          <button
-            onClick={() => setActiveTab('academic_workload')}
-            className={`pb-3 px-2 text-xs font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
-              activeTab === 'academic_workload'
-                ? 'border-[#00236f] text-[#00236f]'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <span>ACADEMIC TOPOLOGY & WORKLOAD AUDIT</span>
-            <span className="px-1.5 py-0.5 text-[10px] bg-indigo-100 text-indigo-700 rounded-full font-extrabold">
-              LECTURE 3
-            </span>
-          </button>
+          <>
+            <button
+              onClick={() => setActiveTab('academic_workload')}
+              className={`pb-3 px-2 text-xs font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
+                activeTab === 'academic_workload'
+                  ? 'border-[#00236f] text-[#00236f]'
+                  : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <span>ACADEMIC TOPOLOGY & WORKLOAD AUDIT</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('financial')}
+              className={`pb-3 px-2 text-xs font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
+                activeTab === 'financial'
+                  ? 'border-[#00236f] text-[#00236f]'
+                  : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <span>FINANCIAL REVENUE & ENROLLMENT LEDGER</span>
+            </button>
+          </>
         )}
-        <button
-          onClick={() => setActiveTab('financial')}
-          className={`pb-3 px-2 text-xs font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
-            activeTab === 'financial'
-              ? 'border-[#00236f] text-[#00236f]'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
-          }`}
-        >
-          <span>{isSuperAdmin ? 'TENANT REVENUE & ENROLLMENT METRICS' : 'FINANCIAL REVENUE & ENROLLMENT LEDGER'}</span>
-        </button>
       </div>
 
       {activeTab === 'platform_telemetry' ? (
@@ -236,13 +245,13 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
 
             <div className="p-5 bg-white rounded-xl border border-slate-200 shadow-xs">
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-                5-DOMAIN SHARDED DBS
+                1 DB PER COLLEGE
               </span>
               <p className="text-2xl font-extrabold text-slate-800 mt-1">
-                5 Isolated Partitions
+                {telemetryData?.domains?.length || 4} Dedicated DBs
               </p>
               <span className="text-xs text-emerald-600 font-semibold mt-1 block">
-                100% Structural Sharding
+                100% Isolated Tenant Schemas
               </span>
             </div>
 
@@ -259,21 +268,21 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
             </div>
           </div>
 
-          {/* 5-Domain Databases Partition Breakdown */}
+          {/* Tenant-Isolated Database Instances Breakdown (1 DB Per College) */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
             <div className="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <h3 className="text-base font-bold text-slate-900">
-                  5-Domain Isolated Database Partition Status (Lecture 3 & Architectural Blueprint)
+                  Collegiate Database Catalog (1 Dedicated DB Per College)
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Decoupled domain storage partitions preventing connection starvation and cascading failures under peak pressure
+                  Tenant-isolated relational schemas guaranteeing data segregation, zero cross-college leakage, and dedicated tablespaces
                 </p>
               </div>
               <div className="flex items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
                   <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-                  All 5 Domains Synced
+                  {telemetryData?.domains?.length || 4} Isolated Databases Active
                 </span>
               </div>
             </div>
@@ -281,19 +290,24 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
               <table className="w-full text-left text-xs border-collapse">
                 <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider text-[10px] font-bold border-b border-slate-200">
                   <tr>
-                    <th className="p-3.5">Database Partition</th>
+                    <th className="p-3.5">Institution / Campus</th>
+                    <th className="p-3.5">Dedicated Database</th>
                     <th className="p-3.5">Core Schema Tables</th>
                     <th className="p-3.5 text-center">Records Ingested</th>
                     <th className="p-3.5 text-center">Storage Size</th>
-                    <th className="p-3.5 text-center">Replication Lag</th>
-                    <th className="p-3.5 text-center">Partition Health</th>
+                    <th className="p-3.5 text-center">Database Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {telemetryData?.domains?.map((dom: any) => (
                     <tr key={dom.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="p-3.5 font-bold text-slate-900">
-                        {dom.name}
+                      <td className="p-3.5">
+                        <strong className="text-slate-900 font-bold block">{dom.name}</strong>
+                        <span className="text-[10px] text-slate-400 font-mono">ID: {dom.collegeId || dom.id}</span>
+                      </td>
+                      <td className="p-3.5 font-mono text-[#00236f] font-bold">
+                        {dom.dbName || dom.id}
+                        <span className="block text-[10px] text-slate-400 font-normal">{dom.engine || 'PostgreSQL 18.6'}</span>
                       </td>
                       <td className="p-3.5">
                         <div className="flex flex-wrap gap-1">
@@ -309,9 +323,6 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
                       </td>
                       <td className="p-3.5 text-center font-bold text-slate-700">
                         {dom.storageMb} MB
-                      </td>
-                      <td className="p-3.5 text-center font-mono text-emerald-600 font-bold">
-                        {dom.replicationLagMs} ms
                       </td>
                       <td className="p-3.5 text-center">
                         <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-bold rounded text-[10px]">
@@ -387,7 +398,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
             </div>
           </div>
         </div>
-      ) : activeTab === 'academic_workload' ? (
+      ) : (!isSuperAdmin && activeTab === 'academic_workload') ? (
         <div className="space-y-6">
           {/* Lecture 3 Academic KPI Highlights */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
