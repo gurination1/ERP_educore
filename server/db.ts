@@ -3786,7 +3786,7 @@ class DatabaseStore {
 
     for (const sa of demoStaffAccounts) {
       await this.mariaPool.query(
-        'INSERT INTO users (id, username, email, password_hash, role, full_name, is_active, department, designation, employee_id, enterprise_uid, created_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE username = VALUES(username), password_hash = VALUES(password_hash), role = VALUES(role), full_name = VALUES(full_name), department = VALUES(department), designation = VALUES(designation), employee_id = VALUES(employee_id), enterprise_uid = VALUES(enterprise_uid)',
+        'INSERT INTO users (id, username, email, password_hash, role, full_name, is_active, department, designation, employee_id, enterprise_uid, created_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE is_active = 1, username = VALUES(username), password_hash = VALUES(password_hash), role = VALUES(role), full_name = VALUES(full_name), department = VALUES(department), designation = VALUES(designation), employee_id = VALUES(employee_id), enterprise_uid = VALUES(enterprise_uid)',
         [sa.id, sa.username, sa.email, sa.hash, sa.role, sa.full_name, sa.department, sa.designation, sa.employee_id, sa.enterprise_uid]
       );
     }
