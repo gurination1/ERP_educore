@@ -5,9 +5,10 @@ import { AuditLogItem } from '../types';
 interface AuditTrailModalProps {
   isOpen: boolean;
   onClose: () => void;
+  isEmbeddedView?: boolean;
 }
 
-export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClose }) => {
+export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClose, isEmbeddedView = false }) => {
   const [logs, setLogs] = useState<AuditLogItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState('');
@@ -55,29 +56,30 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
     return true;
   });
 
-  return (
-    <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-      <div className="bg-white rounded-2xl max-w-5xl w-full h-[85vh] shadow-2xl border border-[#e1e3e4] flex flex-col overflow-hidden animate-scaleUp">
-        {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#f8f9fa] flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-[#191c1d]">Universal Immutable Audit Trail</h3>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                APPEND-ONLY ENCRYPTED
-              </span>
-            </div>
-            <p className="text-xs text-[#757682]">
-              Every action by Super Admin, Registrar, Faculty, and Accounts immutably logged with actor UID, IP, and diff.
-            </p>
+  const content = (
+    <div className={`bg-white rounded-2xl w-full ${isEmbeddedView ? 'min-h-[75vh] border border-slate-200/90 shadow-sm' : 'max-w-5xl h-[85vh] shadow-2xl border border-[#e1e3e4]'} animate-scaleUp flex flex-col overflow-hidden`}>
+      {/* Modal Header */}
+      <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#f8f9fa] flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <h3 className="text-base font-bold text-[#191c1d]">Universal Immutable Audit Trail</h3>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+              APPEND-ONLY ENCRYPTED
+            </span>
           </div>
+          <p className="text-xs text-[#757682]">
+            Every action by Super Admin, Registrar, Faculty, and Accounts immutably logged with actor UID, IP, and diff.
+          </p>
+        </div>
+        {!isEmbeddedView && (
           <button
             onClick={onClose}
             className="w-8 h-8 rounded-lg flex items-center justify-center text-[#757682] hover:bg-[#e1e3e4] hover:text-[#191c1d] transition-all cursor-pointer"
           >
             <span className="font-bold text-[10px]">✕</span>
           </button>
-        </div>
+        )}
+      </div>
 
         {/* Filter bar */}
         <div className="px-6 py-3 border-b border-[#e1e3e4] bg-white flex flex-wrap items-center justify-between gap-3 text-xs">
@@ -266,6 +268,15 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
           <span>Standards: University Statutory Security Ordinance & Punjab IT Act compliance</span>
         </div>
       </div>
+  );
+
+  if (isEmbeddedView) {
+    return content;
+  }
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+      {content}
     </div>
   );
 };

@@ -285,12 +285,24 @@ export const api = {
 
   // Enterprise Multi-Table Staff Management & Org Journey
   getStaff: (params: Record<string, any> = {}) => {
-    const query = new URLSearchParams(params).toString();
-    return apiRequest(`/api/staff?${query}`);
+    const cleanParams: Record<string, string> = {};
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '' && v !== 'undefined' && v !== 'all') {
+        cleanParams[k] = String(v);
+      }
+    });
+    const query = new URLSearchParams(cleanParams).toString();
+    return apiRequest(query ? `/api/staff?${query}` : '/api/staff');
   },
   getStaffList: (params: Record<string, any> = {}) => {
-    const query = new URLSearchParams(params).toString();
-    return apiRequest(`/api/staff?${query}`);
+    const cleanParams: Record<string, string> = {};
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '' && v !== 'undefined' && v !== 'all') {
+        cleanParams[k] = String(v);
+      }
+    });
+    const query = new URLSearchParams(cleanParams).toString();
+    return apiRequest(query ? `/api/staff?${query}` : '/api/staff');
   },
   getStaffProfile: (staffId: string) => apiRequest(`/api/staff/${staffId}`),
   createStaff: (payload: any) =>

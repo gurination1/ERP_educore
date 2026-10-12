@@ -199,20 +199,6 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={onOpenMasterTables}
-            className="h-8 px-3 bg-white border border-slate-200/90 hover:border-slate-300 text-slate-700 rounded-lg font-semibold text-xs shadow-2xs hover:bg-slate-50 transition"
-          >
-            🏛️ Statutory Masters
-          </button>
-          <button
-            type="button"
-            onClick={onOpenAuditLogs}
-            className="h-8 px-3 bg-white border border-slate-200/90 hover:border-slate-300 text-slate-700 rounded-lg font-semibold text-xs shadow-2xs hover:bg-slate-50 transition"
-          >
-            🔐 Cryptographic Forensics
-          </button>
-          <button
-            type="button"
             onClick={() => setIsAddModalOpen(true)}
             className="h-8 px-3.5 bg-[#00236f] hover:bg-[#001b54] text-white font-bold text-xs rounded-lg shadow-sm transition flex items-center gap-1.5 cursor-pointer"
           >

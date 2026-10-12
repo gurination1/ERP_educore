@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { User } from '../types';
 import { api } from '../api/client';
 
+export type StaffTab = 'overview' | 'payroll' | 'exit-noc' | 'addresses' | 'banks' | 'qualifications' | 'experience' | 'journey' | 'additional-roles';
+
 interface StaffManagementViewProps {
   currentUser: User | null;
+  initialTab?: StaffTab;
 }
 
-export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ currentUser }) => {
+export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ currentUser, initialTab }) => {
+  const [searchParams] = useSearchParams();
+  const urlTab = searchParams.get('tab') as StaffTab | null;
   const [staffList, setStaffList] = useState<any[]>([]);
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
   const [staffProfile, setStaffProfile] = useState<any | null>(null);
@@ -17,7 +23,7 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'fresher' | 'rejoiner'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'overview' | 'payroll' | 'exit-noc' | 'addresses' | 'banks' | 'qualifications' | 'experience' | 'journey' | 'additional-roles'>('overview');
+  const [activeTab, setActiveTab] = useState<StaffTab>(urlTab || initialTab || 'overview');
 
   // Designation Transition Modal (Lecture 3 & Recording 160)
   const [showDesignationModal, setShowDesignationModal] = useState(false);
@@ -138,6 +144,14 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
   useEffect(() => {
     fetchStaff();
   }, [departmentFilter, statusFilter]);
+
+  useEffect(() => {
+    if (urlTab) {
+      setActiveTab(urlTab);
+    } else if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [urlTab, initialTab]);
 
   useEffect(() => {
     if (selectedStaffId) {

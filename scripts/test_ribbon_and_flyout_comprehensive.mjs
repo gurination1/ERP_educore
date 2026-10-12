@@ -12,12 +12,13 @@ import puppeteer from 'puppeteer-core';
   page.on('console', msg => console.log('PAGE LOG:', msg.text()));
   page.on('pageerror', err => console.log('PAGE ERROR:', err.message));
 
-  await page.goto('http://127.0.0.1:3015/admin', { waitUntil: 'networkidle2' });
+  const baseUrl = process.env.BASE_URL || 'http://127.0.0.1:3016';
+  await page.goto(`${baseUrl}/admin`, { waitUntil: 'networkidle2' });
   await page.evaluate(() => {
     localStorage.clear();
     sessionStorage.clear();
   });
-  await page.goto('http://127.0.0.1:3015/admin', { waitUntil: 'networkidle2' });
+  await page.goto(`${baseUrl}/admin`, { waitUntil: 'networkidle2' });
 
   await page.waitForSelector('#login-username-input', { timeout: 10000 });
   await page.type('#login-username-input', '9001-01-03-01');
@@ -28,6 +29,11 @@ import puppeteer from 'puppeteer-core';
   await new Promise(r => setTimeout(r, 1000));
 
   async function closeModal() {
+    if (page.url().includes('/master-architecture') || page.url().includes('/audit-logs')) {
+      await page.goto(`${baseUrl}/dashboard`, { waitUntil: 'networkidle2' });
+      await new Promise(r => setTimeout(r, 600));
+      return;
+    }
     await page.evaluate(() => {
       const closeBtns = Array.from(document.querySelectorAll('.animate-scaleUp button'));
       const closeBtn = closeBtns.find(b => b.innerText.trim() === '✕');

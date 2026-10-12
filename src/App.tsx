@@ -134,6 +134,13 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
         return 'payment-gateways';
       case '/field-permissions':
         return 'field-permissions';
+      case '/master-architecture':
+        return 'master-architecture' as any;
+      case '/audit-logs':
+      case '/forensics':
+        return 'audit-logs' as any;
+      case '/telemetry':
+        return 'telemetry' as any;
       case '/dashboard':
       default:
         return currentUser?.role === 'super_admin'
@@ -152,13 +159,16 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
     }
   };
 
-  const handleNavigate = (screen: ActiveScreen) => {
-    if (screen === 'fee-ledger') {
+  const handleNavigate = (screen: any) => {
+    const screenStr = String(screen);
+    if (screenStr === 'fee-ledger') {
       navigate('/fees');
-    } else if (screen === 'student-dashboard' || screen === 'admin-dashboard' || screen === 'super-admin-dashboard' || screen === 'staff-dashboard') {
+    } else if (screenStr === 'student-dashboard' || screenStr === 'admin-dashboard' || screenStr === 'super-admin-dashboard' || screenStr === 'staff-dashboard') {
       navigate('/dashboard');
+    } else if (screenStr.startsWith('/')) {
+      navigate(screenStr);
     } else {
-      navigate(`/${screen}`);
+      navigate(`/${screenStr}`);
     }
   };
 
@@ -237,13 +247,20 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
         return { category: 'Admissions & CRM', title: 'Admissions CRM & Inquiries Pipeline' };
       case '/examination':
       case '/examination-portal':
-        return { category: 'Academics & Examination', title: 'University Examination & Gate Clearance Portal' };
+        return { category: 'Academics & Exams', title: 'University Examination & Gate Clearance Portal' };
       case '/tenants':
-        return { category: 'Super Admin Architecture', title: 'Multi-Tenant Campuses & Provisioning' };
+        return { category: 'Tenants & Campuses', title: 'Multi-Tenant Institutions & Subdomains' };
       case '/payment-gateways':
         return { category: 'Finance & Accounts', title: 'Payment Gateways & Current Accounts' };
       case '/field-permissions':
-        return { category: 'Administration & RBAC', title: 'Field-Level Permissions Matrix' };
+        return { category: 'Universal Access & RBAC', title: 'Field-Level Permissions Matrix' };
+      case '/master-architecture':
+        return { category: 'Master Architecture', title: 'Tenant-Agnostic Master Relational System' };
+      case '/audit-logs':
+      case '/forensics':
+        return { category: 'Cryptographic Forensics', title: 'Universal Immutable Audit Trail' };
+      case '/telemetry':
+        return { category: 'Database & Telemetry', title: 'High-Throughput PostgreSQL & MariaDB Health' };
       default:
         return { category: 'Portal', title: 'Console Module' };
     }
@@ -272,22 +289,10 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
       />
 
       <main className="flex-1 min-w-0 w-full max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4 pb-12">
-        {/* Cupertino Breadcrumb & Universal Back Ribbon */}
+        {/* Cupertino Breadcrumb Ribbon (Clean single-back navigation) */}
         {canGoBack && (
-          <nav aria-label="Breadcrumb Navigation" className="mb-3.5 flex flex-wrap items-center justify-between gap-2.5 px-4 py-2.5 bg-white/85 backdrop-blur-xl border border-slate-200/80 rounded-2xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] text-xs text-slate-600">
+          <nav aria-label="Breadcrumb Navigation" className="mb-3.5 flex flex-wrap items-center justify-between gap-2.5 px-4 py-2 bg-white/85 backdrop-blur-xl border border-slate-200/80 rounded-2xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] text-xs text-slate-600">
             <div className="flex items-center gap-2 flex-wrap min-w-0">
-              {/* Apple-grade Back Pill */}
-              <button
-                type="button"
-                onClick={handleGoBack}
-                title="Return to previous screen (Alt + ←)"
-                className="h-7 px-3 bg-slate-100 hover:bg-slate-200/90 active:bg-slate-300 text-slate-800 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs hover:shadow-xs group border border-slate-200/80 mr-1 shrink-0"
-              >
-                <span className="text-sm font-black text-[#00236f] group-hover:-translate-x-0.5 transition-transform leading-none">‹</span>
-                <span>Back</span>
-                <span className="hidden md:inline text-[10px] text-slate-400 font-mono ml-0.5">Alt+‹</span>
-              </button>
-
               {/* Breadcrumb Steps */}
               <button
                 type="button"
@@ -312,9 +317,15 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
 
             {/* Right Institutional Pill */}
             <div className="hidden sm:flex items-center gap-2 shrink-0 text-xs">
-              <span className="font-semibold text-[#00236f] bg-blue-50/90 px-2.5 py-0.5 rounded-full border border-blue-100">
-                PUP Patiala • MRSPTU • PU Affiliated
-              </span>
+              {currentUser?.role === 'super_admin' ? (
+                <span className="font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                  Global Multi-Tenant Cloud Root
+                </span>
+              ) : (
+                <span className="font-semibold text-[#00236f] bg-blue-50/90 px-2.5 py-0.5 rounded-full border border-blue-100">
+                  PUP Patiala • MRSPTU • PU Affiliated
+                </span>
+              )}
             </div>
           </nav>
         )}
@@ -822,6 +833,90 @@ function MainApp() {
               </AuthenticatedLayout>
             )
           }
+        />
+
+        <Route
+          path="/telemetry"
+          element={
+            !currentUser ? (
+              <Navigate to="/" replace />
+            ) : !['admin', 'super_admin'].includes(currentUser.role) ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <AuthenticatedLayout
+                currentUser={currentUser}
+                onLogout={handleLogout}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                onOpenMasterTables={handleOpenMasterTables}
+                onOpenAuditLogs={handleOpenAuditLogs}
+              >
+                <ReportsView currentUser={currentUser} />
+              </AuthenticatedLayout>
+            )
+          }
+        />
+
+        <Route
+          path="/master-architecture"
+          element={
+            !currentUser ? (
+              <Navigate to="/admin" replace />
+            ) : !['admin', 'super_admin'].includes(currentUser.role) ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <AuthenticatedLayout
+                currentUser={currentUser}
+                onLogout={handleLogout}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                onOpenMasterTables={handleOpenMasterTables}
+                onOpenAuditLogs={handleOpenAuditLogs}
+              >
+                <div className="w-full">
+                  <MasterTablesModal
+                    isOpen={true}
+                    initialTab={masterTablesTab}
+                    onClose={() => navigate('/dashboard')}
+                    isEmbeddedView={true}
+                  />
+                </div>
+              </AuthenticatedLayout>
+            )
+          }
+        />
+
+        <Route
+          path="/audit-logs"
+          element={
+            !currentUser ? (
+              <Navigate to="/admin" replace />
+            ) : !['admin', 'super_admin'].includes(currentUser.role) ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <AuthenticatedLayout
+                currentUser={currentUser}
+                onLogout={handleLogout}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                onOpenMasterTables={handleOpenMasterTables}
+                onOpenAuditLogs={handleOpenAuditLogs}
+              >
+                <div className="w-full">
+                  <AuditTrailModal
+                    isOpen={true}
+                    onClose={() => navigate('/dashboard')}
+                    isEmbeddedView={true}
+                  />
+                </div>
+              </AuthenticatedLayout>
+            )
+          }
+        />
+
+        <Route
+          path="/forensics"
+          element={<Navigate to="/audit-logs" replace />}
         />
 
         <Route

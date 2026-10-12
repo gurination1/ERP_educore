@@ -197,45 +197,50 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'architecture',
         label: 'Master Architecture',
-        defaultScreen: 'admin-dashboard',
+        defaultScreen: 'master-architecture' as any,
         action: () => {
           if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
           setOpenDrawer(null);
-          if (onOpenMasterTables) onOpenMasterTables('states');
+          onNavigate('master-architecture' as any);
         },
         items: [
-          { id: 'master-gst' as any, label: 'State GST Codes (GST-01 to 37)', action: () => onOpenMasterTables?.('states') },
-          { id: 'master-types' as any, label: 'Enterprise User Type Codes (1001-9001)', action: () => onOpenMasterTables?.('userTypes') },
-          { id: 'master-degrees' as any, label: 'Approved Degrees (AICTE / UGC / PCI)', action: () => onOpenMasterTables?.('degrees') },
-          { id: 'master-docs' as any, label: 'Statutory Document Types & MIME Rules', action: () => onOpenMasterTables?.('documents') },
+          { id: 'master-gst' as any, label: 'State GST Codes (GST-01 to 37)', action: () => { onOpenMasterTables?.('states'); setOpenDrawer(null); } },
+          { id: 'master-types' as any, label: 'Enterprise User Type Codes (1001-9001)', action: () => { onOpenMasterTables?.('userTypes'); setOpenDrawer(null); } },
+          { id: 'master-degrees' as any, label: 'Approved Degrees (AICTE / UGC / PCI)', action: () => { onOpenMasterTables?.('degrees'); setOpenDrawer(null); } },
+          { id: 'master-docs' as any, label: 'Statutory Document Types & MIME Rules', action: () => { onOpenMasterTables?.('documents'); setOpenDrawer(null); } },
         ],
-        isActive: false,
+        isActive: activeScreen === ('master-architecture' as any),
       },
       {
         id: 'audit',
         label: 'Cryptographic Forensics',
-        defaultScreen: 'admin-dashboard',
+        defaultScreen: 'audit-logs' as any,
         action: () => {
           if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
           setOpenDrawer(null);
-          if (onOpenAuditLogs) onOpenAuditLogs();
+          onNavigate('audit-logs' as any);
         },
         items: [
-          { id: 'audit-stream' as any, label: 'Immutable Audit Log Stream', action: onOpenAuditLogs },
-          { id: 'audit-forensics' as any, label: 'Security & Actor Difference Forensics', action: onOpenAuditLogs },
+          { id: 'audit-stream' as any, label: 'Immutable Audit Log Stream', action: () => { onOpenAuditLogs?.(); setOpenDrawer(null); } },
+          { id: 'audit-forensics' as any, label: 'Security & Actor Difference Forensics', action: () => { onOpenAuditLogs?.(); setOpenDrawer(null); } },
         ],
-        isActive: false,
+        isActive: activeScreen === ('audit-logs' as any),
       },
       {
         id: 'telemetry',
         label: 'Database & Telemetry',
-        defaultScreen: 'reports',
+        defaultScreen: 'telemetry' as any,
+        action: () => {
+          if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+          setOpenDrawer(null);
+          onNavigate('telemetry' as any);
+        },
         items: [
-          { id: 'reports' as ActiveScreen, label: 'High-Throughput PostgreSQL DB Telemetry' },
-          { id: 'reports' as ActiveScreen, label: 'Cloud MariaDB Dual-Pool Health' },
-          { id: 'reports' as ActiveScreen, label: 'Platform Performance Metrics' },
+          { id: 'telemetry' as any, label: 'High-Throughput PostgreSQL DB Telemetry', action: () => { onNavigate('telemetry' as any); setOpenDrawer(null); } },
+          { id: 'telemetry' as any, label: 'Cloud MariaDB Dual-Pool Health', action: () => { onNavigate('telemetry' as any); setOpenDrawer(null); } },
+          { id: 'telemetry' as any, label: 'Platform Performance Metrics', action: () => { onNavigate('telemetry' as any); setOpenDrawer(null); } },
         ],
-        isActive: activeScreen === 'reports',
+        isActive: activeScreen === ('telemetry' as any) || activeScreen === 'reports',
       },
     ];
   } else if (isAdmin) {
@@ -344,31 +349,43 @@ export const Header: React.FC<HeaderProps> = ({
         id: 'roster',
         label: 'Faculty & Staff Roster',
         defaultScreen: 'staff-management',
+        action: () => {
+          onNavigate('staff-management');
+          setOpenDrawer(null);
+        },
         items: [
-          { id: 'staff-management' as ActiveScreen, label: 'Faculty & Non-Teaching Master Roster' },
-          { id: 'staff-management' as ActiveScreen, label: 'HR Onboarding & Bank Verification' },
-          { id: 'staff-management' as ActiveScreen, label: 'Security Deduction Schedule & Balance' },
+          { id: 'staff-management' as ActiveScreen, label: 'Faculty & Non-Teaching Master Roster', action: () => { onNavigate('staff-management'); setOpenDrawer(null); } },
+          { id: 'staff-management' as ActiveScreen, label: 'HR Onboarding & Bank Verification', action: () => { onNavigate('staff-management'); setOpenDrawer(null); } },
+          { id: 'staff-management' as ActiveScreen, label: 'Security Deduction Schedule & Balance', action: () => { onNavigate('staff-management?tab=payroll' as any); setOpenDrawer(null); } },
         ],
         isActive: activeScreen === 'staff-management',
       },
       {
         id: 'lifecycle',
         label: 'Status & Lifecycle',
-        defaultScreen: 'staff-management',
+        defaultScreen: 'staff-management?tab=journey' as any,
+        action: () => {
+          onNavigate('staff-management?tab=journey' as any);
+          setOpenDrawer(null);
+        },
         items: [
-          { id: 'staff-management' as ActiveScreen, label: 'Active / Resigned / Terminated / AWOL' },
-          { id: 'staff-management' as ActiveScreen, label: 'Approaching Last Working Day Radar' },
-          { id: 'staff-management' as ActiveScreen, label: 'Fresher vs Rejoiner Tracking' },
-          { id: 'staff-management' as ActiveScreen, label: 'Multi-Role & Designation Transitions' },
+          { id: 'staff-management' as ActiveScreen, label: 'Active / Resigned / Terminated / AWOL', action: () => { onNavigate('staff-management'); setOpenDrawer(null); } },
+          { id: 'staff-management' as ActiveScreen, label: 'Approaching Last Working Day Radar', action: () => { onNavigate('staff-management'); setOpenDrawer(null); } },
+          { id: 'staff-management' as ActiveScreen, label: 'Fresher vs Rejoiner Tracking', action: () => { onNavigate('staff-management'); setOpenDrawer(null); } },
+          { id: 'staff-management' as ActiveScreen, label: 'Multi-Role & Designation Transitions', action: () => { onNavigate('staff-management?tab=journey' as any); setOpenDrawer(null); } },
         ],
-        isActive: activeScreen === 'staff-management',
+        isActive: false,
       },
       {
         id: 'dossier',
         label: 'Staff Dossier & Docs',
         defaultScreen: 'teacher-documents',
+        action: () => {
+          onNavigate('teacher-documents');
+          setOpenDrawer(null);
+        },
         items: [
-          { id: 'teacher-documents' as ActiveScreen, label: 'Statutory Credentials & Document Vault' },
+          { id: 'teacher-documents' as ActiveScreen, label: 'Statutory Credentials & Document Vault', action: () => { onNavigate('teacher-documents'); setOpenDrawer(null); } },
           { id: 'staff-academic-journey' as any, label: 'Organizational Journey & Experience Logs', action: onOpenStaffJourney },
         ],
         isActive: activeScreen === 'teacher-documents',
@@ -376,12 +393,16 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'exit-noc',
         label: 'Exit NOC & Clearances',
-        defaultScreen: 'staff-management',
+        defaultScreen: 'staff-management?tab=exit-noc' as any,
+        action: () => {
+          onNavigate('staff-management?tab=exit-noc' as any);
+          setOpenDrawer(null);
+        },
         items: [
-          { id: 'staff-management' as ActiveScreen, label: '5-Department Digital Exit NOC' },
-          { id: 'staff-management' as ActiveScreen, label: 'Caution Deposit Refund & Lock' },
+          { id: 'staff-management' as ActiveScreen, label: '5-Department Digital Exit NOC', action: () => { onNavigate('staff-management?tab=exit-noc' as any); setOpenDrawer(null); } },
+          { id: 'staff-management' as ActiveScreen, label: 'Caution Deposit Refund & Lock', action: () => { onNavigate('staff-management?tab=exit-noc' as any); setOpenDrawer(null); } },
         ],
-        isActive: activeScreen === 'staff-management',
+        isActive: false,
       },
       {
         id: 'grievances',
@@ -760,31 +781,59 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="bg-[#00236f]/95 backdrop-blur-2xl text-white px-3 sm:px-6 py-2 border-b border-white/10 flex flex-nowrap items-center justify-between gap-3 text-xs overflow-x-auto no-scrollbar">
         {/* Left: Crest + Bilingual Institution Typography + Campus Cluster Indicator */}
         <div className="flex items-center gap-2.5 shrink-0">
-          <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md border border-white/20 ring-1 ring-white/10 flex items-center justify-center text-amber-300 font-black text-[11px] shadow-sm">
-            BFGI
-          </div>
-          <button
-            type="button"
-            onClick={() => onNavigate(dashboardTarget)}
-            className="flex flex-col text-left group cursor-pointer focus:outline-none"
-          >
-            <span className="text-[10px] sm:text-[11px] font-semibold text-amber-300/95 tracking-wide leading-tight">
-              ਬਾਬਾ ਫ਼ਰੀਦ ਗਰੁੱਪ ਆਫ਼ ਇੰਸਟੀਚਿਊਟਸ (ਬਠਿੰਡਾ, ਪੰਜਾਬ)
-            </span>
-            <span className="font-extrabold text-xs sm:text-sm tracking-tight text-white uppercase leading-tight mt-0.5">
-              BABA FARID GROUP OF INSTITUTIONS
-            </span>
-            <span className="text-[9px] sm:text-[10px] font-medium text-slate-300/80 leading-tight hidden sm:inline">
-              Autonomous Campus ERP • PUP Patiala • MRSPTU • PU Affiliated
-            </span>
-          </button>
-
-          {/* Campus Cluster Node Pill */}
-          <div className="hidden 2xl:flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/15 text-[11px] text-slate-200 ml-2 select-none shadow-inner shrink-0">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-            <span className="text-amber-300 font-bold">Campus 01:</span>
-            <span className="text-white font-medium">Bathinda Main • Engg & Mgmt</span>
-          </div>
+          {isSuperAdmin ? (
+            <>
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-indigo-600 flex items-center justify-center text-white font-black text-xs shadow-md ring-1 ring-white/20">
+                EDU
+              </div>
+              <button
+                type="button"
+                onClick={() => onNavigate('super-admin-dashboard')}
+                className="flex flex-col text-left group cursor-pointer focus:outline-none"
+              >
+                <span className="text-[10px] sm:text-[11px] font-semibold text-amber-300/95 tracking-wide leading-tight">
+                  SaaS Multi-Tenant Cloud Platform
+                </span>
+                <span className="font-extrabold text-xs sm:text-sm tracking-tight text-white uppercase leading-tight mt-0.5">
+                  EDUCORE PLATFORM ORCHESTRATOR
+                </span>
+                <span className="text-[9px] sm:text-[10px] font-medium text-slate-300/80 leading-tight hidden sm:inline">
+                  Multi-Tenant Collegiate Infrastructure • PostgreSQL 18.6 & MariaDB
+                </span>
+              </button>
+              <div className="hidden 2xl:flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/15 text-[11px] text-slate-200 ml-2 select-none shadow-inner shrink-0">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <span className="text-amber-300 font-bold">Apex Cloud:</span>
+                <span className="text-white font-medium">Global Multi-Tenant Root</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md border border-white/20 ring-1 ring-white/10 flex items-center justify-center text-amber-300 font-black text-[11px] shadow-sm">
+                BFGI
+              </div>
+              <button
+                type="button"
+                onClick={() => onNavigate(dashboardTarget)}
+                className="flex flex-col text-left group cursor-pointer focus:outline-none"
+              >
+                <span className="text-[10px] sm:text-[11px] font-semibold text-amber-300/95 tracking-wide leading-tight">
+                  ਬਾਬਾ ਫ਼ਰੀਦ ਗਰੁੱਪ ਆਫ਼ ਇੰਸਟੀਚਿਊਟਸ (ਬਠਿੰਡਾ, ਪੰਜਾਬ)
+                </span>
+                <span className="font-extrabold text-xs sm:text-sm tracking-tight text-white uppercase leading-tight mt-0.5">
+                  BABA FARID GROUP OF INSTITUTIONS
+                </span>
+                <span className="text-[9px] sm:text-[10px] font-medium text-slate-300/80 leading-tight hidden sm:inline">
+                  Autonomous Campus ERP • PUP Patiala • MRSPTU • PU Affiliated
+                </span>
+              </button>
+              <div className="hidden 2xl:flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/15 text-[11px] text-slate-200 ml-2 select-none shadow-inner shrink-0">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <span className="text-amber-300 font-bold">Campus 01:</span>
+                <span className="text-white font-medium">Bathinda Main • Engg & Mgmt</span>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Right: Operational Controls, Canonical Digit UID & Utilities */}
@@ -1028,62 +1077,19 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Right: Sleek Text-Only Session & Multi-University Accreditation Strip (Zero Boxes, Zero Icons) */}
-          <div className="hidden lg:flex items-center gap-3 text-xs text-slate-500 font-medium select-none shrink-0 pr-2">
-            <span className="text-slate-400">Session: <strong className="text-[#00236f] font-semibold">AY 2026-27</strong> (Sem 4/6/8)</span>
-            <span className="text-slate-300">|</span>
-            <span className="text-slate-600 font-semibold tracking-tight">PUP Patiala • MRSPTU • PU Affiliated</span>
-          </div>
-        </div>
-      </div>
-
-      {/* SUB-TIER: Razor-Sharp Campus Bulletin Notice Ticker (Height: 24px) - Strictly Tripartite Affiliated */}
-      <div className="bg-[#001744] text-slate-200 h-6 flex items-center px-3 sm:px-6 text-xs border-b border-white/5">
-        <div className="max-w-7xl w-full mx-auto flex items-center justify-between gap-3 overflow-hidden">
-          {/* Alert Tag */}
-          <div className="flex items-center gap-1 shrink-0 z-10 pr-2">
-            <span className="bg-[#ea580c] text-white font-extrabold text-[9px] uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-xs">
-              CAMPUS BULLETIN
-            </span>
-          </div>
-
-          {/* Marquee Track with Hover Pause */}
-          <div className="flex-1 overflow-hidden relative">
-            <div className="campus-ticker-track text-slate-200 text-xs">
-              <span className="mx-6 text-amber-300 font-semibold">
-                ★ Multi-University Affiliated (Punjabi University Patiala • MRSPTU • Panjab University)
-              </span>
-              <span className="mx-6 text-slate-200">
-                • University Examination Schedule & Sessional Datesheets Active • Check Examination Portal
-              </span>
-              <span className="mx-6 text-slate-200">
-                • Mandatory 75% Attendance Threshold Required for Examination Hall Ticket Generation
-              </span>
-              <span className="mx-6 text-emerald-300 font-semibold">
-                • Campus Placement Drives with Tier-1 Partners Active for 2026 Batch
-              </span>
-              <span className="mx-6 text-slate-200">
-                • Semester Tuition Fee Reconciliation & Exam Clearance Window Open
-              </span>
-              {/* Duplicate track for seamless infinite scroll */}
-              <span className="mx-6 text-amber-300 font-semibold">
-                ★ Multi-University Affiliated (Punjabi University Patiala • MRSPTU • Panjab University)
-              </span>
-              <span className="mx-6 text-slate-200">
-                • University Examination Schedule & Sessional Datesheets Active • Check Examination Portal
-              </span>
+          {isSuperAdmin ? (
+            <div className="hidden lg:flex items-center gap-3 text-xs text-slate-500 font-medium select-none shrink-0 pr-2">
+              <span className="text-slate-400">Environment: <strong className="text-emerald-700 font-semibold">Production Cloud</strong></span>
+              <span className="text-slate-300">|</span>
+              <span className="text-slate-600 font-semibold tracking-tight">PostgreSQL 18.6 & MariaDB Multi-Pool</span>
             </div>
-          </div>
-
-          {/* Quick Notice Action */}
-          <div className="shrink-0 z-10 bg-[#001744] pl-2 hidden sm:block">
-            <button
-              type="button"
-              onClick={() => onNavigate('academics')}
-              className="text-amber-300 hover:text-white font-bold text-xs uppercase tracking-wider hover:underline cursor-pointer"
-            >
-              [View Academics &rarr;]
-            </button>
-          </div>
+          ) : (
+            <div className="hidden lg:flex items-center gap-3 text-xs text-slate-500 font-medium select-none shrink-0 pr-2">
+              <span className="text-slate-400">Session: <strong className="text-[#00236f] font-semibold">AY 2026-27</strong> (Sem 4/6/8)</span>
+              <span className="text-slate-300">|</span>
+              <span className="text-slate-600 font-semibold tracking-tight">PUP Patiala • MRSPTU • PU Affiliated</span>
+            </div>
+          )}
         </div>
       </div>
 

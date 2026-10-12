@@ -10,9 +10,15 @@ staffRouter.get('/', authenticateToken, async (req: AuthRequest, res: Response):
   try {
     const { department, status, search } = req.query;
     const filters: { department?: string; status?: string; search?: string } = {};
-    if (department && typeof department === 'string' && department !== 'all') filters.department = department;
-    if (status && typeof status === 'string' && status !== 'all') filters.status = status;
-    if (search && typeof search === 'string') filters.search = search;
+    if (department && typeof department === 'string' && department !== 'all' && department !== 'undefined' && department.trim() !== '') {
+      filters.department = department.trim();
+    }
+    if (status && typeof status === 'string' && status !== 'all' && status !== 'undefined' && status.trim() !== '') {
+      filters.status = status.trim();
+    }
+    if (search && typeof search === 'string' && search !== 'undefined' && search.trim() !== '') {
+      filters.search = search.trim();
+    }
 
     const list = await db.getStaffList(filters);
     res.json({ success: true, count: list.length, staff: list });
