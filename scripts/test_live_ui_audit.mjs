@@ -153,6 +153,23 @@ const ROLES = [
     testRoute: '/partner-portal',
     screenshotName: '8_partner.png',
   },
+  {
+    role: 'hr',
+    label: 'Chief HR & Establishment Officer',
+    uid: '8001-01-03-01',
+    password: 'hr123',
+    expectedRoleBadge: ['Chief HR', 'Establishment', 'Officer', 'HR'],
+    expectedNavItems: [
+      'HRMS Operations',
+      'Faculty & Staff Roster',
+      'Status & Lifecycle',
+      'Staff Dossier & Docs',
+      'Exit NOC & Clearances',
+      'Grievances',
+    ],
+    testRoute: '/staff-management',
+    screenshotName: '9_hr.png',
+  },
 ];
 
 let spawnedServer = null;

@@ -48,6 +48,8 @@ interface LayoutProps {
   onLogout: () => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
+  onOpenAuditLogs?: () => void;
+  onOpenMasterTables?: (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents') => void;
   children: React.ReactNode;
 }
 
@@ -56,13 +58,16 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
   onLogout,
   searchQuery,
   onSearchChange,
+  onOpenAuditLogs: propOnOpenAuditLogs,
+  onOpenMasterTables: propOnOpenMasterTables,
   children,
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [showCopilot, setShowCopilot] = useState(false);
-  const [showAuditLogs, setShowAuditLogs] = useState(false);
-  const [showMasterTables, setShowMasterTables] = useState(false);
+  const [internalShowAuditLogs, setInternalShowAuditLogs] = useState(false);
+  const [internalShowMasterTables, setInternalShowMasterTables] = useState(false);
+  const [internalMasterTablesTab, setInternalMasterTablesTab] = useState<'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents'>('states');
   const [showStaffJourney, setShowStaffJourney] = useState(false);
   const [showAdmitCard, setShowAdmitCard] = useState(false);
   const [isTelephonyOpen, setIsTelephonyOpen] = useState(false);
@@ -73,6 +78,16 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
     course: 'B.Tech CSE',
     quota: 'punjab_85',
   });
+
+  const handleAudit = propOnOpenAuditLogs || (() => setInternalShowAuditLogs(true));
+  const handleMaster = (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents') => {
+    if (propOnOpenMasterTables) {
+      propOnOpenMasterTables(tab);
+    } else {
+      if (tab) setInternalMasterTablesTab(tab);
+      setInternalShowMasterTables(true);
+    }
+  };
 
   const getActiveScreenFromPath = (path: string): ActiveScreen => {
     switch (path) {
@@ -125,6 +140,8 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
           ? 'super-admin-dashboard'
           : currentUser?.role === 'admin'
           ? 'admin-dashboard'
+          : currentUser?.role === 'hr'
+          ? 'staff-management'
           : (currentUser?.role === 'staff' || currentUser?.role === 'counselor' || currentUser?.role === 'hod')
           ? 'staff-dashboard'
           : currentUser?.role === 'partner'
@@ -177,6 +194,8 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
           ? { category: 'Super Admin Architecture', title: 'Universal Provost & SaaS Master Cockpit' }
           : currentUser?.role === 'admin'
           ? { category: 'Operations & Governance', title: 'Institutional Executive Governance Cockpit' }
+          : currentUser?.role === 'hr'
+          ? { category: 'HRMS & Establishment', title: 'Faculty & Staff Establishment Console' }
           : currentUser?.role === 'staff' || currentUser?.role === 'hod'
           ? { category: 'Faculty Desk', title: 'Academic Classroom & Sessional Console' }
           : currentUser?.role === 'student'
@@ -246,8 +265,8 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
         onLogout={onLogout}
         onToggleTelephony={() => setIsTelephonyOpen(!isTelephonyOpen)}
         isTelephonyOpen={isTelephonyOpen}
-        onOpenAuditLogs={() => setShowAuditLogs(true)}
-        onOpenMasterTables={() => setShowMasterTables(true)}
+        onOpenAuditLogs={handleAudit}
+        onOpenMasterTables={handleMaster}
         onOpenStaffJourney={() => setShowStaffJourney(true)}
         onOpenAdmitCard={() => setShowAdmitCard(true)}
       />
@@ -310,12 +329,13 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
         currentUser={currentUser}
       />
       <AuditTrailModal
-        isOpen={showAuditLogs}
-        onClose={() => setShowAuditLogs(false)}
+        isOpen={internalShowAuditLogs}
+        onClose={() => setInternalShowAuditLogs(false)}
       />
       <MasterTablesModal
-        isOpen={showMasterTables}
-        onClose={() => setShowMasterTables(false)}
+        isOpen={internalShowMasterTables}
+        initialTab={internalMasterTablesTab}
+        onClose={() => setInternalShowMasterTables(false)}
       />
       <StaffAcademicJourneyModal
         isOpen={showStaffJourney}
@@ -372,7 +392,18 @@ function MainApp() {
   const [isAdmitCardOpen, setIsAdmitCardOpen] = useState(false);
   const [viewingStudent, setViewingStudent] = useState<StudentProfile | null>(null);
 
-  // Check auth state on load
+  // Master Architecture & Cryptographic Forensics Global Modals
+  const [showAuditLogs, setShowAuditLogs] = useState(false);
+  const [showMasterTables, setShowMasterTables] = useState(false);
+  const [masterTablesTab, setMasterTablesTab] = useState<'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents'>('states');
+
+  const handleOpenMasterTables = (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents') => {
+    if (tab) setMasterTablesTab(tab);
+    setShowMasterTables(true);
+  };
+  const handleOpenAuditLogs = () => {
+    setShowAuditLogs(true);
+  };
   useEffect(() => {
     const checkAuth = async () => {
       const token = getStoredToken();
@@ -540,19 +571,23 @@ function MainApp() {
                 onLogout={handleLogout}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
+                onOpenMasterTables={handleOpenMasterTables}
+                onOpenAuditLogs={handleOpenAuditLogs}
               >
                 {currentUser.role === 'super_admin' ? (
                   <SuperAdminDashboardView
                     currentUser={currentUser}
                     onNavigate={handleScreenNavigate}
-                    onOpenMasterTables={() => setShowMasterTables(true)}
-                    onOpenAuditLogs={() => setShowAuditLogs(true)}
+                    onOpenMasterTables={handleOpenMasterTables}
+                    onOpenAuditLogs={handleOpenAuditLogs}
                   />
                 ) : currentUser.role === 'admin' ? (
                   <AdminDashboardView
                     onNavigate={handleScreenNavigate}
                     onOpenEmailReminders={() => setIsEmailRemindersOpen(true)}
                   />
+                ) : currentUser.role === 'hr' ? (
+                  <StaffManagementView currentUser={currentUser} />
                 ) : (currentUser.role === 'staff' || currentUser.role === 'counselor' || currentUser.role === 'hod') ? (
                   <StaffDashboardView
                     currentUser={currentUser}
@@ -1148,6 +1183,16 @@ function MainApp() {
           }}
         />
       )}
+
+      <AuditTrailModal
+        isOpen={showAuditLogs}
+        onClose={() => setShowAuditLogs(false)}
+      />
+      <MasterTablesModal
+        isOpen={showMasterTables}
+        initialTab={masterTablesTab}
+        onClose={() => setShowMasterTables(false)}
+      />
     </ErrorBoundary>
   );
 }

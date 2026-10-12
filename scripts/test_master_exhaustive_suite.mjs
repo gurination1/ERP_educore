@@ -83,8 +83,23 @@ async function run() {
     assert(false, `Student login: ${e.message}`);
   }
 
+  let hrToken = '';
+  try {
+    const res = await fetch(`${TARGET_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: '8001-01-03-01', password: 'hr123' }),
+    });
+    const d = await res.json();
+    assert(res.status === 200 && d.success, 'HR & Establishment Officer (type 8001 / 8001-01-03-01) authenticated');
+    hrToken = d.token;
+  } catch (e) {
+    assert(false, `HR login: ${e.message}`);
+  }
+
   const superHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${superAdminToken}` };
   const adminHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}` };
+  const hrHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${hrToken}` };
   const counselorHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${counselorToken}` };
   const studentHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${studentToken}` };
 
@@ -353,22 +368,30 @@ async function run() {
     const activeGatewayData = await activeGatewayRes.json();
     assert(activeGatewayData.can_pay === false, 'Sandbox security: Test mode gateway blocks unwhitelisted students from live checkout');
 
-    // 4.8 HRMS Security Deductions (Auto-locks at ₹30,000)
-    const secRes = await fetch(`${TARGET_URL}/api/staff/usr-staff-01/security-deduction`, { headers: adminHeaders });
+    // 4.8 HRMS Security Deductions & HR Access
+    const secRes = await fetch(`${TARGET_URL}/api/staff/usr-staff-01/security-deduction`, { headers: hrHeaders });
     const secData = await secRes.json();
-    assert(secData.securityDeduction?.target_amount === 30000, 'Security deduction target is ₹30,000');
+    assert(secData.securityDeduction?.target_amount === 30000, 'Security deduction target is ₹30,000 (HR verified)');
     assert(secData.securityDeduction?.is_locked === true || secData.securityDeduction?.deducted_so_far >= 30000, 'Security deduction auto-locks upon achieving ₹30,000 target');
 
-    // 4.9 Online 5-Point Exit NOC
-    const nocRes = await fetch(`${TARGET_URL}/api/staff/usr-staff-01/noc`, { headers: adminHeaders });
+    // 4.9 Online 5-Point Exit NOC & HR Clearance
+    const nocRes = await fetch(`${TARGET_URL}/api/staff/usr-staff-01/noc`, { headers: hrHeaders });
     const nocData = await nocRes.json();
-    assert(Boolean(nocData.noc?.library_cleared !== undefined), '5-Point Exit NOC department clearances verified');
+    assert(Boolean(nocData.noc?.library_cleared !== undefined), '5-Point Exit NOC department clearances verified by HR Officer');
 
-    // 4.10 Academic Workload & Hierarchy Report
+    // 4.10 Academic Workload & Hierarchy Report (Campus Admin)
     const workloadRes = await fetch(`${TARGET_URL}/api/reports/academic-workload`, { headers: adminHeaders });
     const workloadData = await workloadRes.json();
-    assert(workloadRes.status === 200 && workloadData.success, 'Academic Workload & Hierarchy Report generated');
+    assert(workloadRes.status === 200 && workloadData.success, 'Academic Workload & Hierarchy Report generated for Campus Admin');
     assert(workloadData.teacherAssignments?.length > 0, `Teaching faculty workload nodes audited: ${workloadData.teacherAssignments?.length}`);
+
+    // 4.11 SaaS Platform Infrastructure & 5-Domain DB Telemetry (Super Admin Only)
+    const telemRes = await fetch(`${TARGET_URL}/api/reports/platform-telemetry`, { headers: superHeaders });
+    const telemData = await telemRes.json();
+    assert(telemRes.status === 200 && telemData.success, 'SaaS Super Admin Platform & Dual-DB Telemetry endpoint responsive');
+    assert(Array.isArray(telemData.domains) && telemData.domains.length === 5, '5-Domain Sharded Database Architecture verified (Students, HRMS, Compliance, Ops, Audit)');
+    assert(Boolean(telemData.cluster?.engine), `Cluster engine identified: ${telemData.cluster?.engine}`);
+    assert(telemData.cluster?.uptime === '99.98%', 'High-Availability 99.98% SLA confirmed in telemetry');
   } catch (e) {
     assert(false, `Lecture 3 check error: ${e.message}`);
   }

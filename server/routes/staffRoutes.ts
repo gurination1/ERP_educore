@@ -116,7 +116,7 @@ staffRouter.get('/:id', authenticateToken, async (req: AuthRequest, res: Respons
 });
 
 // 3. Create new staff member
-staffRouter.post('/', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+staffRouter.post('/', authenticateToken, requireRole('admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { basic, additional, address, bankAccount, qualification } = req.body;
     if (!basic || !basic.full_name || !basic.employee_id || !basic.department_id) {
@@ -152,7 +152,7 @@ staffRouter.post('/', authenticateToken, requireRole('admin'), async (req: AuthR
 });
 
 // 4. Update basic info (status lifecycle transitions require dates)
-staffRouter.put('/:id/basic', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+staffRouter.put('/:id/basic', authenticateToken, requireRole('admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const staffId = req.params.id;
     const updates = req.body;
@@ -181,7 +181,7 @@ staffRouter.put('/:id/basic', authenticateToken, requireRole('admin'), async (re
 });
 
 // 5. Toggle staff login enable / disable with OTP dispatch notification
-staffRouter.patch('/:id/login-status', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+staffRouter.patch('/:id/login-status', authenticateToken, requireRole('admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const staffId = req.params.id;
     const { enabled } = req.body;
@@ -202,7 +202,7 @@ staffRouter.patch('/:id/login-status', authenticateToken, requireRole('admin'), 
 });
 
 // 6. Admin assisted password reset with mandatory password change flag
-staffRouter.post('/:id/admin-reset-password', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+staffRouter.post('/:id/admin-reset-password', authenticateToken, requireRole('admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const staffId = req.params.id;
     const { tempPassword } = req.body;
@@ -215,7 +215,7 @@ staffRouter.post('/:id/admin-reset-password', authenticateToken, requireRole('ad
 });
 
 // 7. Add address
-staffRouter.post('/:id/addresses', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+staffRouter.post('/:id/addresses', authenticateToken, requireRole('admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const staffId = req.params.id;
     const addr = await db.addStaffAddress({ ...req.body, staff_id: staffId });
@@ -226,7 +226,7 @@ staffRouter.post('/:id/addresses', authenticateToken, requireRole('admin'), asyn
 });
 
 // 8. Add bank account
-staffRouter.post('/:id/bank-accounts', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+staffRouter.post('/:id/bank-accounts', authenticateToken, requireRole('admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const staffId = req.params.id;
     const bank = await db.addStaffBankAccount({ ...req.body, staff_id: staffId });
@@ -237,7 +237,7 @@ staffRouter.post('/:id/bank-accounts', authenticateToken, requireRole('admin'), 
 });
 
 // 9. Add qualification
-staffRouter.post('/:id/qualifications', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+staffRouter.post('/:id/qualifications', authenticateToken, requireRole('admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const staffId = req.params.id;
     const qual = await db.addStaffQualification({ ...req.body, staff_id: staffId });
@@ -248,7 +248,7 @@ staffRouter.post('/:id/qualifications', authenticateToken, requireRole('admin'),
 });
 
 // 10. Add certification
-staffRouter.post('/:id/certifications', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+staffRouter.post('/:id/certifications', authenticateToken, requireRole('admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const staffId = req.params.id;
     const cert = await db.addStaffCertification({ ...req.body, staff_id: staffId });
@@ -259,7 +259,7 @@ staffRouter.post('/:id/certifications', authenticateToken, requireRole('admin'),
 });
 
 // 11. Add experience
-staffRouter.post('/:id/experience', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+staffRouter.post('/:id/experience', authenticateToken, requireRole('admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const staffId = req.params.id;
     const exp = await db.addStaffExperience({ ...req.body, staff_id: staffId });
@@ -270,7 +270,7 @@ staffRouter.post('/:id/experience', authenticateToken, requireRole('admin'), asy
 });
 
 // 12. Add organizational journey event (promotion, demotion, additional role, role switch)
-staffRouter.post('/:id/org-journey', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+staffRouter.post('/:id/org-journey', authenticateToken, requireRole('admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const staffId = req.params.id;
     const event = await db.addStaffOrgJourneyEvent({
@@ -297,11 +297,10 @@ staffRouter.get('/:id/payroll', authenticateToken, async (req: AuthRequest, res:
   }
 });
 
-staffRouter.put('/:id/payroll', authenticateToken, requireRole('admin', 'super_admin', 'accounts'), async (req: AuthRequest, res: Response): Promise<void> => {
+staffRouter.put('/:id/payroll', authenticateToken, requireRole('admin', 'super_admin', 'accounts', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const staffId = req.params.id;
-    const actorId = req.user?.id || 'usr-admin-01';
-    const updated = await db.updateStaffPayroll(staffId, req.body, actorId);
+    const updated = await db.updateStaffPayroll(staffId, req.body);
     res.json({ success: true, message: 'Payroll structure updated successfully', payroll: updated });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -321,13 +320,12 @@ staffRouter.get('/:id/security-deduction', authenticateToken, async (req: AuthRe
   }
 });
 
-staffRouter.post('/:id/security-deduction/installment', authenticateToken, requireRole('admin', 'super_admin', 'accounts'), async (req: AuthRequest, res: Response): Promise<void> => {
+staffRouter.post('/:id/security-deduction/installment', authenticateToken, requireRole('admin', 'super_admin', 'accounts', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const staffId = req.params.id;
     const { installmentAmount } = req.body;
-    const actorId = req.user?.id || 'usr-admin-01';
     const amount = typeof installmentAmount === 'number' ? installmentAmount : 5000;
-    const updated = await db.recordSecurityDeductionInstallment(staffId, amount, actorId);
+    const updated = await db.recordSecurityDeductionInstallment(staffId, amount);
     res.json({ success: true, message: `Security deduction installment of ₹${amount} recorded`, securityDeduction: updated });
   } catch (err: any) {
     res.status(400).json({ success: false, error: err.message });
@@ -347,7 +345,7 @@ staffRouter.get('/:id/noc', authenticateToken, async (req: AuthRequest, res: Res
   }
 });
 
-staffRouter.put('/:id/noc/checkpoint', authenticateToken, requireRole('admin', 'super_admin', 'hod', 'accounts'), async (req: AuthRequest, res: Response): Promise<void> => {
+staffRouter.put('/:id/noc/checkpoint', authenticateToken, requireRole('admin', 'super_admin', 'hod', 'accounts', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const staffId = req.params.id;
     const { checkpoint, cleared, remarks } = req.body;
@@ -363,7 +361,7 @@ staffRouter.put('/:id/noc/checkpoint', authenticateToken, requireRole('admin', '
   }
 });
 
-staffRouter.post('/:id/noc/release-refund', authenticateToken, requireRole('admin', 'super_admin', 'accounts'), async (req: AuthRequest, res: Response): Promise<void> => {
+staffRouter.post('/:id/noc/release-refund', authenticateToken, requireRole('admin', 'super_admin', 'accounts', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const staffId = req.params.id;
     const { txRef } = req.body;
@@ -394,7 +392,7 @@ const createAdditionalRoleSchema = z.object({
   is_active: z.boolean().default(true),
 });
 
-staffRouter.post('/:id/additional-roles', authenticateToken, requireRole('super_admin', 'admin', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
+staffRouter.post('/:id/additional-roles', authenticateToken, requireRole('super_admin', 'admin', 'hod', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const parse = createAdditionalRoleSchema.safeParse(req.body);
     if (!parse.success) {
@@ -411,7 +409,7 @@ staffRouter.post('/:id/additional-roles', authenticateToken, requireRole('super_
   }
 });
 
-staffRouter.delete('/:id/additional-roles/:roleId', authenticateToken, requireRole('super_admin', 'admin', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
+staffRouter.delete('/:id/additional-roles/:roleId', authenticateToken, requireRole('super_admin', 'admin', 'hod', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     await db.deleteStaffAdditionalRole(req.params.roleId);
     res.json({ success: true, message: 'Additional role removed' });

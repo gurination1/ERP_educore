@@ -38,7 +38,7 @@ tenantRouter.post('/', authenticateToken, requireRole('super_admin'), async (req
       return;
     }
 
-    const tenant = await db.createTenant(parseResult.data);
+    const tenant = await db.createTenant(parseResult.data as any);
     res.status(201).json({ success: true, message: 'Tenant provisioned successfully', tenant });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -61,8 +61,7 @@ tenantRouter.post('/:id/toggle-functional', authenticateToken, requireRole('supe
 tenantRouter.post('/:id/impersonate', authenticateToken, requireRole('super_admin'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const actorId = req.user?.id || 'usr-super-01';
-    const result = await db.impersonateTenant(id, actorId);
+    const result = await db.impersonateTenant(id);
     const token = generateToken(result.adminUser);
 
     res.json({

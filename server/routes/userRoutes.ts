@@ -11,7 +11,7 @@ const createUserSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
   email: z.string().email('Invalid email address format'),
   password: z.string().min(6, 'Password must be at least 6 characters').default('Educore@2025'),
-  role: z.enum(['admin', 'staff', 'counselor', 'hod', 'accounts', 'student', 'super_admin']),
+  role: z.enum(['admin', 'staff', 'counselor', 'hod', 'accounts', 'student', 'super_admin', 'partner', 'hr']),
   fullName: z.string().min(2, 'Full name is required'),
   department: z.string().optional(),
   designation: z.string().optional(),
@@ -20,15 +20,15 @@ const createUserSchema = z.object({
 
 const updateUserSchema = z.object({
   fullName: z.string().min(2).optional(),
-  role: z.enum(['admin', 'staff', 'counselor', 'hod', 'accounts', 'student', 'super_admin']).optional(),
+  role: z.enum(['admin', 'staff', 'counselor', 'hod', 'accounts', 'student', 'super_admin', 'partner', 'hr']).optional(),
   department: z.string().optional(),
   designation: z.string().optional(),
   employeeId: z.string().optional(),
   email: z.string().email().optional(),
 });
 
-// 1. List all users (Admin & Super Admin only)
-userRouter.get('/', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+// 1. List all users (Admin & Super Admin & HR)
+userRouter.get('/', authenticateToken, requireRole('admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { role, search, status } = req.query;
 
   const filters: { role?: string; search?: string; is_active?: boolean } = {};
@@ -69,8 +69,8 @@ userRouter.get('/', authenticateToken, requireRole('admin'), async (req: AuthReq
   });
 });
 
-// 2. Hire / Provision new Staff or User (Admin & Super Admin power)
-userRouter.post('/', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+// 2. Hire / Provision new Staff or User (Admin, Super Admin & HR)
+userRouter.post('/', authenticateToken, requireRole('admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   const parseResult = createUserSchema.safeParse(req.body);
   if (!parseResult.success) {
     const errorMsg = parseResult.error.errors.map(e => e.message).join(', ');
@@ -158,8 +158,8 @@ userRouter.post('/', authenticateToken, requireRole('admin'), async (req: AuthRe
   });
 });
 
-// 3. Edit User Profile & Roles (Admin & Super Admin)
-userRouter.patch('/:id', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+// 3. Edit User Profile & Roles (Admin, Super Admin & HR)
+userRouter.patch('/:id', authenticateToken, requireRole('admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   const parseResult = updateUserSchema.safeParse(req.body);
   if (!parseResult.success) {
@@ -305,11 +305,11 @@ const handleUserStatusUpdate = async (req: AuthRequest, res: Response): Promise<
   });
 };
 
-userRouter.patch('/:id/status', authenticateToken, requireRole('admin'), handleUserStatusUpdate);
-userRouter.put('/:id/status', authenticateToken, requireRole('admin'), handleUserStatusUpdate);
+userRouter.patch('/:id/status', authenticateToken, requireRole('admin', 'hr'), handleUserStatusUpdate);
+userRouter.put('/:id/status', authenticateToken, requireRole('admin', 'hr'), handleUserStatusUpdate);
 
-// 5. Reset Password (Admin extreme power override)
-userRouter.post('/:id/reset-password', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+// 5. Reset Password (Admin & HR power override)
+userRouter.post('/:id/reset-password', authenticateToken, requireRole('admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   const { newPassword } = req.body;
 

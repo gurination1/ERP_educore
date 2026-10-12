@@ -15,8 +15,18 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
   const [profileLoading, setProfileLoading] = useState(false);
   const [departmentFilter, setDepartmentFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState<'all' | 'fresher' | 'rejoiner'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'overview' | 'payroll' | 'exit-noc' | 'addresses' | 'banks' | 'qualifications' | 'experience' | 'journey' | 'additional-roles'>('overview');
+
+  // Designation Transition Modal (Lecture 3 & Recording 160)
+  const [showDesignationModal, setShowDesignationModal] = useState(false);
+  const [designationForm, setDesignationForm] = useState({
+    eventType: 'PROMOTION' as 'PROMOTION' | 'DEMOTION' | 'ADDITIONAL_ROLE' | 'ROLE_SWITCH',
+    newDesignation: '',
+    effectiveDate: new Date().toISOString().slice(0, 10),
+    remarks: '',
+  });
 
   // Multi-Role Allocation (Lecture 3: Teaching, Non-Teaching, Administrative across Schools)
   const [additionalRoles, setAdditionalRoles] = useState<any[]>([]);
@@ -299,6 +309,73 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
     }
   };
 
+  const handleOneClickDeactivate = async (staffId: string, fullName: string) => {
+    if (!confirm(`Confirm immediate deactivation & revocation of portal credentials for ${fullName}? (Last Working Day reached)`)) return;
+    try {
+      const [loginRes, statusRes] = await Promise.all([
+        api.toggleStaffLogin(staffId, false),
+        api.updateStaffBasic(staffId, { employee_status: 'RESIGNED', login_enabled: false }),
+      ]);
+      if (loginRes.success && statusRes.success) {
+        setActionSuccessMsg(`Deactivated credentials and locked access for ${fullName}.`);
+        fetchStaff();
+        if (selectedStaffId === staffId) fetchProfile(staffId);
+        setTimeout(() => setActionSuccessMsg(null), 5000);
+      } else {
+        setActionErrorMsg(loginRes.error || statusRes.error || 'Failed to deactivate.');
+      }
+    } catch (err: any) {
+      setActionErrorMsg(err.message);
+    }
+  };
+
+  const handleApplyDesignationChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!staffProfile || !designationForm.newDesignation.trim()) {
+      setActionErrorMsg('New designation is required.');
+      return;
+    }
+    try {
+      const staffId = staffProfile.basic.staff_id;
+      const oldDesig = staffProfile.basic.primary_designation;
+      const journeyRes = await api.addStaffOrgJourney(staffId, {
+        event_type: designationForm.eventType,
+        old_designation: oldDesig,
+        new_designation: designationForm.newDesignation.trim(),
+        effective_date: designationForm.effectiveDate,
+        remarks: designationForm.remarks || `${designationForm.eventType} approved by Governing Body`,
+      });
+      const basicRes = await api.updateStaffBasic(staffId, {
+        primary_designation: designationForm.newDesignation.trim(),
+      });
+
+      if (journeyRes.success && basicRes.success) {
+        setShowDesignationModal(false);
+        setActionSuccessMsg(`Designation transition recorded: ${oldDesig} → ${designationForm.newDesignation} (${designationForm.eventType})`);
+        fetchProfile(staffId);
+        fetchStaff();
+        setTimeout(() => setActionSuccessMsg(null), 5000);
+      } else {
+        setActionErrorMsg(journeyRes.error || basicRes.error || 'Failed to record designation change.');
+      }
+    } catch (err: any) {
+      setActionErrorMsg(err.message);
+    }
+  };
+
+  const approachingLwdStaff = staffList.filter(s => {
+    if (!s.last_working_date) return false;
+    const lwd = new Date(s.last_working_date).getTime();
+    const now = Date.now();
+    const diffDays = Math.ceil((lwd - now) / (1000 * 60 * 60 * 24));
+    return diffDays <= 7 && (s.login_enabled || s.employee_status === 'ACTIVE' || s.employee_status === 'RESIGNED');
+  });
+
+  const filteredStaffList = staffList.filter(s => {
+    if (categoryFilter !== 'all' && s.category !== categoryFilter) return false;
+    return true;
+  });
+
   return (
     <div className="p-4 max-w-7xl mx-auto space-y-4 font-sans text-[11px] text-[#00236f]">
       {/* Top Header Bar */}
@@ -349,6 +426,46 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
         </div>
       )}
 
+      {/* Mentor Karanvir Sir Lecture 3: Approaching / Passed Last Working Day Alert Widget */}
+      {approachingLwdStaff.length > 0 && (
+        <div className="bg-amber-50 border-2 border-amber-400/80 rounded-xl p-3 shadow-xs space-y-2">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
+              <div>
+                <span className="font-extrabold text-[12px] text-amber-950 uppercase tracking-tight">
+                  Last Working Day (LWD) System Deactivation Alert
+                </span>
+                <p className="text-[10px] text-amber-800 mt-0.5">
+                  {approachingLwdStaff.length} employee(s) have reached or are within 7 days of their Last Working Day. Institutional deactivation is mandatory.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-1.5 border-t border-amber-200/70 pt-2">
+            {approachingLwdStaff.map(emp => (
+              <div key={emp.id} className="flex items-center justify-between bg-white/90 p-2 rounded-lg border border-amber-200 shadow-2xs">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-slate-900 text-xs">{emp.full_name}</span>
+                  <span className="font-mono text-slate-500 text-[10px]">({emp.employee_id})</span>
+                  <span className="text-[10px] text-amber-900 font-semibold">• LWD: {emp.last_working_date}</span>
+                  <span className="px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded font-bold text-[9px] uppercase">
+                    {emp.employee_status}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleOneClickDeactivate(emp.staff_id, emp.full_name)}
+                  className="bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-1 rounded text-[10px] transition cursor-pointer shadow-2xs"
+                >
+                  1-Click Deactivate & Revoke Access
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Two Column Layout: Staff List on Left, Multi-Table Inspector on Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Left Column: Staff Directory */}
@@ -363,7 +480,7 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
               className="w-full border border-gray-300 rounded px-2.5 py-1.5 text-[11px] focus:outline-none focus:border-[#00236f]"
             />
 
-            <div className="grid grid-cols-2 gap-2 text-[10px]">
+            <div className="grid grid-cols-3 gap-1.5 text-[10px]">
               <div>
                 <label className="block text-gray-500 font-semibold mb-0.5">DEPT:</label>
                 <select
@@ -371,14 +488,14 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                   onChange={e => setDepartmentFilter(e.target.value)}
                   className="w-full border border-gray-300 rounded p-1 text-[10px] bg-white"
                 >
-                  <option value="all">ALL DEPARTMENTS</option>
-                  <option value="CSE">COMPUTER SCIENCE (CSE)</option>
-                  <option value="AGRI">AGRICULTURE (AGRI)</option>
-                  <option value="CE">CIVIL ENGG (CE)</option>
-                  <option value="ME">MECHANICAL (ME)</option>
-                  <option value="MGMT">MANAGEMENT (MGMT)</option>
-                  <option value="PHARM">PHARMACY (PHARM)</option>
-                  <option value="APP_SCI">APPLIED SCIENCES</option>
+                  <option value="all">ALL</option>
+                  <option value="CSE">CSE</option>
+                  <option value="AGRI">AGRI</option>
+                  <option value="CE">CE</option>
+                  <option value="ME">ME</option>
+                  <option value="MGMT">MGMT</option>
+                  <option value="PHARM">PHARM</option>
+                  <option value="APP_SCI">APP_SCI</option>
                 </select>
               </div>
 
@@ -389,19 +506,32 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                   onChange={e => setStatusFilter(e.target.value)}
                   className="w-full border border-gray-300 rounded p-1 text-[10px] bg-white"
                 >
-                  <option value="all">ALL STATUSES</option>
+                  <option value="all">ALL</option>
                   <option value="ACTIVE">ACTIVE</option>
-                  <option value="RESIGNED">RESIGNED (NOTICE)</option>
+                  <option value="RESIGNED">RESIGNED</option>
                   <option value="TERMINATED">TERMINATED</option>
-                  <option value="AOL">AOL (ABSENT OUT)</option>
+                  <option value="AOL">AOL</option>
                   <option value="DEACTIVATED">DEACTIVATED</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-gray-500 font-semibold mb-0.5">CATEGORY:</label>
+                <select
+                  value={categoryFilter}
+                  onChange={e => setCategoryFilter(e.target.value as any)}
+                  className="w-full border border-gray-300 rounded p-1 text-[10px] bg-white font-semibold"
+                >
+                  <option value="all">ALL</option>
+                  <option value="fresher">FRESHER</option>
+                  <option value="rejoiner">REJOINER</option>
                 </select>
               </div>
             </div>
           </div>
 
           <div className="border-t border-gray-200 pt-2 text-[10px] text-gray-500 flex justify-between">
-            <span>SHOWING: {staffList.length} STAFF</span>
+            <span>SHOWING: {filteredStaffList.length} STAFF</span>
             <button onClick={fetchStaff} className="text-[#00236f] font-bold hover:underline">
               [REFRESH LIST]
             </button>
@@ -410,10 +540,10 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
           <div className="space-y-1.5 max-h-[560px] overflow-y-auto pr-1">
             {loading ? (
               <div className="text-center py-6 text-gray-400">Loading staff records...</div>
-            ) : staffList.length === 0 ? (
+            ) : filteredStaffList.length === 0 ? (
               <div className="text-center py-6 text-gray-400">No matching staff records found.</div>
             ) : (
-              staffList.map(s => {
+              filteredStaffList.map(s => {
                 const isSelected = selectedStaffId === s.staff_id;
                 const statusColor =
                   s.employee_status === 'ACTIVE'
@@ -448,6 +578,9 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
 
                     <div className="flex items-center justify-between text-[9px] text-gray-400 mt-1 pt-1 border-t border-gray-100">
                       <span>DEPT: {s.department_id}</span>
+                      <span className={`px-1 py-0.2 rounded font-bold uppercase ${s.category === 'rejoiner' ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-700'}`}>
+                        {s.category || 'FRESHER'}
+                      </span>
                       <span>LOGIN: {s.login_enabled ? '[ENABLED]' : '[DISABLED]'}</span>
                     </div>
                   </div>
@@ -528,6 +661,21 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                     className="bg-[#ea580c] hover:bg-[#ea580c]/90 text-white px-2.5 py-1 rounded text-[10px] font-bold transition"
                   >
                     [TRANSITION STATUS]
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setDesignationForm({
+                        eventType: 'PROMOTION',
+                        newDesignation: staffProfile.basic.primary_designation || '',
+                        effectiveDate: new Date().toISOString().slice(0, 10),
+                        remarks: '',
+                      });
+                      setShowDesignationModal(true);
+                    }}
+                    className="bg-[#00236f] hover:bg-[#00236f]/90 text-white px-2.5 py-1 rounded text-[10px] font-bold transition"
+                  >
+                    [DESIGNATION TRANSITION]
                   </button>
                 </div>
               </div>
@@ -657,7 +805,21 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
               )}
 
               {activeTab === 'banks' && (
-                <div className="space-y-2">
+                <div className="space-y-3">
+                  <div className="bg-emerald-50 border border-emerald-300 rounded p-2.5 flex items-center justify-between text-[10px] text-emerald-900">
+                    <div className="flex items-center gap-2">
+                      <span className="font-extrabold uppercase tracking-wide">
+                        [HR & ESTABLISHMENT SOLE DISBURSEMENT AUTHORITY]
+                      </span>
+                      <span>•</span>
+                      <span>
+                        Bank accounts and IFSC verification are governed exclusively under HR Audit Compliance. Faculty/staff cannot mutate bank coordinates.
+                      </span>
+                    </div>
+                    <span className="bg-emerald-200 text-emerald-950 font-bold px-2 py-0.5 rounded text-[9px]">
+                      AUDIT COMPLIANT
+                    </span>
+                  </div>
                   {staffProfile.bankAccounts.length === 0 ? (
                     <div className="text-gray-400 py-6 text-center">No bank accounts registered.</div>
                   ) : (
@@ -1395,6 +1557,114 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                 CREATE & ONBOARD
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Designation Transition Modal (Lecture 3 & Recording 160) */}
+      {showDesignationModal && staffProfile && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-5 space-y-4 shadow-xl border border-slate-200 animate-fadeIn">
+            <div className="border-b pb-2 flex items-center justify-between">
+              <div>
+                <h3 className="font-extrabold text-sm text-[#00236f] uppercase">
+                  Designation & Role Transition
+                </h3>
+                <p className="text-[10px] text-slate-500 mt-0.5">
+                  Mentor Karanvir Sir Rule: Mandatory transition classification with org journey event record
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowDesignationModal(false)}
+                className="text-slate-400 hover:text-slate-600 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleApplyDesignationChange} className="space-y-3 text-[11px]">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  STAFF MEMBER:
+                </label>
+                <div className="p-2 bg-slate-50 rounded border border-slate-200 font-semibold text-slate-800">
+                  {staffProfile.basic.full_name} ({staffProfile.basic.employee_id}) — Current: <span className="text-[#00236f]">{staffProfile.basic.primary_designation}</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  TRANSITION CLASSIFICATION (EVENT TYPE):
+                </label>
+                <select
+                  value={designationForm.eventType}
+                  onChange={e => setDesignationForm(prev => ({ ...prev, eventType: e.target.value as any }))}
+                  className="w-full border border-slate-300 rounded p-1.5 bg-white font-bold text-[#00236f]"
+                >
+                  <option value="PROMOTION">PROMOTION (Advancement / Increment)</option>
+                  <option value="DEMOTION">DEMOTION (Disciplinary / Restructure)</option>
+                  <option value="ADDITIONAL_ROLE">ADDITIONAL ROLE (Dual Responsibility)</option>
+                  <option value="ROLE_SWITCH">ROLE SWITCH (Department Lateral Movement)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  NEW / ELEVATED DESIGNATION:
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Associate Professor & HOD"
+                  value={designationForm.newDesignation}
+                  onChange={e => setDesignationForm(prev => ({ ...prev, newDesignation: e.target.value }))}
+                  className="w-full border border-slate-300 rounded p-1.5 bg-white font-semibold"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  EFFECTIVE DATE:
+                </label>
+                <input
+                  type="date"
+                  value={designationForm.effectiveDate}
+                  onChange={e => setDesignationForm(prev => ({ ...prev, effectiveDate: e.target.value }))}
+                  className="w-full border border-slate-300 rounded p-1.5 bg-white"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  BOARD RESOLUTION / GOVERNING COUNCIL REMARKS:
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Approved in 42nd Academic Council Meeting per UGC Regulation Clause 6"
+                  value={designationForm.remarks}
+                  onChange={e => setDesignationForm(prev => ({ ...prev, remarks: e.target.value }))}
+                  className="w-full border border-slate-300 rounded p-1.5 bg-white"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 border-t pt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowDesignationModal(false)}
+                  className="px-3 py-1.5 border border-slate-300 rounded text-slate-600 font-bold hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-[#00236f] hover:bg-[#00236f]/90 text-white font-bold rounded shadow-xs"
+                >
+                  Record & Update Designation
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

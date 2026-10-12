@@ -74,6 +74,8 @@ export const LoginView: React.FC<LoginViewProps> = ({
                 ? 'Super Admin Apex Console'
                 : selectedRole === 'admin'
                 ? 'Institutional Administration Portal'
+                : (selectedRole as string) === 'hr'
+                ? 'Chief HR & Establishment Console'
                 : selectedRole === 'staff'
                 ? 'Faculty & Academics Portal'
                 : selectedRole === 'partner'
@@ -86,7 +88,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
           </div>
 
           {/* Apple Segmented Role Control */}
-          <div className="grid grid-cols-5 gap-1 mb-5 bg-slate-100/90 p-1 rounded-full border border-slate-200/70 text-[10px] font-bold">
+          <div className="grid grid-cols-6 gap-1 mb-5 bg-slate-100/90 p-1 rounded-full border border-slate-200/70 text-[10px] font-bold">
             <button
               type="button"
               id="role-toggle-student"
@@ -122,6 +124,18 @@ export const LoginView: React.FC<LoginViewProps> = ({
               }`}
             >
               Admin
+            </button>
+            <button
+              type="button"
+              id="role-toggle-hr"
+              onClick={() => handleRoleChange('hr' as any)}
+              className={`py-1.5 rounded-full text-center transition-all cursor-pointer ${
+                (selectedRole as string) === 'hr'
+                  ? 'bg-white text-emerald-800 shadow-xs font-black'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              HR
             </button>
             <button
               type="button"
@@ -203,6 +217,18 @@ export const LoginView: React.FC<LoginViewProps> = ({
               >
                 <span className="font-bold text-[10px]">[STUDENT]</span>
                 <span className="text-slate-500 text-[10px]">1001-88-03-01</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedRole('admin');
+                  setUsername('8001-01-03-01');
+                  setPassword('hr123');
+                }}
+                className="col-span-2 p-2 text-left bg-white hover:bg-emerald-50/60 border border-slate-200/90 rounded-xl text-emerald-800 flex items-center justify-between cursor-pointer transition shadow-2xs hover:border-emerald-300"
+              >
+                <span className="font-bold text-[10px]">[HRMS & ESTABLISHMENT]</span>
+                <span className="text-slate-500 text-[10px]">8001-01-03-01 / hr123</span>
               </button>
               <button
                 type="button"

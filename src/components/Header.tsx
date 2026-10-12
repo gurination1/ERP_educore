@@ -14,7 +14,7 @@ interface HeaderProps {
   onToggleTelephony?: () => void;
   isTelephonyOpen?: boolean;
   onOpenAuditLogs?: () => void;
-  onOpenMasterTables?: () => void;
+  onOpenMasterTables?: (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents') => void;
   onOpenStaffJourney?: () => void;
   onOpenAdmitCard?: () => void;
   viewMode?: 'desktop' | 'mobile-phone';
@@ -81,6 +81,8 @@ export const Header: React.FC<HeaderProps> = ({
         return user.department ? `Head of Department (${user.department})` : 'Head of Department';
       case 'accounts':
         return 'Bursar & Chief Accounts Officer';
+      case 'hr':
+        return user.department ? `Chief HR & Establishment Officer (${user.department})` : 'Chief HR & Establishment Officer';
       case 'counselor':
         return 'Senior Admissions Counselor';
       case 'student':
@@ -131,6 +133,8 @@ export const Header: React.FC<HeaderProps> = ({
       ? 'super-admin-dashboard'
       : currentUser?.role === 'admin'
       ? 'admin-dashboard'
+      : userRole === 'hr'
+      ? 'staff-management'
       : userRole === 'staff' || userRole === 'hod' || userRole === 'counselor'
       ? 'staff-dashboard'
       : userRole === 'partner'
@@ -172,9 +176,9 @@ export const Header: React.FC<HeaderProps> = ({
         items: [
           { id: 'tenants' as any, label: 'Multi-Tenant Institutions & Subdomains', action: () => { onNavigate('tenants' as any); setOpenDrawer(null); } },
           { id: 'payment-gateways' as ActiveScreen, label: 'Payment Gateways & Current Accounts' },
-          { id: 'master-tables' as any, label: 'Multi-College Institutional Campuses', action: onOpenMasterTables },
-          { id: 'master-tables' as any, label: 'Affiliated Universities (PUP / MRSPTU / PU)', action: onOpenMasterTables },
-          { id: 'master-tables' as any, label: 'Academic Departments Catalog', action: onOpenMasterTables },
+          { id: 'master-inst' as any, label: 'Multi-College Institutional Campuses', action: () => onOpenMasterTables?.('institutions') },
+          { id: 'master-univ' as any, label: 'Affiliated Universities (PUP / MRSPTU / PU)', action: () => onOpenMasterTables?.('institutions') },
+          { id: 'master-dept' as any, label: 'Academic Departments Catalog', action: () => onOpenMasterTables?.('departments') },
         ],
         isActive: activeScreen === ('tenants' as any) || activeScreen === 'payment-gateways',
       },
@@ -194,11 +198,16 @@ export const Header: React.FC<HeaderProps> = ({
         id: 'architecture',
         label: 'Master Architecture',
         defaultScreen: 'admin-dashboard',
+        action: () => {
+          if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+          setOpenDrawer(null);
+          if (onOpenMasterTables) onOpenMasterTables('states');
+        },
         items: [
-          { id: 'master-tables' as any, label: 'State GST Codes (GST-01 to 37)', action: onOpenMasterTables },
-          { id: 'master-tables' as any, label: 'Enterprise User Type Codes (1001-9001)', action: onOpenMasterTables },
-          { id: 'master-tables' as any, label: 'Approved Degrees (AICTE / UGC / PCI)', action: onOpenMasterTables },
-          { id: 'master-tables' as any, label: 'Statutory Document Types & MIME Rules', action: onOpenMasterTables },
+          { id: 'master-gst' as any, label: 'State GST Codes (GST-01 to 37)', action: () => onOpenMasterTables?.('states') },
+          { id: 'master-types' as any, label: 'Enterprise User Type Codes (1001-9001)', action: () => onOpenMasterTables?.('userTypes') },
+          { id: 'master-degrees' as any, label: 'Approved Degrees (AICTE / UGC / PCI)', action: () => onOpenMasterTables?.('degrees') },
+          { id: 'master-docs' as any, label: 'Statutory Document Types & MIME Rules', action: () => onOpenMasterTables?.('documents') },
         ],
         isActive: false,
       },
@@ -206,9 +215,14 @@ export const Header: React.FC<HeaderProps> = ({
         id: 'audit',
         label: 'Cryptographic Forensics',
         defaultScreen: 'admin-dashboard',
+        action: () => {
+          if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+          setOpenDrawer(null);
+          if (onOpenAuditLogs) onOpenAuditLogs();
+        },
         items: [
-          { id: 'audit-trail' as any, label: 'Immutable Audit Log Stream', action: onOpenAuditLogs },
-          { id: 'audit-trail' as any, label: 'Security & Actor Difference Forensics', action: onOpenAuditLogs },
+          { id: 'audit-stream' as any, label: 'Immutable Audit Log Stream', action: onOpenAuditLogs },
+          { id: 'audit-forensics' as any, label: 'Security & Actor Difference Forensics', action: onOpenAuditLogs },
         ],
         isActive: false,
       },
@@ -306,11 +320,78 @@ export const Header: React.FC<HeaderProps> = ({
         items: [
           { id: 'user-management' as ActiveScreen, label: 'Campus User Accounts & Access' },
           { id: 'field-permissions' as ActiveScreen, label: 'Field-Level Permissions Matrix' },
-          { id: 'master-tables' as any, label: 'Statutory Master Tables', action: onOpenMasterTables },
-          { id: 'audit-trail' as any, label: 'Cryptographic Audit Trail', action: onOpenAuditLogs },
+          { id: 'master-tables-admin' as any, label: 'Statutory Master Tables', action: () => onOpenMasterTables?.('states') },
+          { id: 'audit-trail-admin' as any, label: 'Cryptographic Audit Trail', action: onOpenAuditLogs },
           { id: 'reports' as ActiveScreen, label: 'Institutional MIS Reports' },
         ],
         isActive: ['user-management', 'reports', 'field-permissions'].includes(activeScreen as any),
+      },
+    ];
+  } else if (userRole === 'hr') {
+    // Chief HR & Establishment Officer: Enterprise HRMS, Lifecycle & Exit Suite
+    menuSections = [
+      {
+        id: 'hrms',
+        label: 'HRMS Operations',
+        defaultScreen: 'staff-management',
+        action: () => {
+          onNavigate('staff-management');
+          setOpenDrawer(null);
+        },
+        isActive: activeScreen === 'staff-management',
+      },
+      {
+        id: 'roster',
+        label: 'Faculty & Staff Roster',
+        defaultScreen: 'staff-management',
+        items: [
+          { id: 'staff-management' as ActiveScreen, label: 'Faculty & Non-Teaching Master Roster' },
+          { id: 'staff-management' as ActiveScreen, label: 'HR Onboarding & Bank Verification' },
+          { id: 'staff-management' as ActiveScreen, label: 'Security Deduction Schedule & Balance' },
+        ],
+        isActive: activeScreen === 'staff-management',
+      },
+      {
+        id: 'lifecycle',
+        label: 'Status & Lifecycle',
+        defaultScreen: 'staff-management',
+        items: [
+          { id: 'staff-management' as ActiveScreen, label: 'Active / Resigned / Terminated / AWOL' },
+          { id: 'staff-management' as ActiveScreen, label: 'Approaching Last Working Day Radar' },
+          { id: 'staff-management' as ActiveScreen, label: 'Fresher vs Rejoiner Tracking' },
+          { id: 'staff-management' as ActiveScreen, label: 'Multi-Role & Designation Transitions' },
+        ],
+        isActive: activeScreen === 'staff-management',
+      },
+      {
+        id: 'dossier',
+        label: 'Staff Dossier & Docs',
+        defaultScreen: 'teacher-documents',
+        items: [
+          { id: 'teacher-documents' as ActiveScreen, label: 'Statutory Credentials & Document Vault' },
+          { id: 'staff-academic-journey' as any, label: 'Organizational Journey & Experience Logs', action: onOpenStaffJourney },
+        ],
+        isActive: activeScreen === 'teacher-documents',
+      },
+      {
+        id: 'exit-noc',
+        label: 'Exit NOC & Clearances',
+        defaultScreen: 'staff-management',
+        items: [
+          { id: 'staff-management' as ActiveScreen, label: '5-Department Digital Exit NOC' },
+          { id: 'staff-management' as ActiveScreen, label: 'Caution Deposit Refund & Lock' },
+        ],
+        isActive: activeScreen === 'staff-management',
+      },
+      {
+        id: 'grievances',
+        label: 'Grievances',
+        defaultScreen: 'grievances',
+        action: () => {
+          onNavigate('grievances');
+          setOpenDrawer(null);
+        },
+        isActive: activeScreen === 'grievances',
       },
     ];
   } else if (userRole === 'partner') {
@@ -884,53 +965,59 @@ export const Header: React.FC<HeaderProps> = ({
                           }
                         }}
                         onMouseLeave={handleMouseLeave}
-                        className={`absolute top-full mt-1.5 bg-white/98 backdrop-blur-2xl border border-slate-200/90 shadow-[0_20px_45px_-10px_rgba(0,35,111,0.18),0_0_0_1px_rgba(0,35,111,0.04)] rounded-2xl p-3 z-50 animate-flyout select-none ${
+                        className={`absolute top-full pt-1.5 z-50 select-none ${
                           sec.items!.length > 4 ? 'w-[420px] sm:w-[480px]' : 'min-w-[280px] sm:min-w-[320px]'
                         } ${sec.id === 'governance' || sec.id === 'staff' ? 'right-0 left-auto' : 'left-0'}`}
                       >
-                        {/* Section Header with Tripartite Branding */}
-                        <div className="px-3 pt-1.5 pb-2 text-[11px] font-bold text-slate-500 tracking-wider uppercase border-b border-slate-100 flex items-center justify-between">
-                          <span className="flex items-center gap-1.5 text-[#00236f] font-black">
-                            <span className="w-2 h-2 rounded-full bg-[#ea580c]" />
-                            {sec.label} Console
-                          </span>
-                          <span className="text-[10px] font-mono text-slate-400 font-semibold">
-                            PUP • MRSPTU • PU
-                          </span>
-                        </div>
+                        <div className="bg-white/98 backdrop-blur-2xl border border-slate-200/90 shadow-[0_20px_45px_-10px_rgba(0,35,111,0.18),0_0_0_1px_rgba(0,35,111,0.04)] rounded-2xl p-3 animate-flyout">
+                          {/* Section Header with Tripartite Branding */}
+                          <div className="px-3 pt-1.5 pb-2 text-[11px] font-bold text-slate-500 tracking-wider uppercase border-b border-slate-100 flex items-center justify-between">
+                            <span className="flex items-center gap-1.5 text-[#00236f] font-black">
+                              <span className="w-2 h-2 rounded-full bg-[#ea580c]" />
+                              {sec.label} Console
+                            </span>
+                            <span className="text-[10px] font-mono text-slate-400 font-semibold">
+                              PUP • MRSPTU • PU
+                            </span>
+                          </div>
 
-                        {/* Interactive Action Grid (Pure Text Hierarchy, Zero Icons) */}
-                        <div className={`py-1.5 ${sec.items!.length > 4 ? 'grid grid-cols-1 sm:grid-cols-2 gap-1' : 'space-y-0.5'}`}>
-                          {sec.items!.map((item: any) => (
-                            <button
-                              key={item.id || item.label}
-                              type="button"
-                              onClick={() => {
-                                if (item.action) {
-                                  item.action();
-                                } else if (item.id) {
-                                  onNavigate(item.id);
-                                }
-                                setOpenDrawer(null);
-                              }}
-                              className={`w-full px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all text-left flex items-center justify-between cursor-pointer group ${
-                                activeScreen === item.id
-                                  ? 'bg-[#00236f] text-white shadow-2xs font-bold'
-                                  : 'text-slate-700 hover:bg-slate-100/90 hover:text-[#00236f]'
-                              }`}
-                            >
-                              <span className="truncate">{item.label}</span>
-                              {activeScreen === item.id && (
-                                <span className="text-[9px] uppercase tracking-wider font-extrabold text-amber-300 ml-2">Active</span>
-                              )}
-                            </button>
-                          ))}
-                        </div>
+                          {/* Interactive Action Grid (Pure Text Hierarchy, Zero Icons) */}
+                          <div className={`py-1.5 ${sec.items!.length > 4 ? 'grid grid-cols-1 sm:grid-cols-2 gap-1' : 'space-y-0.5'}`}>
+                            {sec.items!.map((item: any, itemIdx: number) => (
+                              <button
+                                key={`${sec.id}-${item.id || itemIdx}-${item.label}`}
+                                type="button"
+                                onClick={() => {
+                                  if (closeTimerRef.current) {
+                                    clearTimeout(closeTimerRef.current);
+                                    closeTimerRef.current = null;
+                                  }
+                                  setOpenDrawer(null);
+                                  if (item.action) {
+                                    item.action();
+                                  } else if (item.id) {
+                                    onNavigate(item.id);
+                                  }
+                                }}
+                                className={`w-full px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all text-left flex items-center justify-between cursor-pointer group ${
+                                  activeScreen === item.id
+                                    ? 'bg-[#00236f] text-white shadow-2xs font-bold'
+                                    : 'text-slate-700 hover:bg-slate-100/90 hover:text-[#00236f]'
+                                }`}
+                              >
+                                <span className="truncate">{item.label}</span>
+                                {activeScreen === item.id && (
+                                  <span className="text-[9px] uppercase tracking-wider font-extrabold text-amber-300 ml-2">Active</span>
+                                )}
+                              </button>
+                            ))}
+                          </div>
 
-                        {/* Card Footer Quick Note */}
-                        <div className="pt-2 mt-1 border-t border-slate-100 px-3 flex items-center justify-between text-[10px] text-slate-400">
-                          <span>Statutory Regulation Active</span>
-                          <span className="font-semibold text-slate-500">Autonomous Campus</span>
+                          {/* Card Footer Quick Note */}
+                          <div className="pt-2 mt-1 border-t border-slate-100 px-3 flex items-center justify-between text-[10px] text-slate-400">
+                            <span>Statutory Regulation Active</span>
+                            <span className="font-semibold text-slate-500">Autonomous Campus</span>
+                          </div>
                         </div>
                       </div>
                     )}

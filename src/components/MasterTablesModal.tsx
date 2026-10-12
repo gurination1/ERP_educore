@@ -5,10 +5,11 @@ import { MasterState, MasterUserType, MasterDegree, MasterDocumentType } from '.
 interface MasterTablesModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialTab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents';
 }
 
-export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents'>('states');
+export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, onClose, initialTab }) => {
+  const [activeTab, setActiveTab] = useState<'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents'>(initialTab || 'states');
   const [data, setData] = useState<{
     states: MasterState[];
     userTypes: MasterUserType[];
@@ -18,6 +19,12 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
     institutionGstCode?: string;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab, isOpen]);
 
   const masterDepartments = [
     { code: 'CSE', name: 'Computer Science & Engineering', head: 'Dr. Hardeep Singh', facultyCount: 28, programs: 'B.Tech, M.Tech, BCA, MCA', type: 'Engineering & Technology' },
@@ -52,7 +59,7 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+    <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
       <div className="bg-white rounded-2xl max-w-4xl w-full h-[80vh] shadow-2xl border border-[#e1e3e4] flex flex-col overflow-hidden animate-scaleUp">
         {/* Header */}
         <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#f8f9fa] flex items-center justify-between">

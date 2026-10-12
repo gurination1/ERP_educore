@@ -273,7 +273,9 @@ academicTopologyRouter.post('/attendance/record', authenticateToken, requireRole
       res.status(400).json({ success: false, error: 'batch_id, subject_id, faculty_id, attendance_date, and student_attendance are required' });
       return;
     }
-    const actorId = req.user?.id || faculty_id;
+    const parsedAttendance = typeof student_attendance === 'string'
+      ? JSON.parse(student_attendance)
+      : student_attendance;
     const record = await db.recordAttendance({
       batch_id,
       section_id,
@@ -282,8 +284,8 @@ academicTopologyRouter.post('/attendance/record', authenticateToken, requireRole
       attendance_date,
       slot_time,
       is_combined_class: !!is_combined_class,
-      student_attendance_json: typeof student_attendance === 'string' ? student_attendance : JSON.stringify(student_attendance),
-    }, actorId);
+      student_attendance: parsedAttendance,
+    });
 
     res.status(201).json({ success: true, message: 'Attendance recorded successfully', record });
   } catch (err: any) {

@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts' | 'super_admin' | 'partner';
+export type UserRole = 'student' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts' | 'super_admin' | 'partner' | 'hr';
 
 export interface User {
   id: string;
@@ -397,6 +397,7 @@ export interface StudentProfile {
     name: string;
   };
   status?: string;
+  progression_status?: 'promoted' | 'demoted' | 'struck_off' | 'deactivated' | 'active';
   enterprise_uid?: string;
   roll_number?: string;
   mobile?: string;

@@ -11,7 +11,7 @@ if (!JWT_SECRET) {
   process.exit(1);
 }
 
-export type AuthUserRole = 'student' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts' | 'super_admin' | 'partner';
+export type AuthUserRole = 'student' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts' | 'super_admin' | 'partner' | 'hr';
 
 export interface AuthRequest extends Request {
   user?: {
@@ -24,6 +24,7 @@ export interface AuthRequest extends Request {
     department?: string;
     designation?: string;
     employee_id?: string;
+    tenant_id?: string;
   };
 }
 

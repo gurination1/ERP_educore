@@ -6,7 +6,7 @@ import type { Database as SqlJsDatabase } from 'sql.js';
 import mysql from 'mysql2/promise';
 import pg from 'pg';
 
-export type EnterpriseUserRole = 'super_admin' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts' | 'student' | 'partner';
+export type EnterpriseUserRole = 'super_admin' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts' | 'student' | 'partner' | 'hr';
 
 export interface User {
   id: string;
@@ -114,6 +114,7 @@ export function generateEnterpriseUID(
     accounts: { numeric: '5001', alpha: 'ACC' },
     counselor: { numeric: '6001', alpha: 'CNS' },
     partner: { numeric: '7001', alpha: 'PRT' },
+    hr: { numeric: '8001', alpha: 'HRM' },
     super_admin: { numeric: '9001', alpha: 'SUP' },
   };
 
@@ -147,6 +148,7 @@ export const DEFAULT_MASTER_USER_TYPES: MasterUserType[] = [
   { type_code: '5001', alpha_prefix: 'ACC', role_key: 'accounts', display_title: 'Accounts & Bursar Officer', description: 'Finance department, tuition collection, bursar' },
   { type_code: '6001', alpha_prefix: 'CNS', role_key: 'counselor', display_title: 'Admissions Counselor', description: 'Counseling cell, leads pipeline, CRM coordinator' },
   { type_code: '7001', alpha_prefix: 'PRT', role_key: 'partner', display_title: 'Corporate & Hiring Partner', description: 'Industry partners, corporate recruiters, and internship sponsors' },
+  { type_code: '8001', alpha_prefix: 'HRM', role_key: 'hr', display_title: 'HR & Establishment Officer', description: 'Human Resources, staff recruitment, leave, employee records & service books' },
   { type_code: '9001', alpha_prefix: 'SUP', role_key: 'super_admin', display_title: 'Universal Provost & Super Admin', description: 'Apex system authority, universal access, invisible to subordinate users' },
 ];
 
@@ -531,7 +533,7 @@ export interface AcademicSubject {
   subject_name: string;
   subject_code: string;
   term_number: number;
-  subject_type: 'compulsory' | 'elective' | 'extra' | 'free_period';
+  subject_type: 'compulsory' | 'elective' | 'extra' | 'free_period' | 'lab' | 'project' | 'audit';
   take_exam: boolean;
   show_in_report_card: boolean;
   take_attendance?: boolean;
@@ -3773,6 +3775,7 @@ class DatabaseStore {
     const hodHash = bcrypt.hashSync('hod123', 10);
     const accountsHash = bcrypt.hashSync('accounts123', 10);
     const partnerHash = bcrypt.hashSync('partner123', 10);
+    const hrHash = bcrypt.hashSync('hr123', 10);
 
     const demoStaffAccounts = [
       { id: 'usr-super-01', username: 'superadmin', email: 'superadmin@educore.edu', hash: superHash, role: 'super_admin', full_name: 'Prof. Dr. Amritpal Singh (Chief System Provost)', department: 'Executive Directorate & University Governance', designation: 'Chief System Provost & Chancellor Delegate', employee_id: 'PRO-SUP-001', enterprise_uid: '9001-01-03-01' },
@@ -3782,6 +3785,7 @@ class DatabaseStore {
       { id: 'usr-hod-01', username: 'hod_cse', email: 'hod.cse@educore.edu', hash: hodHash, role: 'hod', full_name: 'Dr. Balwinder Singh (HOD Computer Science)', department: 'Computer Science & Engineering', designation: 'Head of Department', employee_id: 'FAC-HOD-001', enterprise_uid: '3001-01-03-01' },
       { id: 'usr-accounts-01', username: 'accounts01', email: 'accounts@educore.edu', hash: accountsHash, role: 'accounts', full_name: 'Manmohan Sharma (Chief Accounts Officer)', department: 'Finance & Accounts Section', designation: 'Chief Accounts Officer', employee_id: 'ACC-OFF-005', enterprise_uid: '5001-05-03-01' },
       { id: 'usr-partner-01', username: 'partner01', email: 'partner@educore.edu', hash: partnerHash, role: 'partner', full_name: 'Infosys Campus Relations Lead', department: 'Corporate Relations', designation: 'Campus Hiring Director', employee_id: 'PRT-INF-001', enterprise_uid: '7001-01-03-01' },
+      { id: 'usr-hr-01', username: 'hr01', email: 'hr@educore.edu', hash: hrHash, role: 'hr', full_name: 'Sumanpreet Kaur (Chief HR & Establishment Officer)', department: 'Human Resources & Establishment Section', designation: 'Chief HR & Establishment Officer', employee_id: 'HRM-OFF-001', enterprise_uid: '8001-01-03-01' },
     ];
 
     for (const sa of demoStaffAccounts) {
@@ -4410,6 +4414,7 @@ class DatabaseStore {
           { username: 'hod_cse', email: 'hod.cse@educore.edu', name: 'Dr. Balwinder Singh (HOD Computer Science)', role: 'hod' as const, dept: 'Computer Science & Engineering', desig: 'Head of Department', empId: 'FAC-HOD-001', pass: 'hod123', uid: '3001-01-03-01' },
           { username: 'accounts01', email: 'accounts@educore.edu', name: 'Manmohan Sharma (Chief Accounts Officer)', role: 'accounts' as const, dept: 'Finance & Accounts Section', desig: 'Chief Accounts Officer', empId: 'ACC-OFF-005', pass: 'accounts123', uid: '5001-05-03-01' },
           { username: 'partner01', email: 'partner@educore.edu', name: 'Infosys Campus Relations Lead', role: 'partner' as const, dept: 'Corporate Relations', desig: 'Campus Hiring Director', empId: 'PRT-INF-001', pass: 'partner123', uid: '7001-01-03-01' },
+          { username: 'hr01', email: 'hr@educore.edu', name: 'Sumanpreet Kaur (Chief HR & Establishment Officer)', role: 'hr' as const, dept: 'Human Resources & Establishment Section', desig: 'Chief HR & Establishment Officer', empId: 'HRM-OFF-001', pass: 'hr123', uid: '8001-01-03-01' },
         ];
 
         for (const stf of demoStaffAccounts) {
@@ -4660,6 +4665,7 @@ class DatabaseStore {
     else if (val === '6001-02-03-bfgi' || val === '6001-03-bfgi-0002') effectiveVal = 'counselor01';
     else if (val === '3001-01-03-bfgi' || val === '3001-03-bfgi-0001') effectiveVal = 'hod_cse';
     else if (val === '5001-05-03-bfgi' || val === '5001-03-bfgi-0005') effectiveVal = 'accounts01';
+    else if (val === 'hr' || val === 'hr01' || val === '8001-01-03-01' || val === '8001010301' || val === '8001-01-01-03-01' || val === '800101010301' || val === '8001-01-03-bfgi' || val === '8001-03-bfgi-0001') effectiveVal = 'hr01';
 
     if (this.mode === 'mariadb' && this.mariaPool) {
       const [rows]: any = await this.mariaPool.query(
@@ -5210,6 +5216,7 @@ class DatabaseStore {
         actor_id: 'usr-admin-01',
         actor_name: 'Dr. Ramesh Chandra (Registrar)',
         details: `Account established for ${user.full_name} with enterprise role ${user.role.toUpperCase()} and UID ${user.enterprise_uid || 'N/A'}.`,
+        changes_diff: 'Initial foundational account provisioning',
         severity: 'info',
         device: 'MacBook Pro (Registrar Office)',
         platform: 'macOS Sonoma / EduCore Web',
@@ -6995,6 +7002,20 @@ class DatabaseStore {
         is_active: true,
         created_at: new Date().toISOString(),
       },
+      {
+        id: 'usr-hr-01',
+        username: 'hr01',
+        email: 'hr@educore.edu',
+        password_hash: bcrypt.hashSync('hr123', 10),
+        role: 'hr',
+        full_name: 'Sumanpreet Kaur (Chief HR & Establishment Officer)',
+        department: 'Human Resources & Establishment Section',
+        designation: 'Chief HR & Establishment Officer',
+        employee_id: 'HRM-OFF-001',
+        enterprise_uid: '8001-01-03-01',
+        is_active: true,
+        created_at: new Date().toISOString(),
+      },
     ];
 
     this.sessions = [
@@ -8505,7 +8526,8 @@ class DatabaseStore {
     staffId: string,
     department: 'library' | 'accounts' | 'hod' | 'it' | 'hr',
     cleared: boolean,
-    remarks?: string
+    remarks?: string,
+    actorId?: string
   ): Promise<StaffExitNoc> {
     let noc = await this.getStaffExitNoc(staffId);
     if (!noc) {
