@@ -464,4 +464,35 @@ export const api = {
   },
   updateFieldPermission: (id: string, data: any) =>
     apiRequest(`/api/permissions/fields/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  // Document Compliance & Vault
+  getDocuments: (params?: { owner_id?: string; owner_role?: string; status?: string }) => {
+    const q = params ? '?' + new URLSearchParams(params as any).toString() : '';
+    return apiRequest(`/api/documents${q}`);
+  },
+  uploadDocument: (data: any) =>
+    apiRequest('/api/documents/upload', { method: 'POST', body: JSON.stringify(data) }),
+  verifyDocument: (id: string, updates: { status: string; verified_by?: string; remarks?: string }) =>
+    apiRequest(`/api/documents/${id}/verify`, { method: 'PATCH', body: JSON.stringify(updates) }),
+
+  // CBT Quiz & LMS
+  getQuizzes: () => apiRequest('/api/quizzes'),
+  getQuizById: (id: string) => apiRequest(`/api/quizzes/${id}`),
+  submitQuiz: (id: string, data: any) =>
+    apiRequest(`/api/quizzes/${id}/submit`, { method: 'POST', body: JSON.stringify(data) }),
+  getQuizSubmissions: (params?: { quizId?: string; studentId?: string }) => {
+    const q = params ? '?' + new URLSearchParams(params as any).toString() : '';
+    return apiRequest(`/api/quizzes/submissions${q}`);
+  },
+  getLMSResources: () => apiRequest('/api/quizzes/resources'),
+  createLMSResource: (data: any) =>
+    apiRequest('/api/quizzes/resources', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Sessional Marks
+  getSessionalMarks: (params?: { courseCode?: string; semester?: number }) => {
+    const q = params ? '?' + new URLSearchParams(params as any).toString() : '';
+    return apiRequest(`/api/academics/sessional-marks${q}`);
+  },
+  saveSessionalMarks: (marks: any[]) =>
+    apiRequest('/api/academics/sessional-marks', { method: 'POST', body: JSON.stringify({ marks }) }),
 };

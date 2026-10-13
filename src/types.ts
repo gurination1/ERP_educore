@@ -618,3 +618,39 @@ export interface LMSQuiz {
   questions: LMSQuizQuestion[];
   instructions: string[];
 }
+
+export interface LMSQuizSubmission {
+  id: string;
+  quizId: string;
+  studentId: string;
+  studentName: string;
+  score: number;
+  totalMarks: number;
+  percentage: number;
+  passed: boolean;
+  selectedAnswers: Record<string, number>;
+  submittedAt: string;
+}
+
+export interface LMSResource {
+  id: string;
+  title: string;
+  subject: string;
+  format: string;
+  lecturer: string;
+  downloadUrl: string;
+  createdAt?: string;
+}
+
+export interface SessionalMarkEntry {
+  id: string;
+  studentId: string;
+  studentName?: string;
+  courseCode: string;
+  semester: number;
+  mst1: number;
+  mst2: number;
+  assignment: number;
+  updatedBy?: string;
+  updatedAt?: string;
+}

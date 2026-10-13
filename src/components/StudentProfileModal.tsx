@@ -23,6 +23,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isPromoting, setIsPromoting] = useState(false);
   const [promoteMsg, setPromoteMsg] = useState<string | null>(null);
+  const [studentDocs, setStudentDocs] = useState<any[]>([]);
 
   useEffect(() => {
     api.getStudentProfile(student.id).then(res => {
@@ -31,6 +32,14 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
       }
       setIsLoading(false);
     });
+
+    api.getDocuments({ owner_id: student.id })
+      .then(res => {
+        if (res.success && res.documents) {
+          setStudentDocs(res.documents);
+        }
+      })
+      .catch(err => console.error('Error fetching student documents:', err));
   }, [student.id]);
 
   const fullName = `${student.first_name} ${student.last_name}`;
@@ -95,6 +104,24 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
       alert(err.message || 'Error communicating with server.');
     } finally {
       setIsTogglingStatus(false);
+    }
+  };
+
+  const handleVerifyDoc = async (docId: string, status: 'verified' | 'rejected') => {
+    try {
+      const res = await api.verifyDocument(docId, {
+        status,
+        verified_by: currentUser?.full_name || 'Verification Authority',
+        remarks: status === 'verified' ? 'Verified in student profile dossier' : 'Rejected in student profile dossier',
+      });
+      if (res.success && res.document) {
+        setStudentDocs(prev => prev.map(d => d.id === docId ? res.document : d));
+        const fresh = await api.getStudentProfile(student.id);
+        if (fresh.success) setProfileData(fresh.student);
+        if (onStudentUpdated) onStudentUpdated();
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to update document compliance status.');
     }
   };
 
@@ -209,6 +236,83 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
               <p className="text-[#444651] text-xs">
                 {student.guardian_name} ({student.guardian_relation}) • {student.guardian_phone}
               </p>
+            </div>
+
+            {/* Document Compliance Vault & Verification */}
+            <div className="p-3 bg-[#f8f9fa] rounded-lg border border-[#e1e3e4] space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-[#191c1d] block text-xs uppercase tracking-wider text-[#757682]">
+                  Regulatory Document Compliance ({studentDocs.length} Deposited)
+                </span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                  (profileData?.tenth_doc_verified && profileData?.twelfth_doc_verified && profileData?.aadhaar_doc_verified)
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-amber-100 text-amber-800'
+                }`}>
+                  {(profileData?.tenth_doc_verified && profileData?.twelfth_doc_verified && profileData?.aadhaar_doc_verified)
+                    ? '✓ Fully Attested'
+                    : '⚠ Verification Incomplete'}
+                </span>
+              </div>
+
+              {studentDocs.length === 0 ? (
+                <p className="text-[11px] text-[#757682]">No digital compliance documents deposited yet.</p>
+              ) : (
+                <div className="space-y-1.5">
+                  {studentDocs.map((doc: any) => {
+                    const isVerified = doc.status === 'verified';
+                    const canVerify = ['admin', 'super_admin', 'staff', 'hod', 'counselor'].includes(currentUser?.role || '');
+
+                    return (
+                      <div
+                        key={doc.id}
+                        className="p-2 bg-white rounded border border-[#e1e3e4] flex items-center justify-between gap-2 text-xs"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-[#191c1d] truncate block">{doc.title}</span>
+                            <span className="text-[9px] font-mono px-1 py-0.2 bg-slate-100 rounded text-slate-600">
+                              {doc.doc_type_code}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-[#757682] block truncate">
+                            {doc.file_name} • {doc.file_size_kb} KB {doc.verified_by ? `• Attested by ${doc.verified_by}` : ''}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                              isVerified
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : doc.status === 'rejected'
+                                ? 'bg-rose-100 text-rose-800'
+                                : 'bg-amber-100 text-amber-800'
+                            }`}
+                          >
+                            {doc.status}
+                          </span>
+
+                          {canVerify && (
+                            <button
+                              type="button"
+                              onClick={() => handleVerifyDoc(doc.id, isVerified ? 'rejected' : 'verified')}
+                              className={`px-2 py-1 rounded text-[10px] font-bold cursor-pointer transition-colors ${
+                                isVerified
+                                  ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200'
+                                  : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200'
+                              }`}
+                              title={isVerified ? 'Revoke verification' : 'Attest credential'}
+                            >
+                              {isVerified ? 'Reject' : 'Verify ✓'}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Fee Items Table */}

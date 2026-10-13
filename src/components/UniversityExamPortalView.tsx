@@ -49,6 +49,8 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
   // Submission slips
   const [submittedRegularSlip, setSubmittedRegularSlip] = useState<any | null>(null);
   const [submittedReappearSlip, setSubmittedReappearSlip] = useState<any | null>(null);
+  const [resultsGazette, setResultsGazette] = useState<any | null>(null);
+  const [resultsLoading, setResultsLoading] = useState<boolean>(false);
 
   // Load initial meta & eligible students
   useEffect(() => {
@@ -108,11 +110,25 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
       .finally(() => setProfileLoading(false));
   };
 
+  const fetchExamResults = (studentId: string) => {
+    if (!studentId) return;
+    setResultsLoading(true);
+    api.getExamResults(studentId)
+      .then(res => {
+        if (res.success && res.resultGazette) {
+          setResultsGazette(res.resultGazette);
+        }
+      })
+      .catch(err => console.error('Error fetching exam results:', err))
+      .finally(() => setResultsLoading(false));
+  };
+
   useEffect(() => {
     if (selectedStudentId) {
       fetchStudentProfile(selectedStudentId);
+      fetchExamResults(selectedStudentId);
     }
-  }, [selectedStudentId]);
+  }, [selectedStudentId, activeTab]);
 
   // Load datesheets
   const fetchDatesheets = () => {
@@ -1022,17 +1038,23 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="bg-blue-50/60 border border-blue-200 p-4 rounded-2xl">
                 <span className="text-[11px] font-bold text-[#00236f] uppercase">Semester SGPA</span>
-                <div className="text-2xl font-black text-[#00236f] mt-1">8.82 / 10.0</div>
+                <div className="text-2xl font-black text-[#00236f] mt-1">
+                  {resultsGazette?.sgpa !== undefined ? resultsGazette.sgpa : 8.82} / 10.0
+                </div>
                 <span className="text-[10px] text-slate-500">Current Term Performance</span>
               </div>
               <div className="bg-emerald-50/60 border border-emerald-200 p-4 rounded-2xl">
                 <span className="text-[11px] font-bold text-emerald-800 uppercase">Cumulative CGPA</span>
-                <div className="text-2xl font-black text-emerald-800 mt-1">8.65 / 10.0</div>
+                <div className="text-2xl font-black text-emerald-800 mt-1">
+                  {resultsGazette?.cgpa !== undefined ? resultsGazette.cgpa : 8.65} / 10.0
+                </div>
                 <span className="text-[10px] text-slate-500">Overall Degree Standing</span>
               </div>
               <div className="bg-purple-50/60 border border-purple-200 p-4 rounded-2xl">
                 <span className="text-[11px] font-bold text-purple-800 uppercase">Earned Credits</span>
-                <div className="text-2xl font-black text-purple-800 mt-1">68 / 68</div>
+                <div className="text-2xl font-black text-purple-800 mt-1">
+                  {resultsGazette?.totalCredits !== undefined ? `${resultsGazette.totalCredits} / ${resultsGazette.totalCredits}` : '68 / 68'}
+                </div>
                 <span className="text-[10px] text-slate-500">100% Credit Completion</span>
               </div>
               <div className="bg-amber-50/60 border border-amber-200 p-4 rounded-2xl">
@@ -1044,89 +1066,119 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
 
             {/* Grades Table */}
             <div className="overflow-x-auto border border-slate-200 rounded-2xl">
-              <table className="w-full text-left text-xs divide-y divide-slate-200">
-                <thead className="bg-[#00236f] text-white font-bold uppercase tracking-wider text-[11px]">
-                  <tr>
-                    <th className="p-3">Paper Code</th>
-                    <th className="p-3">Subject Title</th>
-                    <th className="p-3">Credits</th>
-                    <th className="p-3">Internal (40)</th>
-                    <th className="p-3">External (60)</th>
-                    <th className="p-3">Total (100)</th>
-                    <th className="p-3">Letter Grade</th>
-                    <th className="p-3">Grade Point</th>
-                    <th className="p-3">Credit Points</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 font-medium">
-                  <tr>
-                    <td className="p-3 font-mono font-bold text-[#00236f]">CS-301</td>
-                    <td className="p-3 font-semibold text-slate-900">Data Structures & Algorithmic Foundations</td>
-                    <td className="p-3">4</td>
-                    <td className="p-3">38</td>
-                    <td className="p-3">54</td>
-                    <td className="p-3 font-bold text-slate-900">92</td>
-                    <td className="p-3 font-black text-emerald-700">A+</td>
-                    <td className="p-3 font-bold">9</td>
-                    <td className="p-3 font-bold">36</td>
-                  </tr>
-                  <tr>
-                    <td className="p-3 font-mono font-bold text-[#00236f]">CS-302</td>
-                    <td className="p-3 font-semibold text-slate-900">Computer Architecture & Assembly Language</td>
-                    <td className="p-3">4</td>
-                    <td className="p-3">35</td>
-                    <td className="p-3">49</td>
-                    <td className="p-3 font-bold text-slate-900">84</td>
-                    <td className="p-3 font-black text-blue-700">A</td>
-                    <td className="p-3 font-bold">8</td>
-                    <td className="p-3 font-bold">32</td>
-                  </tr>
-                  <tr>
-                    <td className="p-3 font-mono font-bold text-[#00236f]">CS-303</td>
-                    <td className="p-3 font-semibold text-slate-900">Operating Systems & System Programming</td>
-                    <td className="p-3">4</td>
-                    <td className="p-3">39</td>
-                    <td className="p-3">56</td>
-                    <td className="p-3 font-bold text-slate-900">95</td>
-                    <td className="p-3 font-black text-purple-700">O (Outstanding)</td>
-                    <td className="p-3 font-bold">10</td>
-                    <td className="p-3 font-bold">40</td>
-                  </tr>
-                  <tr>
-                    <td className="p-3 font-mono font-bold text-[#00236f]">CS-304</td>
-                    <td className="p-3 font-semibold text-slate-900">Object Oriented Software Engineering</td>
-                    <td className="p-3">4</td>
-                    <td className="p-3">32</td>
-                    <td className="p-3">44</td>
-                    <td className="p-3 font-bold text-slate-900">76</td>
-                    <td className="p-3 font-black text-slate-700">B+</td>
-                    <td className="p-3 font-bold">7</td>
-                    <td className="p-3 font-bold">28</td>
-                  </tr>
-                  <tr>
-                    <td className="p-3 font-mono font-bold text-[#00236f]">CS-305</td>
-                    <td className="p-3 font-semibold text-slate-900">Discrete Mathematical Structures</td>
-                    <td className="p-3">4</td>
-                    <td className="p-3">34</td>
-                    <td className="p-3">50</td>
-                    <td className="p-3 font-bold text-slate-900">84</td>
-                    <td className="p-3 font-black text-blue-700">A</td>
-                    <td className="p-3 font-bold">8</td>
-                    <td className="p-3 font-bold">32</td>
-                  </tr>
-                  <tr>
-                    <td className="p-3 font-mono font-bold text-[#00236f]">CS-306</td>
-                    <td className="p-3 font-semibold text-slate-900">Data Structures Practicum Laboratory</td>
-                    <td className="p-3">2</td>
-                    <td className="p-3">48</td>
-                    <td className="p-3">46</td>
-                    <td className="p-3 font-bold text-slate-900">94</td>
-                    <td className="p-3 font-black text-purple-700">O (Outstanding)</td>
-                    <td className="p-3 font-bold">10</td>
-                    <td className="p-3 font-bold">20</td>
-                  </tr>
-                </tbody>
-              </table>
+              {resultsLoading ? (
+                <div className="p-8 text-center text-xs text-slate-500 font-medium">
+                  Loading official CBCS semester grade cards...
+                </div>
+              ) : (
+                <table className="w-full text-left text-xs divide-y divide-slate-200">
+                  <thead className="bg-[#00236f] text-white font-bold uppercase tracking-wider text-[11px]">
+                    <tr>
+                      <th className="p-3">Paper Code</th>
+                      <th className="p-3">Subject Title</th>
+                      <th className="p-3">Credits</th>
+                      <th className="p-3">Internal (40)</th>
+                      <th className="p-3">External (60)</th>
+                      <th className="p-3">Total (100)</th>
+                      <th className="p-3">Letter Grade</th>
+                      <th className="p-3">Grade Point</th>
+                      <th className="p-3">Credit Points</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-medium">
+                    {resultsGazette?.grades && resultsGazette.grades.length > 0 ? (
+                      resultsGazette.grades.map((g: any) => (
+                        <tr key={g.code}>
+                          <td className="p-3 font-mono font-bold text-[#00236f]">{g.code}</td>
+                          <td className="p-3 font-semibold text-slate-900">{g.title}</td>
+                          <td className="p-3">{g.credits}</td>
+                          <td className="p-3">{g.internal}</td>
+                          <td className="p-3">{g.external}</td>
+                          <td className="p-3 font-bold text-slate-900">{g.total}</td>
+                          <td className={`p-3 font-black ${
+                            g.grade === 'O' ? 'text-purple-700' :
+                            g.grade === 'A+' ? 'text-emerald-700' :
+                            g.grade === 'A' ? 'text-blue-700' : 'text-slate-700'
+                          }`}>
+                            {g.grade}
+                          </td>
+                          <td className="p-3 font-bold">{g.gradePoint}</td>
+                          <td className="p-3 font-bold">{g.creditPoints}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <>
+                        <tr>
+                          <td className="p-3 font-mono font-bold text-[#00236f]">CS-301</td>
+                          <td className="p-3 font-semibold text-slate-900">Data Structures & Algorithmic Foundations</td>
+                          <td className="p-3">4</td>
+                          <td className="p-3">38</td>
+                          <td className="p-3">54</td>
+                          <td className="p-3 font-bold text-slate-900">92</td>
+                          <td className="p-3 font-black text-emerald-700">A+</td>
+                          <td className="p-3 font-bold">9</td>
+                          <td className="p-3 font-bold">36</td>
+                        </tr>
+                        <tr>
+                          <td className="p-3 font-mono font-bold text-[#00236f]">CS-302</td>
+                          <td className="p-3 font-semibold text-slate-900">Computer Architecture & Assembly Language</td>
+                          <td className="p-3">4</td>
+                          <td className="p-3">35</td>
+                          <td className="p-3">49</td>
+                          <td className="p-3 font-bold text-slate-900">84</td>
+                          <td className="p-3 font-black text-blue-700">A</td>
+                          <td className="p-3 font-bold">8</td>
+                          <td className="p-3 font-bold">32</td>
+                        </tr>
+                        <tr>
+                          <td className="p-3 font-mono font-bold text-[#00236f]">CS-303</td>
+                          <td className="p-3 font-semibold text-slate-900">Operating Systems & System Programming</td>
+                          <td className="p-3">4</td>
+                          <td className="p-3">39</td>
+                          <td className="p-3">56</td>
+                          <td className="p-3 font-bold text-slate-900">95</td>
+                          <td className="p-3 font-black text-purple-700">O (Outstanding)</td>
+                          <td className="p-3 font-bold">10</td>
+                          <td className="p-3 font-bold">40</td>
+                        </tr>
+                        <tr>
+                          <td className="p-3 font-mono font-bold text-[#00236f]">CS-304</td>
+                          <td className="p-3 font-semibold text-slate-900">Object Oriented Software Engineering</td>
+                          <td className="p-3">4</td>
+                          <td className="p-3">32</td>
+                          <td className="p-3">44</td>
+                          <td className="p-3 font-bold text-slate-900">76</td>
+                          <td className="p-3 font-black text-slate-700">B+</td>
+                          <td className="p-3 font-bold">7</td>
+                          <td className="p-3 font-bold">28</td>
+                        </tr>
+                        <tr>
+                          <td className="p-3 font-mono font-bold text-[#00236f]">CS-305</td>
+                          <td className="p-3 font-semibold text-slate-900">Discrete Mathematical Structures</td>
+                          <td className="p-3">4</td>
+                          <td className="p-3">34</td>
+                          <td className="p-3">50</td>
+                          <td className="p-3 font-bold text-slate-900">84</td>
+                          <td className="p-3 font-black text-blue-700">A</td>
+                          <td className="p-3 font-bold">8</td>
+                          <td className="p-3 font-bold">32</td>
+                        </tr>
+                        <tr>
+                          <td className="p-3 font-mono font-bold text-[#00236f]">CS-306</td>
+                          <td className="p-3 font-semibold text-slate-900">Data Structures Practicum Laboratory</td>
+                          <td className="p-3">2</td>
+                          <td className="p-3">48</td>
+                          <td className="p-3">46</td>
+                          <td className="p-3 font-bold text-slate-900">94</td>
+                          <td className="p-3 font-black text-purple-700">O (Outstanding)</td>
+                          <td className="p-3 font-bold">10</td>
+                          <td className="p-3 font-bold">20</td>
+                        </tr>
+                      </>
+                    )}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         )}

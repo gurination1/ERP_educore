@@ -89,8 +89,8 @@ async function run() {
         stdio: 'inherit',
       });
 
-      for (let i = 0; i < 30; i++) {
-        await new Promise(r => setTimeout(r, 600));
+      for (let i = 0; i < 60; i++) {
+        await new Promise(r => setTimeout(r, 800));
         try {
           const res = await fetch(`${BASE_URL}/api/health`);
           if (res.ok) {

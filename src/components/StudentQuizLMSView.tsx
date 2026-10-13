@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { safeGoBack } from '../utils/navigation';
 import { User, LMSQuiz } from '../types';
+import { api } from '../api/client';
 
 interface StudentQuizLMSViewProps {
   currentUser: User | null;
@@ -141,12 +142,36 @@ const LMS_RESOURCES = [
 
 export const StudentQuizLMSView: React.FC<StudentQuizLMSViewProps> = ({ currentUser }) => {
   const [activeTab, setActiveTab] = useState<'quizzes' | 'lms_resources'>('quizzes');
+  const [quizzes, setQuizzes] = useState<LMSQuiz[]>(SAMPLE_QUIZZES);
+  const [resources, setResources] = useState<any[]>(LMS_RESOURCES);
   const [activeQuiz, setActiveQuiz] = useState<LMSQuiz | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeftSeconds, setTimeLeftSeconds] = useState(0);
   const [quizScore, setQuizScore] = useState<{ score: number; total: number; percentage: number; passed: boolean } | null>(null);
+
+  // Fetch quizzes and LMS materials from backend
+  useEffect(() => {
+    const loadLMSData = async () => {
+      try {
+        const [qRes, rRes] = await Promise.all([
+          api.getQuizzes(),
+          api.getLMSResources(),
+        ]);
+        if (qRes.success && qRes.quizzes && qRes.quizzes.length > 0) {
+          setQuizzes(qRes.quizzes);
+        }
+        if (rRes.success && rRes.resources && rRes.resources.length > 0) {
+          setResources(rRes.resources);
+        }
+      } catch (err) {
+        console.warn('Backend LMS load fallback:', err);
+      }
+    };
+    loadLMSData();
+  }, []);
 
   // Timer Effect
   useEffect(() => {
@@ -210,8 +235,10 @@ Unit 4: Real-World Case Studies & Industry Benchmark Applications
     setSelectedAnswers(prev => ({ ...prev, [questionId]: optionIndex }));
   };
 
-  const handleSubmitQuiz = () => {
-    if (!activeQuiz) return;
+  const handleSubmitQuiz = async () => {
+    if (!activeQuiz || isSubmitting) return;
+    setIsSubmitting(true);
+
     let earnedMarks = 0;
     activeQuiz.questions.forEach(q => {
       if (selectedAnswers[q.id] === q.correctAnswer) {
@@ -228,6 +255,20 @@ Unit 4: Real-World Case Studies & Industry Benchmark Applications
       passed,
     });
     setIsSubmitted(true);
+
+    try {
+      const durationTaken = activeQuiz.durationMinutes * 60 - timeLeftSeconds;
+      await api.submitQuiz(activeQuiz.id, {
+        studentId: currentUser?.id,
+        studentName: currentUser?.full_name,
+        selectedAnswers,
+        timeTakenSeconds: Math.max(0, durationTaken),
+      });
+    } catch (err) {
+      console.warn('Backend quiz submit error:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const formatTimer = (seconds: number) => {
@@ -489,7 +530,7 @@ Unit 4: Real-World Case Studies & Industry Benchmark Applications
           ) : (
             /* QUIZ CATALOGUE ROSTER */
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fadeIn">
-              {SAMPLE_QUIZZES.map(quiz => (
+              {quizzes.map(quiz => (
                 <div
                   key={quiz.id}
                   className="bg-white p-6 rounded-2xl border border-[#e1e3e4] hover:border-[#00236f]/40 transition-all shadow-xs flex flex-col justify-between space-y-4"
@@ -551,7 +592,7 @@ Unit 4: Real-World Case Studies & Industry Benchmark Applications
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {LMS_RESOURCES.map(res => (
+            {resources.map(res => (
               <div
                 key={res.id}
                 className="bg-white p-5 rounded-2xl border border-[#e1e3e4] hover:border-[#00236f]/40 transition-all shadow-xs flex items-start justify-between gap-4"

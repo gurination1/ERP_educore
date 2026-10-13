@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 
 interface EmailRemindersModalProps {
@@ -12,6 +12,17 @@ export const EmailRemindersModal: React.FC<EmailRemindersModalProps> = ({ onClos
   );
   const [isSending, setIsSending] = useState(false);
   const [sentResult, setSentResult] = useState<string | null>(null);
+  const [defaulters, setDefaulters] = useState<any[]>([]);
+
+  useEffect(() => {
+    api.getDefaulters()
+      .then(res => {
+        if (res.success && res.defaulters) {
+          setDefaulters(res.defaulters);
+        }
+      })
+      .catch(err => console.error('Error fetching defaulters:', err));
+  }, []);
 
   const handleSendBroadcast = async () => {
     setIsSending(true);
@@ -33,12 +44,14 @@ export const EmailRemindersModal: React.FC<EmailRemindersModalProps> = ({ onClos
       <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#e1e3e4] space-y-4 animate-scaleUp">
         <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#dce1ff] text-[#00236f] flex items-center justify-center">
-              
+            <div className="w-8 h-8 rounded-lg bg-[#dce1ff] text-[#00236f] flex items-center justify-center font-bold text-sm">
+              ✉
             </div>
             <div>
               <h3 className="text-base font-bold text-[#191c1d]">Broadcast Fee Reminders</h3>
-              <p className="text-[11px] text-[#757682]">Targeting 4 Defaulters with overdue balances</p>
+              <p className="text-[11px] text-[#757682]">
+                Targeting {defaulters.length > 0 ? defaulters.length : 4} Defaulters with overdue balances
+              </p>
             </div>
           </div>
           <button onClick={onClose} className="text-[#757682] hover:text-[#191c1d]">
@@ -74,7 +87,23 @@ export const EmailRemindersModal: React.FC<EmailRemindersModalProps> = ({ onClos
           </div>
 
           <div className="p-3 bg-[#f8f9fa] rounded-lg border border-[#edeeef] text-[11px] text-[#444651]">
-            <span>Recipients: Aarav Sharma, Priya Patel, Rohan Gupta, Neha Singh</span>
+            <span className="font-bold block mb-1">
+              Recipients ({defaulters.length > 0 ? defaulters.length : 4}):
+            </span>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {defaulters.length > 0 ? (
+                defaulters.map((d: any) => (
+                  <span
+                    key={d.id || d.student_id}
+                    className="px-2 py-0.5 bg-rose-50 border border-rose-200 text-rose-800 rounded font-semibold text-[10px]"
+                  >
+                    {d.name || `${d.first_name} ${d.last_name}`} ({d.student_id}) — ₹{(d.due_amount || 0).toLocaleString('en-IN')}
+                  </span>
+                ))
+              ) : (
+                <span>Aarav Sharma, Priya Patel, Rohan Gupta, Neha Singh</span>
+              )}
+            </div>
           </div>
 
           <div className="pt-2 flex justify-end gap-2">

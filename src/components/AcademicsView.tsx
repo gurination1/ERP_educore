@@ -271,13 +271,41 @@ export const AcademicsView: React.FC<AcademicsViewProps> = ({ currentUser }) => 
   const [attendanceSettings, setAttendanceSettings] = useState<{ backdated_lock_days: number }>({ backdated_lock_days: 20 });
   const [lockThreshold, setLockThreshold] = useState<number>(20);
 
+  const dynamicSyllabusCourses = React.useMemo(() => {
+    const existingCodes = new Set(COURSES.map(c => c.code.toLowerCase()));
+    const extraCourses: CourseItem[] = subjects
+      .filter(s => !existingCodes.has(s.subject_code.toLowerCase()))
+      .map(s => ({
+        id: s.id,
+        code: s.subject_code,
+        title: s.subject_name,
+        department: 'Computer Science & Engineering',
+        semester: s.term_number || 4,
+        credits: Number(s.credits) || 4,
+        ltp: '3-1-0',
+        instructor: 'Assigned Departmental Faculty',
+        description: `Official curriculum syllabus matrix specification for ${s.subject_name} (${s.subject_code}). Maximum marks: ${s.max_marks || 100}, Pass marks: ${s.pass_marks || 40}.`,
+        units: [
+          { unitNo: 'Unit I', title: 'Foundational Theoretical Principles', hours: 10, topics: ['Core nomenclature and architectural primitives', 'Theoretical formulations and design principles'] },
+          { unitNo: 'Unit II', title: 'Advanced Analysis & Formulations', hours: 12, topics: ['Quantitative assessment models', 'Computational paradigms and implementations'] },
+          { unitNo: 'Unit III', title: 'Applied Systems & Case Studies', hours: 11, topics: ['Real-world industrial case studies', 'Emerging industry benchmarks and practices'] },
+          { unitNo: 'Unit IV', title: 'Capstones & Future Directives', hours: 12, topics: ['Security, reliability, and lifecycle synthesis', 'Evaluation rubric and laboratory guidelines'] },
+        ],
+        textbooks: ['Prescribed University Standard Textbooks & Reference Editions'],
+      }));
+    return [...COURSES, ...extraCourses];
+  }, [subjects]);
+
   useEffect(() => {
     loadAcademicData();
   }, [activeTab]);
 
   const loadAcademicData = async () => {
     try {
-      if (activeTab === 'batches') {
+      if (activeTab === 'syllabus') {
+        const res = await api.getSubjects();
+        if (res.success) setSubjects(res.subjects || []);
+      } else if (activeTab === 'batches') {
         const res = await api.getBatches();
         if (res.success) setBatches(res.batches || []);
       } else if (activeTab === 'sections') {
@@ -660,7 +688,7 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {COURSES.map(course => (
+            {dynamicSyllabusCourses.map(course => (
               <div
                 key={course.id}
                 className="bg-white rounded-xl border border-slate-200/80 shadow-xs p-5 flex flex-col justify-between space-y-3 hover:border-[#00236f]/30 transition-colors"

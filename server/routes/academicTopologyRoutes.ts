@@ -292,3 +292,52 @@ academicTopologyRouter.post('/attendance/record', authenticateToken, requireRole
     res.status(400).json({ success: false, error: err.message });
   }
 });
+
+// ====================================================
+// 8. SESSIONAL MARKS & INTERNAL ASSESSMENT
+// ====================================================
+academicTopologyRouter.get('/sessional-marks', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const courseCode = typeof req.query.courseCode === 'string' ? req.query.courseCode : undefined;
+    const semester = typeof req.query.semester === 'string' ? Number(req.query.semester) : undefined;
+    const marks = await db.getSessionalMarks(courseCode, semester);
+    res.json({ success: true, count: marks.length, marks });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+const saveSessionalMarksSchema = z.object({
+  marks: z.array(
+    z.object({
+      studentId: z.string().min(1),
+      studentName: z.string().optional(),
+      courseCode: z.string().optional(),
+      semester: z.number().optional(),
+      mst1: z.number().min(0).max(24),
+      mst2: z.number().min(0).max(24),
+      assignment: z.number().min(0).max(12),
+    })
+  ).min(1),
+});
+
+academicTopologyRouter.post('/sessional-marks', authenticateToken, requireRole('admin', 'super_admin', 'staff', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const parseResult = saveSessionalMarksSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      const errorMsg = parseResult.error.errors.map(e => e.message).join(', ');
+      res.status(400).json({ success: false, error: errorMsg });
+      return;
+    }
+
+    const actorId = req.user?.full_name || req.user?.username || 'faculty';
+    const result = await db.saveSessionalMarks(parseResult.data.marks, actorId);
+    res.json({
+      success: true,
+      message: `Internal sessional marks for ${result.count} students saved and locked for University evaluation audit!`,
+      result,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});

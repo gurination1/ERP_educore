@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { safeGoBack } from '../utils/navigation';
 import { User, DocumentRecord } from '../types';
+import { api } from '../api/client';
 
 interface TeacherDocumentsViewProps {
   currentUser: User | null;
@@ -110,22 +111,7 @@ const INITIAL_TEACHER_DOCS: DocumentRecord[] = [
 ];
 
 export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ currentUser }) => {
-  const storageKey = `educore_teacher_docs_${currentUser?.id || 'default'}`;
-  const [documents, setDocuments] = useState<DocumentRecord[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : INITIAL_TEACHER_DOCS;
-    } catch {
-      return INITIAL_TEACHER_DOCS;
-    }
-  });
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(documents));
-    } catch {}
-  }, [documents, storageKey]);
-
+  const [documents, setDocuments] = useState<DocumentRecord[]>(INITIAL_TEACHER_DOCS);
   const [selectedDoc, setSelectedDoc] = useState<DocumentRecord | null>(null);
   const [filterType, setFilterType] = useState<string>('all');
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
@@ -139,7 +125,25 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
 
   const isProvostOrAdmin = ['admin', 'super_admin', 'hod', 'hr'].includes(currentUser?.role || '');
 
-  const handleSimulatedUpload = (e: React.FormEvent) => {
+  const loadDocuments = async () => {
+    try {
+      const res = await api.getDocuments({
+        owner_id: currentUser?.id,
+        owner_role: 'staff',
+      });
+      if (res.success && res.documents && res.documents.length > 0) {
+        setDocuments(res.documents);
+      }
+    } catch (err: any) {
+      console.warn('Backend teacher documents fetch fallback:', err);
+    }
+  };
+
+  useEffect(() => {
+    loadDocuments();
+  }, [currentUser]);
+
+  const handleSimulatedUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     setUploadError(null);
     if (!fileName.trim()) {
@@ -147,9 +151,8 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
       return;
     }
     setIsUploading(true);
-    setTimeout(() => {
-      const newDoc: DocumentRecord = {
-        id: `doc-fac-${Date.now().toString().slice(-4)}`,
+    try {
+      const res = await api.uploadDocument({
         doc_type_code: newType,
         title: newTitle,
         owner_id: currentUser?.id || 'usr-staff-01',
@@ -158,33 +161,38 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
         file_name: fileName.endsWith('.pdf') ? fileName : `${fileName}.pdf`,
         file_size_kb: 1450,
         mime_type: 'application/pdf',
-        status: 'pending',
         remarks: 'Directly submitted for Provost & R&D attestation.',
-        sha256_hash: Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join(''),
-        uploaded_at: new Date().toISOString(),
-      };
-      setDocuments(prev => [newDoc, ...prev]);
+      });
+      if (res.success && res.document) {
+        setDocuments(prev => [res.document, ...prev]);
+        setFileName('');
+        setUploadSuccess(`Successfully deposited ${res.document.title} to Faculty Regulatory Portfolio.`);
+        setTimeout(() => setUploadSuccess(null), 4000);
+      } else {
+        setUploadError(res.error || 'Failed to upload document.');
+      }
+    } catch (err: any) {
+      setUploadError(err.message || 'Network error during upload.');
+    } finally {
       setIsUploading(false);
-      setFileName('');
-      setUploadSuccess(`Successfully deposited ${newDoc.title} to Faculty Regulatory Portfolio.`);
-      setTimeout(() => setUploadSuccess(null), 4000);
-    }, 700);
+    }
   };
 
-  const handleVerify = (docId: string, status: 'verified' | 'rejected') => {
-    setDocuments(prev =>
-      prev.map(d =>
-        d.id === docId
-          ? {
-              ...d,
-              status,
-              verified_by: currentUser?.full_name || 'Dean R&D & Academic Provost',
-              verified_at: new Date().toISOString(),
-              remarks: status === 'verified' ? 'Attested against university physical records & UGC gazette.' : 'Rejected: missing official signature or seal.',
-            }
-          : d
-      )
-    );
+  const handleVerify = async (docId: string, status: 'verified' | 'rejected') => {
+    try {
+      const res = await api.verifyDocument(docId, {
+        status,
+        verified_by: currentUser?.full_name || 'Dean R&D & Academic Provost',
+        remarks: status === 'verified' ? 'Attested against university physical records & UGC gazette.' : 'Rejected: missing official signature or seal.',
+      });
+      if (res.success && res.document) {
+        setDocuments(prev =>
+          prev.map(d => (d.id === docId ? res.document : d))
+        );
+      }
+    } catch (err: any) {
+      console.error('Failed to update faculty document status:', err);
+    }
   };
 
   const handleDownloadDoc = (doc: any) => {

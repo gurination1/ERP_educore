@@ -27,6 +27,8 @@ import { tenantRouter } from './server/routes/tenantRoutes.ts';
 import { academicTopologyRouter } from './server/routes/academicTopologyRoutes.ts';
 import { paymentGatewayRouter } from './server/routes/paymentGatewayRoutes.ts';
 import { permissionRouter } from './server/routes/permissionRoutes.ts';
+import { documentRouter } from './server/routes/documentRoutes.ts';
+import { quizRouter } from './server/routes/quizRoutes.ts';
 import { errorHandler } from './server/middleware/errorHandler.ts';
 
 dotenv.config();
@@ -87,6 +89,8 @@ async function startServer() {
   app.use('/api/academics', academicTopologyRouter);
   app.use('/api/finance', paymentGatewayRouter);
   app.use('/api/permissions', permissionRouter);
+  app.use('/api/documents', documentRouter);
+  app.use('/api/quizzes', quizRouter);
   app.use('/api', auditRouter);
 
   // Centralized Error Handler for API

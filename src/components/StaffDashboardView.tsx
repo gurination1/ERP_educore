@@ -88,15 +88,24 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
     try {
       const courseFilter = selectedCourse.startsWith('CS') ? 'B.Tech CS' : selectedCourse;
       const semesterFilter = 4;
-      let res = await api.getStudents({ course: courseFilter, semester: semesterFilter, limit: 100 });
+      const [stuRes, markRes] = await Promise.all([
+        api.getStudents({ course: courseFilter, semester: semesterFilter, limit: 100 }),
+        api.getSessionalMarks({ courseCode: selectedCourse, semester: 4 }).catch(() => ({ success: false, marks: [] })),
+      ]);
+      let res = stuRes;
       if (!res.success || !res.students || res.students.length === 0) {
         res = await api.getStudents({ course: courseFilter, limit: 100 });
+      }
+      const existingMarksMap = new Map();
+      if (markRes.success && markRes.marks) {
+        markRes.marks.forEach((m: any) => existingMarksMap.set(m.studentId, m));
       }
       if (res.success && res.students) {
         const mapped: StudentAttendanceEntry[] = res.students.map((s: any, idx: number) => {
           const attended = s.attended_classes ?? 0;
           const total = s.total_classes ?? 0;
           const pct = total === 0 ? (s.attendance_percentage ?? 100) : Math.round((attended / total) * 100);
+          const savedMark = existingMarksMap.get(s.id) || existingMarksMap.get(s.student_id);
           return {
             id: s.id,
             studentId: s.student_id,
@@ -107,9 +116,9 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
             total,
             currentPct: pct,
             status: 'P',
-            mst1: Math.min(24, Math.max(12, Math.round(18 + (idx % 6)))),
-            mst2: Math.min(24, Math.max(10, Math.round(17 + (idx % 7)))),
-            assignment: Math.min(12, Math.max(8, Math.round(9 + (idx % 4)))),
+            mst1: savedMark ? savedMark.mst1 : Math.min(24, Math.max(12, Math.round(18 + (idx % 6)))),
+            mst2: savedMark ? savedMark.mst2 : Math.min(24, Math.max(10, Math.round(17 + (idx % 7)))),
+            assignment: savedMark ? savedMark.assignment : Math.min(12, Math.max(8, Math.round(9 + (idx % 4)))),
             isMentee: idx < 6 || s.first_name.toLowerCase() === 'aryan',
           };
         });
@@ -266,11 +275,35 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
     );
   };
 
-  const handleSaveSessionalMarks = () => {
-    setFeedbackMessage({
-      type: 'success',
-      text: `Internal sessional marks for ${selectedCourse} saved and locked for University evaluation audit!`,
-    });
+  const handleSaveSessionalMarks = async () => {
+    try {
+      const payload = students.map(s => ({
+        studentId: s.id,
+        studentName: s.name,
+        courseCode: selectedCourse,
+        semester: s.semester,
+        mst1: s.mst1 || 0,
+        mst2: s.mst2 || 0,
+        assignment: s.assignment || 0,
+      }));
+      const res = await api.saveSessionalMarks(payload);
+      if (res.success) {
+        setFeedbackMessage({
+          type: 'success',
+          text: `Internal sessional marks for ${selectedCourse} saved and locked in database for University audit! (${payload.length} scholars recorded)`,
+        });
+      } else {
+        setFeedbackMessage({
+          type: 'error',
+          text: res.error || 'Failed to save sessional marks to database.',
+        });
+      }
+    } catch (err: any) {
+      setFeedbackMessage({
+        type: 'error',
+        text: err.message || 'Network error saving sessional marks.',
+      });
+    }
   };
 
   // Sessional grade calculator (out of 60)

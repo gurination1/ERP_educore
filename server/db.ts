@@ -1161,6 +1161,397 @@ export const DEFAULT_FIELD_PERMISSIONS: FieldPermissionRule[] = [
   },
 ];
 
+export const DEFAULT_ALL_DOCUMENTS: DocumentRecord[] = [
+  {
+    id: 'doc-stu-001',
+    doc_type_code: 'DOC_AADHAAR',
+    title: 'UIDAI Aadhaar Card (National ID)',
+    owner_id: 'usr-stu-aryan',
+    owner_name: 'Aryan Sharma',
+    owner_role: 'student',
+    file_name: 'aryan_aadhaar_card_masked.pdf',
+    file_size_kb: 1420,
+    mime_type: 'application/pdf',
+    status: 'verified',
+    verified_by: 'Dr. Ramesh Chandra (Registrar)',
+    verified_at: '2025-08-15T11:20:00Z',
+    remarks: 'UIDAI barcode verified. Name matches 10th marksheet.',
+    sha256_hash: '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+    uploaded_at: '2025-08-12T09:14:00Z',
+  },
+  {
+    id: 'doc-stu-002',
+    doc_type_code: 'DOC_10TH',
+    title: 'Class 10th Matriculation Certificate',
+    owner_id: 'usr-stu-aryan',
+    owner_name: 'Aryan Sharma',
+    owner_role: 'student',
+    file_name: 'cbse_10th_marksheet_2022.pdf',
+    file_size_kb: 2180,
+    mime_type: 'application/pdf',
+    status: 'verified',
+    verified_by: 'Harleen Kaur (Admissions Cell)',
+    verified_at: '2025-08-15T14:10:00Z',
+    remarks: 'DOB verified as 15-Nov-2005. 89.4% aggregate.',
+    sha256_hash: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8',
+    uploaded_at: '2025-08-12T09:18:00Z',
+  },
+  {
+    id: 'doc-stu-003',
+    doc_type_code: 'DOC_12TH',
+    title: 'Class 12th Senior Secondary Marksheet (PCM)',
+    owner_id: 'usr-stu-aryan',
+    owner_name: 'Aryan Sharma',
+    owner_role: 'student',
+    file_name: 'pseb_12th_pcm_marksheet.pdf',
+    file_size_kb: 3050,
+    mime_type: 'application/pdf',
+    status: 'verified',
+    verified_by: 'Harleen Kaur (Admissions Cell)',
+    verified_at: '2025-08-16T10:05:00Z',
+    remarks: 'University minimum 45% PCM eligibility criterion met (got 86.2%).',
+    sha256_hash: '4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a',
+    uploaded_at: '2025-08-12T09:22:00Z',
+  },
+  {
+    id: 'doc-stu-004',
+    doc_type_code: 'DOC_DOMICILE',
+    title: 'Punjab State Domicile Certificate (85% State Quota)',
+    owner_id: 'usr-stu-aryan',
+    owner_name: 'Aryan Sharma',
+    owner_role: 'student',
+    file_name: 'punjab_resident_certificate_bathinda.pdf',
+    file_size_kb: 1840,
+    mime_type: 'application/pdf',
+    status: 'verified',
+    verified_by: 'Dr. Ramesh Chandra (Registrar)',
+    verified_at: '2025-08-17T16:30:00Z',
+    remarks: 'Issued by Tehsildar, District Bathinda. Valid Punjab 85% quota.',
+    sha256_hash: 'ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d',
+    uploaded_at: '2025-08-13T11:45:00Z',
+  },
+  {
+    id: 'doc-stu-005',
+    doc_type_code: 'DOC_INCOME',
+    title: 'Annual Family Income Certificate (PMS Scholarship)',
+    owner_id: 'usr-stu-aryan',
+    owner_name: 'Aryan Sharma',
+    owner_role: 'student',
+    file_name: 'annual_family_income_2025_26.pdf',
+    file_size_kb: 950,
+    mime_type: 'application/pdf',
+    status: 'pending',
+    remarks: 'Submitted for 2025-26 fee waiver review.',
+    sha256_hash: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918',
+    uploaded_at: '2026-09-01T08:30:00Z',
+  },
+  {
+    id: 'doc-stu-006',
+    doc_type_code: 'DOC_ANTI_RAGGING',
+    title: 'UGC / AICTE Anti-Ragging Undertaking',
+    owner_id: 'usr-stu-aryan',
+    owner_name: 'Aryan Sharma',
+    owner_role: 'student',
+    file_name: 'anti_ragging_affidavit_aryan.pdf',
+    file_size_kb: 720,
+    mime_type: 'application/pdf',
+    status: 'verified',
+    verified_by: 'Proctorial Board Office',
+    verified_at: '2025-08-20T12:00:00Z',
+    remarks: 'Signed by student and legal guardian.',
+    sha256_hash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4',
+    uploaded_at: '2025-08-19T14:10:00Z',
+  },
+  {
+    id: 'doc-fac-001',
+    doc_type_code: 'DOC_PHD_DEGREE',
+    title: 'Ph.D. Doctorate Degree & Gazette Notification',
+    owner_id: 'usr-staff-01',
+    owner_name: 'Prof. Sunita Rao',
+    owner_role: 'staff',
+    file_name: 'sunita_rao_phd_certificate_iit_roorkee.pdf',
+    file_size_kb: 4200,
+    mime_type: 'application/pdf',
+    status: 'verified',
+    verified_by: 'Executive Directorate & Provost Office',
+    verified_at: '2025-01-10T10:00:00Z',
+    remarks: 'Doctor of Philosophy in Computer Science. AICTE & UGC Section 12(B) compliance checked.',
+    sha256_hash: '3f786850e387550fdab836ed7e6dc881de23001b70e87038c013622150c3d33a',
+    uploaded_at: '2025-01-08T09:00:00Z',
+  },
+  {
+    id: 'doc-fac-002',
+    doc_type_code: 'DOC_AICTE_FACULTY_ID',
+    title: 'AICTE Mandatory Faculty ID & Portal Mandate',
+    owner_id: 'usr-staff-01',
+    owner_name: 'Prof. Sunita Rao',
+    owner_role: 'staff',
+    file_name: 'aicte_faculty_verification_1_9482810.pdf',
+    file_size_kb: 1650,
+    mime_type: 'application/pdf',
+    status: 'verified',
+    verified_by: 'Dr. Ramesh Chandra (Registrar)',
+    verified_at: '2025-02-01T15:20:00Z',
+    remarks: 'AICTE Faculty ID 1-9482810 mapped to statutory university portal.',
+    sha256_hash: 'a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0',
+    uploaded_at: '2025-01-28T14:30:00Z',
+  },
+  {
+    id: 'doc-fac-003',
+    doc_type_code: 'DOC_SERVICE_BOOK',
+    title: 'Institutional Service Book & Past Experience Relieving',
+    owner_id: 'usr-staff-01',
+    owner_name: 'Prof. Sunita Rao',
+    owner_role: 'staff',
+    file_name: 'service_book_thapar_institute_relieving.pdf',
+    file_size_kb: 8900,
+    mime_type: 'application/pdf',
+    status: 'verified',
+    verified_by: 'Registrar & Establishment Section',
+    verified_at: '2025-01-05T11:00:00Z',
+    remarks: 'Previous 4.5 years experience as Assistant Professor vetted for CAS promotion criteria.',
+    sha256_hash: '778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566',
+    uploaded_at: '2025-01-02T10:15:00Z',
+  },
+  {
+    id: 'doc-fac-004',
+    doc_type_code: 'DOC_SCOPUS_REPRINT',
+    title: 'Q1 Scopus Journal First Page Reprint (IEEE Trans. Computers)',
+    owner_id: 'usr-staff-01',
+    owner_name: 'Prof. Sunita Rao',
+    owner_role: 'staff',
+    file_name: 'ieee_transactions_paper_vol42_2024.pdf',
+    file_size_kb: 2100,
+    mime_type: 'application/pdf',
+    status: 'verified',
+    verified_by: 'Dean Research & Consultancy',
+    verified_at: '2025-03-01T16:45:00Z',
+    remarks: 'Impact Factor 4.8. Indexed in Web of Science Core Collection & Scopus.',
+    sha256_hash: '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+    uploaded_at: '2025-02-28T12:00:00Z',
+  },
+  {
+    id: 'doc-fac-005',
+    doc_type_code: 'DOC_PATENT_DEED',
+    title: 'Indian Patent Office (IPO) Published Patent Grant Deed',
+    owner_id: 'usr-staff-01',
+    owner_name: 'Prof. Sunita Rao',
+    owner_role: 'staff',
+    file_name: 'ipo_patent_grant_202411039821.pdf',
+    file_size_kb: 3400,
+    mime_type: 'application/pdf',
+    status: 'verified',
+    verified_by: 'IPR Cell Convener & Provost',
+    verified_at: '2025-04-12T10:30:00Z',
+    remarks: 'Application #202411039821, Published in Official Patent Gazette #15/2024.',
+    sha256_hash: 'abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789',
+    uploaded_at: '2025-04-10T14:15:00Z',
+  },
+  {
+    id: 'doc-fac-006',
+    doc_type_code: 'DOC_FORM_16',
+    title: 'Income Tax Form 16 (Part A & B) TDS Certificate',
+    owner_id: 'usr-staff-01',
+    owner_name: 'Prof. Sunita Rao',
+    owner_role: 'staff',
+    file_name: 'form_16_ay_2025_26_signed_bursar.pdf',
+    file_size_kb: 1200,
+    mime_type: 'application/pdf',
+    status: 'pending',
+    remarks: 'Awaiting signature from Chief Accounts Officer.',
+    sha256_hash: 'fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210',
+    uploaded_at: '2026-06-15T09:30:00Z',
+  },
+];
+
+export const DEFAULT_QUIZZES: LMSQuiz[] = [
+  {
+    id: 'quiz-cs401',
+    title: 'University Mid-Term Assessment: Design & Analysis of Algorithms',
+    courseCode: 'BTCS-401-18',
+    semester: 4,
+    durationMinutes: 15,
+    totalMarks: 30,
+    passingMarks: 12,
+    instructions: [
+      'Each question carries specified marks. Negative marking of 0.25 marks applies for incorrect choices.',
+      'Do not switch tabs during examination session; violations are flagged to proctoring log.',
+      'Scores are automatically converted into CBCS Internal Assessment (30% weightage).',
+    ],
+    questions: [
+      {
+        id: 'q1',
+        question: 'What is the tightest asymptotic upper bound (Big-O) for the worst-case time complexity of QuickSort when the pivot is chosen as the first element?',
+        options: ['O(n log n)', 'O(n²)', 'O(n)', 'O(log n)'],
+        correctAnswer: 1,
+        explanation: 'In the worst case (e.g. sorted array with first element as pivot), partition yields unbalanced subproblems of size 0 and n-1, resulting in O(n²) time complexity.',
+        marks: 5,
+      },
+      {
+        id: 'q2',
+        question: 'Which algorithmic paradigm does Dijkstra’s Single-Source Shortest Path algorithm adhere to?',
+        options: ['Dynamic Programming', 'Divide and Conquer', 'Greedy Method', 'Branch and Bound'],
+        correctAnswer: 2,
+        explanation: 'Dijkstra’s algorithm greedily chooses the unvisited vertex with the minimum tentative distance at each step.',
+        marks: 5,
+      },
+      {
+        id: 'q3',
+        question: 'What is the space complexity of Floyd-Warshall All-Pairs Shortest Path algorithm for a graph with V vertices?',
+        options: ['O(V)', 'O(V²)', 'O(V³)', 'O(E log V)'],
+        correctAnswer: 1,
+        explanation: 'Floyd-Warshall maintains a distance matrix of size V × V, requiring O(V²) space complexity.',
+        marks: 5,
+      },
+      {
+        id: 'q4',
+        question: 'Under the Master Theorem, what is the solution to T(n) = 2T(n/2) + O(n)?',
+        options: ['O(n)', 'O(n log n)', 'O(n²)', 'O(2ⁿ)'],
+        correctAnswer: 1,
+        explanation: 'Here a = 2, b = 2, f(n) = n. Since log_b(a) = log_2(2) = 1, and f(n) = Θ(n^1), Case 2 applies, giving T(n) = Θ(n log n).',
+        marks: 5,
+      },
+      {
+        id: 'q5',
+        question: 'Which of the following problems is proven to be NP-Complete in computational complexity theory?',
+        options: ['Shortest Path Problem', 'Minimum Spanning Tree (Prim)', '0/1 Knapsack Problem', 'Eulerian Circuit'],
+        correctAnswer: 2,
+        explanation: 'The 0/1 Knapsack decision problem is NP-Complete (weakly NP-hard, solvable in pseudo-polynomial time via dynamic programming).',
+        marks: 5,
+      },
+      {
+        id: 'q6',
+        question: 'In Huffman Coding, what type of prefix tree structure is constructed for optimal symbol compression?',
+        options: ['Full binary tree where every internal node has 2 children', 'Red-Black self-balancing tree', 'B-Tree of order 3', 'Max-Heap with root as lowest frequency'],
+        correctAnswer: 0,
+        explanation: 'Huffman codes produce a full binary tree where every internal non-leaf node has strictly two children.',
+        marks: 5,
+      },
+    ],
+  },
+  {
+    id: 'quiz-cs502',
+    title: 'Cloud Computing & Distributed Systems Quiz',
+    courseCode: 'BTCS-502-18',
+    semester: 5,
+    durationMinutes: 10,
+    totalMarks: 20,
+    passingMarks: 8,
+    instructions: [
+      'CAP Theorem, Consensus protocols (Raft/Paxos), and Docker Containerization principles.',
+      'Timer begins upon clicking "Start Quiz Session".',
+    ],
+    questions: [
+      {
+        id: 'qc1',
+        question: 'According to Brewer’s CAP theorem, which property MUST be sacrificed in a distributed system during a network partition (P)?',
+        options: ['Either Consistency (C) or Availability (A)', 'Network Latency', 'Data Durability', 'Security / TLS Encryption'],
+        correctAnswer: 0,
+        explanation: 'Under network partitions, a distributed system must choose between serving stale/unavailable data (A) or refusing requests to maintain identical state (C).',
+        marks: 5,
+      },
+      {
+        id: 'qc2',
+        question: 'In the Raft Consensus Protocol, what is the role of the Leader Heartbeat interval?',
+        options: ['To re-encrypt client credentials', 'To prevent follower election timeouts', 'To execute garbage collection', 'To compact SQLite tables'],
+        correctAnswer: 1,
+        explanation: 'Heartbeat AppendEntries RPCs suppress follower election timers, maintaining the current leader’s authoritative term.',
+        marks: 5,
+      },
+    ],
+  },
+];
+
+export const DEFAULT_LMS_RESOURCES: LMSResource[] = [
+  {
+    id: 'res-01',
+    title: 'University Scheme & Syllabus (B.Tech CSE Batch 2023-27)',
+    subject: 'Academic Curriculum Ordinance',
+    format: 'PDF (2.8 MB)',
+    lecturer: 'University Academic Directorate',
+    downloadUrl: '#',
+    createdAt: '2024-08-01T10:00:00Z',
+  },
+  {
+    id: 'res-02',
+    title: 'Unit 1-4 Complete Lecture Notes: Design & Analysis of Algorithms',
+    subject: 'BTCS-401-18',
+    format: 'PDF Slide Deck (14.2 MB)',
+    lecturer: 'Prof. Sunita Rao (Dept of CSE)',
+    downloadUrl: '#',
+    createdAt: '2024-08-15T11:30:00Z',
+  },
+  {
+    id: 'res-03',
+    title: 'Lab Manual: Advanced Data Structures in C++ / Java',
+    subject: 'BTCS-403-18',
+    format: 'Laboratory Handout (3.5 MB)',
+    lecturer: 'Dept of CSE & IT Labs',
+    downloadUrl: '#',
+    createdAt: '2024-09-01T09:00:00Z',
+  },
+  {
+    id: 'res-04',
+    title: 'NPTEL SWAYAM Video Lecture Links & Transcripts (Graph Algorithms)',
+    subject: 'Algorithms MOOC',
+    format: 'External Video Bookmarks',
+    lecturer: 'IIT Madras / NPTEL Portal',
+    downloadUrl: '#',
+    createdAt: '2024-09-10T14:00:00Z',
+  },
+];
+
+export const DEFAULT_SESSIONAL_MARKS: SessionalMarkEntry[] = [
+  {
+    id: 'sm-01',
+    studentId: 'stu-rec-aryan',
+    studentName: 'Aryan Sharma',
+    courseCode: 'BTCS-401-18',
+    semester: 4,
+    mst1: 22,
+    mst2: 21,
+    assignment: 11,
+    updatedBy: 'usr-staff-01',
+    updatedAt: '2025-04-10T10:00:00Z',
+  },
+  {
+    id: 'sm-02',
+    studentId: 'stu-rec-priya',
+    studentName: 'Priya Patel',
+    courseCode: 'BTCS-401-18',
+    semester: 4,
+    mst1: 20,
+    mst2: 19,
+    assignment: 10,
+    updatedBy: 'usr-staff-01',
+    updatedAt: '2025-04-10T10:00:00Z',
+  },
+  {
+    id: 'sm-03',
+    studentId: 'stu-rec-rohan',
+    studentName: 'Rohan Gupta',
+    courseCode: 'BTCS-401-18',
+    semester: 4,
+    mst1: 18,
+    mst2: 16,
+    assignment: 9,
+    updatedBy: 'usr-staff-01',
+    updatedAt: '2025-04-10T10:00:00Z',
+  },
+  {
+    id: 'sm-04',
+    studentId: 'stu-rec-neha',
+    studentName: 'Neha Singh',
+    courseCode: 'BTCS-401-18',
+    semester: 4,
+    mst1: 17,
+    mst2: 15,
+    assignment: 8,
+    updatedBy: 'usr-staff-01',
+    updatedAt: '2025-04-10T10:00:00Z',
+  },
+];
+
 export const DEFAULT_STAFF_ADDITIONAL_ROLES: StaffAdditionalRole[] = [
   {
     id: 'sar-01',
@@ -1894,14 +2285,83 @@ export interface Notice {
 
 export interface DocumentRecord {
   id: string;
-  entity_type: 'admission' | 'scholarship' | 'fee_receipt' | 'identity' | 'general';
-  entity_id: string;
+  doc_type_code: string;
+  title: string;
+  owner_id: string;
+  owner_name: string;
+  owner_role: EnterpriseUserRole | string;
   file_name: string;
-  file_path: string;
-  file_size_bytes: number;
+  file_size_kb: number;
   mime_type: string;
+  status: 'verified' | 'pending' | 'rejected' | 'reupload_required';
+  verified_by?: string;
+  verified_at?: string;
+  remarks?: string;
+  sha256_hash?: string;
+  uploaded_at: string;
+  entity_type?: 'admission' | 'scholarship' | 'fee_receipt' | 'identity' | 'general';
+  entity_id?: string;
+  file_path?: string;
+  file_size_bytes?: number;
   uploaded_by?: string;
-  created_at: string;
+  created_at?: string;
+}
+
+export interface LMSQuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+  marks: number;
+}
+
+export interface LMSQuiz {
+  id: string;
+  title: string;
+  courseCode: string;
+  semester: number;
+  durationMinutes: number;
+  totalMarks: number;
+  passingMarks: number;
+  instructions: string[];
+  questions: LMSQuizQuestion[];
+}
+
+export interface LMSQuizSubmission {
+  id: string;
+  quizId: string;
+  studentId: string;
+  studentName: string;
+  score: number;
+  totalMarks: number;
+  percentage: number;
+  passed: boolean;
+  selectedAnswers: Record<string, number>;
+  submittedAt: string;
+}
+
+export interface LMSResource {
+  id: string;
+  title: string;
+  subject: string;
+  format: string;
+  lecturer: string;
+  downloadUrl: string;
+  createdAt: string;
+}
+
+export interface SessionalMarkEntry {
+  id: string;
+  studentId: string;
+  studentName?: string;
+  courseCode: string;
+  semester: number;
+  mst1: number;
+  mst2: number;
+  assignment: number;
+  updatedBy?: string;
+  updatedAt?: string;
 }
 
 export interface Grievance {
@@ -1991,6 +2451,10 @@ class DatabaseStore {
   public payment_gateways: PaymentGatewayConfig[] = [];
   public staff_additional_roles: StaffAdditionalRole[] = [];
   public field_permissions: FieldPermissionRule[] = [];
+  public quizzes: LMSQuiz[] = [];
+  public quiz_submissions: LMSQuizSubmission[] = [];
+  public lms_resources: LMSResource[] = [];
+  public sessional_marks: SessionalMarkEntry[] = [];
 
   public mode: 'postgres' | 'mariadb' | 'sqlite' = 'sqlite';
   private dbPath: string = process.env.DB_PATH || path.join(process.cwd(), 'database', 'educore.sqlite');
@@ -2665,9 +3129,78 @@ class DatabaseStore {
         updated_at TIMESTAMPTZ DEFAULT NOW()
       );
 
+      CREATE TABLE IF NOT EXISTS documents (
+        id VARCHAR(64) PRIMARY KEY,
+        doc_type_code VARCHAR(64) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        owner_id VARCHAR(64) NOT NULL,
+        owner_name VARCHAR(128) NOT NULL,
+        owner_role VARCHAR(32) NOT NULL,
+        file_name VARCHAR(255) NOT NULL,
+        file_size_kb INT DEFAULT 0,
+        mime_type VARCHAR(64) DEFAULT 'application/pdf',
+        status VARCHAR(32) DEFAULT 'pending',
+        verified_by VARCHAR(128),
+        verified_at TIMESTAMPTZ,
+        remarks TEXT,
+        sha256_hash VARCHAR(128),
+        uploaded_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS quizzes (
+        id VARCHAR(64) PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        course_code VARCHAR(64) NOT NULL,
+        semester INT DEFAULT 1,
+        duration_minutes INT DEFAULT 15,
+        total_marks INT DEFAULT 30,
+        passing_marks INT DEFAULT 12,
+        instructions_json TEXT,
+        questions_json TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS quiz_submissions (
+        id VARCHAR(64) PRIMARY KEY,
+        quiz_id VARCHAR(64) NOT NULL,
+        student_id VARCHAR(64) NOT NULL,
+        student_name VARCHAR(128) NOT NULL,
+        score INT NOT NULL,
+        total_marks INT NOT NULL,
+        percentage NUMERIC(5, 2) NOT NULL,
+        passed BOOLEAN DEFAULT FALSE,
+        selected_answers_json TEXT,
+        submitted_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS lms_resources (
+        id VARCHAR(64) PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        subject VARCHAR(128) NOT NULL,
+        format VARCHAR(64) NOT NULL,
+        lecturer VARCHAR(128) NOT NULL,
+        download_url TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS sessional_marks (
+        id VARCHAR(64) PRIMARY KEY,
+        student_id VARCHAR(64) NOT NULL,
+        student_name VARCHAR(128),
+        course_code VARCHAR(64) NOT NULL,
+        semester INT NOT NULL,
+        mst1 NUMERIC(5, 2) DEFAULT 0,
+        mst2 NUMERIC(5, 2) DEFAULT 0,
+        assignment NUMERIC(5, 2) DEFAULT 0,
+        updated_by VARCHAR(64),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
       CREATE INDEX IF NOT EXISTS idx_pg_payment_gateways_tenant ON payment_gateways(tenant_id);
       CREATE INDEX IF NOT EXISTS idx_pg_staff_roles_staff ON staff_additional_roles(staff_id);
       CREATE INDEX IF NOT EXISTS idx_pg_field_perm_entity ON field_permissions(entity_type);
+      CREATE INDEX IF NOT EXISTS idx_pg_documents_owner ON documents(owner_id);
+      CREATE INDEX IF NOT EXISTS idx_pg_sessional_marks_stu ON sessional_marks(student_id);
     `);
   }
 
@@ -7731,6 +8264,10 @@ class DatabaseStore {
     this.payment_gateways = [...DEFAULT_PAYMENT_GATEWAYS];
     this.staff_additional_roles = [...DEFAULT_STAFF_ADDITIONAL_ROLES];
     this.field_permissions = [...DEFAULT_FIELD_PERMISSIONS];
+    this.documents = [...DEFAULT_ALL_DOCUMENTS];
+    this.quizzes = [...DEFAULT_QUIZZES];
+    this.lms_resources = [...DEFAULT_LMS_RESOURCES];
+    this.sessional_marks = [...DEFAULT_SESSIONAL_MARKS];
     this.attendance_settings = { id: 'default', backdated_lock_days: 20, updated_at: new Date().toISOString() };
 
     // Ensure all seed users have enterprise_uid
@@ -8836,6 +9373,500 @@ class DatabaseStore {
     if (idx >= 0) this.field_permissions[idx] = merged;
 
     return merged;
+  }
+
+  // ----------------------------------------------------
+  // DOCUMENT COMPLIANCE & VAULT
+  // ----------------------------------------------------
+  public async getDocuments(filter?: { owner_id?: string; owner_role?: string; status?: string }): Promise<DocumentRecord[]> {
+    if (this.pgPool) {
+      try {
+        let q = 'SELECT * FROM documents WHERE 1=1';
+        const params: any[] = [];
+        if (filter?.owner_id) {
+          params.push(filter.owner_id);
+          q += ` AND (owner_id = $${params.length}`;
+          const s = this.students.find(st => st.id === filter.owner_id || st.student_id === filter.owner_id || st.user_id === filter.owner_id);
+          if (s) {
+            params.push(s.user_id, s.id, s.student_id);
+            q += ` OR owner_id = $${params.length - 2} OR owner_id = $${params.length - 1} OR owner_id = $${params.length}`;
+          }
+          q += ')';
+        }
+        if (filter?.owner_role) {
+          params.push(filter.owner_role);
+          q += ` AND owner_role = $${params.length}`;
+        }
+        if (filter?.status && filter.status !== 'all') {
+          params.push(filter.status);
+          q += ` AND status = $${params.length}`;
+        }
+        q += ' ORDER BY uploaded_at DESC';
+        const { rows } = await this.pgPool.query(q, params);
+        if (rows.length > 0) return rows;
+      } catch (err) {
+        console.warn('[DB] Postgres getDocuments query failed, falling back to memory:', err);
+      }
+    }
+
+    let list = this.documents;
+    if (filter?.owner_id) {
+      const oid = filter.owner_id.toLowerCase();
+      const s = this.students.find(st =>
+        st.id.toLowerCase() === oid ||
+        st.student_id.toLowerCase() === oid ||
+        (st.user_id && st.user_id.toLowerCase() === oid)
+      );
+      list = list.filter(d => {
+        const dOid = d.owner_id.toLowerCase();
+        if (dOid === oid) return true;
+        if (s) {
+          return dOid === s.id.toLowerCase() ||
+                 dOid === s.student_id.toLowerCase() ||
+                 (s.user_id && dOid === s.user_id.toLowerCase());
+        }
+        return false;
+      });
+    }
+    if (filter?.owner_role) {
+      list = list.filter(d => d.owner_role === filter.owner_role);
+    }
+    if (filter?.status && filter.status !== 'all') {
+      list = list.filter(d => d.status === filter.status);
+    }
+    return list;
+  }
+
+  public async createDocument(doc: Partial<DocumentRecord>): Promise<DocumentRecord> {
+    const id = doc.id || `doc-${Date.now().toString().slice(-6)}-${Math.random().toString(36).substring(2, 6)}`;
+    const newDoc: DocumentRecord = {
+      id,
+      doc_type_code: doc.doc_type_code || 'DOC_GENERAL',
+      title: doc.title || 'Official Academic Credential',
+      owner_id: doc.owner_id || 'usr-stu-aryan',
+      owner_name: doc.owner_name || 'Scholar / Employee',
+      owner_role: doc.owner_role || 'student',
+      file_name: doc.file_name || 'document.pdf',
+      file_size_kb: doc.file_size_kb || 1200,
+      mime_type: doc.mime_type || 'application/pdf',
+      status: doc.status || 'pending',
+      verified_by: doc.verified_by,
+      verified_at: doc.verified_at,
+      remarks: doc.remarks || 'Document uploaded for verification.',
+      sha256_hash: doc.sha256_hash || 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+      uploaded_at: doc.uploaded_at || new Date().toISOString(),
+    };
+
+    if (this.pgPool) {
+      try {
+        await this.pgPool.query(
+          `INSERT INTO documents (id, doc_type_code, title, owner_id, owner_name, owner_role, file_name, file_size_kb, mime_type, status, verified_by, verified_at, remarks, sha256_hash, uploaded_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+          [
+            newDoc.id, newDoc.doc_type_code, newDoc.title, newDoc.owner_id, newDoc.owner_name,
+            newDoc.owner_role, newDoc.file_name, newDoc.file_size_kb, newDoc.mime_type, newDoc.status,
+            newDoc.verified_by || null, newDoc.verified_at || null, newDoc.remarks || null,
+            newDoc.sha256_hash, newDoc.uploaded_at
+          ]
+        );
+      } catch (err) {
+        console.warn('[DB] Postgres insert document failed, keeping in memory:', err);
+      }
+    }
+
+    this.documents.unshift(newDoc);
+
+    await this.createAuditLog({
+      actor_id: newDoc.owner_id,
+      actor_name: newDoc.owner_name,
+      actor_role: (newDoc.owner_role as any) || 'student',
+      action: 'UPLOAD_DOCUMENT',
+      target_type: 'student',
+      target_id: newDoc.id,
+      details: `Uploaded compliance credential ${newDoc.title} (${newDoc.doc_type_code}, ${newDoc.file_size_kb} KB)`,
+      severity: 'info'
+    });
+
+    return newDoc;
+  }
+
+  public async verifyDocument(id: string, updates: { status: 'verified' | 'rejected' | 'pending'; verified_by?: string; remarks?: string }): Promise<DocumentRecord> {
+    let doc = this.documents.find(d => d.id === id);
+    if (!doc && this.pgPool) {
+      const { rows } = await this.pgPool.query('SELECT * FROM documents WHERE id = $1', [id]);
+      if (rows.length > 0) doc = rows[0];
+    }
+    if (!doc) throw new Error('Document record not found');
+
+    const verified_at = updates.status === 'verified' ? new Date().toISOString() : undefined;
+    const verified_by = updates.verified_by || 'Verification Authority';
+    const remarks = updates.remarks || doc.remarks;
+
+    doc.status = updates.status;
+    doc.verified_by = verified_by;
+    doc.verified_at = verified_at;
+    doc.remarks = remarks;
+
+    if (this.pgPool) {
+      await this.pgPool.query(
+        `UPDATE documents SET status = $1, verified_by = $2, verified_at = $3, remarks = $4 WHERE id = $5`,
+        [updates.status, verified_by, verified_at || null, remarks || null, id]
+      );
+    }
+
+    // Synchronize Student Compliance Flags
+    const isVerified = updates.status === 'verified';
+    const matchingStudent = this.students.find(s =>
+      s.id === doc?.owner_id ||
+      s.student_id === doc?.owner_id ||
+      s.user_id === doc?.owner_id
+    );
+
+    if (matchingStudent) {
+      if (doc.doc_type_code === 'DOC_10TH') {
+        matchingStudent.tenth_doc_verified = isVerified;
+      } else if (doc.doc_type_code === 'DOC_12TH') {
+        matchingStudent.twelfth_doc_verified = isVerified;
+      } else if (doc.doc_type_code === 'DOC_AADHAAR') {
+        matchingStudent.aadhaar_doc_verified = isVerified;
+      }
+
+      await this.updateStudent(matchingStudent.id, {
+        tenth_doc_verified: matchingStudent.tenth_doc_verified,
+        twelfth_doc_verified: matchingStudent.twelfth_doc_verified,
+        aadhaar_doc_verified: matchingStudent.aadhaar_doc_verified,
+      });
+    }
+
+    await this.createAuditLog({
+      actor_id: verified_by,
+      actor_name: verified_by,
+      actor_role: 'admin',
+      action: 'VERIFY_DOCUMENT',
+      target_type: 'student',
+      target_id: doc.id,
+      details: `Document ${doc.title} (${doc.doc_type_code}) marked ${updates.status.toUpperCase()} by ${verified_by}. Remarks: ${remarks}`,
+      severity: updates.status === 'rejected' ? 'warn' : 'info'
+    });
+
+    return doc;
+  }
+
+  // ----------------------------------------------------
+  // CBT EXAMINATION & LMS
+  // ----------------------------------------------------
+  public async getQuizzes(): Promise<LMSQuiz[]> {
+    if (this.pgPool) {
+      try {
+        const { rows } = await this.pgPool.query('SELECT * FROM quizzes ORDER BY course_code ASC');
+        if (rows.length > 0) {
+          return rows.map(r => ({
+            id: r.id,
+            title: r.title,
+            courseCode: r.course_code,
+            semester: r.semester,
+            durationMinutes: r.duration_minutes,
+            totalMarks: r.total_marks,
+            passingMarks: r.passing_marks,
+            instructions: r.instructions_json ? JSON.parse(r.instructions_json) : [],
+            questions: r.questions_json ? JSON.parse(r.questions_json) : [],
+          }));
+        }
+      } catch (err) {
+        console.warn('[DB] Postgres getQuizzes failed:', err);
+      }
+    }
+    return this.quizzes;
+  }
+
+  public async getQuizById(id: string): Promise<LMSQuiz | null> {
+    const all = await this.getQuizzes();
+    return all.find(q => q.id === id) || null;
+  }
+
+  public async submitQuiz(
+    quizId: string,
+    studentId: string,
+    studentName: string,
+    selectedAnswers: Record<string, number>,
+    timeTakenSeconds?: number
+  ): Promise<{ submission: LMSQuizSubmission; score: number; totalMarks: number; percentage: number; passed: boolean }> {
+    const quiz = await this.getQuizById(quizId);
+    if (!quiz) throw new Error('Quiz not found');
+
+    let score = 0;
+    quiz.questions.forEach(q => {
+      if (selectedAnswers[q.id] === q.correctAnswer) {
+        score += q.marks;
+      }
+    });
+
+    const percentage = Math.round((score / quiz.totalMarks) * 100);
+    const passed = score >= quiz.passingMarks;
+
+    const submission: LMSQuizSubmission = {
+      id: `sub-${Date.now().toString().slice(-6)}-${Math.random().toString(36).substring(2, 6)}`,
+      quizId,
+      studentId: studentId || 'usr-stu-aryan',
+      studentName: studentName || 'Aryan Sharma',
+      score,
+      totalMarks: quiz.totalMarks,
+      percentage,
+      passed,
+      selectedAnswers,
+      submittedAt: new Date().toISOString(),
+    };
+
+    if (this.pgPool) {
+      try {
+        await this.pgPool.query(
+          `INSERT INTO quiz_submissions (id, quiz_id, student_id, student_name, score, total_marks, percentage, passed, selected_answers_json, submitted_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+          [
+            submission.id, submission.quizId, submission.studentId, submission.studentName,
+            submission.score, submission.totalMarks, submission.percentage, submission.passed,
+            JSON.stringify(submission.selectedAnswers), submission.submittedAt
+          ]
+        );
+      } catch (err) {
+        console.warn('[DB] Postgres insert quiz submission failed:', err);
+      }
+    }
+
+    this.quiz_submissions.unshift(submission);
+
+    await this.createAuditLog({
+      actor_id: submission.studentId,
+      actor_name: submission.studentName,
+      actor_role: 'student',
+      action: 'SUBMIT_LMS_QUIZ',
+      target_type: 'student',
+      target_id: submission.quizId,
+      details: `Completed CBT Quiz ${quiz.title} (${quiz.courseCode}): Score ${score}/${quiz.totalMarks} (${percentage}%, ${passed ? 'PASSED' : 'FAILED'}) in ${timeTakenSeconds || 0}s`,
+      severity: 'info'
+    });
+
+    return {
+      submission,
+      score,
+      totalMarks: quiz.totalMarks,
+      percentage,
+      passed,
+    };
+  }
+
+  public async getQuizSubmissions(quizId?: string, studentId?: string): Promise<LMSQuizSubmission[]> {
+    if (this.pgPool) {
+      try {
+        let q = 'SELECT * FROM quiz_submissions WHERE 1=1';
+        const params: any[] = [];
+        if (quizId) {
+          params.push(quizId);
+          q += ` AND quiz_id = $${params.length}`;
+        }
+        if (studentId) {
+          params.push(studentId);
+          q += ` AND student_id = $${params.length}`;
+        }
+        q += ' ORDER BY submitted_at DESC';
+        const { rows } = await this.pgPool.query(q, params);
+        if (rows.length > 0) {
+          return rows.map(r => ({
+            id: r.id,
+            quizId: r.quiz_id,
+            studentId: r.student_id,
+            studentName: r.student_name,
+            score: r.score,
+            totalMarks: r.total_marks,
+            percentage: Number(r.percentage),
+            passed: Boolean(r.passed),
+            selectedAnswers: r.selected_answers_json ? JSON.parse(r.selected_answers_json) : {},
+            submittedAt: r.submitted_at,
+          }));
+        }
+      } catch (err) {
+        console.warn('[DB] Postgres getQuizSubmissions failed:', err);
+      }
+    }
+
+    let list = this.quiz_submissions;
+    if (quizId) list = list.filter(s => s.quizId === quizId);
+    if (studentId) list = list.filter(s => s.studentId === studentId);
+    return list;
+  }
+
+  public async getLmsResources(): Promise<LMSResource[]> {
+    if (this.pgPool) {
+      try {
+        const { rows } = await this.pgPool.query('SELECT * FROM lms_resources ORDER BY created_at DESC');
+        if (rows.length > 0) {
+          return rows.map(r => ({
+            id: r.id,
+            title: r.title,
+            subject: r.subject,
+            format: r.format,
+            lecturer: r.lecturer,
+            downloadUrl: r.download_url,
+            createdAt: r.created_at,
+          }));
+        }
+      } catch (err) {
+        console.warn('[DB] Postgres getLmsResources failed:', err);
+      }
+    }
+    return this.lms_resources;
+  }
+
+  public async createLmsResource(res: Partial<LMSResource>): Promise<LMSResource> {
+    const newRes: LMSResource = {
+      id: res.id || `res-${Date.now().toString().slice(-4)}`,
+      title: res.title || 'Curriculum Handout',
+      subject: res.subject || 'Computer Science & Engineering',
+      format: res.format || 'PDF Slide Deck',
+      lecturer: res.lecturer || 'Faculty Directorate',
+      downloadUrl: res.downloadUrl || '#',
+      createdAt: res.createdAt || new Date().toISOString(),
+    };
+
+    if (this.pgPool) {
+      try {
+        await this.pgPool.query(
+          `INSERT INTO lms_resources (id, title, subject, format, lecturer, download_url, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          [newRes.id, newRes.title, newRes.subject, newRes.format, newRes.lecturer, newRes.downloadUrl, newRes.createdAt]
+        );
+      } catch (err) {
+        console.warn('[DB] Postgres createLmsResource failed:', err);
+      }
+    }
+
+    this.lms_resources.unshift(newRes);
+    return newRes;
+  }
+
+  // ----------------------------------------------------
+  // SESSIONAL MARKS & INTERNAL ASSESSMENT
+  // ----------------------------------------------------
+  public async getSessionalMarks(courseCode?: string, semester?: number): Promise<SessionalMarkEntry[]> {
+    if (this.pgPool) {
+      try {
+        let q = 'SELECT * FROM sessional_marks WHERE 1=1';
+        const params: any[] = [];
+        if (courseCode) {
+          params.push(`%${courseCode}%`);
+          q += ` AND course_code ILIKE $${params.length}`;
+        }
+        if (semester) {
+          params.push(semester);
+          q += ` AND semester = $${params.length}`;
+        }
+        q += ' ORDER BY updated_at DESC';
+        const { rows } = await this.pgPool.query(q, params);
+        if (rows.length > 0) {
+          return rows.map(r => ({
+            id: r.id,
+            studentId: r.student_id,
+            studentName: r.student_name,
+            courseCode: r.course_code,
+            semester: r.semester,
+            mst1: Number(r.mst1),
+            mst2: Number(r.mst2),
+            assignment: Number(r.assignment),
+            updatedBy: r.updated_by,
+            updatedAt: r.updated_at,
+          }));
+        }
+      } catch (err) {
+        console.warn('[DB] Postgres getSessionalMarks failed:', err);
+      }
+    }
+
+    let list = this.sessional_marks;
+    if (courseCode) {
+      const cc = courseCode.toLowerCase();
+      list = list.filter(m => m.courseCode.toLowerCase().includes(cc) || cc.includes(m.courseCode.toLowerCase()));
+    }
+    if (semester) {
+      list = list.filter(m => m.semester === Number(semester));
+    }
+    return list;
+  }
+
+  public async saveSessionalMarks(
+    marksList: Array<{ studentId: string; studentName?: string; courseCode?: string; semester?: number; mst1: number; mst2: number; assignment: number }>,
+    actorId: string
+  ): Promise<{ success: boolean; count: number }> {
+    for (const entry of marksList) {
+      const existing = this.sessional_marks.find(m => m.studentId === entry.studentId);
+      const now = new Date().toISOString();
+      const courseCode = entry.courseCode || 'BTCS-401-18';
+      const semester = entry.semester || 4;
+
+      if (existing) {
+        existing.mst1 = entry.mst1;
+        existing.mst2 = entry.mst2;
+        existing.assignment = entry.assignment;
+        existing.courseCode = courseCode;
+        existing.semester = semester;
+        existing.updatedBy = actorId;
+        existing.updatedAt = now;
+      } else {
+        this.sessional_marks.push({
+          id: `sm-${Date.now().toString().slice(-6)}-${Math.random().toString(36).substring(2, 6)}`,
+          studentId: entry.studentId,
+          studentName: entry.studentName,
+          courseCode,
+          semester,
+          mst1: entry.mst1,
+          mst2: entry.mst2,
+          assignment: entry.assignment,
+          updatedBy: actorId,
+          updatedAt: now,
+        });
+      }
+
+      if (this.pgPool) {
+        try {
+          await this.pgPool.query(
+            `INSERT INTO sessional_marks (id, student_id, student_name, course_code, semester, mst1, mst2, assignment, updated_by, updated_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+             ON CONFLICT (id) DO UPDATE SET
+               mst1 = EXCLUDED.mst1,
+               mst2 = EXCLUDED.mst2,
+               assignment = EXCLUDED.assignment,
+               updated_by = EXCLUDED.updated_by,
+               updated_at = EXCLUDED.updated_at`,
+            [
+              existing?.id || `sm-${Date.now().toString().slice(-6)}`,
+              entry.studentId,
+              entry.studentName || null,
+              courseCode,
+              semester,
+              entry.mst1,
+              entry.mst2,
+              entry.assignment,
+              actorId,
+              now
+            ]
+          );
+        } catch (err) {
+          console.warn('[DB] Postgres sessional_marks upsert failed:', err);
+        }
+      }
+    }
+
+    await this.createAuditLog({
+      actor_id: actorId,
+      actor_name: actorId,
+      actor_role: 'staff',
+      action: 'SAVE_SESSIONAL_MARKS',
+      target_type: 'student',
+      target_id: marksList[0]?.studentId || 'cohort',
+      details: `Saved internal sessional marks (MST-1, MST-2, Assignment) for ${marksList.length} scholars in course ${marksList[0]?.courseCode || 'BTCS-401-18'}.`,
+      severity: 'info'
+    });
+
+    return { success: true, count: marksList.length };
   }
 }
 
