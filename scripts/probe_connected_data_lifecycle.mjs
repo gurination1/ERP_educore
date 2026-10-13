@@ -215,13 +215,16 @@ async function run() {
     const ledgerCheckData = JSON.parse(studentLedgerCheck.data);
     const existingDue = Number(ledgerCheckData.summary?.totalDue) || 0;
     if (existingDue < 1000) {
-      await reqRole('/api/fees/assign', 'admin', 'POST', {
+      const assignRes = await reqRole('/api/fees/assign', 'admin', 'POST', {
         studentId: '1001-88-03-01',
         feeHeadId: 'fh-tuition',
         amount: 1000,
         dueDate: '2026-12-31',
         semester: 4,
       });
+      if (assignRes.status !== 200 && assignRes.status !== 201) {
+        console.error('Fee assignment failure payload:', assignRes.data);
+      }
     }
 
     // 2.3 Student executes fee payment

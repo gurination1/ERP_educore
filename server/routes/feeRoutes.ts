@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { z } from 'zod';
 import { db, Payment, Student } from '../db.ts';
 import { authenticateToken, requireRole, AuthRequest, matchStudentForUser } from '../middleware/auth.ts';
+import { findStudentByIdentifier } from './studentRoutes.ts';
 
 export const feeRouter = Router();
 
@@ -29,7 +30,7 @@ feeRouter.get('/heads', authenticateToken, async (req: AuthRequest, res: Respons
 feeRouter.post('/assign', authenticateToken, requireRole('admin', 'accounts'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { studentId, feeHeadId, amount, dueDate, semester } = req.body;
   const allStudents = await db.getStudents();
-  const student = allStudents.find(s => s.id === studentId || s.student_id === studentId);
+  const student = findStudentByIdentifier(allStudents, studentId) || allStudents.find(s => s.id === studentId || s.student_id === studentId);
   if (!student) {
     res.status(404).json({ success: false, error: 'Student not found.' });
     return;
@@ -239,7 +240,7 @@ feeRouter.get('/ledger/:studentId', authenticateToken, async (req: AuthRequest, 
     student = myStudent;
   } else {
     const clean = studentId.trim().toLowerCase();
-    student = allStudents.find(
+    student = findStudentByIdentifier(allStudents, clean) || allStudents.find(
       s =>
         s.id.toLowerCase() === clean ||
         s.student_id.toLowerCase() === clean ||
@@ -313,7 +314,7 @@ feeRouter.post(['/collect', '/pay'], authenticateToken, async (req: AuthRequest,
   if (cleanParam === 'me') {
     student = allStudents.find(s => matchStudentForUser(s, req.user));
   } else {
-    student = allStudents.find(
+    student = findStudentByIdentifier(allStudents, cleanParam) || allStudents.find(
       s =>
         s.id.toLowerCase() === cleanParam ||
         s.student_id.toLowerCase() === cleanParam ||
