@@ -471,11 +471,20 @@ studentRouter.patch('/:id/attendance', authenticateToken, requireRole('admin', '
 
   newPct = Math.max(0, Math.min(100, newPct));
 
-  const updated = await db.updateStudent(student.id, {
+  const updatePayload: any = {
     attended_classes: newAttended,
     total_classes: newTotal,
     attendance_percentage: newPct,
-  });
+  };
+  if (req.body.condonation_granted !== undefined) {
+    updatePayload.condonation_granted = Boolean(req.body.condonation_granted);
+    if (!updatePayload.condonation_granted) {
+      updatePayload.condonation_order_no = null;
+      updatePayload.condonation_remarks = null;
+    }
+  }
+
+  const updated = await db.updateStudent(student.id, updatePayload);
 
   res.json({
     success: true,

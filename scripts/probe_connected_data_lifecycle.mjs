@@ -210,6 +210,20 @@ async function run() {
     const initialKpi = JSON.parse(initialKpiRes.data).kpi;
     const initialCollected = Number(initialKpi.totalCollectedRaw) || 0;
 
+    // Ensure student has outstanding dues to pay
+    const studentLedgerCheck = await reqRole('/api/fees/ledger/me', 'student');
+    const ledgerCheckData = JSON.parse(studentLedgerCheck.data);
+    const existingDue = Number(ledgerCheckData.summary?.totalDue) || 0;
+    if (existingDue < 1000) {
+      await reqRole('/api/fees/assign', 'admin', 'POST', {
+        studentId: '1001-88-03-01',
+        feeHeadId: 'fh-tuition',
+        amount: 1000,
+        dueDate: '2026-12-31',
+        semester: 4,
+      });
+    }
+
     // 2.3 Student executes fee payment
     const paymentAmount = 1000;
     const payRes = await reqRole('/api/fees/collect', 'student', 'POST', {
@@ -218,6 +232,9 @@ async function run() {
       paymentMode: 'online_upi',
       notes: `Automated lifecycle probe fee collection ${timestamp}`,
     });
+    if (payRes.status !== 200 && payRes.status !== 201) {
+      console.error('Fee payment failure payload:', payRes.data);
+    }
     assert(payRes.status === 201 || payRes.status === 200, `Student submits fee payment via UPI (Status ${payRes.status})`);
     const payJson = JSON.parse(payRes.data);
     const receiptNo = payJson.receiptNo || payJson.payment?.receipt_no;
@@ -240,11 +257,12 @@ async function run() {
     // -------------------------------------------------------------------------
     console.log('\n--- CHAIN 3: Faculty Attendance -> 75% Gate -> Admit Card Block/Release -> HOD Condonation ---');
 
-    // 3.1 Faculty sets student attendance below 75% cutoff (70%)
+    // 3.1 Faculty sets student attendance below 75% cutoff (70%) and resets condonation
     const attShortageRes = await reqRole('/api/students/1001-88-03-01/attendance', 'staff', 'PATCH', {
       attendancePercentage: 70,
       attendedClasses: 70,
       totalClasses: 100,
+      condonation_granted: false,
     });
     assert(attShortageRes.status === 200, `Faculty records student attendance shortage at 70% (<75%) (Status ${attShortageRes.status})`);
 
