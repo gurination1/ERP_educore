@@ -225,7 +225,14 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
       {/* 4 Multi-Tenant SaaS Master KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {/* KPI 1: Onboarded Client Campuses */}
-        <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-4 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)]">
+        <div
+          onClick={() => {
+            const el = document.getElementById('tenants-table-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className="bg-white/95 backdrop-blur-xl border border-slate-200/80 hover:border-[#00236f]/60 rounded-2xl p-4 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] cursor-pointer transition-all hover:shadow-md group"
+          title="Click to view all onboarded client institutions"
+        >
           <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
             <span>Client Institutions</span>
             <span className="text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full text-xs font-bold">
@@ -236,14 +243,21 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
             <span className="text-2xl font-black text-[#00236f] tracking-tight">{tenants.length}</span>
             <span className="text-xs text-slate-500">Campuses Managed</span>
           </div>
-          <div className="mt-2 text-[11px] text-slate-500 flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span>Subdomain routing: <strong className="text-slate-700">*.gurudotcom</strong></span>
+          <div className="mt-2 text-[11px] text-slate-500 flex items-center justify-between">
+            <span className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>Subdomain routing: <strong className="text-slate-700">*.gurudotcom</strong></span>
+            </span>
+            <span className="text-slate-400 group-hover:text-[#00236f] text-xs font-bold transition-transform group-hover:translate-x-0.5">↓</span>
           </div>
         </div>
 
         {/* KPI 2: Multi-Tenant Database Health */}
-        <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-4 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)]">
+        <div
+          onClick={() => onNavigate('telemetry')}
+          className="bg-white/95 backdrop-blur-xl border border-slate-200/80 hover:border-indigo-400 rounded-2xl p-4 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] cursor-pointer transition-all hover:shadow-md group"
+          title="Click to inspect real-time database cluster telemetry & health"
+        >
           <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
             <span>Database Engines</span>
             <span className="text-indigo-700 bg-indigo-50 border border-indigo-200/80 px-2 py-0.5 rounded-full text-xs font-bold">
@@ -255,12 +269,16 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
           </div>
           <div className="mt-2 text-[11px] text-slate-500 flex items-center justify-between">
             <span>Status: <strong className="text-emerald-700">{dbHealth?.database || 'Active Pool'}</strong></span>
-            <span className="font-mono text-[10px] text-slate-400">57 Tables</span>
+            <span className="text-slate-400 group-hover:text-indigo-600 text-xs font-bold transition-transform group-hover:translate-x-0.5">→</span>
           </div>
         </div>
 
         {/* KPI 3: Cross-Campus Scholar Census */}
-        <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-4 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)]">
+        <div
+          onClick={() => onNavigate('manage-students')}
+          className="bg-white/95 backdrop-blur-xl border border-slate-200/80 hover:border-blue-400 rounded-2xl p-4 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] cursor-pointer transition-all hover:shadow-md group"
+          title="Click to open cross-campus scholar directory and census"
+        >
           <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
             <span>Global Scholar Census</span>
             <span className="text-blue-700 bg-blue-50 border border-blue-200/80 px-2 py-0.5 rounded-full text-xs font-bold">
@@ -271,13 +289,18 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
             <span className="text-2xl font-black text-blue-900 tracking-tight">12,450</span>
             <span className="text-xs text-slate-500">Enrolled Scholars</span>
           </div>
-          <div className="mt-2 text-[11px] text-slate-500">
+          <div className="mt-2 text-[11px] text-slate-500 flex items-center justify-between">
             <span>Active cross-college user sessions: <strong className="text-slate-800">1,840</strong></span>
+            <span className="text-slate-400 group-hover:text-blue-600 text-xs font-bold transition-transform group-hover:translate-x-0.5">→</span>
           </div>
         </div>
 
         {/* KPI 4: Platform Throughput & Security SLA */}
-        <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-4 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)]">
+        <div
+          onClick={onOpenAuditLogs}
+          className="bg-white/95 backdrop-blur-xl border border-slate-200/80 hover:border-emerald-400 rounded-2xl p-4 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] cursor-pointer transition-all hover:shadow-md group"
+          title="Click to inspect cryptographic audit trail & forensics"
+        >
           <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
             <span>Platform SLA & Latency</span>
             <span className="text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full text-xs font-bold">
@@ -288,8 +311,9 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
             <span className="text-2xl font-black text-slate-900 tracking-tight">12ms</span>
             <span className="text-xs text-emerald-600 font-semibold">Fast Edge Cache</span>
           </div>
-          <div className="mt-2 text-[11px] text-slate-500">
+          <div className="mt-2 text-[11px] text-slate-500 flex items-center justify-between">
             <span>Immutable audit events: <strong className="text-slate-800">4,289 logged</strong></span>
+            <span className="text-slate-400 group-hover:text-emerald-600 text-xs font-bold transition-transform group-hover:translate-x-0.5">→</span>
           </div>
         </div>
       </div>
@@ -297,7 +321,7 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
       {/* Main Grid: Onboarded Colleges Table (8 cols) & Canonical Architecture Guide (4 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
         {/* Onboarded Colleges & One-Click Impersonation (8 cols) */}
-        <div className="lg:col-span-8 bg-white/95 backdrop-blur-xl rounded-2xl p-4 border border-slate-200/80 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] flex flex-col justify-between">
+        <div id="tenants-table-section" className="lg:col-span-8 bg-white/95 backdrop-blur-xl rounded-2xl p-4 border border-slate-200/80 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
               <div>

@@ -18,9 +18,9 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
   onOpenReceiptModal,
 }) => {
   const [searchParams] = useSearchParams();
-  const isActualAdmin = currentUser ? (currentUser.role === 'admin' || currentUser.role === 'super_admin' || currentUser.role === 'accounts') : !currentStudent;
-  const isStaff = currentUser?.role === 'staff';
-  const isStudent = currentUser?.role === 'student' || (!isActualAdmin && !isStaff);
+  const isActualAdmin = currentUser ? ['admin', 'super_admin', 'accounts'].includes(currentUser.role) : !currentStudent;
+  const isStaff = currentUser ? ['staff', 'hod', 'counselor', 'hr'].includes(currentUser.role) : false;
+  const isStudent = currentUser?.role === 'student' || (!isActualAdmin && !isStaff && Boolean(currentStudent));
   const canSearchStudents = isActualAdmin || isStaff;
 
   useEffect(() => {

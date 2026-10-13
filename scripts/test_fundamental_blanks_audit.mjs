@@ -6,7 +6,7 @@ const TEST_PORT = 3015;
 const BASE_URL = process.env.BASE_URL || `http://127.0.0.1:${TEST_PORT}`;
 
 const ROLE_CREDENTIALS = {
-  super_admin: { username: '9001-01-03-01', password: 'superadmin123' },
+  super_admin: { username: '9001-01-03-01', password: 'super123' },
   admin: { username: '4001-01-03-01', password: 'admin123' },
   staff: { username: '2001-14-03-01', password: 'staff123' },
   hod: { username: '3001-01-03-01', password: 'hod123' },
@@ -61,15 +61,34 @@ async function run() {
   console.log('Testing target endpoint:', BASE_URL);
   let server = null;
   if (!process.env.BASE_URL) {
+    let ready = false;
     try {
-      await fetch(`${BASE_URL}/api/health`);
-    } catch {
+      const h = await fetch(`${BASE_URL}/api/health`);
+      if (h.ok) ready = true;
+    } catch {}
+
+    if (!ready) {
       console.log('Spawning test server on port', TEST_PORT);
       server = spawn('node', ['dist/server.cjs'], {
         env: { ...process.env, PORT: String(TEST_PORT) },
         stdio: 'inherit',
       });
-      await new Promise(r => setTimeout(r, 4000));
+
+      // Poll /api/health until ready
+      for (let i = 0; i < 30; i++) {
+        await new Promise(r => setTimeout(r, 600));
+        try {
+          const res = await fetch(`${BASE_URL}/api/health`);
+          if (res.ok) {
+            ready = true;
+            console.log('Server successfully initialized and listening on port', TEST_PORT);
+            break;
+          }
+        } catch {}
+      }
+      if (!ready) {
+        throw new Error('Server failed to start within timeout on port ' + TEST_PORT);
+      }
     }
   }
 
@@ -132,6 +151,37 @@ async function run() {
       const resPart = await reqRole('/api/partners/part-nonexistent', role, 'PUT', { firm_name: 'Test Partner Corp' });
       assert(resPart.status !== 403, `PUT /api/partners/:id for role '${role}' is NOT 403 Forbidden (status: ${resPart.status})`);
     }
+
+    console.log('\n--- 7. Testing Super Admin Universal Route Access (No 403 Lockouts) ---');
+    const saUsers = await reqRole('/api/users', 'super_admin');
+    assert(saUsers.status === 200, "GET /api/users for role 'super_admin' returns 200 OK");
+
+    const saStudents = await reqRole('/api/students', 'super_admin');
+    assert(saStudents.status === 200, "GET /api/students for role 'super_admin' returns 200 OK");
+
+    const saAdmissions = await reqRole('/api/admissions', 'super_admin');
+    assert(saAdmissions.status === 200, "GET /api/admissions for role 'super_admin' returns 200 OK");
+
+    const saEnquiries = await reqRole('/api/enquiries', 'super_admin');
+    assert(saEnquiries.status === 200, "GET /api/enquiries for role 'super_admin' returns 200 OK");
+
+    const saDepartments = await reqRole('/api/masters/departments', 'super_admin');
+    assert(saDepartments.status === 200, "GET /api/masters/departments for role 'super_admin' returns 200 OK");
+
+    console.log('\n--- 8. Testing Accounts Role Access on AI Fee Notice Engine ---');
+    const accAiNotice = await reqRole('/api/ai/fee-notice', 'accounts', 'POST', {
+      studentName: 'Aryan Sharma',
+      amountDue: 45000,
+      dueDate: '2026-11-01',
+      tone: 'formal'
+    });
+    assert(accAiNotice.status !== 403, `POST /api/ai/fee-notice for role 'accounts' is NOT 403 Forbidden (status: ${accAiNotice.status})`);
+
+    console.log('\n--- 9. Testing Attendance Gate Ordinance (75% Cutoff) ---');
+    const admitRes = await reqRole('/api/exam/admit-card/1001-88-03-01', 'student');
+    assert(admitRes.status === 200, "GET /api/exam/admit-card/1001-88-03-01 for 'student' returns 200 OK");
+    const admitJson = JSON.parse(admitRes.data);
+    assert(admitJson.success === true && typeof admitJson.isEligible === 'boolean' && typeof admitJson.status === 'string', "Admit card gate clearance eligibility is present and valid");
 
     console.log('\n======================================================================');
     console.log(`TOTAL PASSED: ${totalPassed} | TOTAL FAILED: ${totalFailed}`);

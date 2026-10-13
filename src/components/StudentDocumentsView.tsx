@@ -114,6 +114,7 @@ export const StudentDocumentsView: React.FC<StudentDocumentsViewProps> = ({ curr
   const [selectedDoc, setSelectedDoc] = useState<DocumentRecord | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   // New Upload Form State
@@ -121,12 +122,13 @@ export const StudentDocumentsView: React.FC<StudentDocumentsViewProps> = ({ curr
   const [uploadTitle, setUploadTitle] = useState('Migration / Character Certificate');
   const [fakeFileName, setFakeFileName] = useState('');
 
-  const isAdminOrStaff = currentUser?.role === 'admin' || currentUser?.role === 'super_admin' || currentUser?.role === 'staff';
+  const isAdminOrStaff = ['admin', 'super_admin', 'staff', 'hod', 'counselor', 'accounts', 'hr'].includes(currentUser?.role || '');
 
   const handleSimulatedUpload = (e: React.FormEvent) => {
     e.preventDefault();
+    setUploadError(null);
     if (!fakeFileName) {
-      alert('Please select or specify a document file to upload.');
+      setUploadError('Please select or specify a document file to upload.');
       return;
     }
     setIsUploading(true);
@@ -242,9 +244,22 @@ Generated at ${new Date().toISOString()} via EduCore Document Vault Engine`;
       </div>
 
       {uploadSuccess && (
-        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center gap-2 animate-fadeIn">
-          <span className="font-bold text-[10px]">✓</span>
-          <span>{uploadSuccess}</span>
+        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center justify-between animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-[10px]">✓</span>
+            <span>{uploadSuccess}</span>
+          </div>
+          <button type="button" onClick={() => setUploadSuccess(null)} className="text-emerald-700 hover:text-emerald-900 font-bold">✕</button>
+        </div>
+      )}
+
+      {uploadError && (
+        <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-bold flex items-center justify-between animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-[10px]">⚠️</span>
+            <span>{uploadError}</span>
+          </div>
+          <button type="button" onClick={() => setUploadError(null)} className="text-rose-700 hover:text-rose-900 font-bold">✕</button>
         </div>
       )}
 

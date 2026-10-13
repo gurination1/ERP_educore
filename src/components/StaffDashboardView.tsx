@@ -289,120 +289,315 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
   const absentCount = students.filter(s => s.status === 'A').length;
   const medicalCount = students.filter(s => s.status === 'M').length;
 
+  const isCounselor = currentUser?.role === 'counselor';
+  const isHOD = currentUser?.role === 'hod';
+
+  const userInitials = currentUser?.full_name
+    ? currentUser.full_name
+        .split(' ')
+        .filter(Boolean)
+        .map(n => n[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase()
+    : isCounselor
+    ? 'AC'
+    : isHOD
+    ? 'HD'
+    : 'SR';
+
+  const roleTitleBadge = isCounselor
+    ? 'Senior Admissions Counselor'
+    : isHOD
+    ? 'Head of Department (HOD)'
+    : 'Faculty & Academic Staff';
+
+  const departmentDesignation = isCounselor
+    ? 'Senior Outreach & Counseling Officer • Admissions Directorate'
+    : isHOD
+    ? 'Head of Department & Professor • Dept. of Computer Science & Engineering'
+    : 'Assistant Professor • Dept. of Computer Science & Engineering';
+
+  const officeLocation = isCounselor
+    ? 'Admissions Reception Desk 101'
+    : isHOD
+    ? 'HOD Chamber, Block B-301'
+    : 'Block B, Faculty Room 204';
+
   return (
     <div id="staff-dashboard-screen" className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
-      {/* Faculty Persona Header */}
+      {/* Faculty / Counselor Persona Header */}
       <div className="bg-white rounded-2xl p-6 border border-[#e1e3e4] shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="flex items-center gap-5">
           <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-[#00236f] to-[#1a4bb0] text-white flex items-center justify-center font-bold text-2xl shadow-sm">
-            <span>SR</span>
+            <span>{userInitials}</span>
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-2xl font-extrabold text-[#191c1d] tracking-tight">
-                {currentUser?.full_name || 'Prof. Sunita Rao'}
+                {currentUser?.full_name || (isCounselor ? 'Admissions Counselor' : isHOD ? 'Dr. HOD Computer Science' : 'Prof. Sunita Rao')}
               </h2>
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#ffedd5] text-[#00236f]">
-                Faculty & Academic Staff
+                {roleTitleBadge}
               </span>
             </div>
             <p className="text-sm text-[#444651] font-medium mt-1">
-              Assistant Professor • Dept. of Computer Science & Engineering
+              {departmentDesignation}
             </p>
             <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-[#757682]">
               <span className="flex items-center gap-1">
-                
                 <span>UID: {currentUser?.enterprise_uid || '2001-14-03-01'}</span>
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
-                
-                <span>Block B, Faculty Room 204</span>
+                <span>{officeLocation}</span>
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
-                
                 <span>Fall Session 2025-26</span>
               </span>
             </div>
           </div>
         </div>
 
-        {/* Quick KPI stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full md:w-auto">
-          <div className="bg-[#f8f9fa] border border-[#edeeef] p-3 rounded-xl text-center min-w-[95px]">
-            <span className="text-xl font-extrabold text-[#00236f] block leading-none">2</span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#757682] mt-1 block">
-              Teaching Courses
-            </span>
+        {/* Quick KPI stats (Dynamic for Counselor vs Faculty) */}
+        {isCounselor ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full md:w-auto">
+            <div
+              onClick={() => onNavigate('admissions')}
+              className="bg-[#f8f9fa] border border-[#edeeef] hover:border-[#00236f] p-3 rounded-xl text-center min-w-[95px] cursor-pointer transition-all shadow-2xs hover:bg-white"
+            >
+              <span className="text-xl font-extrabold text-[#00236f] block leading-none">
+                {followupStats?.total_prospects || 128}
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#757682] mt-1 block">
+                Total Leads
+              </span>
+            </div>
+            <div
+              onClick={() => onNavigate('admissions')}
+              className="bg-[#f8f9fa] border border-[#edeeef] hover:border-[#ba1a1a] p-3 rounded-xl text-center min-w-[95px] cursor-pointer transition-all shadow-2xs hover:bg-white"
+            >
+              <span className="text-xl font-extrabold text-[#ba1a1a] block leading-none">
+                {followupStats?.overdue || 0}
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#757682] mt-1 block">
+                Overdue
+              </span>
+            </div>
+            <div
+              onClick={() => onNavigate('admissions')}
+              className="bg-[#f8f9fa] border border-[#edeeef] hover:border-[#755b00] p-3 rounded-xl text-center min-w-[95px] cursor-pointer transition-all shadow-2xs hover:bg-white"
+            >
+              <span className="text-xl font-extrabold text-[#755b00] block leading-none">
+                {followupStats?.due_today || 0}
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#757682] mt-1 block">
+                Due Today
+              </span>
+            </div>
+            <div
+              onClick={() => onNavigate('admissions')}
+              className="bg-[#f8f9fa] border border-[#edeeef] hover:border-emerald-600 p-3 rounded-xl text-center min-w-[95px] cursor-pointer transition-all shadow-2xs hover:bg-white"
+            >
+              <span className="text-xl font-extrabold text-emerald-700 block leading-none">
+                48
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#757682] mt-1 block">
+                Enrolled
+              </span>
+            </div>
           </div>
-          <div className="bg-[#f8f9fa] border border-[#edeeef] p-3 rounded-xl text-center min-w-[95px]">
-            <span className="text-xl font-extrabold text-[#00236f] block leading-none">120</span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#757682] mt-1 block">
-              Students Taught
-            </span>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full md:w-auto">
+            <div className="bg-[#f8f9fa] border border-[#edeeef] p-3 rounded-xl text-center min-w-[95px]">
+              <span className="text-xl font-extrabold text-[#00236f] block leading-none">2</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#757682] mt-1 block">
+                Teaching Courses
+              </span>
+            </div>
+            <div className="bg-[#f8f9fa] border border-[#edeeef] p-3 rounded-xl text-center min-w-[95px]">
+              <span className="text-xl font-extrabold text-[#00236f] block leading-none">120</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#757682] mt-1 block">
+                Students Taught
+              </span>
+            </div>
+            <div className="bg-[#f8f9fa] border border-[#edeeef] p-3 rounded-xl text-center min-w-[95px]">
+              <span className="text-xl font-extrabold text-[#755b00] block leading-none">18</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#757682] mt-1 block">
+                Proctor Mentees
+              </span>
+            </div>
+            <div
+              onClick={() => onNavigate('admissions')}
+              className="bg-[#f8f9fa] border border-[#edeeef] hover:border-[#00236f] p-3 rounded-xl text-center min-w-[95px] cursor-pointer transition-all shadow-2xs hover:bg-white"
+              title="Click to open Admissions Prospect CRM & Follow-Up Radar"
+            >
+              <span
+                className={`text-xl font-extrabold block leading-none ${
+                  (followupStats?.overdue || 0) > 0 ? 'text-[#ba1a1a] animate-pulse' : 'text-[#00236f]'
+                }`}
+              >
+                {(followupStats?.overdue || 0) + (followupStats?.due_today || 0)}
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#757682] mt-1 block">
+                {(followupStats?.overdue || 0) > 0 ? 'Urgent Recalls' : 'Admissions CRM'}
+              </span>
+            </div>
           </div>
-          <div className="bg-[#f8f9fa] border border-[#edeeef] p-3 rounded-xl text-center min-w-[95px]">
-            <span className="text-xl font-extrabold text-[#755b00] block leading-none">18</span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#757682] mt-1 block">
-              Proctor Mentees
-            </span>
-          </div>
-          <div
+        )}
+      </div>
+
+      {/* Quick Action Navigation Bar (Dynamic for Counselor vs Faculty) */}
+      {isCounselor ? (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <button
+            type="button"
             onClick={() => onNavigate('admissions')}
-            className="bg-[#f8f9fa] border border-[#edeeef] hover:border-[#00236f] p-3 rounded-xl text-center min-w-[95px] cursor-pointer transition-all shadow-2xs hover:bg-white"
-            title="Click to open Admissions Prospect CRM & Follow-Up Radar"
+            className="p-3.5 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-[#00236f]/40 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs cursor-pointer"
           >
-            <span className={`text-xl font-extrabold block leading-none ${
-              (followupStats?.overdue || 0) > 0 ? 'text-[#ba1a1a] animate-pulse' : 'text-[#00236f]'
-            }`}>
-              {(followupStats?.overdue || 0) + (followupStats?.due_today || 0)}
+            <div>
+              <h4 className="text-xs font-bold text-[#191c1d] group-hover:text-[#00236f] transition-colors">
+                Prospect CRM & Telephony Desk
+              </h4>
+              <p className="text-[10px] text-[#757682]">Lead Lifecycle, Call Logs & Recall Radar</p>
+            </div>
+            <span className="font-bold text-[11px] text-[#757682] group-hover:text-[#00236f] group-hover:translate-x-0.5 transition-all">
+              →
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#757682] mt-1 block">
-              {(followupStats?.overdue || 0) > 0 ? 'Urgent Recalls' : 'Admissions CRM'}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigate('bulk-import')}
+            className="p-3.5 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-[#00236f]/40 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs cursor-pointer"
+          >
+            <div>
+              <h4 className="text-xs font-bold text-[#191c1d] group-hover:text-[#00236f] transition-colors">
+                Bulk Lead Ingestion & Allocation
+              </h4>
+              <p className="text-[10px] text-[#757682]">CSV Upload, Dedup Engine & Ownership</p>
+            </div>
+            <span className="font-bold text-[11px] text-[#757682] group-hover:text-[#00236f] group-hover:translate-x-0.5 transition-all">
+              →
             </span>
-          </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigate('admissions')}
+            className="p-3.5 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-[#00236f]/40 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs cursor-pointer"
+          >
+            <div>
+              <h4 className="text-xs font-bold text-[#191c1d] group-hover:text-[#00236f] transition-colors">
+                Admissions Intake & Verifications
+              </h4>
+              <p className="text-[10px] text-[#757682]">Form Attestation, Quotas & Seat Approval</p>
+            </div>
+            <span className="font-bold text-[11px] text-[#757682] group-hover:text-[#00236f] group-hover:translate-x-0.5 transition-all">
+              →
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigate('manage-students')}
+            className="p-3.5 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-[#00236f]/40 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs cursor-pointer"
+          >
+            <div>
+              <h4 className="text-xs font-bold text-[#191c1d] group-hover:text-[#00236f] transition-colors">
+                Enrolled Scholars Directory
+              </h4>
+              <p className="text-[10px] text-[#757682]">Scholar Profiles, Batch & Roll Search</p>
+            </div>
+            <span className="font-bold text-[11px] text-[#757682] group-hover:text-[#00236f] group-hover:translate-x-0.5 transition-all">
+              →
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigate('fee-ledger')}
+            className="p-3.5 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-[#00236f]/40 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs cursor-pointer"
+          >
+            <div>
+              <h4 className="text-xs font-bold text-[#191c1d] group-hover:text-[#00236f] transition-colors">
+                Tuition & Fee Head Register
+              </h4>
+              <p className="text-[10px] text-[#757682]">Fee Demands, Scholarships & Dues</p>
+            </div>
+            <span className="font-bold text-[11px] text-[#757682] group-hover:text-[#00236f] group-hover:translate-x-0.5 transition-all">
+              →
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigate('grievances')}
+            className="p-3.5 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-[#00236f]/40 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs cursor-pointer"
+          >
+            <div>
+              <h4 className="text-xs font-bold text-[#191c1d] group-hover:text-[#00236f] transition-colors">
+                Grievance & Student Support
+              </h4>
+              <p className="text-[10px] text-[#757682]">Escalations, AICTE Ombudsperson Desk</p>
+            </div>
+            <span className="font-bold text-[11px] text-[#757682] group-hover:text-[#00236f] group-hover:translate-x-0.5 transition-all">
+              →
+            </span>
+          </button>
         </div>
-      </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <button
+            type="button"
+            onClick={() => onNavigate('teacher-documents')}
+            className="p-3 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-[#00236f]/40 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs cursor-pointer"
+          >
+            <div>
+              <h4 className="text-xs font-bold text-[#191c1d] group-hover:text-[#00236f] transition-colors">
+                Faculty Credentials Vault
+              </h4>
+              <p className="text-[10px] text-[#757682]">AICTE ID, Ph.D. Awards, Scopus Papers</p>
+            </div>
+            <span className="font-bold text-[11px] text-[#757682] group-hover:text-[#00236f] group-hover:translate-x-0.5 transition-all">
+              →
+            </span>
+          </button>
 
-      {/* Quick Action Navigation Bar for Faculty */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <button
-          type="button"
-          onClick={() => onNavigate('teacher-documents')}
-          className="p-3 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-[#00236f]/40 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs cursor-pointer"
-        >
-          <div>
-            <h4 className="text-xs font-bold text-[#191c1d] group-hover:text-[#00236f] transition-colors">Faculty Credentials Vault</h4>
-            <p className="text-[10px] text-[#757682]">AICTE ID, Ph.D. Awards, Scopus Papers</p>
-          </div>
-          <span className="font-bold text-[11px] text-[#757682] group-hover:text-[#00236f] group-hover:translate-x-0.5 transition-all">→</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => onNavigate('student-quiz-lms')}
+            className="p-3 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-[#00236f]/40 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs cursor-pointer"
+          >
+            <div>
+              <h4 className="text-xs font-bold text-[#191c1d] group-hover:text-[#00236f] transition-colors">
+                LMS & CBT Assessment
+              </h4>
+              <p className="text-[10px] text-[#757682]">Mid-Term CBT Quizzes & Question Banks</p>
+            </div>
+            <span className="font-bold text-[11px] text-[#757682] group-hover:text-[#00236f] group-hover:translate-x-0.5 transition-all">
+              →
+            </span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => onNavigate('student-quiz-lms')}
-          className="p-3 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-[#00236f]/40 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs cursor-pointer"
-        >
-          <div>
-            <h4 className="text-xs font-bold text-[#191c1d] group-hover:text-[#00236f] transition-colors">LMS & CBT Assessment</h4>
-            <p className="text-[10px] text-[#757682]">Mid-Term CBT Quizzes & Question Banks</p>
-          </div>
-          <span className="font-bold text-[11px] text-[#757682] group-hover:text-[#00236f] group-hover:translate-x-0.5 transition-all">→</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => onNavigate('student-documents')}
-          className="p-3 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-[#00236f]/40 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs cursor-pointer"
-        >
-          <div>
-            <h4 className="text-xs font-bold text-[#191c1d] group-hover:text-[#00236f] transition-colors">Student Document Vault</h4>
-            <p className="text-[10px] text-[#757682]">Statutory & 85% Domicile Verification</p>
-          </div>
-          <span className="font-bold text-[11px] text-[#757682] group-hover:text-[#00236f] group-hover:translate-x-0.5 transition-all">→</span>
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={() => onNavigate('student-documents')}
+            className="p-3 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-[#00236f]/40 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs cursor-pointer"
+          >
+            <div>
+              <h4 className="text-xs font-bold text-[#191c1d] group-hover:text-[#00236f] transition-colors">
+                Student Document Vault
+              </h4>
+              <p className="text-[10px] text-[#757682]">Statutory & 85% Domicile Verification</p>
+            </div>
+            <span className="font-bold text-[11px] text-[#757682] group-hover:text-[#00236f] group-hover:translate-x-0.5 transition-all">
+              →
+            </span>
+          </button>
+        </div>
+      )}
 
       {/* Admissions Recall Radar Alert Banner for Faculty & Counselors */}
       {((followupStats?.overdue || 0) > 0 || (followupStats?.due_today || 0) > 0) && (

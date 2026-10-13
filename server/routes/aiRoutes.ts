@@ -65,7 +65,7 @@ aiRouter.post('/recommend-fee', async (req: Request, res: Response): Promise<voi
 });
 
 // 3. AI Fee Dues Defaulter Recovery Notice Generator
-aiRouter.post('/fee-notice', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
+aiRouter.post('/fee-notice', authenticateToken, requireRole('admin', 'super_admin', 'staff', 'accounts'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { studentId, urgency } = req.body;
   try {
     const allStudents = await db.getStudents();

@@ -114,6 +114,7 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
   const [selectedDoc, setSelectedDoc] = useState<DocumentRecord | null>(null);
   const [filterType, setFilterType] = useState<string>('all');
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   // Upload state
@@ -121,12 +122,13 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
   const [newType, setNewType] = useState('DOC_CONFERENCE');
   const [fileName, setFileName] = useState('');
 
-  const isProvostOrAdmin = currentUser?.role === 'admin' || currentUser?.role === 'super_admin';
+  const isProvostOrAdmin = ['admin', 'super_admin', 'hod', 'hr'].includes(currentUser?.role || '');
 
   const handleSimulatedUpload = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fileName) {
-      alert('Please enter or select a document file to upload.');
+    setUploadError(null);
+    if (!fileName.trim()) {
+      setUploadError('Please select or specify a valid document filename before uploading.');
       return;
     }
     setIsUploading(true);
@@ -242,6 +244,22 @@ Generated at ${new Date().toISOString()} via EduCore Regulatory Compliance Engin
         <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center gap-2 animate-fadeIn">
           <span className="font-bold text-[10px]">✓</span>
           <span>{uploadSuccess}</span>
+        </div>
+      )}
+
+      {uploadError && (
+        <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-bold flex items-center justify-between gap-2 animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-[10px]">⚠️</span>
+            <span>{uploadError}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setUploadError(null)}
+            className="text-rose-500 hover:text-rose-800 font-bold text-sm px-1.5"
+          >
+            ×
+          </button>
         </div>
       )}
 

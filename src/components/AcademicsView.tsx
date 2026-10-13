@@ -161,13 +161,39 @@ export const AcademicsView: React.FC<AcademicsViewProps> = ({ currentUser }) => 
   const [searchParams] = useSearchParams();
   const rawTab = searchParams.get('tab');
   const urlTab = (rawTab === 'cbcs' ? 'syllabus' : rawTab) as AcademicTab | null;
-  const [activeTab, setActiveTab] = useState<AcademicTab>(urlTab || 'syllabus');
+
+  const isStudent = currentUser?.role === 'student';
+  const isCounselor = currentUser?.role === 'counselor';
+  const isStaffOnly = currentUser?.role === 'staff';
+
+  const canViewBatches = !isStudent && !isStaffOnly && !isCounselor;
+  const canViewSections = !isStudent && !isCounselor;
+  const canViewSubjects = !isStudent && !isStaffOnly && !isCounselor;
+  const canViewAllocations = !isStudent && !isCounselor;
+  const canViewAttendanceLock = !isStudent && !isStaffOnly && !isCounselor;
+
+  const getInitialTab = (): AcademicTab => {
+    if (urlTab) {
+      if ((isStudent || isCounselor) && !['syllabus', 'timetable'].includes(urlTab)) return 'syllabus';
+      if (isStaffOnly && !['syllabus', 'timetable', 'sections', 'allocations'].includes(urlTab)) return 'syllabus';
+      return urlTab;
+    }
+    return 'syllabus';
+  };
+
+  const [activeTab, setActiveTab] = useState<AcademicTab>(getInitialTab);
 
   useEffect(() => {
     if (urlTab) {
-      setActiveTab(urlTab);
+      if ((isStudent || isCounselor) && !['syllabus', 'timetable'].includes(urlTab)) {
+        setActiveTab('syllabus');
+      } else if (isStaffOnly && !['syllabus', 'timetable', 'sections', 'allocations'].includes(urlTab)) {
+        setActiveTab('syllabus');
+      } else {
+        setActiveTab(urlTab);
+      }
     }
-  }, [urlTab]);
+  }, [urlTab, isStudent, isCounselor, isStaffOnly]);
   const [selectedCourse, setSelectedCourse] = useState<CourseItem | null>(null);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
@@ -518,46 +544,54 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
         >
           Curriculum & Syllabus
         </button>
-        <button
-          onClick={() => setActiveTab('batches')}
-          className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === 'batches'
-              ? 'bg-white text-[#00236f] shadow-xs font-bold'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          Batches (L4)
-        </button>
-        <button
-          onClick={() => setActiveTab('sections')}
-          className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === 'sections'
-              ? 'bg-white text-[#00236f] shadow-xs font-bold'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          Sections & Transfers (L5)
-        </button>
-        <button
-          onClick={() => setActiveTab('subjects')}
-          className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === 'subjects'
-              ? 'bg-white text-[#00236f] shadow-xs font-bold'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          Subject Matrix
-        </button>
-        <button
-          onClick={() => setActiveTab('allocations')}
-          className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === 'allocations'
-              ? 'bg-white text-[#00236f] shadow-xs font-bold'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          Faculty Handover
-        </button>
+        {canViewBatches && (
+          <button
+            onClick={() => setActiveTab('batches')}
+            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'batches'
+                ? 'bg-white text-[#00236f] shadow-xs font-bold'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Batches (L4)
+          </button>
+        )}
+        {canViewSections && (
+          <button
+            onClick={() => setActiveTab('sections')}
+            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'sections'
+                ? 'bg-white text-[#00236f] shadow-xs font-bold'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Sections & Transfers (L5)
+          </button>
+        )}
+        {canViewSubjects && (
+          <button
+            onClick={() => setActiveTab('subjects')}
+            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'subjects'
+                ? 'bg-white text-[#00236f] shadow-xs font-bold'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Subject Matrix
+          </button>
+        )}
+        {canViewAllocations && (
+          <button
+            onClick={() => setActiveTab('allocations')}
+            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'allocations'
+                ? 'bg-white text-[#00236f] shadow-xs font-bold'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Faculty Handover
+          </button>
+        )}
         <button
           onClick={() => setActiveTab('timetable')}
           className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
@@ -568,16 +602,18 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
         >
           Time Table & CC
         </button>
-        <button
-          onClick={() => setActiveTab('attendance')}
-          className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === 'attendance'
-              ? 'bg-white text-[#00236f] shadow-xs font-bold'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          Attendance Lock
-        </button>
+        {canViewAttendanceLock && (
+          <button
+            onClick={() => setActiveTab('attendance')}
+            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'attendance'
+                ? 'bg-white text-[#00236f] shadow-xs font-bold'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Attendance Lock
+          </button>
+        )}
       </div>
 
       {/* ======================================================== */}

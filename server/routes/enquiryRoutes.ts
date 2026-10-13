@@ -4,8 +4,8 @@ import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth.
 
 export const enquiryRouter = Router();
 
-// Fenced to Admissions Personnel, Academic Staff, HOD and Institutional Admins only
-enquiryRouter.use(authenticateToken, requireRole('admin', 'staff', 'counselor', 'hod'));
+// Fenced to Admissions Personnel, Academic Staff, HOD, Super Admin and Institutional Admins
+enquiryRouter.use(authenticateToken, requireRole('admin', 'super_admin', 'staff', 'counselor', 'hod'));
 
 // 1. List all pre-admission enquiries
 enquiryRouter.get('/', async (req: AuthRequest, res: Response): Promise<void> => {
@@ -33,7 +33,7 @@ enquiryRouter.get('/dialer/settings', authenticateToken, async (req: AuthRequest
   }
 });
 
-enquiryRouter.post('/dialer/settings', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+enquiryRouter.post('/dialer/settings', authenticateToken, requireRole('admin', 'super_admin', 'counselor'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const updated = await db.updateDialerSettings(req.body);
     res.json({ success: true, message: 'Dialer integration settings updated.', settings: updated });

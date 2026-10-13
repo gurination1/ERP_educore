@@ -685,7 +685,7 @@ admissionRouter.post(
 );
 
 // Admin: Direct Admission Intake with Instant User Credentials Generation
-admissionRouter.post('/admin-admit', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+admissionRouter.post('/admin-admit', authenticateToken, requireRole('admin', 'super_admin'), async (req: AuthRequest, res: Response): Promise<void> => {
   const parseResult = adminAdmitSchema.safeParse(req.body);
   if (!parseResult.success) {
     const errorMsg = parseResult.error.errors.map(e => e.message).join(', ');
@@ -974,8 +974,8 @@ admissionRouter.post('/admin-admit', authenticateToken, requireRole('admin'), as
   });
 });
 
-// Admin, Faculty, Counselor & HOD: List admissions
-admissionRouter.get('/', authenticateToken, requireRole('admin', 'staff', 'counselor', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
+// Admin, Super Admin, Faculty, Counselor & HOD: List admissions
+admissionRouter.get('/', authenticateToken, requireRole('admin', 'super_admin', 'staff', 'counselor', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { status } = req.query;
   const rawStudents = await db.getStudents();
   const courses = await db.getCourses();
@@ -995,7 +995,7 @@ admissionRouter.get('/', authenticateToken, requireRole('admin', 'staff', 'couns
 });
 
 // Power Delegation Status
-admissionRouter.get('/delegation', authenticateToken, requireRole('admin', 'staff', 'counselor', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
+admissionRouter.get('/delegation', authenticateToken, requireRole('admin', 'super_admin', 'staff', 'counselor', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
   res.json({
     success: true,
     delegation: {
@@ -1011,7 +1011,7 @@ admissionRouter.get('/delegation', authenticateToken, requireRole('admin', 'staf
 });
 
 // Update application status (Approve / Reject / Verify) - Direct approval by Faculty, Counselor, HOD, and Admin
-admissionRouter.patch('/:id/status', authenticateToken, requireRole('admin', 'staff', 'counselor', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
+admissionRouter.patch('/:id/status', authenticateToken, requireRole('admin', 'super_admin', 'staff', 'counselor', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   const { status, remarks } = req.body;
 

@@ -80,7 +80,7 @@ academicTopologyRouter.post('/sections', authenticateToken, requireRole('admin',
 });
 
 // Non-destructive student section transfer preserving cumulative attendance & fee ledgers
-academicTopologyRouter.post('/sections/transfer', authenticateToken, requireRole('admin', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
+academicTopologyRouter.post('/sections/transfer', authenticateToken, requireRole('admin', 'super_admin', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { student_id, target_section_id, reason } = req.body;
     if (!student_id || !target_section_id) {
@@ -165,7 +165,7 @@ const allocateFacultySchema = z.object({
   is_active: z.boolean().default(true),
 });
 
-academicTopologyRouter.post('/allocations', authenticateToken, requireRole('admin', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
+academicTopologyRouter.post('/allocations', authenticateToken, requireRole('admin', 'super_admin', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const parseResult = allocateFacultySchema.safeParse(req.body);
     if (!parseResult.success) {
@@ -180,7 +180,7 @@ academicTopologyRouter.post('/allocations', authenticateToken, requireRole('admi
   }
 });
 
-academicTopologyRouter.post('/allocations/handover', authenticateToken, requireRole('admin', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
+academicTopologyRouter.post('/allocations/handover', authenticateToken, requireRole('admin', 'super_admin', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { allocation_id, new_faculty_id, handover_date, reason } = req.body;
     if (!allocation_id || !new_faculty_id || !handover_date) {
@@ -225,7 +225,7 @@ const createTimetableSlotSchema = z.object({
   linked_batch_ids_json: z.string().optional(),
 });
 
-academicTopologyRouter.post('/timetable', authenticateToken, requireRole('admin', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
+academicTopologyRouter.post('/timetable', authenticateToken, requireRole('admin', 'super_admin', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const parseResult = createTimetableSlotSchema.safeParse(req.body);
     if (!parseResult.success) {
@@ -266,7 +266,7 @@ academicTopologyRouter.put('/attendance-settings', authenticateToken, requireRol
   }
 });
 
-academicTopologyRouter.post('/attendance/record', authenticateToken, requireRole('admin', 'staff', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
+academicTopologyRouter.post('/attendance/record', authenticateToken, requireRole('admin', 'super_admin', 'staff', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { batch_id, section_id, subject_id, faculty_id, attendance_date, slot_time, is_combined_class, student_attendance } = req.body;
     if (!batch_id || !subject_id || !faculty_id || !attendance_date || !student_attendance) {

@@ -572,6 +572,9 @@ export type ActiveScreen =
   | 'examination'       // University Examination Portal (MRSPTU / PUP / PU)
   | 'tenants'           // Multi-Tenant Campus Directory & Provisioning (Lecture 3)
   | 'audit-trail'
+  | 'audit-logs'
+  | 'telemetry'
+  | 'master-architecture'
   | 'academic-journey'
   | 'master-tables'
   | 'field-permissions'

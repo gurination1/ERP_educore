@@ -27,8 +27,8 @@ export function isStudentOwner(student: Student, identifier: string): boolean {
   );
 }
 
-// Master list of students (Admin, Faculty Staff, Counselors, HOD, Accounts, HR)
-studentRouter.get('/', authenticateToken, requireRole('admin', 'staff', 'counselor', 'hod', 'accounts', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
+// Master list of students (Admin, Super Admin, Faculty Staff, Counselors, HOD, Accounts, HR)
+studentRouter.get('/', authenticateToken, requireRole('admin', 'super_admin', 'staff', 'counselor', 'hod', 'accounts', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { search, course, admission_year, fees_status, semester, page = '1', limit = '10', sort_by = 'student_id', sort_dir = 'asc' } = req.query;
 
   const rawStudents = await db.getStudents();
@@ -230,8 +230,8 @@ studentRouter.get('/:id', authenticateToken, async (req: AuthRequest, res: Respo
   });
 });
 
-// Send email reminders to students with dues/overdue (Admin only)
-studentRouter.post('/send-email-reminders', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
+// Send email reminders to students with dues/overdue (Admin & Super Admin)
+studentRouter.post('/send-email-reminders', authenticateToken, requireRole('admin', 'super_admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
   const allStudents = await db.getStudents();
   const overdueStudents = allStudents.filter(s => s.admission_status === 'approved' && (s.fees_status === 'overdue' || s.fees_status === 'due'));
   
@@ -342,8 +342,8 @@ studentRouter.get('/:id/admit-card', authenticateToken, async (req: AuthRequest,
   });
 });
 
-// Bulk Update Attendance Register (Admin / Faculty)
-studentRouter.post('/attendance/bulk', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
+// Bulk Update Attendance Register (Admin / Super Admin / Faculty / HOD)
+studentRouter.post('/attendance/bulk', authenticateToken, requireRole('admin', 'super_admin', 'staff', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { courseCode, lectureDate, lectureSlot, topic, updates } = req.body;
 
   if (!Array.isArray(updates) || updates.length === 0) {
@@ -425,8 +425,8 @@ studentRouter.post('/attendance/bulk', authenticateToken, requireRole('admin', '
   });
 });
 
-// Update Student Attendance (Admin / Faculty)
-studentRouter.patch('/:id/attendance', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
+// Update Student Attendance (Admin / Super Admin / Faculty / HOD)
+studentRouter.patch('/:id/attendance', authenticateToken, requireRole('admin', 'super_admin', 'staff', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   const { attendedClasses, totalClasses, attendancePercentage } = req.body;
 
@@ -469,8 +469,8 @@ studentRouter.patch('/:id/attendance', authenticateToken, requireRole('admin', '
   });
 });
 
-// Grant MRSPTU Attendance Condonation (Admin / Director / Registrar)
-studentRouter.post('/:id/condone-attendance', authenticateToken, requireRole('admin', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
+// Grant MRSPTU Attendance Condonation (Admin / Super Admin / HOD / Director)
+studentRouter.post('/:id/condone-attendance', authenticateToken, requireRole('admin', 'super_admin', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   const { orderNo, reason } = req.body;
 
@@ -655,8 +655,8 @@ studentRouter.post('/:id/change-residential-status', authenticateToken, async (r
   });
 });
 
-// Student Semester Promotion (Admin only)
-studentRouter.post('/:id/promote', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+// Student Semester Promotion (Admin, Super Admin & HOD)
+studentRouter.post('/:id/promote', authenticateToken, requireRole('admin', 'super_admin', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   const allStudents = await db.getStudents();
   const student = findStudentByIdentifier(allStudents, id);
@@ -773,7 +773,7 @@ studentRouter.post('/:id/promote', authenticateToken, requireRole('admin'), asyn
 });
 
 // 5. Student Status Governance: Suspend / Deactivate / Reactivate Student Account (Admin & Super Admin)
-studentRouter.patch('/:id/status', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+studentRouter.patch('/:id/status', authenticateToken, requireRole('admin', 'super_admin'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   const { status, reason } = req.body;
 

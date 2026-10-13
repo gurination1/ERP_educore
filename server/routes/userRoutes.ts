@@ -28,7 +28,7 @@ const updateUserSchema = z.object({
 });
 
 // 1. List all users (Admin & Super Admin & HR)
-userRouter.get('/', authenticateToken, requireRole('admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
+userRouter.get('/', authenticateToken, requireRole('admin', 'super_admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { role, search, status } = req.query;
 
   const filters: { role?: string; search?: string; is_active?: boolean } = {};
@@ -70,7 +70,7 @@ userRouter.get('/', authenticateToken, requireRole('admin', 'hr'), async (req: A
 });
 
 // 2. Hire / Provision new Staff or User (Admin, Super Admin & HR)
-userRouter.post('/', authenticateToken, requireRole('admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
+userRouter.post('/', authenticateToken, requireRole('admin', 'super_admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   const parseResult = createUserSchema.safeParse(req.body);
   if (!parseResult.success) {
     const errorMsg = parseResult.error.errors.map(e => e.message).join(', ');
@@ -159,7 +159,7 @@ userRouter.post('/', authenticateToken, requireRole('admin', 'hr'), async (req: 
 });
 
 // 3. Edit User Profile & Roles (Admin, Super Admin & HR)
-userRouter.patch('/:id', authenticateToken, requireRole('admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
+userRouter.patch('/:id', authenticateToken, requireRole('admin', 'super_admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   const parseResult = updateUserSchema.safeParse(req.body);
   if (!parseResult.success) {
@@ -305,11 +305,11 @@ const handleUserStatusUpdate = async (req: AuthRequest, res: Response): Promise<
   });
 };
 
-userRouter.patch('/:id/status', authenticateToken, requireRole('admin', 'hr'), handleUserStatusUpdate);
-userRouter.put('/:id/status', authenticateToken, requireRole('admin', 'hr'), handleUserStatusUpdate);
+userRouter.patch('/:id/status', authenticateToken, requireRole('admin', 'super_admin', 'hr'), handleUserStatusUpdate);
+userRouter.put('/:id/status', authenticateToken, requireRole('admin', 'super_admin', 'hr'), handleUserStatusUpdate);
 
-// 5. Reset Password (Admin & HR power override)
-userRouter.post('/:id/reset-password', authenticateToken, requireRole('admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
+// 5. Reset Password (Admin, Super Admin & HR power override)
+userRouter.post('/:id/reset-password', authenticateToken, requireRole('admin', 'super_admin', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   const { newPassword } = req.body;
 
@@ -358,8 +358,8 @@ userRouter.post('/:id/reset-password', authenticateToken, requireRole('admin', '
   });
 });
 
-// 6. Delete user (Admin only)
-userRouter.delete('/:id', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+// 6. Delete user (Admin & Super Admin)
+userRouter.delete('/:id', authenticateToken, requireRole('admin', 'super_admin'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
 
   if (req.user?.id === id) {

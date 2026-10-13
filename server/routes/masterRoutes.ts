@@ -29,7 +29,7 @@ masterRouter.get('/enterprise', authenticateToken, async (req: AuthRequest, res:
 });
 
 // 2. Add or update department in Department Master
-masterRouter.post('/departments', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+masterRouter.post('/departments', authenticateToken, requireRole('admin', 'super_admin'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { dept_code, dept_name, tags, head_of_dept, established_year } = req.body;
     if (!dept_code || !dept_name) {
@@ -52,7 +52,7 @@ masterRouter.post('/departments', authenticateToken, requireRole('admin'), async
   }
 });
 
-masterRouter.put('/departments/:id', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+masterRouter.put('/departments/:id', authenticateToken, requireRole('admin', 'super_admin'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const updated = await db.updateMasterDepartment(req.params.id, req.body);
     if (!updated) {
