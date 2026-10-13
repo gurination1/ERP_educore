@@ -11,8 +11,8 @@ scholarshipRouter.get('/schemes', authenticateToken, async (req: AuthRequest, re
   res.json({ success: true, count: schemes.length, schemes });
 });
 
-// Admin / Staff: Create scholarship scheme
-scholarshipRouter.post('/schemes', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
+// Admin / Staff / Accounts / Counselor / HOD: Create scholarship scheme
+scholarshipRouter.post('/schemes', authenticateToken, requireRole('admin', 'staff', 'accounts', 'counselor', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { code, title, description, award_amount, eligibility_criteria, deadline } = req.body;
 
   if (!title || !award_amount || !deadline) {
@@ -144,8 +144,8 @@ scholarshipRouter.get('/applications', authenticateToken, async (req: AuthReques
   res.json({ success: true, count: list.length, applications: list });
 });
 
-// Admin / Staff Review (Approve / Reject + remarks)
-scholarshipRouter.patch('/applications/:id/review', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
+// Admin / Staff / Accounts / Counselor / HOD Review (Approve / Reject + remarks)
+scholarshipRouter.patch('/applications/:id/review', authenticateToken, requireRole('admin', 'staff', 'accounts', 'counselor', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   const { status, remarks } = req.body;
 
@@ -225,8 +225,8 @@ scholarshipRouter.patch('/applications/:id/review', authenticateToken, requireRo
   });
 });
 
-// Admin: Directly Award Scholarship to Student & Disburse to Fee Ledger
-scholarshipRouter.post('/award', authenticateToken, requireRole('admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+// Admin / Accounts / Counselor / HOD: Directly Award Scholarship to Student & Disburse to Fee Ledger
+scholarshipRouter.post('/award', authenticateToken, requireRole('admin', 'accounts', 'counselor', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { studentId, schemeId, amount, remarks } = req.body;
 
   if (!studentId || !schemeId) {

@@ -173,6 +173,38 @@ export const StudentQuizLMSView: React.FC<StudentQuizLMSViewProps> = ({ currentU
     setTimeLeftSeconds(quiz.durationMinutes * 60);
   };
 
+  const handleDownloadResource = (res: any) => {
+    const textContent = `EDUCORE DIGITAL LEARNING MANAGEMENT SYSTEM (LMS)
+COURSE STUDY RESOURCE & LECTURE MODULE
+============================================================
+Title       : ${res.title}
+Subject     : ${res.subject}
+Instructor  : ${res.lecturer}
+Format      : ${res.format}
+Downloaded  : ${new Date().toISOString()}
+Verified By : EduCore LMS Academic Repository
+============================================================
+
+TABLE OF CONTENTS & CURRICULUM SYLLABUS:
+Unit 1: Foundational Theoretical Framework & State Machine Models
+Unit 2: Algorithmic Complexity, Big-O Derivations & Amortized Analysis
+Unit 3: Implementation Architecture, Memory Allocation & Pointer Arithmetics
+Unit 4: Real-World Case Studies & Industry Benchmark Applications
+
+============================================================
+(C) ${new Date().getFullYear()} EduCore Enterprise Academic Network. All Rights Reserved.`;
+
+    const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${res.title.replace(/[^a-zA-Z0-9_-]/g, '_')}_Module.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
   const handleSelectOption = (questionId: string, optionIndex: number) => {
     if (isSubmitted) return;
     setSelectedAnswers(prev => ({ ...prev, [questionId]: optionIndex }));
@@ -536,7 +568,7 @@ export const StudentQuizLMSView: React.FC<StudentQuizLMSViewProps> = ({ currentU
                 </div>
 
                 <button
-                  onClick={() => alert(`Simulated downloading: ${res.title}`)}
+                  onClick={() => handleDownloadResource(res)}
                   className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1"
                 >
                   <span className="font-bold text-[10px]">[DL]</span>

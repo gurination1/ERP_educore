@@ -153,8 +153,8 @@ grievanceRouter.post('/', authenticateToken, async (req: AuthRequest, res: Respo
   });
 });
 
-// Admin/Staff: Adjudicate & Resolve Grievance
-grievanceRouter.patch('/:id/resolve', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
+// Admin/Staff/HOD/HR: Adjudicate & Resolve Grievance
+grievanceRouter.patch('/:id/resolve', authenticateToken, requireRole('admin', 'staff', 'hod', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   const { status, adminRemarks } = req.body;
 

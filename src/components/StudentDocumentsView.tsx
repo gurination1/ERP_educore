@@ -170,6 +170,38 @@ export const StudentDocumentsView: React.FC<StudentDocumentsViewProps> = ({ curr
     );
   };
 
+  const handleDownloadDoc = (doc: DocumentRecord) => {
+    const certText = `EDUCORE INSTITUTIONAL STATUTORY REPOSITORY
+DOCUMENT COMPLIANCE ATTESTATION CERTIFICATE
+============================================================
+Document ID      : ${doc.id}
+Title            : ${doc.title}
+Document Code    : ${doc.doc_type_code}
+Owner            : ${doc.owner_name} (${doc.owner_role.toUpperCase()})
+Owner ID         : ${doc.owner_id}
+File Name        : ${doc.file_name}
+File Size        : ${doc.file_size_kb} KB
+MIME Type        : ${doc.mime_type}
+Status           : ${doc.status.toUpperCase()}
+Attested By      : ${doc.verified_by || 'Digital Vault Notary'}
+Attested At      : ${doc.verified_at || 'Pending'}
+Remarks          : ${doc.remarks || 'None'}
+Cryptographic SHA-256 Digest:
+${doc.sha256_hash}
+============================================================
+Generated at ${new Date().toISOString()} via EduCore Document Vault Engine`;
+
+    const blob = new Blob([certText], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = doc.file_name.endsWith('.pdf') ? doc.file_name.replace('.pdf', '_certified.txt') : `${doc.file_name}_certified.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
   const filteredDocs = documents.filter(d => {
     if (filterStatus === 'all') return true;
     return d.status === filterStatus;
@@ -468,7 +500,7 @@ export const StudentDocumentsView: React.FC<StudentDocumentsViewProps> = ({ curr
 
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
-                onClick={() => alert(`Simulated downloading ${selectedDoc.file_name}`)}
+                onClick={() => handleDownloadDoc(selectedDoc)}
                 className="px-4 py-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg text-xs font-bold text-[#444651] flex items-center gap-1 cursor-pointer"
               >
                 <span className="font-bold text-[10px]">[DL]</span>

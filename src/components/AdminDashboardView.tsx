@@ -110,6 +110,11 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     }).catch(console.warn);
   }, []);
 
+  const filteredDepartmentRows = departmentRows.filter(d => {
+    if (selectedCluster === 'All Departments') return true;
+    return d.code === selectedCluster || d.name?.toLowerCase().includes(selectedCluster.toLowerCase());
+  });
+
   return (
     <div id="admin-dashboard-screen" className="space-y-4 animate-fadeIn text-xs">
       {/* Sleek Operations Action Toolbar */}
@@ -164,10 +169,15 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       {/* 4 Executive Campus Pulse Metric Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Metric 1: Total Enrolled Scholars across 5 Topology Levels */}
-        <div className="bg-white/95 backdrop-blur-2xl border border-slate-200/80 rounded-2xl p-4 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)]">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => onNavigate('manage-students')}
+          className="bg-white/95 backdrop-blur-2xl border border-slate-200/80 rounded-2xl p-4 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] cursor-pointer hover:border-[#00236f]/40 hover:shadow-md transition-all group"
+        >
           <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
             <span>Enrolled Scholars</span>
-            <span className="text-[#00236f] bg-blue-50 border border-blue-200/80 px-2 py-0.5 rounded-full text-xs font-bold">
+            <span className="text-[#00236f] bg-blue-50 border border-blue-200/80 px-2 py-0.5 rounded-full text-xs font-bold group-hover:bg-[#00236f] group-hover:text-white transition-colors">
               5-LEVEL TOPOLOGY
             </span>
           </div>
@@ -181,10 +191,15 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         </div>
 
         {/* Metric 2: Faculty-to-Student Ratio (FSR) - AICTE/UGC Compliance */}
-        <div className="bg-white/95 backdrop-blur-2xl border border-slate-200/80 rounded-2xl p-4 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)]">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => onNavigate('staff-management')}
+          className="bg-white/95 backdrop-blur-2xl border border-slate-200/80 rounded-2xl p-4 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] cursor-pointer hover:border-emerald-500/40 hover:shadow-md transition-all group"
+        >
           <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
             <span>Faculty-Student Ratio</span>
-            <span className="text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full text-xs font-bold">
+            <span className="text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full text-xs font-bold group-hover:bg-emerald-700 group-hover:text-white transition-colors">
               COMPLIANT
             </span>
           </div>
@@ -198,10 +213,15 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         </div>
 
         {/* Metric 3: 75% Attendance Exam Gate Compliance */}
-        <div className="bg-white/95 backdrop-blur-2xl border border-slate-200/80 rounded-2xl p-4 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)]">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => onNavigate('reports')}
+          className="bg-white/95 backdrop-blur-2xl border border-slate-200/80 rounded-2xl p-4 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] cursor-pointer hover:border-orange-500/40 hover:shadow-md transition-all group"
+        >
           <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
             <span>75% Exam Gate Safety</span>
-            <span className="text-[#ea580c] bg-orange-50 border border-orange-200/80 px-2 py-0.5 rounded-full text-xs font-bold">
+            <span className="text-[#ea580c] bg-orange-50 border border-orange-200/80 px-2 py-0.5 rounded-full text-xs font-bold group-hover:bg-[#ea580c] group-hover:text-white transition-colors">
               MANDATORY
             </span>
           </div>
@@ -215,10 +235,15 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         </div>
 
         {/* Metric 4: Macro Institutional Treasury */}
-        <div className="bg-white/95 backdrop-blur-2xl border border-slate-200/80 rounded-2xl p-4 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)]">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => onNavigate('fee-ledger')}
+          className="bg-white/95 backdrop-blur-2xl border border-slate-200/80 rounded-2xl p-4 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] cursor-pointer hover:border-blue-500/40 hover:shadow-md transition-all group"
+        >
           <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
             <span>Macro Institutional Revenue</span>
-            <span className="text-blue-700 bg-blue-50 border border-blue-200/80 px-2 py-0.5 rounded-full text-xs font-bold">
+            <span className="text-blue-700 bg-blue-50 border border-blue-200/80 px-2 py-0.5 rounded-full text-xs font-bold group-hover:bg-blue-700 group-hover:text-white transition-colors">
               TERM LEDGER
             </span>
           </div>
@@ -247,7 +272,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                 </p>
               </div>
               <span className="px-2.5 py-0.5 bg-slate-100 text-slate-700 rounded-full font-mono text-[11px] font-bold">
-                {departmentRows.length} Departments
+                {filteredDepartmentRows.length} Departments
               </span>
             </div>
 
@@ -264,7 +289,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {departmentRows.map((d, i) => (
+                  {filteredDepartmentRows.map((d, i) => (
                     <tr key={i} className="hover:bg-slate-50/70 transition-colors">
                       <td className="py-2 px-2">
                         <strong className="text-slate-900 block font-semibold text-xs">{d.name}</strong>
@@ -326,19 +351,43 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                 Student Lifecycle State Distribution
               </div>
               <div className="grid grid-cols-4 gap-2 text-center font-mono">
-                <div className="bg-white p-2 rounded-lg border border-slate-200/60 shadow-2xs">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onNavigate('manage-students')}
+                  className="bg-white p-2 rounded-lg border border-slate-200/60 shadow-2xs cursor-pointer hover:bg-emerald-50/50 hover:border-emerald-300 transition-all"
+                  title="Filter Active Scholars"
+                >
                   <span className="block text-base font-black text-emerald-700">{progressionStats.active}</span>
                   <span className="text-[10px] font-semibold text-slate-500 uppercase">Active</span>
                 </div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200/60 shadow-2xs">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onNavigate('manage-students')}
+                  className="bg-white p-2 rounded-lg border border-slate-200/60 shadow-2xs cursor-pointer hover:bg-blue-50/50 hover:border-blue-300 transition-all"
+                  title="Filter Promoted Scholars"
+                >
                   <span className="block text-base font-black text-blue-700">{progressionStats.promoted}</span>
                   <span className="text-[10px] font-semibold text-slate-500 uppercase">Promoted</span>
                 </div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200/60 shadow-2xs">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onNavigate('manage-students')}
+                  className="bg-white p-2 rounded-lg border border-slate-200/60 shadow-2xs cursor-pointer hover:bg-amber-50/50 hover:border-amber-300 transition-all"
+                  title="Filter Demoted Scholars"
+                >
                   <span className="block text-base font-black text-amber-600">{progressionStats.demoted}</span>
                   <span className="text-[10px] font-semibold text-slate-500 uppercase">Demoted</span>
                 </div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200/60 shadow-2xs">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onNavigate('manage-students')}
+                  className="bg-white p-2 rounded-lg border border-slate-200/60 shadow-2xs cursor-pointer hover:bg-rose-50/50 hover:border-rose-300 transition-all"
+                  title="Filter Struck-Off Scholars"
+                >
                   <span className="block text-base font-black text-rose-600">{progressionStats.struck_off}</span>
                   <span className="text-[10px] font-semibold text-slate-500 uppercase">Struck-Off</span>
                 </div>

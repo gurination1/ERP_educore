@@ -106,7 +106,7 @@ function formatIndianCurrency(amount: number): string {
 }
 
 // Admin Dashboard KPI Summary
-feeRouter.get('/kpi', authenticateToken, requireRole('admin', 'staff', 'accounts'), async (req: AuthRequest, res: Response): Promise<void> => {
+feeRouter.get('/kpi', authenticateToken, requireRole('admin', 'staff', 'accounts', 'hod', 'hr', 'counselor'), async (req: AuthRequest, res: Response): Promise<void> => {
   const apps = await db.getScholarshipApplications();
   const pendingApprovalsCount = apps.filter(a => a.status === 'under_review' || a.status === 'submitted').length;
   const students = await db.getStudents();
@@ -135,7 +135,7 @@ feeRouter.get('/kpi', authenticateToken, requireRole('admin', 'staff', 'accounts
 });
 
 // Monthly Fees Collected Trend for Chart
-feeRouter.get('/trend', authenticateToken, requireRole('admin', 'staff', 'accounts'), async (req: AuthRequest, res: Response): Promise<void> => {
+feeRouter.get('/trend', authenticateToken, requireRole('admin', 'staff', 'accounts', 'hod', 'hr', 'counselor'), async (req: AuthRequest, res: Response): Promise<void> => {
   const allPayments = await db.getPayments();
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   
@@ -182,7 +182,7 @@ feeRouter.get('/trend', authenticateToken, requireRole('admin', 'staff', 'accoun
 });
 
 // Defaulters List for Admin & Accounts Screen
-feeRouter.get('/defaulters', authenticateToken, requireRole('admin', 'staff', 'accounts'), async (req: AuthRequest, res: Response): Promise<void> => {
+feeRouter.get('/defaulters', authenticateToken, requireRole('admin', 'staff', 'accounts', 'hod', 'hr', 'counselor'), async (req: AuthRequest, res: Response): Promise<void> => {
   const students = await db.getStudents();
   const allFees = await db.getStudentFees();
   const courses = await db.getCourses();

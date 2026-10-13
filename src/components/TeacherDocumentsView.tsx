@@ -170,6 +170,37 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
     );
   };
 
+  const handleDownloadDoc = (doc: any) => {
+    const certText = `EDUCORE INSTITUTIONAL FACULTY REGULATORY VAULT
+TEACHER ACCREDITATION PORTFOLIO CERTIFICATE
+============================================================
+Document ID      : ${doc.id}
+Title            : ${doc.title}
+Document Code    : ${doc.doc_type_code}
+Faculty Member   : ${doc.owner_name}
+Staff ID         : ${doc.owner_id}
+File Name        : ${doc.file_name}
+File Size        : ${doc.file_size_kb} KB
+Status           : ${doc.status.toUpperCase()}
+Attested By      : ${doc.verified_by || 'Academic Provost / Dean'}
+Attested At      : ${doc.verified_at || 'Pending'}
+Remarks          : ${doc.remarks || 'None'}
+Cryptographic SHA-256 Digest:
+${doc.sha256_hash}
+============================================================
+Generated at ${new Date().toISOString()} via EduCore Regulatory Compliance Engine`;
+
+    const blob = new Blob([certText], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = doc.file_name.endsWith('.pdf') ? doc.file_name.replace('.pdf', '_certified.txt') : `${doc.file_name}_certified.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
   const filteredDocs = documents.filter(d => {
     if (filterType === 'all') return true;
     return d.doc_type_code === filterType;
@@ -467,7 +498,7 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
 
             <div className="flex items-center justify-end gap-2 pt-1">
               <button
-                onClick={() => alert(`Simulated downloading ${selectedDoc.file_name}`)}
+                onClick={() => handleDownloadDoc(selectedDoc)}
                 className="px-3 py-1.5 border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-bold text-slate-700 flex items-center gap-1 cursor-pointer"
               >
                 <span>Download Certified PDF</span>

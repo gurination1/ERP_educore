@@ -21,13 +21,38 @@ interface CourseDistributionItem {
 
 export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
   const isSuperAdmin = currentUser?.role === 'super_admin';
-  const [activeTab, setActiveTab] = useState<'financial' | 'academic_workload' | 'platform_telemetry'>(
-    currentUser?.role === 'super_admin' ? 'platform_telemetry' : 'academic_workload'
+
+  const getInitialTab = (): 'financial' | 'academic_workload' | 'platform_telemetry' | 'attendance_gate' => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam === 'attendance' || tabParam === 'attendance_gate' || tabParam === 'compliance') {
+        return 'attendance_gate';
+      }
+      if (tabParam === 'financial' || tabParam === 'revenue') {
+        return 'financial';
+      }
+      if (tabParam === 'academic_workload' || tabParam === 'workload') {
+        return 'academic_workload';
+      }
+      if (tabParam === 'platform_telemetry' || tabParam === 'telemetry') {
+        return 'platform_telemetry';
+      }
+    }
+    return isSuperAdmin ? 'platform_telemetry' : 'academic_workload';
+  };
+
+  const [activeTab, setActiveTab] = useState<'financial' | 'academic_workload' | 'platform_telemetry' | 'attendance_gate'>(
+    getInitialTab()
   );
   const [telemetryData, setTelemetryData] = useState<any>(null);
   const [distribution, setDistribution] = useState<CourseDistributionItem[]>([]);
   const [kpiData, setKpiData] = useState<any>(null);
   const [workloadData, setWorkloadData] = useState<any>(null);
+  const [attendanceStudents, setAttendanceStudents] = useState<any[]>([]);
+  const [attendanceFilter, setAttendanceFilter] = useState<'all' | 'eligible' | 'condonation' | 'detained'>('all');
+  const [attendanceSearch, setAttendanceSearch] = useState('');
+  const [isCondoningId, setIsCondoningId] = useState<string | null>(null);
   const [deptFilter, setDeptFilter] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
@@ -41,9 +66,10 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
     setIsLoading(true);
     try {
       if (isSuperAdmin) {
-        const [telemRes, kpiRes] = await Promise.all([
+        const [telemRes, kpiRes, stuRes] = await Promise.all([
           api.getPlatformTelemetry(),
           api.getFeeKPIs(),
+          api.getStudents(),
         ]);
         if (telemRes.success) {
           setTelemetryData(telemRes);
@@ -51,11 +77,15 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
         if (kpiRes.success && kpiRes.kpi) {
           setKpiData(kpiRes.kpi);
         }
+        if (stuRes.success && Array.isArray(stuRes.students)) {
+          setAttendanceStudents(stuRes.students);
+        }
       } else {
-        const [distRes, kpiRes, workRes] = await Promise.all([
+        const [distRes, kpiRes, workRes, stuRes] = await Promise.all([
           api.getAdmissionsByCourseReport(),
           api.getFeeKPIs(),
           api.getAcademicWorkloadReport(),
+          api.getStudents(),
         ]);
 
         if (distRes.success && distRes.distribution) {
@@ -67,6 +97,9 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
         if (workRes.success) {
           setWorkloadData(workRes);
         }
+        if (stuRes.success && Array.isArray(stuRes.students)) {
+          setAttendanceStudents(stuRes.students);
+        }
       }
     } catch (err) {
       console.error('Failed to load reports:', err);
@@ -75,7 +108,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
     }
   };
 
-  // Programmatic CSV Export with Bearer Auth Token
+  // Programmatic Master Student CSV Export with Bearer Auth Token
   const handleExportCsv = async () => {
     setIsExporting(true);
     setExportMessage(null);
@@ -86,7 +119,6 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      // Query param token acts as fallback
       const url = `/api/reports/export-students-csv?token=${encodeURIComponent(token || '')}`;
       const res = await fetch(url, { headers });
 
@@ -113,7 +145,135 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
     }
   };
 
-  const isStaffOrAdmin = currentUser?.role === 'admin' || currentUser?.role === 'staff';
+  // Programmatic Financial Revenue CSV Export
+  const handleExportFinancialCsv = () => {
+    try {
+      const escapeCsv = (val: any): string => `"${String(val ?? '').replace(/"/g, '""')}"`;
+      const headers = ['Course Code', 'Course Name', 'Department', 'Enrolled Scholars', 'Paid Count', 'Due Count', 'Total Collected (INR)', 'Total Outstanding Due (INR)'];
+      const rows = distribution.map(d => [
+        escapeCsv(d.courseCode),
+        escapeCsv(d.courseName),
+        escapeCsv(d.department),
+        d.studentCount,
+        d.paidCount,
+        d.dueCount,
+        d.totalCollected,
+        d.totalDue,
+      ].join(','));
+      const csv = [headers.join(','), ...rows].join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `EduCore_Revenue_Distribution_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      setExportMessage('Revenue & fee distribution CSV exported.');
+      setTimeout(() => setExportMessage(null), 4000);
+    } catch (err: any) {
+      setExportMessage(`Export failed: ${err.message}`);
+    }
+  };
+
+  // Programmatic Academic Workload CSV Export
+  const handleExportWorkloadCsv = () => {
+    try {
+      const escapeCsv = (val: any): string => `"${String(val ?? '').replace(/"/g, '""')}"`;
+      const headers = ['Faculty Name', 'Staff / Employee ID', 'Department', 'Designation', 'Assigned Subjects', 'Weekly Teaching Hours', 'Combined Classes (CC) Count'];
+      const rows = (workloadData?.teacherAssignments || []).map((t: any) => [
+        escapeCsv(t.full_name),
+        escapeCsv(t.employee_id || t.staff_id),
+        escapeCsv(t.department || 'N/A'),
+        escapeCsv(t.primary_designation || 'Faculty'),
+        escapeCsv((t.assigned_subjects || []).map((s: any) => s.code || s.name).join('; ')),
+        t.weekly_slots_count || 0,
+        t.combined_slots_count || 0,
+      ].join(','));
+      const csv = [headers.join(','), ...rows].join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `EduCore_Faculty_Workload_Audit_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      setExportMessage('Academic workload audit CSV exported.');
+      setTimeout(() => setExportMessage(null), 4000);
+    } catch (err: any) {
+      setExportMessage(`Export failed: ${err.message}`);
+    }
+  };
+
+  // Programmatic 75% Attendance Gate Exam Eligibility CSV Export
+  const handleExportAttendanceGateCsv = () => {
+    try {
+      const escapeCsv = (val: any): string => `"${String(val ?? '').replace(/"/g, '""')}"`;
+      const headers = ['Student ID', 'Full Name', 'Course Code', 'Current Semester', 'Attended Classes', 'Total Classes', 'Attendance %', 'Condonation Granted', 'Statutory Exam Status'];
+      const rows = attendanceStudents.map(s => {
+        const att = s.total_classes === 0 ? (s.attendance_percentage ?? 100) : Math.round((s.attended_classes / s.total_classes) * 100);
+        let status = 'ELIGIBLE';
+        if (att < 75) {
+          if (s.condonation_granted) status = 'CONDONED_ELIGIBLE';
+          else if (att >= 65) status = 'CONDONATION_REQUIRED';
+          else status = 'STRICTLY_DETAINED';
+        }
+        return [
+          escapeCsv(s.student_id),
+          escapeCsv(`${s.first_name} ${s.last_name}`),
+          escapeCsv(s.course?.code || s.course_id),
+          s.current_semester || 1,
+          s.attended_classes || 0,
+          s.total_classes || 0,
+          `${att}%`,
+          s.condonation_granted ? 'YES' : 'NO',
+          status,
+        ].join(',');
+      });
+      const csv = [headers.join(','), ...rows].join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `EduCore_75Percent_Attendance_Gate_Audit_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      setExportMessage('75% attendance gate exam eligibility audit exported.');
+      setTimeout(() => setExportMessage(null), 4000);
+    } catch (err: any) {
+      setExportMessage(`Export failed: ${err.message}`);
+    }
+  };
+
+  // Dean / HOD Condonation Order Action
+  const handleCondoneAttendance = async (student: any) => {
+    setIsCondoningId(student.id);
+    try {
+      const res = await api.condoneExamAttendance({
+        studentId: student.id,
+        orderNo: `ORD-DEAN-${Date.now().toString().slice(-5)}`,
+        reason: 'Statutory Dean Condonation under Ordinance 7.4 approved by Academic Council',
+      });
+      if (res.success) {
+        setAttendanceStudents(prev =>
+          prev.map(s => (s.id === student.id ? { ...s, condonation_granted: true, condonation_order_no: res.orderNo } : s))
+        );
+        setExportMessage(`Attendance condonation granted for ${student.first_name} ${student.last_name}. Order: ${res.orderNo}`);
+        setTimeout(() => setExportMessage(null), 4000);
+      }
+    } catch (err: any) {
+      setExportMessage(`Condonation error: ${err.message}`);
+    } finally {
+      setIsCondoningId(null);
+    }
+  };
+
+  const canExport = ['admin', 'super_admin', 'staff', 'accounts', 'hod', 'hr'].includes(currentUser?.role || '');
 
   return (
     <div id="institutional-reports-screen" className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
@@ -142,15 +302,44 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
           </div>
         </div>
 
-        {isStaffOrAdmin && (
-          <button
-            type="button"
-            onClick={handleExportCsv}
-            disabled={isExporting}
-            className="px-4 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer disabled:opacity-60"
-          >
-            <span>{isExporting ? 'Generating CSV...' : 'Export Master Data (CSV)'}</span>
-          </button>
+        {canExport && (
+          <div className="flex items-center gap-2 flex-wrap">
+            {activeTab === 'financial' && (
+              <button
+                type="button"
+                onClick={handleExportFinancialCsv}
+                className="px-3 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+              >
+                <span>Export Revenue Ledger (CSV)</span>
+              </button>
+            )}
+            {activeTab === 'academic_workload' && (
+              <button
+                type="button"
+                onClick={handleExportWorkloadCsv}
+                className="px-3 py-2 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+              >
+                <span>Export Faculty Workload (CSV)</span>
+              </button>
+            )}
+            {activeTab === 'attendance_gate' && (
+              <button
+                type="button"
+                onClick={handleExportAttendanceGateCsv}
+                className="px-3 py-2 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+              >
+                <span>Export 75% Gate Audit (CSV)</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={handleExportCsv}
+              disabled={isExporting}
+              className="px-3.5 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer disabled:opacity-60"
+            >
+              <span>{isExporting ? 'Generating CSV...' : 'Export Master Data (CSV)'}</span>
+            </button>
+          </div>
         )}
       </div>
 
@@ -162,7 +351,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
       )}
 
       {/* Navigation Tabs */}
-      <div className="flex border-b border-slate-200 gap-4">
+      <div className="flex border-b border-slate-200 gap-4 flex-wrap">
         {isSuperAdmin ? (
           <>
             <button
@@ -188,6 +377,27 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
             >
               <span>CROSS-CAMPUS REVENUE & GLOBAL SCHOLAR CENSUS</span>
             </button>
+            <button
+              onClick={() => setActiveTab('attendance_gate')}
+              className={`pb-3 px-2 text-xs font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
+                activeTab === 'attendance_gate'
+                  ? 'border-[#00236f] text-[#00236f]'
+                  : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <span>75% ATTENDANCE GATE & EXAM AUDIT</span>
+              {attendanceStudents.filter(s => {
+                const att = s.total_classes === 0 ? (s.attendance_percentage ?? 100) : Math.round((s.attended_classes / s.total_classes) * 100);
+                return att < 75 && !s.condonation_granted;
+              }).length > 0 && (
+                <span className="px-1.5 py-0.5 text-[10px] bg-rose-100 text-rose-800 rounded-full font-extrabold">
+                  {attendanceStudents.filter(s => {
+                    const att = s.total_classes === 0 ? (s.attendance_percentage ?? 100) : Math.round((s.attended_classes / s.total_classes) * 100);
+                    return att < 75 && !s.condonation_granted;
+                  }).length} Flagged
+                </span>
+              )}
+            </button>
           </>
         ) : (
           <>
@@ -210,6 +420,27 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
               }`}
             >
               <span>FINANCIAL REVENUE & ENROLLMENT LEDGER</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('attendance_gate')}
+              className={`pb-3 px-2 text-xs font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
+                activeTab === 'attendance_gate'
+                  ? 'border-[#00236f] text-[#00236f]'
+                  : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <span>75% ATTENDANCE GATE & EXAM AUDIT</span>
+              {attendanceStudents.filter(s => {
+                const att = s.total_classes === 0 ? (s.attendance_percentage ?? 100) : Math.round((s.attended_classes / s.total_classes) * 100);
+                return att < 75 && !s.condonation_granted;
+              }).length > 0 && (
+                <span className="px-1.5 py-0.5 text-[10px] bg-rose-100 text-rose-800 rounded-full font-extrabold">
+                  {attendanceStudents.filter(s => {
+                    const att = s.total_classes === 0 ? (s.attendance_percentage ?? 100) : Math.round((s.attended_classes / s.total_classes) * 100);
+                    return att < 75 && !s.condonation_granted;
+                  }).length} Flagged
+                </span>
+              )}
             </button>
           </>
         )}
@@ -629,6 +860,227 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      ) : activeTab === 'attendance_gate' ? (
+        <div className="space-y-6">
+          {/* Attendance KPI Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+            <div className="p-5 bg-white rounded-xl border border-slate-200 shadow-xs">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+                Total Enrolled Scholars
+              </span>
+              <p className="text-2xl font-extrabold text-[#00236f] mt-1">
+                {attendanceStudents.length}
+              </p>
+              <span className="text-xs text-slate-500 font-semibold mt-1 block">
+                Verified against Campus Roster
+              </span>
+            </div>
+
+            <div className="p-5 bg-white rounded-xl border border-emerald-200 bg-emerald-50/20 shadow-xs">
+              <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider block">
+                Exam Gate Eligible (&ge;75%)
+              </span>
+              <p className="text-2xl font-extrabold text-emerald-800 mt-1">
+                {attendanceStudents.filter(s => {
+                  const att = s.total_classes === 0 ? (s.attendance_percentage ?? 100) : Math.round((s.attended_classes / s.total_classes) * 100);
+                  return att >= 75 || s.condonation_granted;
+                }).length}
+              </p>
+              <span className="text-xs text-emerald-700 font-semibold mt-1 block">
+                Clear for Hall Ticket & Admit Card
+              </span>
+            </div>
+
+            <div className="p-5 bg-white rounded-xl border border-amber-200 bg-amber-50/20 shadow-xs">
+              <span className="text-[11px] font-bold text-amber-700 uppercase tracking-wider block">
+                Condonable Window (65% - 74%)
+              </span>
+              <p className="text-2xl font-extrabold text-amber-800 mt-1">
+                {attendanceStudents.filter(s => {
+                  const att = s.total_classes === 0 ? (s.attendance_percentage ?? 100) : Math.round((s.attended_classes / s.total_classes) * 100);
+                  return att >= 65 && att < 75 && !s.condonation_granted;
+                }).length}
+              </p>
+              <span className="text-xs text-amber-700 font-semibold mt-1 block">
+                Eligible with Dean / HOD Sanction
+              </span>
+            </div>
+
+            <div className="p-5 bg-white rounded-xl border border-rose-200 bg-rose-50/20 shadow-xs">
+              <span className="text-[11px] font-bold text-rose-700 uppercase tracking-wider block">
+                Strict Detention (&lt;65%)
+              </span>
+              <p className="text-2xl font-extrabold text-rose-800 mt-1">
+                {attendanceStudents.filter(s => {
+                  const att = s.total_classes === 0 ? (s.attendance_percentage ?? 100) : Math.round((s.attended_classes / s.total_classes) * 100);
+                  return att < 65 && !s.condonation_granted;
+                }).length}
+              </p>
+              <span className="text-xs text-rose-700 font-semibold mt-1 block">
+                Ineligible under University Ordinance
+              </span>
+            </div>
+          </div>
+
+          {/* Search, Filter Toolbar & Detailed Attendance Ledger */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden space-y-4">
+            <div className="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">
+                  75% Attendance Gate & Examination Eligibility Audit
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Statutory University Ordinance 7.4 compliance tracking and Dean / HOD condonation management
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 flex-wrap">
+                <input
+                  type="text"
+                  placeholder="Search scholar name or ID..."
+                  value={attendanceSearch}
+                  onChange={e => setAttendanceSearch(e.target.value)}
+                  className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#00236f]"
+                />
+
+                <select
+                  value={attendanceFilter}
+                  onChange={e => setAttendanceFilter(e.target.value as any)}
+                  className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 bg-white cursor-pointer"
+                >
+                  <option value="all">All Attendance Slabs</option>
+                  <option value="eligible">Eligible (&ge;75%)</option>
+                  <option value="condonation">Condonation Window (65% - 74%)</option>
+                  <option value="detained">Strict Detention (&lt;65%)</option>
+                </select>
+
+                <button
+                  onClick={loadReportsData}
+                  className="text-xs font-bold text-[#00236f] hover:underline cursor-pointer"
+                >
+                  [REFRESH]
+                </button>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider text-[10px] font-bold border-b border-slate-200">
+                  <tr>
+                    <th className="p-3.5">Scholar Name & ID</th>
+                    <th className="p-3.5">Course & Semester</th>
+                    <th className="p-3.5 text-center">Classes Attended</th>
+                    <th className="p-3.5 text-center">Attendance %</th>
+                    <th className="p-3.5 text-center">Exam Gate Status</th>
+                    <th className="p-3.5 text-right">Committee Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {attendanceStudents
+                    .filter(s => {
+                      const att = s.total_classes === 0 ? (s.attendance_percentage ?? 100) : Math.round((s.attended_classes / s.total_classes) * 100);
+                      if (attendanceFilter === 'eligible') return att >= 75 || s.condonation_granted;
+                      if (attendanceFilter === 'condonation') return att >= 65 && att < 75 && !s.condonation_granted;
+                      if (attendanceFilter === 'detained') return att < 65 && !s.condonation_granted;
+                      return true;
+                    })
+                    .filter(s => {
+                      if (!attendanceSearch.trim()) return true;
+                      const q = attendanceSearch.toLowerCase();
+                      return (
+                        s.student_id?.toLowerCase().includes(q) ||
+                        `${s.first_name} ${s.last_name}`.toLowerCase().includes(q) ||
+                        (s.course?.code || s.course_id)?.toLowerCase().includes(q)
+                      );
+                    })
+                    .map(student => {
+                      const att = student.total_classes === 0 ? (student.attendance_percentage ?? 100) : Math.round((student.attended_classes / student.total_classes) * 100);
+                      const isEligible = att >= 75;
+                      const isCondoned = Boolean(student.condonation_granted);
+                      const canCondone = att >= 65 && att < 75 && !isCondoned;
+
+                      return (
+                        <tr key={student.id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="p-3.5">
+                            <strong className="text-slate-900 block text-xs">{student.first_name} {student.last_name}</strong>
+                            <span className="text-[11px] font-mono text-slate-500">{student.student_id}</span>
+                          </td>
+                          <td className="p-3.5">
+                            <span className="font-semibold text-slate-800">{student.course?.code || student.course_id}</span>
+                            <span className="block text-[10px] text-slate-500">Semester {student.current_semester || 1}</span>
+                          </td>
+                          <td className="p-3.5 text-center font-mono">
+                            <span className="font-bold text-slate-800">{student.attended_classes ?? 0}</span>
+                            <span className="text-slate-400"> / {student.total_classes ?? 0}</span>
+                          </td>
+                          <td className="p-3.5 text-center">
+                            <div className="flex flex-col items-center">
+                              <span className={`font-black font-mono text-xs ${
+                                att >= 75 ? 'text-emerald-700' : att >= 65 ? 'text-amber-700' : 'text-rose-700'
+                              }`}>
+                                {att}%
+                              </span>
+                              <div className="w-20 bg-slate-200 h-1.5 rounded-full overflow-hidden mt-1">
+                                <div
+                                  className={`h-full rounded-full ${
+                                    att >= 75 ? 'bg-emerald-600' : att >= 65 ? 'bg-amber-500' : 'bg-rose-600'
+                                  }`}
+                                  style={{ width: `${Math.min(100, Math.max(5, att))}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-3.5 text-center">
+                            {isEligible ? (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                EXAM ELIGIBLE
+                              </span>
+                            ) : isCondoned ? (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                                CONDONED (ORD 7.4)
+                              </span>
+                            ) : canCondone ? (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                                CONDONATION REQUIRED
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-800 border border-rose-200">
+                                STRICTLY DETAINED
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-3.5 text-right">
+                            {canCondone ? (
+                              <button
+                                type="button"
+                                onClick={() => handleCondoneAttendance(student)}
+                                disabled={isCondoningId === student.id}
+                                className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded text-[11px] font-bold transition-all shadow-2xs cursor-pointer disabled:opacity-50"
+                              >
+                                {isCondoningId === student.id ? 'Granting...' : 'Grant Ord 7.4 Sanction'}
+                              </button>
+                            ) : isCondoned ? (
+                              <span className="text-[10px] text-blue-700 font-mono font-semibold">
+                                {student.condonation_order_no || 'ORD-COE-COND'}
+                              </span>
+                            ) : isEligible ? (
+                              <span className="text-[11px] text-emerald-700 font-semibold">
+                                Gate Cleared
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-rose-600 font-semibold italic">
+                                Detention Immutable
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       ) : (

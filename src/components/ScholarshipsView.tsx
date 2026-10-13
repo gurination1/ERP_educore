@@ -8,9 +8,9 @@ interface ScholarshipsViewProps {
 }
 
 export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser }) => {
-  const isActualAdmin = currentUser?.role === 'admin' || currentUser?.role === 'super_admin';
+  const isActualAdmin = ['admin', 'super_admin', 'accounts', 'counselor'].includes(currentUser?.role || '');
+  const isStaffOrAdmin = ['admin', 'super_admin', 'staff', 'accounts', 'counselor', 'hod', 'hr'].includes(currentUser?.role || '');
   const isStaff = currentUser?.role === 'staff';
-  const isStaffOrAdmin = isActualAdmin || isStaff;
   const [schemes, setSchemes] = useState<ScholarshipScheme[]>([]);
   const [applications, setApplications] = useState<ScholarshipApp[]>([]);
   const [activeTab, setActiveTab] = useState<'schemes' | 'applications'>(

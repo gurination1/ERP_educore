@@ -4,8 +4,8 @@ import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth.
 
 export const reportRouter = Router();
 
-// Export Students Master Table as CSV (Admin/Staff only)
-reportRouter.get('/export-students-csv', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
+// Export Students Master Table as CSV (Admin/Staff/Accounts/HOD/HR)
+reportRouter.get('/export-students-csv', authenticateToken, requireRole('admin', 'staff', 'accounts', 'hod', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   const escapeCsv = (val: any): string => `"${String(val ?? '').replace(/"/g, '""')}"`;
   const headers = ['Student ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Course', 'Session', 'Semester', 'Admission Year', 'Fees Status', 'Attendance %'];
   
@@ -38,8 +38,8 @@ reportRouter.get('/export-students-csv', authenticateToken, requireRole('admin',
   res.status(200).send(csvContent);
 });
 
-// Admissions and Enrollment distribution by course (Admin/Staff only)
-reportRouter.get('/admissions-by-course', authenticateToken, requireRole('admin', 'staff'), async (req: AuthRequest, res: Response): Promise<void> => {
+// Admissions and Enrollment distribution by course (Admin/Staff/Accounts/HOD/HR)
+reportRouter.get('/admissions-by-course', authenticateToken, requireRole('admin', 'staff', 'accounts', 'hod', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   const courses = await db.getCourses();
   const students = await db.getStudents();
   const allFees = await db.getStudentFees();
@@ -68,7 +68,7 @@ reportRouter.get('/admissions-by-course', authenticateToken, requireRole('admin'
 
 // Academic Workload & Hierarchy Audit Report (Lecture 3 Requirement)
 // Reports for: Number of combined classes, subjects, teachers, and subjects assigned to each teacher across School/Dept/Course/Class levels
-reportRouter.get('/academic-workload', authenticateToken, requireRole('admin', 'staff', 'hod', 'super_admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+reportRouter.get('/academic-workload', authenticateToken, requireRole('admin', 'staff', 'hod', 'accounts', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const [courses, subjects, slots, allocations, staffList, users] = await Promise.all([
       db.getCourses(),
