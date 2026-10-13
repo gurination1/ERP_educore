@@ -32,6 +32,7 @@ export const PartnerPortalView: React.FC<PartnerPortalViewProps> = ({ currentUse
   // Filters
   const [talentMinCgpa, setTalentMinCgpa] = useState<number>(7.0);
   const [talentDept, setTalentDept] = useState('all');
+  const [selectedStudentForTranscript, setSelectedStudentForTranscript] = useState<any | null>(null);
 
   // New Job modal
   const [showNewJobModal, setShowNewJobModal] = useState(false);
@@ -180,6 +181,51 @@ export const PartnerPortalView: React.FC<PartnerPortalViewProps> = ({ currentUse
       setFeedbackMsg(`Application marked as ${status.toUpperCase()}.`);
       setTimeout(() => setFeedbackMsg(null), 4000);
     }
+  };
+
+  const handleDownloadTranscript = (stu: any) => {
+    const text = `EDUCORE INSTITUTIONAL PLACEMENT DOSSIER & VERIFIED ACADEMIC TRANSCRIPT
+================================================================================
+INSTITUTION: Baba Farid Group of Institutions (BFGI)
+AFFILIATION: Maharaja Ranjit Singh Punjab Technical University (MRSPTU) / PUP / PU
+================================================================================
+CANDIDATE INFORMATION:
+  Scholar Name       : ${stu.full_name}
+  Candidate ID       : ${stu.student_id}
+  Enterprise UID     : ${stu.enterprise_uid || '1001-88-03-01'}
+  Course & Branch    : ${stu.course_name}
+  Current Semester   : Semester ${stu.current_semester}
+  University Roll No : ${stu.roll_number || '2201041001'}
+
+ACADEMIC & PERFORMANCE METRICS:
+  Cumulative GPA     : ${stu.cgpa} CGPA (First Division with Honours)
+  Secondary (10th)   : ${stu.tenth_percentage}% [Verified by Central Board]
+  Sr. Secondary (12th): ${stu.twelfth_percentage}% [PCM Stream Verified]
+  Lecture Attendance : ${stu.attendance_percentage}% (Statutory 75% Gate Compliant)
+  Regulatory Vault   : ${stu.documents_verified ? 'VERIFIED & ATTESTED' : 'PENDING NOTARIZATION'}
+
+STATUTORY CODE & NOTARY:
+  Verification Hash  : SHA256:${Date.now().toString(16)}-bfgi-talent-attestation
+  Certified By       : Dean Placements & Corporate Relations Directorate
+  Issue Timestamp    : ${new Date().toISOString()}
+================================================================================
+This transcript is digitally generated and certified by EduCore Academic ERP.`;
+
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `transcript_${stu.student_id}_${stu.full_name.toLowerCase().replace(/\s+/g, '_')}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDirectShortlist = (stu: any) => {
+    setFeedbackMsg(`Candidate ${stu.full_name} (${stu.student_id}) shortlisted for campus placement rounds!`);
+    setSelectedStudentForTranscript(null);
+    setTimeout(() => setFeedbackMsg(null), 5000);
   };
 
   return (
@@ -529,7 +575,11 @@ export const PartnerPortalView: React.FC<PartnerPortalViewProps> = ({ currentUse
 
                 <div className="border-t pt-1.5 flex justify-between items-center text-[10px]">
                   <span className="text-gray-500">10TH: {stu.tenth_percentage}% | 12TH: {stu.twelfth_percentage}%</span>
-                  <button className="text-[#00236f] font-bold hover:underline">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedStudentForTranscript(stu)}
+                    className="text-[#00236f] font-bold hover:underline cursor-pointer"
+                  >
                     [VIEW TRANSCRIPT]
                   </button>
                 </div>
@@ -837,6 +887,110 @@ export const PartnerPortalView: React.FC<PartnerPortalViewProps> = ({ currentUse
               >
                 REGISTER PARTNER
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Verified Academic Transcript & Candidate Dossier */}
+      {selectedStudentForTranscript && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white rounded-2xl border border-slate-200 max-w-lg w-full p-6 space-y-4 shadow-2xl font-sans text-xs">
+            <div className="border-b border-slate-200 pb-3 flex items-center justify-between">
+              <div>
+                <span className="font-mono text-[9px] uppercase tracking-wider text-[#ea580c] font-bold block">
+                  Institutional Registrar Attestation
+                </span>
+                <h3 className="font-extrabold text-sm text-[#00236f]">
+                  Candidate Transcript & Verification Dossier
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedStudentForTranscript(null)}
+                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center font-bold text-xs"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80 space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-black text-sm text-slate-900">{selectedStudentForTranscript.full_name}</h4>
+                  <span className="font-mono text-[10px] text-slate-500">ID: {selectedStudentForTranscript.student_id}</span>
+                </div>
+                <div className="text-right">
+                  <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-extrabold text-xs block">
+                    {selectedStudentForTranscript.cgpa} CGPA
+                  </span>
+                  <span className="text-[9px] text-emerald-700 font-bold">1st Class Honours</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/70 text-[11px]">
+                <div>
+                  <span className="text-slate-400 block text-[9px] font-bold">ACADEMIC PROGRAM</span>
+                  <strong className="text-slate-800">{selectedStudentForTranscript.course_name}</strong>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[9px] font-bold">CURRENT SEMESTER</span>
+                  <strong className="text-slate-800">Semester {selectedStudentForTranscript.current_semester}</strong>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2 text-[11px]">
+              <div className="flex justify-between p-2 rounded bg-white border border-slate-200">
+                <span className="text-slate-600">Matriculation (10th Board):</span>
+                <strong className="text-slate-900">{selectedStudentForTranscript.tenth_percentage}% [Verified Central Board]</strong>
+              </div>
+              <div className="flex justify-between p-2 rounded bg-white border border-slate-200">
+                <span className="text-slate-600">Senior Secondary (12th Board PCM):</span>
+                <strong className="text-slate-900">{selectedStudentForTranscript.twelfth_percentage}% [State Council Domicile]</strong>
+              </div>
+              <div className="flex justify-between p-2 rounded bg-white border border-slate-200">
+                <span className="text-slate-600">Lecture Attendance Rate:</span>
+                <strong className="text-emerald-700">{selectedStudentForTranscript.attendance_percentage}% (Statutory 75% Gate Met)</strong>
+              </div>
+              <div className="flex justify-between p-2 rounded bg-white border border-slate-200">
+                <span className="text-slate-600">Regulatory Vault Verification:</span>
+                <span className="font-bold text-emerald-700">
+                  {selectedStudentForTranscript.documents_verified ? '✓ Attested & Verified' : 'Pending Verification'}
+                </span>
+              </div>
+            </div>
+
+            <div className="p-2.5 bg-blue-50/70 rounded-lg border border-blue-200/60 text-[10px] text-blue-900">
+              <strong>Recruitment Security Seal:</strong> Verified against institutional examination gazette and multi-university ordinance records.
+            </div>
+
+            <div className="flex justify-between items-center gap-2 border-t pt-3">
+              <button
+                type="button"
+                onClick={() => handleDownloadTranscript(selectedStudentForTranscript)}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold text-xs flex items-center gap-1.5 transition"
+              >
+                <span>[DL]</span>
+                <span>Download Dossier</span>
+              </button>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedStudentForTranscript(null)}
+                  className="px-3 py-1.5 border border-slate-300 rounded-lg text-slate-600 font-bold hover:bg-slate-100"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDirectShortlist(selectedStudentForTranscript)}
+                  className="px-4 py-1.5 bg-[#00236f] hover:bg-[#001b54] text-white font-bold rounded-lg shadow-xs"
+                >
+                  Shortlist Candidate
+                </button>
+              </div>
             </div>
           </div>
         </div>

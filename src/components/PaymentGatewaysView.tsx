@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { safeGoBack } from '../utils/navigation';
 import { api } from '../api/client';
 import { CreditCard, Shield, Plus, ToggleLeft, ToggleRight, CheckCircle2, AlertTriangle, Key, Landmark } from 'lucide-react';
 
@@ -94,21 +95,31 @@ export const PaymentGatewaysView: React.FC<{ tenantId?: string }> = ({ tenantId 
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-indigo-400" />
-            Dynamic Payment Gateways & Banking Accounts
-          </h2>
-          <p className="text-xs text-slate-400">
-            Manage distinct current accounts (e.g. Pharmacy vs Law Schools) and switch between Sandbox Test and Live modes dynamically.
-          </p>
+      {/* Header Banner */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => safeGoBack()}
+            className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold text-sm transition-all cursor-pointer border border-slate-700 shrink-0"
+            title="Return to Previous Screen (Alt + ←)"
+          >
+            ‹
+          </button>
+          <div>
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-indigo-400" />
+              Dynamic Payment Gateways & Banking Accounts
+            </h2>
+            <p className="text-xs text-slate-400 mt-1">
+              Manage distinct current accounts (e.g. Pharmacy vs Law Schools) and switch between Sandbox Test and Live modes dynamically.
+            </p>
+          </div>
         </div>
 
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md transition-colors"
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md transition-colors cursor-pointer shrink-0"
         >
           <Plus className="w-4 h-4" />
           Add Gateway / Current A/C

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { api } from '../api/client';
 import { User, UserRole } from '../types';
@@ -8,11 +9,20 @@ interface UserManagementViewProps {
 }
 
 export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser }) => {
+  const [searchParams] = useSearchParams();
+  const urlRole = searchParams.get('role') as 'all' | UserRole | null;
+  const urlStatus = searchParams.get('status') as 'all' | 'active' | 'suspended' | null;
+
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [roleFilter, setRoleFilter] = useState<'all' | UserRole>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended'>('all');
+  const [roleFilter, setRoleFilter] = useState<'all' | UserRole>(urlRole || 'all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended'>(urlStatus || 'all');
+
+  useEffect(() => {
+    if (urlRole) setRoleFilter(urlRole);
+    if (urlStatus) setStatusFilter(urlStatus);
+  }, [urlRole, urlStatus]);
 
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);

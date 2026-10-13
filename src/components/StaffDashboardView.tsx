@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { User, StudentProfile, ActiveScreen } from '../types';
 
@@ -27,7 +28,17 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
   currentUser,
   onNavigate,
 }) => {
-  const [activeTab, setActiveTab] = useState<'attendance' | 'sessional' | 'mentees' | 'schedule'>('attendance');
+  const [searchParams] = useSearchParams();
+  const rawTab = searchParams.get('tab');
+  const urlTab = (rawTab === 'marks' ? 'sessional' : rawTab) as 'attendance' | 'sessional' | 'mentees' | 'schedule' | null;
+
+  const [activeTab, setActiveTab] = useState<'attendance' | 'sessional' | 'mentees' | 'schedule'>(urlTab || 'attendance');
+
+  useEffect(() => {
+    if (urlTab) {
+      setActiveTab(urlTab);
+    }
+  }, [urlTab]);
   const [selectedCourse, setSelectedCourse] = useState('CS-401');
   const [lectureDate, setLectureDate] = useState(new Date().toISOString().slice(0, 10));
   const [lectureSlot, setLectureSlot] = useState('Period 2 • 10:00 AM - 11:00 AM (LT-204)');

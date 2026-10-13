@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { safeGoBack } from '../utils/navigation';
 import { api, getStoredToken } from '../api/client';
 import { StudentProfile } from '../types';
 
@@ -164,13 +165,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => {
-              if (window.history.state && typeof window.history.state.idx === 'number' && window.history.state.idx > 0) {
-                navigate(-1);
-              } else {
-                navigate('/dashboard');
-              }
-            }}
+            onClick={() => safeGoBack(navigate, '/dashboard')}
             className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-base transition-all cursor-pointer border border-slate-200/80 shadow-2xs shrink-0"
             title="Return to Previous Screen (Alt + ←)"
           >

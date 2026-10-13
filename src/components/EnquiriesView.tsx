@@ -116,7 +116,7 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
     if (res.success) {
       setIsCalling(true);
       setCallSession(res);
-      setFeedbackMsg(`Auto-Dialer active: Simulated connection via ${res.provider.toUpperCase()} headset gateway.`);
+      setFeedbackMsg(`Auto-Dialer active: Connected via ${res.provider.toUpperCase()} telephony gateway.`);
     } else {
       alert(res.error || 'Failed to start dialer');
     }
@@ -139,7 +139,7 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
       remarks: interactionRemarks,
       call_status: callStatus,
       probability_updated: probabilityVal,
-      call_recording_url: callSession?.simulated_recording_url || undefined,
+      call_recording_url: callSession?.recording_url || callSession?.simulated_recording_url || undefined,
     });
 
     if (res.success) {

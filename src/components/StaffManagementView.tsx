@@ -24,6 +24,7 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'fresher' | 'rejoiner'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<StaffTab>(urlTab || initialTab || 'overview');
+  const canManageHR = !currentUser || ['admin', 'super_admin', 'hr', 'hod'].includes(currentUser.role);
 
   useEffect(() => {
     if (urlTab) {
@@ -80,6 +81,44 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
   const [tempPasswordInput, setTempPasswordInput] = useState('');
   const [actionSuccessMsg, setActionSuccessMsg] = useState<string | null>(null);
   const [actionErrorMsg, setActionErrorMsg] = useState<string | null>(null);
+
+  // Decoupled sub-entity modals (Addresses, Bank Accounts, Qualifications, Experience)
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [addressForm, setAddressForm] = useState({
+    address_type: 'current' as 'current' | 'permanent' | 'correspondence',
+    address_line: '',
+    city: 'Bathinda',
+    state_gst: '03',
+    pincode: '151001',
+    is_default: true,
+  });
+
+  const [showBankModal, setShowBankModal] = useState(false);
+  const [bankForm, setBankForm] = useState({
+    bank_name: 'HDFC Bank',
+    account_number: '',
+    ifsc_code: 'HDFC0000123',
+    branch_name: 'Bathinda Main Branch',
+    is_default: true,
+  });
+
+  const [showQualificationModal, setShowQualificationModal] = useState(false);
+  const [qualificationForm, setQualificationForm] = useState({
+    qualification_title: 'M.Tech Computer Science & Engineering',
+    institution: 'Thapar Institute of Engineering & Technology',
+    year_of_passing: 2021,
+    percentage_or_cgpa: 8.8,
+    is_highest: false,
+  });
+
+  const [showExperienceModal, setShowExperienceModal] = useState(false);
+  const [experienceForm, setExperienceForm] = useState({
+    organization_name: 'Infosys Technologies Ltd',
+    designation: 'Senior Systems Engineer',
+    start_date: '2021-07-01',
+    end_date: '2023-12-31',
+    is_latest: false,
+  });
 
   // New staff onboarding modal
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -347,6 +386,111 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
         setTimeout(() => setActionSuccessMsg(null), 5000);
       } else {
         setActionErrorMsg(loginRes.error || statusRes.error || 'Failed to deactivate.');
+      }
+    } catch (err: any) {
+      setActionErrorMsg(err.message);
+    }
+  };
+
+  const handleAddAddress = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStaffId || !addressForm.address_line || !addressForm.city) return;
+    try {
+      const res = await api.addStaffAddress(selectedStaffId, addressForm);
+      if (res.success) {
+        setShowAddressModal(false);
+        setAddressForm({
+          address_type: 'current',
+          address_line: '',
+          city: 'Bathinda',
+          state_gst: '03',
+          pincode: '151001',
+          is_default: true,
+        });
+        setActionSuccessMsg('Staff residential address added successfully.');
+        fetchProfile(selectedStaffId);
+        setTimeout(() => setActionSuccessMsg(null), 4000);
+      } else {
+        setActionErrorMsg(res.error || 'Failed to add address.');
+      }
+    } catch (err: any) {
+      setActionErrorMsg(err.message);
+    }
+  };
+
+  const handleAddBank = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStaffId || !bankForm.account_number || !bankForm.ifsc_code) return;
+    try {
+      const res = await api.addStaffBank(selectedStaffId, bankForm);
+      if (res.success) {
+        setShowBankModal(false);
+        setBankForm({
+          bank_name: 'HDFC Bank',
+          account_number: '',
+          ifsc_code: 'HDFC0000123',
+          branch_name: 'Bathinda Main Branch',
+          is_default: true,
+        });
+        setActionSuccessMsg('Staff salary disbursement bank account registered.');
+        fetchProfile(selectedStaffId);
+        setTimeout(() => setActionSuccessMsg(null), 4000);
+      } else {
+        setActionErrorMsg(res.error || 'Failed to add bank account.');
+      }
+    } catch (err: any) {
+      setActionErrorMsg(err.message);
+    }
+  };
+
+  const handleAddQualification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStaffId || !qualificationForm.qualification_title || !qualificationForm.institution) return;
+    try {
+      const res = await api.addStaffQualification(selectedStaffId, {
+        ...qualificationForm,
+        year_of_passing: Number(qualificationForm.year_of_passing),
+        percentage_or_cgpa: Number(qualificationForm.percentage_or_cgpa),
+      });
+      if (res.success) {
+        setShowQualificationModal(false);
+        setQualificationForm({
+          qualification_title: 'M.Tech Computer Science & Engineering',
+          institution: 'Thapar Institute of Engineering & Technology',
+          year_of_passing: 2021,
+          percentage_or_cgpa: 8.8,
+          is_highest: false,
+        });
+        setActionSuccessMsg('Academic qualification recorded successfully.');
+        fetchProfile(selectedStaffId);
+        setTimeout(() => setActionSuccessMsg(null), 4000);
+      } else {
+        setActionErrorMsg(res.error || 'Failed to add qualification.');
+      }
+    } catch (err: any) {
+      setActionErrorMsg(err.message);
+    }
+  };
+
+  const handleAddExperience = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStaffId || !experienceForm.organization_name || !experienceForm.designation) return;
+    try {
+      const res = await api.addStaffExperience(selectedStaffId, experienceForm);
+      if (res.success) {
+        setShowExperienceModal(false);
+        setExperienceForm({
+          organization_name: 'Infosys Technologies Ltd',
+          designation: 'Senior Systems Engineer',
+          start_date: '2021-07-01',
+          end_date: '2023-12-31',
+          is_latest: false,
+        });
+        setActionSuccessMsg('Prior work experience entry logged.');
+        fetchProfile(selectedStaffId);
+        setTimeout(() => setActionSuccessMsg(null), 4000);
+      } else {
+        setActionErrorMsg(res.error || 'Failed to add experience.');
       }
     } catch (err: any) {
       setActionErrorMsg(err.message);
@@ -836,7 +980,21 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
               )}
 
               {activeTab === 'addresses' && (
-                <div className="space-y-2">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between pb-1 border-b border-gray-100">
+                    <span className="font-extrabold text-[11px] text-[#00236f] tracking-wide uppercase">
+                      Staff Residential & Domicile Addresses ({staffProfile.addresses.length})
+                    </span>
+                    {canManageHR && (
+                      <button
+                        type="button"
+                        onClick={() => setShowAddressModal(true)}
+                        className="bg-[#00236f] hover:bg-[#00236f]/90 text-white font-bold px-2.5 py-1 rounded text-[10px] transition cursor-pointer"
+                      >
+                        + ADD ADDRESS
+                      </button>
+                    )}
+                  </div>
                   {staffProfile.addresses.length === 0 ? (
                     <div className="text-gray-400 py-6 text-center">No addresses registered.</div>
                   ) : (
@@ -862,6 +1020,20 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
 
               {activeTab === 'banks' && (
                 <div className="space-y-3">
+                  <div className="flex items-center justify-between pb-1 border-b border-gray-100">
+                    <span className="font-extrabold text-[11px] text-[#00236f] tracking-wide uppercase">
+                      Salary Disbursal Bank Mandates ({staffProfile.bankAccounts.length})
+                    </span>
+                    {canManageHR && (
+                      <button
+                        type="button"
+                        onClick={() => setShowBankModal(true)}
+                        className="bg-[#00236f] hover:bg-[#00236f]/90 text-white font-bold px-2.5 py-1 rounded text-[10px] transition cursor-pointer"
+                      >
+                        + ADD BANK ACCOUNT
+                      </button>
+                    )}
+                  </div>
                   <div className="bg-emerald-50 border border-emerald-300 rounded p-2.5 flex items-center justify-between text-[10px] text-emerald-900">
                     <div className="flex items-center gap-2">
                       <span className="font-extrabold uppercase tracking-wide">
@@ -900,7 +1072,21 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
               )}
 
               {activeTab === 'qualifications' && (
-                <div className="space-y-2">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between pb-1 border-b border-gray-100">
+                    <span className="font-extrabold text-[11px] text-[#00236f] tracking-wide uppercase">
+                      Academic Degrees & UGC NET/PhD ({staffProfile.qualifications.length})
+                    </span>
+                    {canManageHR && (
+                      <button
+                        type="button"
+                        onClick={() => setShowQualificationModal(true)}
+                        className="bg-[#00236f] hover:bg-[#00236f]/90 text-white font-bold px-2.5 py-1 rounded text-[10px] transition cursor-pointer"
+                      >
+                        + ADD ACADEMIC QUALIFICATION
+                      </button>
+                    )}
+                  </div>
                   {staffProfile.qualifications.length === 0 ? (
                     <div className="text-gray-400 py-6 text-center">No academic qualifications listed.</div>
                   ) : (
@@ -925,7 +1111,21 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
               )}
 
               {activeTab === 'experience' && (
-                <div className="space-y-2">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between pb-1 border-b border-gray-100">
+                    <span className="font-extrabold text-[11px] text-[#00236f] tracking-wide uppercase">
+                      Prior Industrial & Academic Experience ({staffProfile.experience.length})
+                    </span>
+                    {canManageHR && (
+                      <button
+                        type="button"
+                        onClick={() => setShowExperienceModal(true)}
+                        className="bg-[#00236f] hover:bg-[#00236f]/90 text-white font-bold px-2.5 py-1 rounded text-[10px] transition cursor-pointer"
+                      >
+                        + ADD WORK EXPERIENCE
+                      </button>
+                    )}
+                  </div>
                   {staffProfile.experience.length === 0 ? (
                     <div className="text-gray-400 py-6 text-center">No prior work experience listed.</div>
                   ) : (
@@ -1718,6 +1918,413 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                   className="px-4 py-1.5 bg-[#00236f] hover:bg-[#00236f]/90 text-white font-bold rounded shadow-xs"
                 >
                   Record & Update Designation
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Add Staff Address */}
+      {showAddressModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-5 space-y-3 shadow-xl border border-slate-200 animate-fadeIn text-[11px]">
+            <div className="border-b pb-2 flex items-center justify-between">
+              <span className="font-extrabold text-sm text-[#00236f] uppercase">
+                Add Staff Residential Address
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowAddressModal(false)}
+                className="text-slate-400 hover:text-slate-600 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleAddAddress} className="space-y-3">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">ADDRESS TYPE:</label>
+                <select
+                  value={addressForm.address_type}
+                  onChange={e => setAddressForm({ ...addressForm, address_type: e.target.value as any })}
+                  className="w-full border border-slate-300 rounded p-1.5 bg-white font-semibold"
+                >
+                  <option value="current">CURRENT RESIDENCE</option>
+                  <option value="permanent">PERMANENT / DOMICILE</option>
+                  <option value="correspondence">OFFICIAL CORRESPONDENCE</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">STREET ADDRESS LINE *:</label>
+                <input
+                  type="text"
+                  placeholder="e.g. H.No 412, Model Town Phase-2"
+                  value={addressForm.address_line}
+                  onChange={e => setAddressForm({ ...addressForm, address_line: e.target.value })}
+                  className="w-full border border-slate-300 rounded p-1.5 bg-white"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">CITY *:</label>
+                  <input
+                    type="text"
+                    value={addressForm.city}
+                    onChange={e => setAddressForm({ ...addressForm, city: e.target.value })}
+                    className="w-full border border-slate-300 rounded p-1.5 bg-white"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">STATE GST CODE:</label>
+                  <input
+                    type="text"
+                    placeholder="03 (Punjab)"
+                    value={addressForm.state_gst}
+                    onChange={e => setAddressForm({ ...addressForm, state_gst: e.target.value })}
+                    className="w-full border border-slate-300 rounded p-1.5 bg-white font-mono"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">PINCODE *:</label>
+                <input
+                  type="text"
+                  placeholder="151001"
+                  value={addressForm.pincode}
+                  onChange={e => setAddressForm({ ...addressForm, pincode: e.target.value })}
+                  className="w-full border border-slate-300 rounded p-1.5 bg-white font-mono"
+                  required
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="addr_is_default"
+                  checked={addressForm.is_default}
+                  onChange={e => setAddressForm({ ...addressForm, is_default: e.target.checked })}
+                  className="rounded"
+                />
+                <label htmlFor="addr_is_default" className="font-semibold text-slate-700 cursor-pointer">
+                  Mark as Default Primary Address
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-2 border-t pt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowAddressModal(false)}
+                  className="px-3 py-1.5 border border-slate-300 rounded text-slate-600 font-bold hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-[#00236f] hover:bg-[#00236f]/90 text-white font-bold rounded shadow-xs"
+                >
+                  Save Address
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Add Staff Bank Account */}
+      {showBankModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-5 space-y-3 shadow-xl border border-slate-200 animate-fadeIn text-[11px]">
+            <div className="border-b pb-2 flex items-center justify-between">
+              <span className="font-extrabold text-sm text-[#00236f] uppercase">
+                Add Salary Disbursement Bank Mandate
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowBankModal(false)}
+                className="text-slate-400 hover:text-slate-600 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleAddBank} className="space-y-3">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">BANK NAME *:</label>
+                <input
+                  type="text"
+                  placeholder="e.g. HDFC Bank, State Bank of India"
+                  value={bankForm.bank_name}
+                  onChange={e => setBankForm({ ...bankForm, bank_name: e.target.value })}
+                  className="w-full border border-slate-300 rounded p-1.5 bg-white font-semibold"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">ACCOUNT NUMBER *:</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 50100239102931"
+                  value={bankForm.account_number}
+                  onChange={e => setBankForm({ ...bankForm, account_number: e.target.value })}
+                  className="w-full border border-slate-300 rounded p-1.5 bg-white font-mono"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">IFSC CODE *:</label>
+                  <input
+                    type="text"
+                    placeholder="HDFC0000123"
+                    value={bankForm.ifsc_code}
+                    onChange={e => setBankForm({ ...bankForm, ifsc_code: e.target.value.toUpperCase() })}
+                    className="w-full border border-slate-300 rounded p-1.5 bg-white font-mono"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">BRANCH NAME:</label>
+                  <input
+                    type="text"
+                    value={bankForm.branch_name}
+                    onChange={e => setBankForm({ ...bankForm, branch_name: e.target.value })}
+                    className="w-full border border-slate-300 rounded p-1.5 bg-white"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="bank_is_default"
+                  checked={bankForm.is_default}
+                  onChange={e => setBankForm({ ...bankForm, is_default: e.target.checked })}
+                  className="rounded"
+                />
+                <label htmlFor="bank_is_default" className="font-semibold text-slate-700 cursor-pointer">
+                  Mandatory Salary Disbursement Default
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-2 border-t pt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowBankModal(false)}
+                  className="px-3 py-1.5 border border-slate-300 rounded text-slate-600 font-bold hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-[#00236f] hover:bg-[#00236f]/90 text-white font-bold rounded shadow-xs"
+                >
+                  Save Bank Mandate
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Add Staff Qualification */}
+      {showQualificationModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-5 space-y-3 shadow-xl border border-slate-200 animate-fadeIn text-[11px]">
+            <div className="border-b pb-2 flex items-center justify-between">
+              <span className="font-extrabold text-sm text-[#00236f] uppercase">
+                Add Academic Degree & UGC/PhD Credential
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowQualificationModal(false)}
+                className="text-slate-400 hover:text-slate-600 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleAddQualification} className="space-y-3">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">DEGREE / QUALIFICATION TITLE *:</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Ph.D. in Computer Science"
+                  value={qualificationForm.qualification_title}
+                  onChange={e => setQualificationForm({ ...qualificationForm, qualification_title: e.target.value })}
+                  className="w-full border border-slate-300 rounded p-1.5 bg-white font-semibold"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">INSTITUTION / UNIVERSITY *:</label>
+                <input
+                  type="text"
+                  placeholder="e.g. IIT Roorkee / Thapar Institute"
+                  value={qualificationForm.institution}
+                  onChange={e => setQualificationForm({ ...qualificationForm, institution: e.target.value })}
+                  className="w-full border border-slate-300 rounded p-1.5 bg-white"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">PASSING YEAR *:</label>
+                  <input
+                    type="number"
+                    value={qualificationForm.year_of_passing}
+                    onChange={e => setQualificationForm({ ...qualificationForm, year_of_passing: parseInt(e.target.value) || 2020 })}
+                    className="w-full border border-slate-300 rounded p-1.5 bg-white font-mono"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">PERCENTAGE / CGPA *:</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={qualificationForm.percentage_or_cgpa}
+                    onChange={e => setQualificationForm({ ...qualificationForm, percentage_or_cgpa: parseFloat(e.target.value) || 0 })}
+                    className="w-full border border-slate-300 rounded p-1.5 bg-white font-mono"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="qual_is_highest"
+                  checked={qualificationForm.is_highest}
+                  onChange={e => setQualificationForm({ ...qualificationForm, is_highest: e.target.checked })}
+                  className="rounded"
+                />
+                <label htmlFor="qual_is_highest" className="font-semibold text-slate-700 cursor-pointer">
+                  Mark as Highest Attained Academic Degree
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-2 border-t pt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowQualificationModal(false)}
+                  className="px-3 py-1.5 border border-slate-300 rounded text-slate-600 font-bold hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-[#00236f] hover:bg-[#00236f]/90 text-white font-bold rounded shadow-xs"
+                >
+                  Save Academic Degree
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Add Staff Experience */}
+      {showExperienceModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-5 space-y-3 shadow-xl border border-slate-200 animate-fadeIn text-[11px]">
+            <div className="border-b pb-2 flex items-center justify-between">
+              <span className="font-extrabold text-sm text-[#00236f] uppercase">
+                Add Prior Work Experience & Tenure
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowExperienceModal(false)}
+                className="text-slate-400 hover:text-slate-600 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleAddExperience} className="space-y-3">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">ORGANIZATION / UNIVERSITY NAME *:</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Infosys Technologies Ltd / Thapar Institute"
+                  value={experienceForm.organization_name}
+                  onChange={e => setExperienceForm({ ...experienceForm, organization_name: e.target.value })}
+                  className="w-full border border-slate-300 rounded p-1.5 bg-white font-semibold"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">DESIGNATION / ROLE *:</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Assistant Professor / Senior Systems Engineer"
+                  value={experienceForm.designation}
+                  onChange={e => setExperienceForm({ ...experienceForm, designation: e.target.value })}
+                  className="w-full border border-slate-300 rounded p-1.5 bg-white"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">START DATE *:</label>
+                  <input
+                    type="date"
+                    value={experienceForm.start_date}
+                    onChange={e => setExperienceForm({ ...experienceForm, start_date: e.target.value })}
+                    className="w-full border border-slate-300 rounded p-1.5 bg-white"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">END DATE *:</label>
+                  <input
+                    type="date"
+                    value={experienceForm.end_date}
+                    onChange={e => setExperienceForm({ ...experienceForm, end_date: e.target.value })}
+                    className="w-full border border-slate-300 rounded p-1.5 bg-white"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="exp_is_latest"
+                  checked={experienceForm.is_latest}
+                  onChange={e => setExperienceForm({ ...experienceForm, is_latest: e.target.checked })}
+                  className="rounded"
+                />
+                <label htmlFor="exp_is_latest" className="font-semibold text-slate-700 cursor-pointer">
+                  Mark as Most Recent Prior Experience
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-2 border-t pt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowExperienceModal(false)}
+                  className="px-3 py-1.5 border border-slate-300 rounded text-slate-600 font-bold hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-[#00236f] hover:bg-[#00236f]/90 text-white font-bold rounded shadow-xs"
+                >
+                  Save Experience Entry
                 </button>
               </div>
             </form>

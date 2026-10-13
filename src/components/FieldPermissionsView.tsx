@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { safeGoBack } from '../utils/navigation';
 import { api } from '../api/client';
 import { Shield, Check, X, AlertCircle, Save, RefreshCw, Lock, Eye, Edit3 } from 'lucide-react';
 
@@ -90,19 +91,29 @@ export const FieldPermissionsView: React.FC = () => {
       {/* Top Banner */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2.5 mb-2">
-              <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
-                <Shield className="w-5 h-5" />
+          <div className="flex items-start gap-3">
+            <button
+              type="button"
+              onClick={() => safeGoBack()}
+              className="mt-1 w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold text-sm transition-all cursor-pointer border border-slate-700 shrink-0"
+              title="Return to Previous Screen (Alt + ←)"
+            >
+              ‹
+            </button>
+            <div>
+              <div className="flex items-center gap-2.5 mb-2">
+                <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+                  <Shield className="w-5 h-5" />
+                </div>
+                <h1 className="text-xl font-bold text-white tracking-tight">Granular Field-Level Permissions (RBAC)</h1>
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-mono border border-indigo-500/30 font-semibold">
+                  Lecture 3 Governance
+                </span>
               </div>
-              <h1 className="text-xl font-bold text-white tracking-tight">Granular Field-Level Permissions (RBAC)</h1>
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-mono border border-indigo-500/30 font-semibold">
-                Lecture 3 Governance
-              </span>
+              <p className="text-sm text-slate-400">
+                Control individual data visibility and editability across Student and Staff dossiers. Disabling View automatically locks and disables Edit.
+              </p>
             </div>
-            <p className="text-sm text-slate-400">
-              Control individual data visibility and editability across Student and Staff dossiers. Disabling View automatically locks and disables Edit.
-            </p>
           </div>
 
           <div className="flex items-center gap-2">

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { safeGoBack } from '../utils/navigation';
 import { api, setStoredToken, setStoredUser } from '../api/client';
 import { User } from '../types';
 
@@ -217,21 +218,31 @@ export const TenantsManagementView: React.FC<TenantsManagementViewProps> = ({ cu
       {/* Top Header Card */}
       <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide uppercase bg-indigo-50 text-indigo-700 border border-indigo-100">
-                PostgreSQL Multi-Tenant Provisioning
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-100">
-                Senior Mentor Architecture (Lecture 3)
-              </span>
+          <div className="flex items-start gap-3">
+            <button
+              type="button"
+              onClick={() => safeGoBack()}
+              className="mt-1 w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition-all cursor-pointer border border-slate-200/80 shrink-0"
+              title="Return to Previous Screen (Alt + ←)"
+            >
+              ‹
+            </button>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide uppercase bg-indigo-50 text-indigo-700 border border-indigo-100">
+                  PostgreSQL Multi-Tenant Provisioning
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-100">
+                  Senior Mentor Architecture (Lecture 3)
+                </span>
+              </div>
+              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+                Client Campuses & Institutional Tenants
+              </h1>
+              <p className="text-sm text-slate-500 mt-1">
+                Apex Super Admin tenant directory. Manage multi-college schemas, toggle operational state, and launch direct one-click impersonation sessions.
+              </p>
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-              Client Campuses & Institutional Tenants
-            </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Apex Super Admin tenant directory. Manage multi-college schemas, toggle operational state, and launch direct one-click impersonation sessions.
-            </p>
           </div>
 
           <div className="flex items-center gap-3">

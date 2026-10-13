@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { api } from '../api/client';
 import { GrievanceItem, User } from '../types';
@@ -8,18 +9,29 @@ interface GrievanceViewProps {
 }
 
 export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => {
+  const [searchParams] = useSearchParams();
+  const urlStatus = searchParams.get('status');
+  const urlCategory = searchParams.get('category');
+  const urlAction = searchParams.get('action');
+
   const isAdmin = ['admin', 'super_admin', 'staff', 'hod', 'hr', 'counselor'].includes(currentUser?.role || '');
 
   const [grievances, setGrievances] = useState<GrievanceItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>(urlStatus || 'all');
+  const [filterCategory, setFilterCategory] = useState<string>(urlCategory || 'all');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Modals
-  const [isLodgeModalOpen, setIsLodgeModalOpen] = useState(false);
+  const [isLodgeModalOpen, setIsLodgeModalOpen] = useState(urlAction === 'new' || urlAction === 'lodge');
   const [selectedGrievance, setSelectedGrievance] = useState<GrievanceItem | null>(null);
   const [isAdjudicateOpen, setIsAdjudicateOpen] = useState(false);
+
+  useEffect(() => {
+    if (urlStatus) setFilterStatus(urlStatus);
+    if (urlCategory) setFilterCategory(urlCategory);
+    if (urlAction === 'new' || urlAction === 'lodge') setIsLodgeModalOpen(true);
+  }, [urlStatus, urlCategory, urlAction]);
 
   // New Grievance Form State
   const [newCategory, setNewCategory] = useState<string>('academic');

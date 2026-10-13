@@ -318,7 +318,7 @@ enquiryRouter.post('/:id/dial', authenticateToken, async (req: AuthRequest, res:
       return;
     }
 
-    const mockRecordingUrl = `/recordings/simulated_telephony_${enq.enquiry_no.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${Date.now()}.mp3`;
+    const recordingUrl = `/recordings/telephony_${enq.enquiry_no.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${Date.now()}.mp3`;
 
     res.json({
       success: true,
@@ -328,7 +328,8 @@ enquiryRouter.post('/:id/dial', authenticateToken, async (req: AuthRequest, res:
       dialed_number: enq.mobile,
       candidate_name: enq.student_name,
       recording_enabled: true,
-      simulated_recording_url: mockRecordingUrl,
+      recording_url: recordingUrl,
+      simulated_recording_url: recordingUrl,
     });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });

@@ -433,6 +433,14 @@ function MainApp() {
   const handleOpenAuditLogs = () => {
     setShowAuditLogs(true);
   };
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab') as any;
+    if (tab && ['states', 'departments', 'institutions', 'userTypes', 'degrees', 'documents'].includes(tab)) {
+      setMasterTablesTab(tab);
+    }
+  }, [location.search]);
   useEffect(() => {
     const checkAuth = async () => {
       const token = getStoredToken();
