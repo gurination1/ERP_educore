@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { api, getStoredToken } from '../api/client';
 import { User } from '../types';
@@ -20,24 +21,28 @@ interface CourseDistributionItem {
 }
 
 export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
+  const [searchParams] = useSearchParams();
+  const urlTab = searchParams.get('tab');
   const isSuperAdmin = currentUser?.role === 'super_admin';
+  const isAccounts = currentUser?.role === 'accounts';
 
   const getInitialTab = (): 'financial' | 'academic_workload' | 'platform_telemetry' | 'attendance_gate' => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const tabParam = params.get('tab');
-      if (tabParam === 'attendance' || tabParam === 'attendance_gate' || tabParam === 'compliance') {
-        return 'attendance_gate';
-      }
-      if (tabParam === 'financial' || tabParam === 'revenue') {
-        return 'financial';
-      }
-      if (tabParam === 'academic_workload' || tabParam === 'workload') {
-        return 'academic_workload';
-      }
-      if (tabParam === 'platform_telemetry' || tabParam === 'telemetry') {
-        return 'platform_telemetry';
-      }
+    const tabParam = urlTab || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('tab') : null);
+    const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+    if (tabParam === 'attendance' || tabParam === 'attendance_gate' || tabParam === 'compliance') {
+      return 'attendance_gate';
+    }
+    if (tabParam === 'financial' || tabParam === 'revenue') {
+      return 'financial';
+    }
+    if (tabParam === 'academic_workload' || tabParam === 'workload') {
+      return 'academic_workload';
+    }
+    if (tabParam === 'platform_telemetry' || tabParam === 'telemetry' || pathname === '/telemetry') {
+      return 'platform_telemetry';
+    }
+    if (isAccounts) {
+      return 'financial';
     }
     return isSuperAdmin ? 'platform_telemetry' : 'academic_workload';
   };
@@ -45,6 +50,21 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
   const [activeTab, setActiveTab] = useState<'financial' | 'academic_workload' | 'platform_telemetry' | 'attendance_gate'>(
     getInitialTab()
   );
+
+  useEffect(() => {
+    const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+    if (urlTab === 'attendance' || urlTab === 'attendance_gate' || urlTab === 'compliance') {
+      setActiveTab('attendance_gate');
+    } else if (urlTab === 'financial' || urlTab === 'revenue') {
+      setActiveTab('financial');
+    } else if (urlTab === 'academic_workload' || urlTab === 'workload') {
+      setActiveTab('academic_workload');
+    } else if (urlTab === 'platform_telemetry' || urlTab === 'telemetry' || pathname === '/telemetry') {
+      setActiveTab('platform_telemetry');
+    } else if (isAccounts) {
+      setActiveTab('financial');
+    }
+  }, [urlTab, isAccounts, isSuperAdmin]);
   const [telemetryData, setTelemetryData] = useState<any>(null);
   const [distribution, setDistribution] = useState<CourseDistributionItem[]>([]);
   const [kpiData, setKpiData] = useState<any>(null);

@@ -189,7 +189,7 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
 
     try {
       const res = await api.payFee({
-        studentId: studentDetails?.id || activeStudentId || student?.id,
+        studentId: studentDetails?.id || activeStudentId || student?.id || 'me',
         amount: totalAmount,
         paymentMode,
         feeAllocations: selectedAllocations,

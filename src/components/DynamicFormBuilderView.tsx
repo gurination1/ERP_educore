@@ -8,7 +8,7 @@ interface DynamicFormBuilderViewProps {
 }
 
 export const DynamicFormBuilderView: React.FC<DynamicFormBuilderViewProps> = ({ currentUser }) => {
-  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'staff';
+  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'super_admin' || currentUser?.role === 'staff';
   const [forms, setForms] = useState<DynamicFormItem[]>([]);
   const [selectedForm, setSelectedForm] = useState<DynamicFormItem | null>(null);
   const [formResponses, setFormResponses] = useState<Record<string, any>>({});

@@ -263,27 +263,15 @@ async function runLiveUITest() {
       console.log(`----------------------------------------------------------------------`);
 
       try {
-        // 1. Navigate to target URL
-        await page.goto(`${TARGET_URL}`, { waitUntil: 'networkidle2', timeout: 30000 });
-
-        // Clean storage to guarantee fresh login session
+        // 1. Navigate to target URL and guarantee completely fresh session
+        await page.goto(`${TARGET_URL}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
         await page.evaluate(() => {
           try {
             localStorage.clear();
             sessionStorage.clear();
           } catch (_) {}
         });
-
-        // If user was previously logged in, sign out first
-        const hasSignOut = await page.$('button ::-p-text(Sign Out)');
-        if (hasSignOut) {
-          await page.evaluate(() => {
-            const btn = Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('Sign Out'));
-            if (btn) btn.click();
-          });
-          await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
-          await new Promise(r => setTimeout(r, 1000));
-        }
+        await page.goto(`${TARGET_URL}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
         // Check if we are on login screen
         await page.waitForSelector('#login-username-input', { timeout: 15000 });
@@ -370,7 +358,7 @@ async function runLiveUITest() {
 
         // 6. Test direct authorized sub-route
         if (roleDef.testRoute) {
-          await page.goto(`${TARGET_URL}${roleDef.testRoute}`, { waitUntil: 'networkidle2', timeout: 20000 });
+          await page.goto(`${TARGET_URL}${roleDef.testRoute}`, { waitUntil: 'domcontentloaded', timeout: 25000 });
           await new Promise(r => setTimeout(r, 1500));
           const currentUrl = page.url();
           assert(currentUrl.includes(roleDef.testRoute) || currentUrl.includes('dashboard'), `Navigated to authorized view: ${roleDef.testRoute}`);

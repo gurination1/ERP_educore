@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { StudentProfile, ActiveScreen, NoticeItem } from '../types';
 
@@ -19,28 +20,27 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
   onOpenReceiptModal,
   onOpenAdmitCardModal,
 }) => {
+  const [searchParams] = useSearchParams();
+  const urlView = searchParams.get('view');
   const [ledgerData, setLedgerData] = useState<any>(null);
   const [isLedgerLoading, setIsLedgerLoading] = useState(true);
   const [showAllNotices, setShowAllNotices] = useState(false);
 
   useEffect(() => {
-    if (student?.id || student?.student_id) {
-      setIsLedgerLoading(true);
-      api.getFeeLedger(student.id || student.student_id)
-        .then(res => {
-          if (res.success) {
-            setLedgerData(res);
-          }
-        })
-        .finally(() => {
-          setIsLedgerLoading(false);
-        });
-    }
-  }, [student]);
+    setIsLedgerLoading(true);
+    api.getFeeLedger('me')
+      .then(res => {
+        if (res.success) {
+          setLedgerData(res);
+        }
+      })
+      .finally(() => {
+        setIsLedgerLoading(false);
+      });
+  }, [student?.id]);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('view') === 'attendance') {
+    if (urlView === 'attendance') {
       setTimeout(() => {
         const el = document.getElementById('student-attendance-section');
         if (el) {
@@ -48,9 +48,11 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
           el.classList.add('ring-2', 'ring-[#00236f]', 'transition-all');
           setTimeout(() => el.classList.remove('ring-2', 'ring-[#00236f]'), 3000);
         }
-      }, 200);
+      }, 150);
+    } else if (urlView === 'admit-card') {
+      onOpenAdmitCardModal?.();
     }
-  }, []);
+  }, [urlView]);
 
   if (!student) {
     return (

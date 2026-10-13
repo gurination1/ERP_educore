@@ -301,16 +301,29 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
               <div className="flex items-center gap-2">
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 border border-[#e1e3e4] rounded-lg font-semibold hover:bg-[#f8f9fa] text-xs"
+                  className="px-4 py-2 border border-[#e1e3e4] rounded-lg font-semibold hover:bg-[#f8f9fa] text-xs cursor-pointer"
                 >
                   Close
                 </button>
+                {onOpenAdmitCard && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onOpenAdmitCard(student.id);
+                    }}
+                    className="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                    title="Inspect MRSPTU / PUP Examination Admit Card & Attendance Clearance"
+                  >
+                    <span>Admit Card & Hall Ticket</span>
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     onClose();
                     onPayFee(student.id);
                   }}
-                  className="px-5 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white font-bold rounded-lg text-xs"
+                  className="px-5 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white font-bold rounded-lg text-xs cursor-pointer shadow-xs"
                 >
                   Record Payment
                 </button>

@@ -740,7 +740,7 @@ function MainApp() {
           element={
             !currentUser ? (
               <Navigate to="/admin" replace />
-            ) : !['admin', 'super_admin', 'staff', 'counselor', 'hod', 'accounts'].includes(currentUser.role) ? (
+            ) : !['admin', 'super_admin', 'staff', 'counselor', 'hod', 'accounts', 'hr'].includes(currentUser.role) ? (
               <Navigate to="/dashboard" replace />
             ) : (
               <AuthenticatedLayout
@@ -855,7 +855,7 @@ function MainApp() {
           element={
             !currentUser ? (
               <Navigate to="/" replace />
-            ) : !['admin', 'super_admin', 'staff', 'accounts', 'hod', 'hr'].includes(currentUser.role) ? (
+            ) : !['admin', 'super_admin', 'staff', 'accounts', 'hod', 'hr', 'counselor'].includes(currentUser.role) ? (
               <Navigate to="/dashboard" replace />
             ) : (
               <AuthenticatedLayout
@@ -1144,7 +1144,7 @@ function MainApp() {
           element={
             !currentUser ? (
               <Navigate to="/" replace />
-            ) : !['admin', 'super_admin', 'staff', 'counselor'].includes(currentUser.role) ? (
+            ) : !['admin', 'super_admin', 'staff', 'counselor', 'hod', 'hr'].includes(currentUser.role) ? (
               <Navigate to="/dashboard" replace />
             ) : (
               <AuthenticatedLayout
@@ -1164,7 +1164,7 @@ function MainApp() {
           element={
             !currentUser ? (
               <Navigate to="/" replace />
-            ) : !['admin', 'super_admin', 'staff', 'counselor'].includes(currentUser.role) ? (
+            ) : !['admin', 'super_admin', 'staff', 'counselor', 'hod', 'hr'].includes(currentUser.role) ? (
               <Navigate to="/dashboard" replace />
             ) : (
               <AuthenticatedLayout
@@ -1310,6 +1310,11 @@ function MainApp() {
             setTargetPayFeeId(undefined);
             setViewingStudent(null);
             setIsPayModalOpen(true);
+          }}
+          onOpenAdmitCard={() => {
+            setTargetPayStudent(viewingStudent);
+            setViewingStudent(null);
+            setIsAdmitCardOpen(true);
           }}
         />
       )}

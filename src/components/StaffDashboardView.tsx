@@ -364,7 +364,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
         {isCounselor ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full md:w-auto">
             <div
-              onClick={() => onNavigate('admissions')}
+              onClick={() => onNavigate('enquiries')}
               className="bg-[#f8f9fa] border border-[#edeeef] hover:border-[#00236f] p-3 rounded-xl text-center min-w-[95px] cursor-pointer transition-all shadow-2xs hover:bg-white"
             >
               <span className="text-xl font-extrabold text-[#00236f] block leading-none">
@@ -375,7 +375,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
               </span>
             </div>
             <div
-              onClick={() => onNavigate('admissions')}
+              onClick={() => onNavigate('enquiries')}
               className="bg-[#f8f9fa] border border-[#edeeef] hover:border-[#ba1a1a] p-3 rounded-xl text-center min-w-[95px] cursor-pointer transition-all shadow-2xs hover:bg-white"
             >
               <span className="text-xl font-extrabold text-[#ba1a1a] block leading-none">
@@ -386,7 +386,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
               </span>
             </div>
             <div
-              onClick={() => onNavigate('admissions')}
+              onClick={() => onNavigate('enquiries')}
               className="bg-[#f8f9fa] border border-[#edeeef] hover:border-[#755b00] p-3 rounded-xl text-center min-w-[95px] cursor-pointer transition-all shadow-2xs hover:bg-white"
             >
               <span className="text-xl font-extrabold text-[#755b00] block leading-none">
@@ -397,7 +397,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
               </span>
             </div>
             <div
-              onClick={() => onNavigate('admissions')}
+              onClick={() => onNavigate('manage-students')}
               className="bg-[#f8f9fa] border border-[#edeeef] hover:border-emerald-600 p-3 rounded-xl text-center min-w-[95px] cursor-pointer transition-all shadow-2xs hover:bg-white"
             >
               <span className="text-xl font-extrabold text-emerald-700 block leading-none">
@@ -429,7 +429,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
               </span>
             </div>
             <div
-              onClick={() => onNavigate('admissions')}
+              onClick={() => onNavigate('enquiries')}
               className="bg-[#f8f9fa] border border-[#edeeef] hover:border-[#00236f] p-3 rounded-xl text-center min-w-[95px] cursor-pointer transition-all shadow-2xs hover:bg-white"
               title="Click to open Admissions Prospect CRM & Follow-Up Radar"
             >

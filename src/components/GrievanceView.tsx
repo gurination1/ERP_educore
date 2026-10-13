@@ -8,7 +8,7 @@ interface GrievanceViewProps {
 }
 
 export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => {
-  const isAdmin = ['admin', 'super_admin', 'staff', 'hod', 'hr'].includes(currentUser?.role || '');
+  const isAdmin = ['admin', 'super_admin', 'staff', 'hod', 'hr', 'counselor'].includes(currentUser?.role || '');
 
   const [grievances, setGrievances] = useState<GrievanceItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);

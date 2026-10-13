@@ -25,6 +25,14 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<StaffTab>(urlTab || initialTab || 'overview');
 
+  useEffect(() => {
+    if (urlTab) {
+      setActiveTab(urlTab);
+    } else if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [urlTab, initialTab]);
+
   // Designation Transition Modal (Lecture 3 & Recording 160)
   const [showDesignationModal, setShowDesignationModal] = useState(false);
   const [designationForm, setDesignationForm] = useState({

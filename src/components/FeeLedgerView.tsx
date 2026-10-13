@@ -30,18 +30,26 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
   }, [searchParams]);
 
   const [studentList, setStudentList] = useState<any[]>([]);
-  const [selectedStudentId, setSelectedStudentId] = useState<string>(currentStudent?.id || 'stu-rec-aryan');
+  const initialStudentId = searchParams.get('studentId') || (isStudent ? 'me' : (currentStudent?.id || ''));
+  const [selectedStudentId, setSelectedStudentId] = useState<string>(initialStudentId);
   const [studentSearch, setStudentSearch] = useState('');
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
   const [ledgerData, setLedgerData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const urlStudentId = searchParams.get('studentId');
+    if (urlStudentId && !isStudent) {
+      setSelectedStudentId(urlStudentId);
+    }
+  }, [searchParams, isStudent]);
+
+  useEffect(() => {
     if (canSearchStudents) {
       api.getStudents({ limit: 100 }).then(res => {
         if (res.success && res.students && res.students.length > 0) {
           setStudentList(res.students);
-          if (!currentStudent) {
+          if (!currentStudent && !searchParams.get('studentId') && (!selectedStudentId || selectedStudentId === 'stu-rec-aryan')) {
             setSelectedStudentId(res.students[0].id);
           }
         }
@@ -49,7 +57,9 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
     }
   }, [canSearchStudents]);
 
-  const activeStudentId = currentStudent?.id || selectedStudentId;
+  const activeStudentId = isStudent
+    ? 'me'
+    : (selectedStudentId || searchParams.get('studentId') || currentStudent?.id || (studentList[0]?.id || ''));
 
   // Fee Head Assignment Modal State (Admin only)
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);

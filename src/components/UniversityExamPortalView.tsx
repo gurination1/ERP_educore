@@ -25,7 +25,9 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
     }
   }, [urlTab, initialTab]);
   const [students, setStudents] = useState<any[]>([]);
-  const [selectedStudentId, setSelectedStudentId] = useState<string>('stu-rec-aryan');
+  const isStudent = currentUser?.role === 'student';
+  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'super_admin';
+  const [selectedStudentId, setSelectedStudentId] = useState<string>(isStudent ? 'me' : 'stu-rec-aryan');
   const [studentProfile, setStudentProfile] = useState<any | null>(null);
   const [examMeta, setExamMeta] = useState<any | null>(null);
   const [datesheets, setDatesheets] = useState<any[]>([]);
@@ -48,9 +50,6 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
   const [submittedRegularSlip, setSubmittedRegularSlip] = useState<any | null>(null);
   const [submittedReappearSlip, setSubmittedReappearSlip] = useState<any | null>(null);
 
-  const isStudent = currentUser?.role === 'student';
-  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'super_admin';
-
   // Load initial meta & eligible students
   useEffect(() => {
     setLoading(true);
@@ -65,12 +64,12 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
           if (isStudent) {
             // Find student matching current user
             const matched = studentsRes.students.find(
-              (s: any) => s.id === currentUser?.id || s.student_id === currentUser?.username
+              (s: any) => s.id === currentUser?.id || s.student_id === currentUser?.username || s.user_id === currentUser?.id
             );
             if (matched) {
               setSelectedStudentId(matched.id);
-            } else if (studentsRes.students.length > 0) {
-              setSelectedStudentId(studentsRes.students[0].id);
+            } else {
+              setSelectedStudentId('me');
             }
           } else if (studentsRes.students.length > 0) {
             setSelectedStudentId(studentsRes.students[0].id);

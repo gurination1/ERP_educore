@@ -110,7 +110,22 @@ const INITIAL_TEACHER_DOCS: DocumentRecord[] = [
 ];
 
 export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ currentUser }) => {
-  const [documents, setDocuments] = useState<DocumentRecord[]>(INITIAL_TEACHER_DOCS);
+  const storageKey = `educore_teacher_docs_${currentUser?.id || 'default'}`;
+  const [documents, setDocuments] = useState<DocumentRecord[]>(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      return saved ? JSON.parse(saved) : INITIAL_TEACHER_DOCS;
+    } catch {
+      return INITIAL_TEACHER_DOCS;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(documents));
+    } catch {}
+  }, [documents, storageKey]);
+
   const [selectedDoc, setSelectedDoc] = useState<DocumentRecord | null>(null);
   const [filterType, setFilterType] = useState<string>('all');
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);

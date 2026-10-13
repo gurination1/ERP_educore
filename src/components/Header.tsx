@@ -598,7 +598,7 @@ export const Header: React.FC<HeaderProps> = ({
         label: 'Financial Reports',
         defaultScreen: 'reports',
         action: () => {
-          onNavigate('reports');
+          onNavigate('reports?tab=financial' as any);
           setOpenDrawer(null);
         },
         isActive: activeScreen === 'reports' || effectivePath.startsWith('/reports'),
@@ -721,7 +721,7 @@ export const Header: React.FC<HeaderProps> = ({
         label: 'Academic Reports',
         defaultScreen: 'reports',
         action: () => {
-          onNavigate('reports');
+          onNavigate('reports?tab=academic_workload' as any);
           setOpenDrawer(null);
         },
         isActive: effectivePath.startsWith('/reports'),
