@@ -298,7 +298,7 @@ feeRouter.get('/ledger/:studentId', authenticateToken, async (req: AuthRequest, 
 });
 
 // Pay / Collect Fee (Scoped & Zod Validated)
-feeRouter.post('/collect', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+feeRouter.post(['/collect', '/pay'], authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   const parseResult = collectFeeSchema.safeParse(req.body);
   if (!parseResult.success) {
     const errorMsg = parseResult.error.errors.map(e => e.message).join(', ');

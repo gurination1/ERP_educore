@@ -5819,10 +5819,16 @@ class DatabaseStore {
   }
 
   public async createEnquiry(data: Omit<EnquiryRecord, 'id' | 'enquiry_no' | 'created_at'>): Promise<EnquiryRecord> {
-    const seq = Math.floor(100 + Math.random() * 900);
+    const year = new Date().getFullYear();
+    let seq = this.enquiries.length + 1;
+    let enquiryNo = `ENQ-${year}-${String(seq).padStart(4, '0')}`;
+    while (this.enquiries.some(e => e.enquiry_no === enquiryNo)) {
+      seq++;
+      enquiryNo = `ENQ-${year}-${String(seq).padStart(4, '0')}`;
+    }
     const newEnq: EnquiryRecord = {
-      id: `enq-${Date.now()}`,
-      enquiry_no: `ENQ-${new Date().getFullYear()}-${seq}`,
+      id: `enq-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+      enquiry_no: enquiryNo,
       ...data,
       created_at: new Date().toISOString(),
     };

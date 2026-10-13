@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { db, Student } from '../db';
-import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
+import { authenticateToken, requireRole, AuthRequest, matchStudentForUser } from '../middleware/auth';
 
 export const examRouter = Router();
 
@@ -26,12 +26,26 @@ const examSubmissions: Map<string, ExamSubmissionRecord[]> = new Map();
 function findStudent(allStudents: Student[], identifier: string): Student | undefined {
   if (!identifier) return undefined;
   const clean = identifier.trim().toLowerCase();
-  return allStudents.find(s =>
+  const direct = allStudents.find(s =>
     s.id?.toLowerCase() === clean ||
     s.student_id?.toLowerCase() === clean ||
     (s as any).enterprise_uid?.toLowerCase() === clean ||
     `${s.first_name} ${s.last_name}`.toLowerCase() === clean
   );
+  if (direct) return direct;
+
+  const cleanDigits = clean.replace(/[^0-9]/g, '');
+  const matchedUser = db.users.find(
+    u =>
+      u.id.toLowerCase() === clean ||
+      u.username.toLowerCase() === clean ||
+      (u.enterprise_uid && u.enterprise_uid.toLowerCase() === clean) ||
+      (cleanDigits.length >= 8 && u.enterprise_uid && u.enterprise_uid.replace(/[^0-9]/g, '') === cleanDigits)
+  );
+  if (matchedUser) {
+    return allStudents.find(s => s.user_id === matchedUser.id || s.email.toLowerCase() === matchedUser.email.toLowerCase());
+  }
+  return undefined;
 }
 
 // 1. Examination Metadata & Statutory Ordinances
@@ -563,7 +577,7 @@ examRouter.get('/admit-card/:identifier', authenticateToken, async (req: AuthReq
 
   let student: Student | undefined;
   if (req.user?.role === 'student') {
-    student = allStudents.find(s => s.user_id === req.user?.id || s.student_id === req.user?.username);
+    student = allStudents.find(s => matchStudentForUser(s, req.user)) || findStudent(allStudents, identifier);
   } else {
     student = identifier === 'me' ? allStudents[0] : findStudent(allStudents, identifier);
   }

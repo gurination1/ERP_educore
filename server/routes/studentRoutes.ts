@@ -7,13 +7,28 @@ export const studentRouter = Router();
 export function findStudentByIdentifier(students: Student[], identifier?: string): Student | undefined {
   if (!identifier) return undefined;
   const clean = identifier.trim().toLowerCase();
-  return students.find(
+  const direct = students.find(
     s =>
       s.id.toLowerCase() === clean ||
       s.student_id.toLowerCase() === clean ||
       (s.user_id && s.user_id.toLowerCase() === clean) ||
-      s.email.toLowerCase() === clean
+      s.email.toLowerCase() === clean ||
+      ((s as any).enterprise_uid && (s as any).enterprise_uid.toLowerCase() === clean)
   );
+  if (direct) return direct;
+
+  const cleanDigits = clean.replace(/[^0-9]/g, '');
+  const matchedUser = db.users.find(
+    u =>
+      u.id.toLowerCase() === clean ||
+      u.username.toLowerCase() === clean ||
+      (u.enterprise_uid && u.enterprise_uid.toLowerCase() === clean) ||
+      (cleanDigits.length >= 8 && u.enterprise_uid && u.enterprise_uid.replace(/[^0-9]/g, '') === cleanDigits)
+  );
+  if (matchedUser) {
+    return students.find(s => s.user_id === matchedUser.id || s.email.toLowerCase() === matchedUser.email.toLowerCase());
+  }
+  return undefined;
 }
 
 export function isStudentOwner(student: Student, identifier: string): boolean {
