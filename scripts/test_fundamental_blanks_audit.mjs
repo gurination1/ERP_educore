@@ -3,6 +3,8 @@ import { spawn } from 'child_process';
 
 const TEST_PORT = 3015;
 
+const BASE_URL = process.env.BASE_URL || `http://127.0.0.1:${TEST_PORT}`;
+
 const ROLE_CREDENTIALS = {
   super_admin: { username: '9001-01-03-01', password: 'superadmin123' },
   admin: { username: '4001-01-03-01', password: 'admin123' },
@@ -17,33 +19,23 @@ const ROLE_CREDENTIALS = {
 
 const tokenCache = {};
 
-function rawRequest(path, method = 'GET', headers = {}, body = null) {
-  return new Promise((resolve, reject) => {
-    const options = {
-      hostname: '127.0.0.1',
-      port: TEST_PORT,
-      path,
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        ...headers,
-      },
-    };
-
-    const request = http.request(options, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        resolve({ status: res.statusCode, data, headers: res.headers });
-      });
-    });
-
-    request.on('error', reject);
-    if (body) {
-      request.write(JSON.stringify(body));
-    }
-    request.end();
-  });
+async function rawRequest(path, method = 'GET', headers = {}, body = null) {
+  const url = `${BASE_URL}${path}`;
+  const options = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...headers,
+    },
+  };
+  if (body) {
+    options.body = JSON.stringify(body);
+  }
+  const res = await fetch(url, options);
+  const data = await res.text();
+  const resHeaders = {};
+  res.headers.forEach((v, k) => { resHeaders[k] = v; });
+  return { status: res.status, data, headers: resHeaders };
 }
 
 async function getTokenForRole(role) {
@@ -66,23 +58,20 @@ async function reqRole(path, role, method = 'GET', body = null) {
 }
 
 async function run() {
-  console.log('Testing server on port', TEST_PORT);
+  console.log('Testing target endpoint:', BASE_URL);
   let server = null;
-  try {
-    await new Promise((resolve) => {
-      const ping = http.get(`http://127.0.0.1:${TEST_PORT}/api/health`, () => {
-        resolve(true);
+  if (!process.env.BASE_URL) {
+    try {
+      await fetch(`${BASE_URL}/api/health`);
+    } catch {
+      console.log('Spawning test server on port', TEST_PORT);
+      server = spawn('node', ['dist/server.cjs'], {
+        env: { ...process.env, PORT: String(TEST_PORT) },
+        stdio: 'inherit',
       });
-      ping.on('error', () => {
-        console.log('Spawning test server on port', TEST_PORT);
-        server = spawn('node', ['dist/server.cjs'], {
-          env: { ...process.env, PORT: String(TEST_PORT) },
-          stdio: 'inherit',
-        });
-        setTimeout(resolve, 5000);
-      });
-    });
-  } catch (e) {}
+      await new Promise(r => setTimeout(r, 4000));
+    }
+  }
 
   let totalPassed = 0;
   let totalFailed = 0;
