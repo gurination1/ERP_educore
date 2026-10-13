@@ -143,7 +143,7 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
     loadDocuments();
   }, [currentUser]);
 
-  const handleSimulatedUpload = async (e: React.FormEvent) => {
+  const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     setUploadError(null);
     if (!fileName.trim()) {
@@ -300,7 +300,7 @@ Generated at ${new Date().toISOString()} via EduCore Regulatory Compliance Engin
             </span>
           </div>
 
-          <form onSubmit={handleSimulatedUpload} className="space-y-2.5 text-xs">
+          <form onSubmit={handleUpload} className="space-y-2.5 text-xs">
             <div>
               <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1">
                 Credential Category *

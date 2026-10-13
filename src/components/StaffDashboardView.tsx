@@ -45,25 +45,37 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
     topic: string;
     summary: { present: number; absent: number; medical: number };
     entries?: Record<string, 'P' | 'A' | 'M'>;
-  }>>(() => {
-    try {
-      const stored = localStorage.getItem('educore_locked_registers');
-      return stored ? JSON.parse(stored) : {};
-    } catch {
-      return {};
-    }
-  });
+  }>>({});
 
   const currentSlotKey = `${selectedCourse}_${lectureDate}_${lectureSlot}`;
   const lockedRecord = lockedRegisters[currentSlotKey];
   const isLocked = Boolean(lockedRecord) && !isEditingLocked;
 
-  // Load live students from DB
+  // Load live students & locked registers from DB
   useEffect(() => {
     loadStudents();
     api.getFollowupRadar().then(res => {
       if (res.success && res.stats) {
         setFollowupStats(res.stats);
+      }
+    }).catch(() => {});
+
+    api.getLockedAttendanceRegisters(selectedCourse).then(res => {
+      if (res.success && Array.isArray(res.registers)) {
+        const regMap: Record<string, any> = {};
+        for (const r of res.registers) {
+          let summary = { present: 0, absent: 0, medical: 0 };
+          let entries = {};
+          try { summary = JSON.parse(r.summaryJson || '{}'); } catch {}
+          try { entries = JSON.parse(r.entriesJson || '{}'); } catch {}
+          regMap[r.registerKey] = {
+            lockedAt: r.lockedAt,
+            topic: r.topic,
+            summary,
+            entries,
+          };
+        }
+        setLockedRegisters(prev => ({ ...prev, ...regMap }));
       }
     }).catch(() => {});
   }, [selectedCourse]);
@@ -234,13 +246,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
           entries: entriesMap,
         };
 
-        setLockedRegisters(prev => {
-          const next = { ...prev, [currentSlotKey]: lockInfo };
-          try {
-            localStorage.setItem('educore_locked_registers', JSON.stringify(next));
-          } catch {}
-          return next;
-        });
+        setLockedRegisters(prev => ({ ...prev, [currentSlotKey]: lockInfo }));
 
         setIsEditingLocked(false);
         setFeedbackMessage({

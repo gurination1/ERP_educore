@@ -635,6 +635,22 @@ export interface AttendanceSettings {
   updated_at: string;
 }
 
+export interface LockedAttendanceRegister {
+  id: string;
+  registerKey: string;
+  courseCode: string;
+  lectureDate: string;
+  lectureSlot: string;
+  topic: string;
+  facultyId: string;
+  facultyName: string;
+  lockedAt: string;
+  summaryJson: string;
+  entriesJson: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface StudentProgressionHistory {
   id: string;
   student_id: string;
@@ -1552,6 +1568,24 @@ export const DEFAULT_SESSIONAL_MARKS: SessionalMarkEntry[] = [
   },
 ];
 
+export const DEFAULT_LOCKED_REGISTERS: LockedAttendanceRegister[] = [
+  {
+    id: 'lreg-01',
+    registerKey: 'CS-401_2026-10-10_Period 2',
+    courseCode: 'CS-401',
+    lectureDate: '2026-10-10',
+    lectureSlot: 'Period 2',
+    topic: 'Database Transactions & ACID Isolation Levels',
+    facultyId: 'usr-staff-01',
+    facultyName: 'Prof. Sunita Rao',
+    lockedAt: '10:45 AM',
+    summaryJson: JSON.stringify({ present: 18, absent: 2, medical: 0 }),
+    entriesJson: JSON.stringify({ 'stu-rec-aryan': 'P', 'stu-rec-priya': 'P', 'stu-rec-rohan': 'A', 'stu-rec-neha': 'P' }),
+    createdAt: '2026-10-10T05:15:00Z',
+    updatedAt: '2026-10-10T05:15:00Z',
+  },
+];
+
 export const DEFAULT_STAFF_ADDITIONAL_ROLES: StaffAdditionalRole[] = [
   {
     id: 'sar-01',
@@ -2455,6 +2489,7 @@ class DatabaseStore {
   public quiz_submissions: LMSQuizSubmission[] = [];
   public lms_resources: LMSResource[] = [];
   public sessional_marks: SessionalMarkEntry[] = [];
+  public locked_attendance_registers: LockedAttendanceRegister[] = [];
 
   public mode: 'postgres' | 'mariadb' | 'sqlite' = 'sqlite';
   private dbPath: string = process.env.DB_PATH || path.join(process.cwd(), 'database', 'educore.sqlite');
@@ -3196,11 +3231,28 @@ class DatabaseStore {
         updated_at TIMESTAMPTZ DEFAULT NOW()
       );
 
+      CREATE TABLE IF NOT EXISTS locked_attendance_registers (
+        id VARCHAR(64) PRIMARY KEY,
+        register_key VARCHAR(128) UNIQUE NOT NULL,
+        course_code VARCHAR(64) NOT NULL,
+        lecture_date VARCHAR(32) NOT NULL,
+        lecture_slot VARCHAR(64) NOT NULL,
+        topic VARCHAR(256),
+        faculty_id VARCHAR(64),
+        faculty_name VARCHAR(128),
+        locked_at VARCHAR(64),
+        summary_json TEXT,
+        entries_json TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
       CREATE INDEX IF NOT EXISTS idx_pg_payment_gateways_tenant ON payment_gateways(tenant_id);
       CREATE INDEX IF NOT EXISTS idx_pg_staff_roles_staff ON staff_additional_roles(staff_id);
       CREATE INDEX IF NOT EXISTS idx_pg_field_perm_entity ON field_permissions(entity_type);
       CREATE INDEX IF NOT EXISTS idx_pg_documents_owner ON documents(owner_id);
       CREATE INDEX IF NOT EXISTS idx_pg_sessional_marks_stu ON sessional_marks(student_id);
+      CREATE INDEX IF NOT EXISTS idx_pg_locked_reg_course ON locked_attendance_registers(course_code);
     `);
   }
 
@@ -8268,6 +8320,7 @@ class DatabaseStore {
     this.quizzes = [...DEFAULT_QUIZZES];
     this.lms_resources = [...DEFAULT_LMS_RESOURCES];
     this.sessional_marks = [...DEFAULT_SESSIONAL_MARKS];
+    this.locked_attendance_registers = [...DEFAULT_LOCKED_REGISTERS];
     this.attendance_settings = { id: 'default', backdated_lock_days: 20, updated_at: new Date().toISOString() };
 
     // Ensure all seed users have enterprise_uid
@@ -9867,6 +9920,142 @@ class DatabaseStore {
     });
 
     return { success: true, count: marksList.length };
+  }
+
+  // ----------------------------------------------------
+  // LOCKED ATTENDANCE REGISTERS
+  // ----------------------------------------------------
+  public async getLockedAttendanceRegisters(courseCode?: string): Promise<LockedAttendanceRegister[]> {
+    if (this.pgPool) {
+      try {
+        let q = 'SELECT * FROM locked_attendance_registers WHERE 1=1';
+        const params: any[] = [];
+        if (courseCode) {
+          params.push(`%${courseCode}%`);
+          q += ` AND course_code ILIKE $${params.length}`;
+        }
+        q += ' ORDER BY lecture_date DESC, created_at DESC';
+        const res = await this.pgPool.query(q, params);
+        if (res.rows && res.rows.length > 0) {
+          return res.rows.map(r => ({
+            id: r.id,
+            registerKey: r.register_key,
+            courseCode: r.course_code,
+            lectureDate: r.lecture_date,
+            lectureSlot: r.lecture_slot,
+            topic: r.topic || '',
+            facultyId: r.faculty_id || '',
+            facultyName: r.faculty_name || '',
+            lockedAt: r.locked_at || '',
+            summaryJson: r.summary_json || '{}',
+            entriesJson: r.entries_json || '{}',
+            createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+            updatedAt: r.updated_at ? new Date(r.updated_at).toISOString() : new Date().toISOString(),
+          }));
+        }
+      } catch (err) {
+        console.warn('[DB] Postgres getLockedAttendanceRegisters failed:', err);
+      }
+    }
+
+    let list = this.locked_attendance_registers;
+    if (courseCode) {
+      const cc = courseCode.toLowerCase();
+      list = list.filter(r => r.courseCode.toLowerCase().includes(cc) || cc.includes(r.courseCode.toLowerCase()));
+    }
+    return list;
+  }
+
+  public async saveLockedAttendanceRegister(data: {
+    registerKey: string;
+    courseCode: string;
+    lectureDate: string;
+    lectureSlot: string;
+    topic: string;
+    facultyId: string;
+    facultyName: string;
+    lockedAt: string;
+    summaryJson: string;
+    entriesJson: string;
+  }): Promise<LockedAttendanceRegister> {
+    const existing = this.locked_attendance_registers.find(r => r.registerKey === data.registerKey);
+    const now = new Date().toISOString();
+    let record: LockedAttendanceRegister;
+
+    if (existing) {
+      existing.topic = data.topic;
+      existing.facultyId = data.facultyId;
+      existing.facultyName = data.facultyName;
+      existing.lockedAt = data.lockedAt;
+      existing.summaryJson = data.summaryJson;
+      existing.entriesJson = data.entriesJson;
+      existing.updatedAt = now;
+      record = existing;
+    } else {
+      record = {
+        id: `lreg-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        registerKey: data.registerKey,
+        courseCode: data.courseCode,
+        lectureDate: data.lectureDate,
+        lectureSlot: data.lectureSlot,
+        topic: data.topic,
+        facultyId: data.facultyId,
+        facultyName: data.facultyName,
+        lockedAt: data.lockedAt,
+        summaryJson: data.summaryJson,
+        entriesJson: data.entriesJson,
+        createdAt: now,
+        updatedAt: now,
+      };
+      this.locked_attendance_registers.unshift(record);
+    }
+
+    if (this.pgPool) {
+      try {
+        await this.pgPool.query(
+          `INSERT INTO locked_attendance_registers (id, register_key, course_code, lecture_date, lecture_slot, topic, faculty_id, faculty_name, locked_at, summary_json, entries_json, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+           ON CONFLICT (register_key) DO UPDATE SET
+             topic = EXCLUDED.topic,
+             faculty_id = EXCLUDED.faculty_id,
+             faculty_name = EXCLUDED.faculty_name,
+             locked_at = EXCLUDED.locked_at,
+             summary_json = EXCLUDED.summary_json,
+             entries_json = EXCLUDED.entries_json,
+             updated_at = EXCLUDED.updated_at`,
+          [
+            record.id,
+            record.registerKey,
+            record.courseCode,
+            record.lectureDate,
+            record.lectureSlot,
+            record.topic,
+            record.facultyId,
+            record.facultyName,
+            record.lockedAt,
+            record.summaryJson,
+            record.entriesJson,
+            record.createdAt,
+            record.updatedAt
+          ]
+        );
+      } catch (err) {
+        console.warn('[DB] Postgres locked_attendance_registers upsert failed:', err);
+      }
+    }
+
+    await this.createAuditLog({
+      actor_id: data.facultyId,
+      actor_name: data.facultyName || data.facultyId,
+      actor_role: 'staff',
+      action: 'LOCK_ATTENDANCE_REGISTER',
+      target_type: 'attendance',
+      target_id: data.registerKey,
+      details: `Official attendance register locked for course ${data.courseCode} (${data.lectureSlot}, ${data.lectureDate}). Topic: "${data.topic}".`,
+      severity: 'info'
+    });
+
+    return record;
   }
 }
 

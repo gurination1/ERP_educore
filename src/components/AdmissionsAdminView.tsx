@@ -94,16 +94,19 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   // Cloud Telephony CTI (iPhone Call Dock) States
-  const [telephonyEnabled, setTelephonyEnabled] = useState<boolean>(() => {
-    return localStorage.getItem('educore_telephony_enabled') !== 'false';
-  });
+  const [telephonyEnabled, setTelephonyEnabled] = useState<boolean>(true);
   const [activeCallCandidate, setActiveCallCandidate] = useState<TelephonyCandidate | null>(null);
   const [isCallDockOpen, setIsCallDockOpen] = useState(false);
 
-  const handleToggleTelephony = () => {
+  const handleToggleTelephony = async () => {
     const next = !telephonyEnabled;
     setTelephonyEnabled(next);
-    localStorage.setItem('educore_telephony_enabled', String(next));
+    try {
+      await api.updateDialerSettings({ is_enabled: next });
+    } catch (err) {
+      console.error('Failed to persist dialer settings:', err);
+      setTelephonyEnabled(!next);
+    }
   };
 
   const handleInitiateCall = (candidateOrStudent: any) => {
@@ -170,6 +173,11 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
 
   useEffect(() => {
     loadAdmissions();
+    api.getDialerSettings().then(res => {
+      if (res.success && res.settings) {
+        setTelephonyEnabled(res.settings.is_enabled);
+      }
+    }).catch(console.warn);
   }, []);
 
   useEffect(() => {

@@ -97,6 +97,8 @@ export const api = {
       attendancePercentage?: number;
     }>;
   }) => apiRequest('/api/students/attendance/bulk', { method: 'POST', body: JSON.stringify(data) }),
+  getLockedAttendanceRegisters: (courseCode?: string) =>
+    apiRequest(`/api/students/attendance/registers${courseCode ? `?courseCode=${encodeURIComponent(courseCode)}` : ''}`),
   condoneAttendance: (studentId: string, data: { orderNo?: string; reason?: string }) =>
     apiRequest(`/api/students/${studentId}/condone-attendance`, { method: 'POST', body: JSON.stringify(data) }),
   promoteStudent: (studentId: string) =>

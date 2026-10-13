@@ -7,6 +7,7 @@ import { quizRouter } from '../server/routes/quizRoutes.ts';
 import { academicTopologyRouter } from '../server/routes/academicTopologyRoutes.ts';
 import { examRouter } from '../server/routes/examRoutes.ts';
 import { feeRouter } from '../server/routes/feeRoutes.ts';
+import { enquiryRouter } from '../server/routes/enquiryRoutes.ts';
 
 let passed = 0;
 let failed = 0;
@@ -34,6 +35,7 @@ async function runAudit() {
   app.use('/api/academics', academicTopologyRouter);
   app.use('/api/examination', examRouter);
   app.use('/api/fees', feeRouter);
+  app.use('/api/enquiries', enquiryRouter);
 
   const server = app.listen(0);
   const port = server.address().port;
@@ -206,6 +208,60 @@ async function runAudit() {
     }).then(r => r.json());
     assert(defaultersRes.success && defaultersRes.defaulters?.length >= 1,
       `Dynamic defaulters query returned ${defaultersRes.defaulters?.length} overdue students with live balances`);
+
+    // 8. Locked Attendance Registers in Database
+    console.log('\n--- 8. Locked Attendance Registers in Database ---');
+    const lockedRegListRes = await fetch(`${baseUrl}/api/students/attendance/registers?courseCode=CS-401`, {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    }).then(r => r.json());
+    assert(lockedRegListRes.success && Array.isArray(lockedRegListRes.registers),
+      'Retrieved locked attendance registers from database');
+
+    const bulkLockRes = await fetch(`${baseUrl}/api/students/attendance/bulk`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${adminToken}`,
+      },
+      body: JSON.stringify({
+        courseCode: 'CS-401',
+        lectureDate: '2026-10-13',
+        lectureSlot: 'Period 3',
+        topic: 'Distributed Transactions & 2PC Protocol',
+        updates: [
+          { studentId: 'stu-rec-aryan', status: 'P', attendedClasses: 143, totalClasses: 161, attendancePercentage: 89 },
+          { studentId: 'stu-rec-priya', status: 'P', attendedClasses: 139, totalClasses: 161, attendancePercentage: 86 },
+        ]
+      })
+    }).then(r => r.json());
+    assert(bulkLockRes.success && bulkLockRes.lockedRegister?.registerKey === 'CS-401_2026-10-13_Period 3',
+      'Faculty locked attendance register persisted directly into database');
+
+    const checkSavedRegRes = await fetch(`${baseUrl}/api/students/attendance/registers?courseCode=CS-401`, {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    }).then(r => r.json());
+    const foundLocked = checkSavedRegRes.registers?.find(r => r.registerKey === 'CS-401_2026-10-13_Period 3');
+    assert(foundLocked && foundLocked.topic === 'Distributed Transactions & 2PC Protocol',
+      'Persistent register retrieved with matching topic & slot from database');
+
+    // 9. Telephony Integration Configuration Sync
+    console.log('\n--- 9. Telephony Integration Configuration Sync ---');
+    const dialerGetRes = await fetch(`${baseUrl}/api/enquiries/dialer/settings`, {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    }).then(r => r.json());
+    assert(dialerGetRes.success && dialerGetRes.settings?.provider === 'exotel',
+      'Administrator retrieved cloud telephony settings from database');
+
+    const dialerUpdateRes = await fetch(`${baseUrl}/api/enquiries/dialer/settings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${adminToken}`,
+      },
+      body: JSON.stringify({ is_enabled: true, provider: 'exotel' })
+    }).then(r => r.json());
+    assert(dialerUpdateRes.success && dialerUpdateRes.settings?.is_enabled === true,
+      'Telephony dialer configuration toggle synchronized across database');
 
     console.log('\n============================================');
     console.log(`AUDIT RESULTS: ${passed} PASSED, ${failed} FAILED (TOTAL: ${passed + failed})`);

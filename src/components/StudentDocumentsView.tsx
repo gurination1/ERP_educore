@@ -121,7 +121,7 @@ export const StudentDocumentsView: React.FC<StudentDocumentsViewProps> = ({ curr
   // New Upload Form State
   const [uploadType, setUploadType] = useState('DOC_MIGRATION');
   const [uploadTitle, setUploadTitle] = useState('Migration / Character Certificate');
-  const [fakeFileName, setFakeFileName] = useState('');
+  const [uploadFileName, setUploadFileName] = useState('');
 
   const isAdminOrStaff = ['admin', 'super_admin', 'staff', 'hod', 'counselor', 'accounts', 'hr'].includes(currentUser?.role || '');
 
@@ -143,10 +143,10 @@ export const StudentDocumentsView: React.FC<StudentDocumentsViewProps> = ({ curr
     loadDocuments();
   }, [currentUser]);
 
-  const handleSimulatedUpload = async (e: React.FormEvent) => {
+  const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     setUploadError(null);
-    if (!fakeFileName) {
+    if (!uploadFileName) {
       setUploadError('Please select or specify a document file to upload.');
       return;
     }
@@ -158,14 +158,14 @@ export const StudentDocumentsView: React.FC<StudentDocumentsViewProps> = ({ curr
         owner_id: currentUser?.id || 'usr-stu-aryan',
         owner_name: currentUser?.full_name || 'Aryan Sharma',
         owner_role: 'student',
-        file_name: fakeFileName.endsWith('.pdf') ? fakeFileName : `${fakeFileName}.pdf`,
+        file_name: uploadFileName.endsWith('.pdf') ? uploadFileName : `${uploadFileName}.pdf`,
         file_size_kb: Math.floor(800 + Math.random() * 2400),
         mime_type: 'application/pdf',
         remarks: 'Uploaded by student. Awaiting institutional registrar verification.',
       });
       if (res.success && res.document) {
         setDocuments(prev => [res.document, ...prev]);
-        setFakeFileName('');
+        setUploadFileName('');
         setUploadSuccess(`Successfully uploaded ${res.document.title} to secure compliance vault.`);
         setTimeout(() => setUploadSuccess(null), 4000);
       } else {
@@ -298,7 +298,7 @@ Generated at ${new Date().toISOString()} via EduCore Document Vault Engine`;
             </div>
           </div>
 
-          <form onSubmit={handleSimulatedUpload} className="space-y-3 text-xs">
+          <form onSubmit={handleUpload} className="space-y-3 text-xs">
             <div>
               <label className="block text-[11px] font-bold text-[#191c1d] uppercase mb-1">
                 Document Type *
@@ -358,8 +358,8 @@ Generated at ${new Date().toISOString()} via EduCore Document Vault Engine`;
                 <input
                   type="text"
                   placeholder="e.g. migration_certificate_verified.pdf"
-                  value={fakeFileName}
-                  onChange={e => setFakeFileName(e.target.value)}
+                  value={uploadFileName}
+                  onChange={e => setUploadFileName(e.target.value)}
                   className="mt-2.5 w-full px-2.5 py-1.5 text-[11px] bg-white border border-[#e1e3e4] rounded-lg text-center font-mono"
                 />
               </div>

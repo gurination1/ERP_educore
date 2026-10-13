@@ -421,11 +421,32 @@ studentRouter.post('/attendance/bulk', authenticateToken, requireRole('admin', '
 
   const registerKey = `${courseCode || 'GEN'}_${lectureDate || new Date().toISOString().slice(0, 10)}_${lectureSlot || 'SLOT'}`;
 
+  const entriesMap: Record<string, string> = {};
+  for (const item of updates) {
+    if (item.studentId) {
+      entriesMap[item.studentId] = item.status || 'P';
+    }
+  }
+
+  const lockedReg = await db.saveLockedAttendanceRegister({
+    registerKey,
+    courseCode: courseCode || 'CS-401',
+    lectureDate: lectureDate || new Date().toISOString().slice(0, 10),
+    lectureSlot: lectureSlot || 'Period 2',
+    topic: topic || 'Official Lecture Register',
+    facultyId: req.user?.id || 'faculty',
+    facultyName: req.user?.full_name || 'Faculty Member',
+    lockedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    summaryJson: JSON.stringify({ present: presentCount, absent: absentCount, medical: medicalCount }),
+    entriesJson: JSON.stringify(entriesMap),
+  });
+
   res.json({
     success: true,
     message: `Official Attendance Register submitted & locked successfully for ${courseCode || 'course'} (${lectureSlot || 'session'}). Updated ${updatedRecords.length} records.`,
     registerKey,
     timestamp: new Date().toISOString(),
+    lockedRegister: lockedReg,
     summary: {
       courseCode: courseCode || 'CS-401',
       lectureDate: lectureDate || new Date().toISOString().slice(0, 10),
@@ -438,6 +459,17 @@ studentRouter.post('/attendance/bulk', authenticateToken, requireRole('admin', '
     },
     updatedStudents: updatedRecords,
   });
+});
+
+// Get Locked Attendance Registers (Faculty / HOD / Admin)
+studentRouter.get('/attendance/registers', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const courseCode = req.query.courseCode ? String(req.query.courseCode) : undefined;
+    const registers = await db.getLockedAttendanceRegisters(courseCode);
+    res.json({ success: true, count: registers.length, registers });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 // Update Student Attendance (Admin / Super Admin / Faculty / HOD)
