@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { StudentProfile, User } from '../types';
 
@@ -422,15 +423,29 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                     <span>Admit Card & Hall Ticket</span>
                   </button>
                 )}
-                <button
-                  onClick={() => {
-                    onClose();
-                    onPayFee(student.id);
-                  }}
-                  className="px-5 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white font-bold rounded-lg text-xs cursor-pointer shadow-xs"
-                >
-                  Record Payment
-                </button>
+                {(() => {
+                  const isAccountsOrAdmin = ['admin', 'super_admin', 'accounts'].includes(currentUser?.role || '');
+                  const isStudentUser = currentUser?.role === 'student';
+                  return (
+                    <button
+                      onClick={() => {
+                        onClose();
+                        if (isAccountsOrAdmin || isStudentUser) {
+                          onPayFee(student.id);
+                        } else {
+                          navigate(`/fees?studentId=${student.id}`);
+                        }
+                      }}
+                      className="px-5 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white font-bold rounded-lg text-xs cursor-pointer shadow-xs transition-colors"
+                    >
+                      {isAccountsOrAdmin
+                        ? 'Collect Fee Payment'
+                        : isStudentUser
+                        ? 'Pay Tuition Dues'
+                        : 'Inspect Fee Ledger'}
+                    </button>
+                  );
+                })()}
               </div>
             </div>
           </div>

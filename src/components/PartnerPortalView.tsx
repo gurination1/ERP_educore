@@ -137,6 +137,8 @@ export const PartnerPortalView: React.FC<PartnerPortalViewProps> = ({ currentUse
       fetchJobs();
       if (selectedPartnerId) fetchPartnerDetails(selectedPartnerId);
       setTimeout(() => setFeedbackMsg(null), 5000);
+    } else {
+      alert(res.error || 'Failed to publish job posting.');
     }
   };
 
@@ -171,6 +173,8 @@ export const PartnerPortalView: React.FC<PartnerPortalViewProps> = ({ currentUse
       setFeedbackMsg(`Partner entity "${newPartnerData.firm_name}" onboarded!`);
       fetchPartners();
       setTimeout(() => setFeedbackMsg(null), 5000);
+    } else {
+      alert(res.error || 'Failed to onboard partner entity.');
     }
   };
 

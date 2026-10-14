@@ -128,7 +128,7 @@ export const TeacherDocumentsView: React.FC<TeacherDocumentsViewProps> = ({ curr
   const loadDocuments = async () => {
     try {
       const res = await api.getDocuments({
-        owner_id: currentUser?.id,
+        owner_id: !isProvostOrAdmin ? currentUser?.id : undefined,
         owner_role: 'staff',
       });
       if (res.success && res.documents && res.documents.length > 0) {

@@ -25,6 +25,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
   const urlTab = searchParams.get('tab');
   const isSuperAdmin = currentUser?.role === 'super_admin';
   const isAccounts = currentUser?.role === 'accounts';
+  const isCounselor = currentUser?.role === 'counselor';
 
   const getInitialTab = (): 'financial' | 'academic_workload' | 'platform_telemetry' | 'attendance_gate' => {
     const tabParam = urlTab || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('tab') : null);
@@ -36,12 +37,12 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
       return 'financial';
     }
     if (tabParam === 'academic_workload' || tabParam === 'workload') {
-      return 'academic_workload';
+      return (isAccounts || isCounselor) ? 'financial' : 'academic_workload';
     }
     if (tabParam === 'platform_telemetry' || tabParam === 'telemetry' || pathname === '/telemetry') {
       return 'platform_telemetry';
     }
-    if (isAccounts) {
+    if (isAccounts || isCounselor) {
       return 'financial';
     }
     return isSuperAdmin ? 'platform_telemetry' : 'academic_workload';
@@ -58,13 +59,13 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
     } else if (urlTab === 'financial' || urlTab === 'revenue') {
       setActiveTab('financial');
     } else if (urlTab === 'academic_workload' || urlTab === 'workload') {
-      setActiveTab('academic_workload');
+      setActiveTab((isAccounts || isCounselor) ? 'financial' : 'academic_workload');
     } else if (urlTab === 'platform_telemetry' || urlTab === 'telemetry' || pathname === '/telemetry') {
       setActiveTab('platform_telemetry');
-    } else if (isAccounts) {
+    } else if (isAccounts || isCounselor) {
       setActiveTab('financial');
     }
-  }, [urlTab, isAccounts, isSuperAdmin]);
+  }, [urlTab, isAccounts, isCounselor, isSuperAdmin]);
   const [telemetryData, setTelemetryData] = useState<any>(null);
   const [distribution, setDistribution] = useState<CourseDistributionItem[]>([]);
   const [kpiData, setKpiData] = useState<any>(null);
@@ -421,16 +422,18 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
           </>
         ) : (
           <>
-            <button
-              onClick={() => setActiveTab('academic_workload')}
-              className={`pb-3 px-2 text-xs font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
-                activeTab === 'academic_workload'
-                  ? 'border-[#00236f] text-[#00236f]'
-                  : 'border-transparent text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              <span>ACADEMIC TOPOLOGY & WORKLOAD AUDIT</span>
-            </button>
+            {!isAccounts && !isCounselor && (
+              <button
+                onClick={() => setActiveTab('academic_workload')}
+                className={`pb-3 px-2 text-xs font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
+                  activeTab === 'academic_workload'
+                    ? 'border-[#00236f] text-[#00236f]'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <span>ACADEMIC TOPOLOGY & WORKLOAD AUDIT</span>
+              </button>
+            )}
             <button
               onClick={() => setActiveTab('financial')}
               className={`pb-3 px-2 text-xs font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${

@@ -484,10 +484,12 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                         )
                       ) : (
                         <button
-                          onClick={() => onOpenReceiptModal()}
-                          className="text-[#00236f] font-bold text-xs hover:underline inline-flex items-center gap-1"
+                          onClick={() => {
+                            const matchingPay = (ledgerData?.payments || []).find((p: any) => p.fee_id === item.id) || ledgerData?.payments?.[0];
+                            onOpenReceiptModal(matchingPay?.receipt_no);
+                          }}
+                          className="text-[#00236f] font-bold text-xs hover:underline inline-flex items-center gap-1 cursor-pointer"
                         >
-                          
                           <span>Receipt</span>
                         </button>
                       )}

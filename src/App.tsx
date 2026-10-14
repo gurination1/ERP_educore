@@ -747,7 +747,7 @@ function MainApp() {
           path="/manage-students"
           element={
             !currentUser ? (
-              <Navigate to="/admin" replace />
+              <Navigate to="/" replace />
             ) : !['admin', 'super_admin', 'staff', 'counselor', 'hod', 'accounts', 'hr'].includes(currentUser.role) ? (
               <Navigate to="/dashboard" replace />
             ) : (
@@ -904,7 +904,7 @@ function MainApp() {
           path="/master-architecture"
           element={
             !currentUser ? (
-              <Navigate to="/admin" replace />
+              <Navigate to="/" replace />
             ) : !['admin', 'super_admin'].includes(currentUser.role) ? (
               <Navigate to="/dashboard" replace />
             ) : (
@@ -933,7 +933,7 @@ function MainApp() {
           path="/audit-logs"
           element={
             !currentUser ? (
-              <Navigate to="/admin" replace />
+              <Navigate to="/" replace />
             ) : !['admin', 'super_admin'].includes(currentUser.role) ? (
               <Navigate to="/dashboard" replace />
             ) : (
@@ -1035,7 +1035,7 @@ function MainApp() {
           path="/user-management"
           element={
             !currentUser ? (
-              <Navigate to="/admin" replace />
+              <Navigate to="/" replace />
             ) : (currentUser.role !== 'admin' && currentUser.role !== 'super_admin') ? (
               <Navigate to="/dashboard" replace />
             ) : (
@@ -1296,11 +1296,11 @@ function MainApp() {
 
       {isAdmitCardOpen && (
         <MRSPTUAdmitCardModal
-          studentId={currentStudent?.id || 'me'}
+          studentId={targetPayStudent?.id || currentStudent?.id || 'me'}
           onClose={() => setIsAdmitCardOpen(false)}
           onOpenPayModal={() => {
             setIsAdmitCardOpen(false);
-            setTargetPayStudent(currentStudent);
+            setTargetPayStudent(targetPayStudent || currentStudent);
             setTargetPayFeeId(undefined);
             setIsPayModalOpen(true);
           }}

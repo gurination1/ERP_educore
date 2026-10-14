@@ -178,6 +178,8 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
       fetchEnquiries();
       setSelectedEnquiryId(res.enquiry.id);
       setTimeout(() => setFeedbackMsg(null), 4000);
+    } else {
+      alert(res.error || 'Failed to create enquiry record.');
     }
   };
 
