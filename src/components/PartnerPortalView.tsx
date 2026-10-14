@@ -254,18 +254,22 @@ This transcript is digitally generated and certified by EduCore Academic ERP.`;
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowNewPartnerModal(true)}
-            className="h-7 px-3 bg-white hover:bg-slate-50 text-[#00236f] border border-slate-200 font-bold rounded-lg text-[11px] transition cursor-pointer shadow-2xs"
-          >
-            + Register Partner
-          </button>
-          <button
-            onClick={() => setShowNewJobModal(true)}
-            className="h-7 px-3 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold rounded-lg text-[11px] transition shadow-2xs cursor-pointer"
-          >
-            + Post Job / Internship
-          </button>
+          {currentUser && ['admin', 'super_admin', 'hr'].includes(currentUser.role) && (
+            <button
+              onClick={() => setShowNewPartnerModal(true)}
+              className="h-7 px-3 bg-white hover:bg-slate-50 text-[#00236f] border border-slate-200 font-bold rounded-lg text-[11px] transition cursor-pointer shadow-2xs"
+            >
+              + Register Partner
+            </button>
+          )}
+          {currentUser && ['admin', 'super_admin', 'partner', 'hr'].includes(currentUser.role) && (
+            <button
+              onClick={() => setShowNewJobModal(true)}
+              className="h-7 px-3 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold rounded-lg text-[11px] transition shadow-2xs cursor-pointer"
+            >
+              + Post Job / Internship
+            </button>
+          )}
         </div>
       </div>
 

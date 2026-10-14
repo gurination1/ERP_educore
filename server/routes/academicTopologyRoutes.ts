@@ -252,7 +252,7 @@ academicTopologyRouter.get('/attendance-settings', authenticateToken, async (req
   }
 });
 
-academicTopologyRouter.put('/attendance-settings', authenticateToken, requireRole('admin', 'super_admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+academicTopologyRouter.put('/attendance-settings', authenticateToken, requireRole('admin', 'super_admin', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { backdated_lock_days } = req.body;
     if (typeof backdated_lock_days !== 'number' || backdated_lock_days < 1) {

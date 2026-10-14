@@ -28,17 +28,36 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
   currentUser,
   onNavigate,
 }) => {
+  const isCounselor = currentUser?.role === 'counselor';
+  const isHOD = currentUser?.role === 'hod';
+
   const [searchParams] = useSearchParams();
   const rawTab = searchParams.get('tab');
-  const urlTab = (rawTab === 'marks' ? 'sessional' : rawTab) as 'attendance' | 'sessional' | 'mentees' | 'schedule' | null;
+  const urlTab = (rawTab === 'marks' ? 'sessional' : rawTab) as
+    | 'attendance'
+    | 'sessional'
+    | 'mentees'
+    | 'schedule'
+    | 'queue'
+    | 'leads'
+    | 'scholars'
+    | 'feematrix'
+    | null;
 
-  const [activeTab, setActiveTab] = useState<'attendance' | 'sessional' | 'mentees' | 'schedule'>(urlTab || 'attendance');
+  const [activeTab, setActiveTab] = useState<
+    'attendance' | 'sessional' | 'mentees' | 'schedule' | 'queue' | 'leads' | 'scholars' | 'feematrix'
+  >(() => {
+    if (urlTab) return urlTab;
+    return isCounselor ? 'queue' : 'attendance';
+  });
 
   useEffect(() => {
     if (urlTab) {
       setActiveTab(urlTab);
+    } else if (isCounselor && ['attendance', 'sessional', 'mentees', 'schedule'].includes(activeTab)) {
+      setActiveTab('queue');
     }
-  }, [urlTab]);
+  }, [urlTab, isCounselor]);
   const [selectedCourse, setSelectedCourse] = useState('CS-401');
   const [lectureDate, setLectureDate] = useState(new Date().toISOString().slice(0, 10));
   const [lectureSlot, setLectureSlot] = useState('Period 2 • 10:00 AM - 11:00 AM (LT-204)');
@@ -49,6 +68,179 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
   const [isEditingLocked, setIsEditingLocked] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [followupStats, setFollowupStats] = useState<{ overdue: number; due_today: number; total_prospects: number } | null>(null);
+
+  // Counselor Dedicated Workspace State
+  const [counselorProspects, setCounselorProspects] = useState<any[]>([]);
+  const [counselorEnquiries, setCounselorEnquiries] = useState<any[]>([]);
+  const [counselorScholars, setCounselorScholars] = useState<any[]>([]);
+  const [counselorFeeHeads, setCounselorFeeHeads] = useState<any[]>([]);
+  const [counselorLoading, setCounselorLoading] = useState(false);
+  const [counselorQueueFilter, setCounselorQueueFilter] = useState<'all' | 'overdue' | 'today' | 'upcoming'>('all');
+  const [counselorSearch, setCounselorSearch] = useState('');
+
+  // Counselor Log Call Modal
+  const [isLogCallOpen, setIsLogCallOpen] = useState(false);
+  const [callTargetProspect, setCallTargetProspect] = useState<any | null>(null);
+  const [callForm, setCallForm] = useState({
+    interaction_type: 'phone',
+    outcome: 'interested',
+    notes: '',
+    next_followup_date: new Date(Date.now() + 86400000).toISOString().slice(0, 10),
+    priority: 'p1_high',
+  });
+  const [isSubmittingCall, setIsSubmittingCall] = useState(false);
+
+  // Counselor Walk-in Lead Creation Modal
+  const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState(false);
+  const [newLeadForm, setNewLeadForm] = useState({
+    student_name: '',
+    mobile: '',
+    email: '',
+    selected_course: 'B.Tech Computer Science & Engineering',
+    father_name: '',
+    tenth_percentage: '82.5',
+    twelfth_percentage: '85.0',
+    notes: 'Walk-in campus counseling inquiry',
+  });
+  const [isSubmittingLead, setIsSubmittingLead] = useState(false);
+
+  // Counselor Fee Calculator State
+  const [calcCourse, setCalcCourse] = useState('cse');
+  const [calcPct, setCalcPct] = useState(85);
+  const [calcIsPms, setCalcIsPms] = useState(false);
+
+  const loadCounselorData = async () => {
+    if (!isCounselor) return;
+    setCounselorLoading(true);
+    try {
+      const [radarRes, enqRes, stuRes, feeRes] = await Promise.all([
+        api.getFollowupRadar().catch(() => ({ success: false })),
+        api.getEnquiries().catch(() => ({ success: false })),
+        api.getStudents({ limit: 50 }).catch(() => ({ success: false })),
+        api.getFeeHeads().catch(() => ({ success: false })),
+      ]);
+      if (radarRes.success && radarRes.prospects) {
+        setCounselorProspects(radarRes.prospects);
+      }
+      if (radarRes.stats) {
+        setFollowupStats(radarRes.stats);
+      }
+      if (enqRes.success && enqRes.enquiries) {
+        setCounselorEnquiries(enqRes.enquiries);
+      }
+      if (stuRes.success && stuRes.students) {
+        setCounselorScholars(stuRes.students);
+      }
+      if (feeRes.success && feeRes.feeHeads) {
+        setCounselorFeeHeads(feeRes.feeHeads);
+      }
+    } catch (err: any) {
+      console.error('Error loading counselor data:', err);
+    } finally {
+      setCounselorLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isCounselor) {
+      loadCounselorData();
+    }
+  }, [isCounselor]);
+
+  const handleOpenLogCall = (prospect: any) => {
+    setCallTargetProspect(prospect);
+    setCallForm({
+      interaction_type: 'phone',
+      outcome: 'interested',
+      notes: '',
+      next_followup_date: new Date(Date.now() + 86400000).toISOString().slice(0, 10),
+      priority: 'p1_high',
+    });
+    setIsLogCallOpen(true);
+  };
+
+  const handleLogCallSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!callTargetProspect) return;
+    setIsSubmittingCall(true);
+    try {
+      const res = await api.logFollowup(callTargetProspect.id, callForm);
+      if (res.success) {
+        setFeedbackMessage({
+          type: 'success',
+          text: `Telephony call interaction recorded for candidate ${callTargetProspect.first_name || callTargetProspect.student_name}. Callback updated.`,
+        });
+        setIsLogCallOpen(false);
+        loadCounselorData();
+      } else {
+        setFeedbackMessage({ type: 'error', text: res.error || 'Failed to record call interaction.' });
+      }
+    } catch (err: any) {
+      setFeedbackMessage({ type: 'error', text: err.message || 'Error recording call.' });
+    } finally {
+      setIsSubmittingCall(false);
+    }
+  };
+
+  const handleQuickPing = async (prospect: any) => {
+    try {
+      const res = await api.sendRecallNotice(prospect.id);
+      if (res.success) {
+        setFeedbackMessage({
+          type: 'success',
+          text: `Priority admissions reminder notice dispatched to ${prospect.first_name || prospect.student_name} (${prospect.phone || prospect.mobile}).`,
+        });
+        loadCounselorData();
+      } else {
+        setFeedbackMessage({ type: 'error', text: res.error || 'Failed to dispatch notice.' });
+      }
+    } catch (err: any) {
+      setFeedbackMessage({ type: 'error', text: err.message || 'Error dispatching recall notice.' });
+    }
+  };
+
+  const handleCreateLeadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newLeadForm.student_name.trim() || !newLeadForm.mobile.trim()) {
+      setFeedbackMessage({ type: 'error', text: 'Candidate Name and Mobile are mandatory.' });
+      return;
+    }
+    setIsSubmittingLead(true);
+    try {
+      const res = await api.createEnquiry({
+        student_name: newLeadForm.student_name.trim(),
+        mobile: newLeadForm.mobile.trim(),
+        email: newLeadForm.email.trim() || undefined,
+        selected_course: newLeadForm.selected_course,
+        father_name: newLeadForm.father_name.trim() || undefined,
+        remarks: `[Walk-in Inquiry] 10th: ${newLeadForm.tenth_percentage}%, 12th: ${newLeadForm.twelfth_percentage}%. ${newLeadForm.notes}`,
+      });
+      if (res.success) {
+        setFeedbackMessage({
+          type: 'success',
+          text: `Walk-in prospect ${newLeadForm.student_name} successfully registered with Lead Token ${res.enquiry?.token_number || 'ENQ-NEW'}.`,
+        });
+        setIsNewLeadModalOpen(false);
+        setNewLeadForm({
+          student_name: '',
+          mobile: '',
+          email: '',
+          selected_course: 'B.Tech Computer Science & Engineering',
+          father_name: '',
+          tenth_percentage: '82.5',
+          twelfth_percentage: '85.0',
+          notes: 'Walk-in campus counseling inquiry',
+        });
+        loadCounselorData();
+      } else {
+        setFeedbackMessage({ type: 'error', text: res.error || 'Failed to register prospect.' });
+      }
+    } catch (err: any) {
+      setFeedbackMessage({ type: 'error', text: err.message || 'Error creating lead.' });
+    } finally {
+      setIsSubmittingLead(false);
+    }
+  };
 
   // Persistent register locks tracking (Course + Date + Slot)
   const [lockedRegisters, setLockedRegisters] = useState<Record<string, {
@@ -338,9 +530,6 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
   const presentCount = students.filter(s => s.status === 'P').length;
   const absentCount = students.filter(s => s.status === 'A').length;
   const medicalCount = students.filter(s => s.status === 'M').length;
-
-  const isCounselor = currentUser?.role === 'counselor';
-  const isHOD = currentUser?.role === 'hod';
 
   const userInitials = currentUser?.full_name
     ? currentUser.full_name
@@ -691,65 +880,595 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
         </div>
       )}
 
-      {/* Faculty Console Tab Bar */}
-      <div className="flex border-b border-[#e1e3e4] gap-2">
-        <button
-          onClick={() => setActiveTab('attendance')}
-          className={`px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
-            activeTab === 'attendance'
-              ? 'border-[#00236f] text-[#00236f]'
-              : 'border-transparent text-[#757682] hover:text-[#191c1d]'
-          }`}
-        >
-          
-          <span>Daily Lecture Attendance</span>
-          <span className="ml-1 text-[11px] px-1.5 py-0.2 bg-[#00236f]/10 rounded-full font-bold">
-            Live Register
-          </span>
-        </button>
+      {/* Console Tab Bar: Dynamic for Counselor vs Faculty */}
+      {isCounselor ? (
+        <div className="flex border-b border-[#e1e3e4] gap-2 overflow-x-auto pb-px">
+          <button
+            onClick={() => setActiveTab('queue')}
+            className={`px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'queue'
+                ? 'border-[#00236f] text-[#00236f]'
+                : 'border-transparent text-[#757682] hover:text-[#191c1d]'
+            }`}
+          >
+            <span>Recall Radar & Callback Queue</span>
+            <span className={`ml-1 text-[11px] px-2 py-0.5 rounded-full font-bold ${
+              (followupStats?.overdue || 0) > 0 ? 'bg-rose-100 text-rose-800' : 'bg-[#00236f]/10 text-[#00236f]'
+            }`}>
+              {(followupStats?.overdue || 0) + (followupStats?.due_today || 0)} Urgent
+            </span>
+          </button>
 
-        <button
-          onClick={() => setActiveTab('sessional')}
-          className={`px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
-            activeTab === 'sessional'
-              ? 'border-[#00236f] text-[#00236f]'
-              : 'border-transparent text-[#757682] hover:text-[#191c1d]'
-          }`}
-        >
-          
-          <span>Mid-Semester Test & Sessional</span>
-          <span className="ml-1 text-[11px] px-1.5 py-0.2 bg-[#ea580c]/10 text-[#00236f] rounded-full font-bold">
-            60 Marks
-          </span>
-        </button>
+          <button
+            onClick={() => setActiveTab('leads')}
+            className={`px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'leads'
+                ? 'border-[#00236f] text-[#00236f]'
+                : 'border-transparent text-[#757682] hover:text-[#191c1d]'
+            }`}
+          >
+            <span>Walk-in Prospects Radar</span>
+            <span className="ml-1 text-[11px] px-2 py-0.5 bg-amber-100 text-amber-900 rounded-full font-bold">
+              {counselorEnquiries.length || followupStats?.total_prospects || 128} Leads
+            </span>
+          </button>
 
-        <button
-          onClick={() => setActiveTab('mentees')}
-          className={`px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
-            activeTab === 'mentees'
-              ? 'border-[#00236f] text-[#00236f]'
-              : 'border-transparent text-[#757682] hover:text-[#191c1d]'
-          }`}
-        >
-          
-          <span>Mentee / Proctor Group</span>
-        </button>
+          <button
+            onClick={() => setActiveTab('scholars')}
+            className={`px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'scholars'
+                ? 'border-[#00236f] text-[#00236f]'
+                : 'border-transparent text-[#757682] hover:text-[#191c1d]'
+            }`}
+          >
+            <span>Counseling Scholars Roster</span>
+            <span className="ml-1 text-[11px] px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full font-bold">
+              {counselorScholars.length} Enrolled
+            </span>
+          </button>
 
-        <button
-          onClick={() => setActiveTab('schedule')}
-          className={`px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
-            activeTab === 'schedule'
-              ? 'border-[#00236f] text-[#00236f]'
-              : 'border-transparent text-[#757682] hover:text-[#191c1d]'
-          }`}
-        >
-          
-          <span>Teaching Timetable</span>
-        </button>
-      </div>
+          <button
+            onClick={() => setActiveTab('feematrix')}
+            className={`px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'feematrix'
+                ? 'border-[#00236f] text-[#00236f]'
+                : 'border-transparent text-[#757682] hover:text-[#191c1d]'
+            }`}
+          >
+            <span>Course Fee & Scholarship Guidance</span>
+            <span className="ml-1 text-[11px] px-2 py-0.5 bg-blue-100 text-[#00236f] rounded-full font-bold">
+              PMS / Merit Slabs
+            </span>
+          </button>
+        </div>
+      ) : (
+        <div className="flex border-b border-[#e1e3e4] gap-2">
+          <button
+            onClick={() => setActiveTab('attendance')}
+            className={`px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+              activeTab === 'attendance'
+                ? 'border-[#00236f] text-[#00236f]'
+                : 'border-transparent text-[#757682] hover:text-[#191c1d]'
+            }`}
+          >
+            <span>Daily Lecture Attendance</span>
+            <span className="ml-1 text-[11px] px-1.5 py-0.2 bg-[#00236f]/10 rounded-full font-bold">
+              Live Register
+            </span>
+          </button>
 
-      {/* TAB 1: DAILY LECTURE ATTENDANCE REGISTER */}
-      {activeTab === 'attendance' && (
+          <button
+            onClick={() => setActiveTab('sessional')}
+            className={`px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+              activeTab === 'sessional'
+                ? 'border-[#00236f] text-[#00236f]'
+                : 'border-transparent text-[#757682] hover:text-[#191c1d]'
+            }`}
+          >
+            <span>Mid-Semester Test & Sessional</span>
+            <span className="ml-1 text-[11px] px-1.5 py-0.2 bg-[#ea580c]/10 text-[#00236f] rounded-full font-bold">
+              60 Marks
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('mentees')}
+            className={`px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+              activeTab === 'mentees'
+                ? 'border-[#00236f] text-[#00236f]'
+                : 'border-transparent text-[#757682] hover:text-[#191c1d]'
+            }`}
+          >
+            <span>Mentee / Proctor Group</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('schedule')}
+            className={`px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+              activeTab === 'schedule'
+                ? 'border-[#00236f] text-[#00236f]'
+                : 'border-transparent text-[#757682] hover:text-[#191c1d]'
+            }`}
+          >
+            <span>Teaching Timetable</span>
+          </button>
+        </div>
+      )}
+
+      {/* COUNSELOR TAB 1: RECALL RADAR & CALLBACK QUEUE */}
+      {isCounselor && activeTab === 'queue' && (
+        <div className="space-y-4">
+          <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold text-[#757682] mr-1">Filter Queue:</span>
+              {(['all', 'overdue', 'today', 'upcoming'] as const).map(f => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => setCounselorQueueFilter(f)}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer capitalize ${
+                    counselorQueueFilter === f
+                      ? 'bg-[#00236f] text-white shadow-2xs'
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  }`}
+                >
+                  {f === 'all' ? 'All Callbacks' : f}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <input
+                type="text"
+                placeholder="Search candidate name, mobile, course..."
+                value={counselorSearch}
+                onChange={e => setCounselorSearch(e.target.value)}
+                className="w-full sm:w-64 px-3 py-1.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-medium text-[#191c1d] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#00236f]"
+              />
+              <button
+                type="button"
+                onClick={loadCounselorData}
+                disabled={counselorLoading}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs transition cursor-pointer shrink-0"
+              >
+                {counselorLoading ? 'Refreshing...' : 'Refresh'}
+              </button>
+            </div>
+          </div>
+
+          {/* Prospects Queue Cards */}
+          <div className="space-y-2.5">
+            {counselorProspects
+              .filter(p => {
+                const nameMatch = !counselorSearch || (
+                  (p.first_name || p.student_name || '').toLowerCase().includes(counselorSearch.toLowerCase()) ||
+                  (p.phone || p.mobile || '').includes(counselorSearch) ||
+                  (p.course?.name || p.course_name || '').toLowerCase().includes(counselorSearch.toLowerCase())
+                );
+                if (!nameMatch) return false;
+                const today = new Date().toISOString().slice(0, 10);
+                if (counselorQueueFilter === 'overdue') {
+                  return p.next_followup_date && p.next_followup_date < today;
+                }
+                if (counselorQueueFilter === 'today') {
+                  return p.next_followup_date === today;
+                }
+                if (counselorQueueFilter === 'upcoming') {
+                  return p.next_followup_date && p.next_followup_date > today;
+                }
+                return true;
+              })
+              .map((p: any) => {
+                const today = new Date().toISOString().slice(0, 10);
+                const isOverdue = p.next_followup_date && p.next_followup_date < today;
+                const isDueToday = p.next_followup_date === today;
+                return (
+                  <div
+                    key={p.id}
+                    className={`p-4 rounded-xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white ${
+                      isOverdue
+                        ? 'border-rose-300 bg-rose-50/20 shadow-2xs'
+                        : isDueToday
+                        ? 'border-amber-300 bg-amber-50/20 shadow-2xs'
+                        : 'border-[#e1e3e4] hover:border-[#00236f]/40 shadow-2xs'
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-extrabold text-[#191c1d] text-sm">
+                          {p.first_name || p.student_name} {p.last_name || ''}
+                        </span>
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                            isOverdue
+                              ? 'bg-rose-100 text-rose-800'
+                              : isDueToday
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-blue-100 text-[#00236f]'
+                          }`}
+                        >
+                          {isOverdue ? 'Overdue Callback' : isDueToday ? 'Callback Due Today' : 'Scheduled'}
+                        </span>
+                        <span className="font-mono text-xs text-slate-500 font-semibold">
+                          📞 {p.phone || p.mobile}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-3 text-xs">
+                        <span className="text-[#00236f] font-bold">
+                          Course: {p.course?.name || p.course_name || 'B.Tech CSE'}
+                        </span>
+                        <span className="text-slate-400">•</span>
+                        <span className="text-slate-600">
+                          Scheduled: <strong className="font-semibold text-slate-800">{p.next_followup_date || today}</strong>
+                        </span>
+                        {p.last_followup_outcome && (
+                          <>
+                            <span className="text-slate-400">•</span>
+                            <span className="text-slate-600">
+                              Last Call: <strong className="text-slate-700 capitalize">{p.last_followup_outcome.replace(/_/g, ' ')}</strong>
+                            </span>
+                          </>
+                        )}
+                      </div>
+                      {p.last_followup_notes && (
+                        <p className="text-[11px] text-[#757682] italic bg-slate-50 p-2 rounded-lg border border-slate-100 mt-1">
+                          "{p.last_followup_notes}"
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenLogCall(p)}
+                        className="px-3 py-1.5 bg-[#00236f] hover:bg-[#1a4bb0] text-white rounded-lg text-xs font-bold cursor-pointer transition shadow-2xs"
+                      >
+                        [LOG CALL / RECALL]
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleQuickPing(p)}
+                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold cursor-pointer transition"
+                      >
+                        [QUICK SMS PING]
+                      </button>
+                      <a
+                        href={`https://wa.me/91${(p.phone || p.mobile || '').replace(/\D/g, '')}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-bold cursor-pointer transition"
+                      >
+                        [WHATSAPP]
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => onNavigate('admissions')}
+                        className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-lg text-xs font-bold cursor-pointer transition"
+                      >
+                        [ENROLL SCHOLAR &rarr;]
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      )}
+
+      {/* COUNSELOR TAB 2: WALK-IN PROSPECTS RADAR */}
+      {isCounselor && activeTab === 'leads' && (
+        <div className="space-y-4">
+          <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-bold text-[#191c1d]">Walk-in Admissions Prospects & Enquiries</h3>
+              <p className="text-xs text-[#757682]">Direct walk-in candidate registrations and qualification records</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsNewLeadModalOpen(true)}
+              className="px-4 py-2 bg-[#00236f] hover:bg-[#1a4bb0] text-white rounded-xl text-xs font-bold cursor-pointer transition shadow-2xs flex items-center gap-1.5"
+            >
+              <span className="text-sm font-black">+</span>
+              <span>Register Walk-in Lead</span>
+            </button>
+          </div>
+
+          <div className="bg-white rounded-xl border border-[#e1e3e4] shadow-xs overflow-x-auto">
+            <table className="w-full text-left text-xs divide-y divide-[#e1e3e4]">
+              <thead className="bg-[#f8f9fa] text-[#757682] uppercase font-bold text-[10px] tracking-wider">
+                <tr>
+                  <th className="p-3.5">Lead Token</th>
+                  <th className="p-3.5">Candidate Name</th>
+                  <th className="p-3.5">Contact Details</th>
+                  <th className="p-3.5">Interested Course</th>
+                  <th className="p-3.5">Qualification Scores</th>
+                  <th className="p-3.5">Lead Status</th>
+                  <th className="p-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#f3f4f5]">
+                {counselorEnquiries.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="p-8 text-center text-[#757682]">
+                      No walk-in leads found. Click "+ Register Walk-in Lead" to add a new prospect.
+                    </td>
+                  </tr>
+                ) : (
+                  counselorEnquiries.map((enq: any) => (
+                    <tr key={enq.id} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="p-3.5 font-mono font-bold text-[#00236f]">{enq.token_number || enq.id?.slice(0, 8)}</td>
+                      <td className="p-3.5">
+                        <strong className="text-[#191c1d] block">{enq.student_name}</strong>
+                        {enq.father_name && <span className="text-[10px] text-slate-500">S/D of {enq.father_name}</span>}
+                      </td>
+                      <td className="p-3.5">
+                        <span className="font-mono text-slate-800 block">📞 {enq.mobile}</span>
+                        {enq.email && <span className="text-[10px] text-slate-500">{enq.email}</span>}
+                      </td>
+                      <td className="p-3.5 font-semibold text-[#00236f]">{enq.selected_course || 'B.Tech CSE'}</td>
+                      <td className="p-3.5">
+                        <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-mono text-[10px] font-semibold">
+                          {enq.remarks?.match(/10th:\s*[\d.]+%/) ? enq.remarks.slice(0, 24) : 'Class 12: 85%'}
+                        </span>
+                      </td>
+                      <td className="p-3.5">
+                        <span className="px-2 py-0.5 bg-blue-50 text-[#00236f] border border-blue-200 rounded-full font-bold text-[10px] uppercase">
+                          {enq.status || 'Walk-in'}
+                        </span>
+                      </td>
+                      <td className="p-3.5 text-right space-x-1.5 whitespace-nowrap">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenLogCall(enq)}
+                          className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-[11px] font-bold cursor-pointer"
+                        >
+                          [LOG CALL]
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onNavigate('admissions')}
+                          className="px-2.5 py-1 bg-[#00236f] hover:bg-[#1a4bb0] text-white rounded-lg text-[11px] font-bold cursor-pointer"
+                        >
+                          [INTAKE DESK]
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* COUNSELOR TAB 3: COUNSELING SCHOLARS ROSTER */}
+      {isCounselor && activeTab === 'scholars' && (
+        <div className="space-y-4">
+          <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-bold text-[#191c1d]">Counseling Scholars Roster & Intake Conversion</h3>
+              <p className="text-xs text-[#757682]">Direct list of admitted scholars enrolled via admissions counseling cell</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => onNavigate('manage-students')}
+              className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold cursor-pointer"
+            >
+              Open Full Master Directory &rarr;
+            </button>
+          </div>
+
+          <div className="bg-white rounded-xl border border-[#e1e3e4] shadow-xs overflow-x-auto">
+            <table className="w-full text-left text-xs divide-y divide-[#e1e3e4]">
+              <thead className="bg-[#f8f9fa] text-[#757682] uppercase font-bold text-[10px] tracking-wider">
+                <tr>
+                  <th className="p-3.5">Canonical UID</th>
+                  <th className="p-3.5">Scholar Name</th>
+                  <th className="p-3.5">Course & Semester</th>
+                  <th className="p-3.5">Intake Status</th>
+                  <th className="p-3.5">Fee Clearance</th>
+                  <th className="p-3.5">Document Vault</th>
+                  <th className="p-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#f3f4f5]">
+                {counselorScholars.map((stu: any) => (
+                  <tr key={stu.id} className="hover:bg-slate-50/60 transition-colors">
+                    <td className="p-3.5 font-mono font-bold text-[#00236f]">{stu.enterprise_uid || stu.student_id}</td>
+                    <td className="p-3.5">
+                      <strong className="text-[#191c1d] block">{stu.first_name} {stu.last_name}</strong>
+                      <span className="text-[10px] text-slate-500">{stu.email}</span>
+                    </td>
+                    <td className="p-3.5">
+                      <span className="font-semibold text-slate-800">{stu.course?.code || 'B.Tech CSE'}</span>
+                      <span className="text-slate-500 block text-[10px]">Semester {stu.current_semester || 1}</span>
+                    </td>
+                    <td className="p-3.5">
+                      <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full font-bold text-[10px] uppercase">
+                        {stu.admission_status || 'Enrolled'}
+                      </span>
+                    </td>
+                    <td className="p-3.5">
+                      <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] uppercase ${
+                        stu.fees_status === 'paid' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800'
+                      }`}>
+                        {stu.fees_status === 'paid' ? 'Paid' : 'Pending'}
+                      </span>
+                    </td>
+                    <td className="p-3.5">
+                      <span className="px-2 py-0.5 bg-blue-50 text-[#00236f] rounded-full font-bold text-[10px]">
+                        {stu.documents_verified ? 'Verified' : 'Pending Scrutiny'}
+                      </span>
+                    </td>
+                    <td className="p-3.5 text-right space-x-1.5 whitespace-nowrap">
+                      <button
+                        type="button"
+                        onClick={() => onNavigate(`manage-students?search=${encodeURIComponent(stu.student_id || stu.first_name)}` as any)}
+                        className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-[11px] font-bold cursor-pointer"
+                      >
+                        [DOSSIER]
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onNavigate(`fee-ledger?studentId=${encodeURIComponent(stu.id)}` as any)}
+                        className="px-2.5 py-1 bg-[#00236f] hover:bg-[#1a4bb0] text-white rounded-lg text-[11px] font-bold cursor-pointer"
+                      >
+                        [FEES]
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* COUNSELOR TAB 4: COURSE FEE GUIDANCE & SCHOLARSHIP MATRIX */}
+      {isCounselor && activeTab === 'feematrix' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            {/* Quick Fee Assessment Calculator */}
+            <div className="lg:col-span-1 bg-white p-5 rounded-2xl border border-[#e1e3e4] shadow-xs space-y-4">
+              <div>
+                <h4 className="text-sm font-bold text-[#191c1d]">Walk-in Fee & Scholarship Calculator</h4>
+                <p className="text-xs text-[#757682] mt-0.5">Instant tuition calculation for visiting parents</p>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-[#757682] block mb-1">Select Academic Course</label>
+                  <select
+                    value={calcCourse}
+                    onChange={e => setCalcCourse(e.target.value)}
+                    className="w-full p-2 border border-[#e1e3e4] rounded-lg text-xs font-semibold text-[#191c1d]"
+                  >
+                    <option value="cse">B.Tech Computer Science & Engg (₹45,000 / sem)</option>
+                    <option value="ece">B.Tech Electronics & Comm (₹42,000 / sem)</option>
+                    <option value="mba">Master of Business Administration (₹40,000 / sem)</option>
+                    <option value="bca">Bachelor of Computer Applications (₹25,000 / sem)</option>
+                    <option value="mca">Master of Computer Applications (₹35,000 / sem)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-[#757682] block mb-1">
+                    Class 12th Board Marks %: <strong className="text-[#00236f]">{calcPct}%</strong>
+                  </label>
+                  <input
+                    type="range"
+                    min="50"
+                    max="100"
+                    value={calcPct}
+                    onChange={e => setCalcPct(Number(e.target.value))}
+                    className="w-full accent-[#00236f]"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 p-2.5 bg-slate-50 rounded-lg border border-slate-200">
+                  <input
+                    type="checkbox"
+                    id="pms-checkbox"
+                    checked={calcIsPms}
+                    onChange={e => setCalcIsPms(e.target.checked)}
+                    className="accent-[#00236f]"
+                  />
+                  <label htmlFor="pms-checkbox" className="text-xs font-semibold text-[#191c1d] cursor-pointer">
+                    Eligible for Punjab PMS (SC/ST &lt; ₹2.5L)?
+                  </label>
+                </div>
+
+                {/* Calculation breakdown */}
+                {(() => {
+                  const baseTuition = calcCourse === 'cse' ? 45000 : calcCourse === 'ece' ? 42000 : calcCourse === 'mba' ? 40000 : calcCourse === 'bca' ? 25000 : 35000;
+                  let waiverPct = 0;
+                  if (calcIsPms) {
+                    waiverPct = 100;
+                  } else if (calcPct >= 90) {
+                    waiverPct = 50;
+                  } else if (calcPct >= 80) {
+                    waiverPct = 25;
+                  } else if (calcPct >= 70) {
+                    waiverPct = 15;
+                  }
+                  const waiverAmount = Math.round((baseTuition * waiverPct) / 100);
+                  const netPayable = Math.max(0, baseTuition - waiverAmount);
+
+                  return (
+                    <div className="p-3.5 bg-emerald-50/80 border border-emerald-200 rounded-xl space-y-2">
+                      <div className="flex justify-between text-xs text-emerald-950">
+                        <span>Standard Base Tuition:</span>
+                        <strong className="font-mono">₹{baseTuition.toLocaleString('en-IN')}</strong>
+                      </div>
+                      <div className="flex justify-between text-xs text-emerald-700">
+                        <span>Scholarship Concession ({waiverPct}%):</span>
+                        <strong className="font-mono">- ₹{waiverAmount.toLocaleString('en-IN')}</strong>
+                      </div>
+                      <div className="border-t border-emerald-200 pt-2 flex justify-between text-sm font-extrabold text-[#00236f]">
+                        <span>Net Tuition per Semester:</span>
+                        <strong className="font-mono text-emerald-800">₹{netPayable.toLocaleString('en-IN')}</strong>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                <button
+                  type="button"
+                  onClick={() => onNavigate('fee-ledger')}
+                  className="w-full py-2 bg-[#00236f] hover:bg-[#1a4bb0] text-white rounded-lg text-xs font-bold transition shadow-2xs"
+                >
+                  Open Institutional Fee Ledger &rarr;
+                </button>
+              </div>
+            </div>
+
+            {/* Official Slabs Reference & Rules */}
+            <div className="lg:col-span-2 bg-white p-5 rounded-2xl border border-[#e1e3e4] shadow-xs space-y-4">
+              <div>
+                <h4 className="text-sm font-bold text-[#191c1d]">Statutory Scholarships & Government Mandates</h4>
+                <p className="text-xs text-[#757682] mt-0.5">Authoritative criteria for BFGI counseling directorate</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="p-3.5 bg-blue-50/60 border border-blue-200 rounded-xl space-y-1">
+                  <span className="font-bold text-xs text-[#00236f]">Punjab Post-Matric Scholarship (PMS)</span>
+                  <p className="text-[11px] text-slate-700">
+                    100% Tuition & University fee exemption for SC/ST students with family income under ₹2,50,000 p.a.
+                  </p>
+                  <span className="text-[10px] text-slate-500 font-semibold block pt-1">Requires: Freepship Card & Caste Certificate</span>
+                </div>
+
+                <div className="p-3.5 bg-amber-50/60 border border-amber-200 rounded-xl space-y-1">
+                  <span className="font-bold text-xs text-amber-900">Merit Scholarship (Board &gt;= 90%)</span>
+                  <p className="text-[11px] text-slate-700">
+                    50% tuition waiver for top academic performers across CBSE / ICSE / PSEB secondary examinations.
+                  </p>
+                  <span className="text-[10px] text-slate-500 font-semibold block pt-1">Requires: Verified Original Marksheet</span>
+                </div>
+
+                <div className="p-3.5 bg-purple-50/60 border border-purple-200 rounded-xl space-y-1">
+                  <span className="font-bold text-xs text-purple-900">Single Girl Child Concession</span>
+                  <p className="text-[11px] text-slate-700">
+                    Special institutional grant of ₹10,000 annual scholarship across all 4-year engineering programmes.
+                  </p>
+                  <span className="text-[10px] text-slate-500 font-semibold block pt-1">Requires: Notarized Tehsildar Affidavit</span>
+                </div>
+
+                <div className="p-3.5 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-1">
+                  <span className="font-bold text-xs text-emerald-900">State / National Sports Quota</span>
+                  <p className="text-[11px] text-slate-700">
+                    25% to 50% tuition discount based on SGFI / AIU medal certification and trials committee sign-off.
+                  </p>
+                  <span className="text-[10px] text-slate-500 font-semibold block pt-1">Requires: Sports Directorate Attestation</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FACULTY TAB 1: DAILY LECTURE ATTENDANCE REGISTER */}
+      {!isCounselor && activeTab === 'attendance' && (
         <div className="space-y-6">
           {/* Controls & Filter Bar */}
           <div className="bg-white p-5 rounded-xl border border-[#e1e3e4] shadow-xs flex flex-wrap items-center justify-between gap-4">
@@ -1092,7 +1811,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
       )}
 
       {/* TAB 2: MID-SEMESTER TEST & SESSIONAL MARKS (UNIVERSITY CBCS 60 MARKS) */}
-      {activeTab === 'sessional' && (
+      {!isCounselor && activeTab === 'sessional' && (
         <div className="space-y-6">
           <div className="bg-white p-5 rounded-xl border border-[#e1e3e4] shadow-xs flex flex-wrap items-center justify-between gap-4">
             <div>
@@ -1206,7 +1925,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
       )}
 
       {/* TAB 3: MENTORSHIP / PROCTOR BATCH */}
-      {activeTab === 'mentees' && (
+      {!isCounselor && activeTab === 'mentees' && (
         <div className="space-y-6">
           <div className="bg-white p-5 rounded-xl border border-[#e1e3e4] shadow-xs flex items-center justify-between">
             <div>
@@ -1285,7 +2004,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
       )}
 
       {/* TAB 4: TEACHING TIMETABLE */}
-      {activeTab === 'schedule' && (
+      {!isCounselor && activeTab === 'schedule' && (
         <div className="bg-white rounded-xl border border-[#e1e3e4] p-6 shadow-xs space-y-6">
           <div>
             <h3 className="text-sm font-bold text-[#191c1d]">
@@ -1328,6 +2047,249 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                 <span className="font-bold text-[#00236f]">Active Roster: 58 Students</span>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* COUNSELOR MODAL 1: LOG CANDIDATE CALL / RECALL */}
+      {isLogCallOpen && callTargetProspect && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-slate-300 w-full max-w-md p-6 space-y-4 shadow-2xl animate-fadeIn">
+            <div className="flex justify-between items-center border-b pb-3">
+              <div>
+                <h3 className="text-sm font-bold text-[#00236f]">Log Candidate Interaction & Telephony Call</h3>
+                <p className="text-xs text-slate-500">
+                  {callTargetProspect.first_name || callTargetProspect.student_name} ({callTargetProspect.phone || callTargetProspect.mobile})
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsLogCallOpen(false)}
+                className="text-slate-400 hover:text-slate-700 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleLogCallSubmit} className="space-y-3">
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Interaction Medium</label>
+                <select
+                  value={callForm.interaction_type}
+                  onChange={e => setCallForm({ ...callForm, interaction_type: e.target.value })}
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                >
+                  <option value="phone">Telephony Voice Call</option>
+                  <option value="whatsapp">WhatsApp Official Chat</option>
+                  <option value="in_person">In-Person Campus Counseling Desk</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Discussion Outcome</label>
+                <select
+                  value={callForm.outcome}
+                  onChange={e => setCallForm({ ...callForm, outcome: e.target.value })}
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                >
+                  <option value="interested">Candidate Highly Interested (Scheduled Callback)</option>
+                  <option value="callback_requested">Parent Requested Callback in Evening</option>
+                  <option value="campus_visit">Visiting Campus with Family This Weekend</option>
+                  <option value="admitted">Converted! Ready to Fill Admission Form</option>
+                  <option value="not_interested">Not Interested (Opted Other College / Location)</option>
+                  <option value="no_response">Call Not Answered (Ringing / Switched Off)</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">Next Scheduled Date</label>
+                  <input
+                    type="date"
+                    value={callForm.next_followup_date}
+                    onChange={e => setCallForm({ ...callForm, next_followup_date: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">Priority</label>
+                  <select
+                    value={callForm.priority}
+                    onChange={e => setCallForm({ ...callForm, priority: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                  >
+                    <option value="p1_high">P1 High Priority</option>
+                    <option value="p2_normal">P2 Normal</option>
+                    <option value="p3_low">P3 Low</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Counseling Discussion Notes</label>
+                <textarea
+                  rows={3}
+                  value={callForm.notes}
+                  onChange={e => setCallForm({ ...callForm, notes: e.target.value })}
+                  placeholder="e.g. Discussed CSE specialization, parent inquired about college bus routes from Mansa..."
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t">
+                <button
+                  type="button"
+                  onClick={() => setIsLogCallOpen(false)}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingCall}
+                  className="px-4 py-1.5 bg-[#00236f] hover:bg-[#1a4bb0] text-white rounded-lg text-xs font-bold"
+                >
+                  {isSubmittingCall ? 'Recording...' : 'Save Interaction Log'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* COUNSELOR MODAL 2: REGISTER WALK-IN PROSPECT */}
+      {isNewLeadModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-slate-300 w-full max-w-md p-6 space-y-4 shadow-2xl animate-fadeIn">
+            <div className="flex justify-between items-center border-b pb-3">
+              <div>
+                <h3 className="text-sm font-bold text-[#00236f]">Register Walk-in Admissions Prospect</h3>
+                <p className="text-xs text-slate-500">Record a candidate visiting the campus counseling reception</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsNewLeadModalOpen(false)}
+                className="text-slate-400 hover:text-slate-700 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateLeadSubmit} className="space-y-3">
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Candidate Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Jaspreet Singh"
+                  value={newLeadForm.student_name}
+                  onChange={e => setNewLeadForm({ ...newLeadForm, student_name: e.target.value })}
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs font-medium"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">Mobile Number *</label>
+                  <input
+                    type="tel"
+                    required
+                    placeholder="e.g. 9876543210"
+                    value={newLeadForm.mobile}
+                    onChange={e => setNewLeadForm({ ...newLeadForm, mobile: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">Email Address</label>
+                  <input
+                    type="email"
+                    placeholder="e.g. candidate@gmail.com"
+                    value={newLeadForm.email}
+                    onChange={e => setNewLeadForm({ ...newLeadForm, email: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">Father's Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Sardar Balwinder Singh"
+                    value={newLeadForm.father_name}
+                    onChange={e => setNewLeadForm({ ...newLeadForm, father_name: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">Selected Degree / Course</label>
+                  <select
+                    value={newLeadForm.selected_course}
+                    onChange={e => setNewLeadForm({ ...newLeadForm, selected_course: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                  >
+                    <option value="B.Tech Computer Science & Engineering">B.Tech CSE</option>
+                    <option value="B.Tech Electronics & Comm">B.Tech ECE</option>
+                    <option value="Bachelor of Computer Applications">BCA</option>
+                    <option value="Master of Business Administration">MBA</option>
+                    <option value="Master of Computer Applications">MCA</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">Class 10th Marks %</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 82.5"
+                    value={newLeadForm.tenth_percentage}
+                    onChange={e => setNewLeadForm({ ...newLeadForm, tenth_percentage: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">Class 12th Marks %</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 85.0"
+                    value={newLeadForm.twelfth_percentage}
+                    onChange={e => setNewLeadForm({ ...newLeadForm, twelfth_percentage: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Counseling Walk-in Notes</label>
+                <textarea
+                  rows={2}
+                  value={newLeadForm.notes}
+                  onChange={e => setNewLeadForm({ ...newLeadForm, notes: e.target.value })}
+                  placeholder="e.g. Inquired about hostel & tuition fee installments..."
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t">
+                <button
+                  type="button"
+                  onClick={() => setIsNewLeadModalOpen(false)}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingLead}
+                  className="px-4 py-1.5 bg-[#00236f] hover:bg-[#1a4bb0] text-white rounded-lg text-xs font-bold"
+                >
+                  {isSubmittingLead ? 'Registering...' : 'Register Walk-in Lead'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

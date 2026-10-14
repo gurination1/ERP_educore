@@ -27,6 +27,8 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
   const [students, setStudents] = useState<any[]>([]);
   const isStudent = currentUser?.role === 'student';
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'super_admin';
+  const canReconcileFees = Boolean(currentUser && ['admin', 'super_admin', 'accounts'].includes(currentUser.role));
+  const canGrantCondonation = Boolean(currentUser && ['admin', 'super_admin', 'hod', 'staff'].includes(currentUser.role));
   const [selectedStudentId, setSelectedStudentId] = useState<string>(isStudent ? 'me' : 'stu-rec-aryan');
   const [studentProfile, setStudentProfile] = useState<any | null>(null);
   const [examMeta, setExamMeta] = useState<any | null>(null);
@@ -482,28 +484,40 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
                     <li key={i}>{reason}</li>
                   ))}
                 </ul>
-                {isAdmin && (
-                  <div className="pt-2 flex flex-wrap items-center gap-2">
-                    {!clearance?.isAttendanceEligible && (
-                      <button
-                        type="button"
-                        onClick={handleGrantCondonation}
-                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold cursor-pointer"
-                      >
-                        Grant Dean Condonation (Order 7.4)
-                      </button>
-                    )}
-                    {!clearance?.isFeeCleared && (
-                      <button
-                        type="button"
-                        onClick={handleClearFeeDues}
-                        className="px-3 py-1.5 bg-[#00236f] hover:bg-[#001744] text-white rounded-xl text-xs font-bold cursor-pointer"
-                      >
-                        Reconcile Fees (Mark No-Dues)
-                      </button>
-                    )}
-                  </div>
-                )}
+                <div className="pt-2 flex flex-wrap items-center gap-2">
+                  {!clearance?.isAttendanceEligible && canGrantCondonation && (
+                    <button
+                      type="button"
+                      onClick={handleGrantCondonation}
+                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold cursor-pointer"
+                    >
+                      Grant Dean / HOD Condonation (Order 7.4)
+                    </button>
+                  )}
+                  {!clearance?.isFeeCleared && canReconcileFees && (
+                    <button
+                      type="button"
+                      onClick={handleClearFeeDues}
+                      className="px-3 py-1.5 bg-[#00236f] hover:bg-[#001744] text-white rounded-xl text-xs font-bold cursor-pointer"
+                    >
+                      Reconcile Fees (Mark No-Dues)
+                    </button>
+                  )}
+                  {isStudent && !clearance?.isFeeCleared && (
+                    <a
+                      href="/fees?pay=true"
+                      className="px-3 py-1.5 bg-gradient-to-r from-[#ea580c] to-[#c2410c] hover:opacity-95 text-white rounded-xl text-xs font-bold shadow-xs inline-flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>Pay Outstanding Tuition Dues Online</span>
+                      <span className="font-bold">→</span>
+                    </a>
+                  )}
+                  {isStudent && !clearance?.isAttendanceEligible && (
+                    <span className="text-xs text-rose-700 font-medium italic">
+                      Contact Head of Department (HOD Chamber, Block B-301) for attendance condonation review.
+                    </span>
+                  )}
+                </div>
               </div>
             )}
 
@@ -733,7 +747,7 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 pt-2">
-                  {!clearance?.isFeeCleared && (
+                  {!clearance?.isFeeCleared && canReconcileFees && (
                     <button
                       type="button"
                       onClick={handleClearFeeDues}
@@ -742,14 +756,28 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
                       Instant Reconcile Tuition Dues (Clear Hold)
                     </button>
                   )}
-                  {!clearance?.isAttendanceEligible && (
+                  {!clearance?.isAttendanceEligible && canGrantCondonation && (
                     <button
                       type="button"
                       onClick={handleGrantCondonation}
                       className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold cursor-pointer shadow-xs"
                     >
-                      Authorize Dean Attendance Condonation (Order 7.4)
+                      Authorize Dean / HOD Attendance Condonation (Order 7.4)
                     </button>
+                  )}
+                  {isStudent && !clearance?.isFeeCleared && (
+                    <a
+                      href="/fees?pay=true"
+                      className="px-4 py-2 bg-gradient-to-r from-[#ea580c] to-[#c2410c] hover:opacity-95 text-white rounded-xl text-xs font-bold cursor-pointer shadow-xs inline-flex items-center gap-1.5"
+                    >
+                      <span>Pay Tuition Dues Online (Unlock Admit Card)</span>
+                      <span className="font-bold">→</span>
+                    </a>
+                  )}
+                  {isStudent && !clearance?.isAttendanceEligible && (
+                    <div className="text-xs text-rose-700 bg-rose-100/60 border border-rose-200 px-3 py-2 rounded-xl">
+                      <strong>Attendance Shortage Notice:</strong> Attendance below 75% cutoff. Submit medical or institutional duty cert to HOD Office for Dean Condonation under Ordinance 7.4.
+                    </div>
                   )}
                 </div>
               </div>
