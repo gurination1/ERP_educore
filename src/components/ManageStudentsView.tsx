@@ -1,19 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
-import { api, getStoredToken } from '../api/client';
-import { StudentProfile } from '../types';
+import { api } from '../api/client';
+import { StudentProfile, User } from '../types';
 
 interface ManageStudentsViewProps {
+  currentUser?: User | null;
   onSelectStudent: (student: StudentProfile) => void;
   onOpenEmailReminders: () => void;
 }
 
 export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
+  currentUser,
   onSelectStudent,
   onOpenEmailReminders,
 }) => {
   const navigate = useNavigate();
+  const isHOD = currentUser?.role === 'hod';
+  const hodCourseDefault = isHOD
+    ? (currentUser?.department?.toLowerCase().includes('me') ? 'B.Tech ME' : 'B.Tech CS')
+    : 'All Courses';
+
   const [students, setStudents] = useState<StudentProfile[]>([]);
   const [totalCount, setTotalCount] = useState(97);
   const [currentPage, setCurrentPage] = useState(1);
@@ -22,7 +29,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
 
   // Filters State
   const [searchQuery, setSearchQuery] = useState('');
-  const [courseFilter, setCourseFilter] = useState('All Courses');
+  const [courseFilter, setCourseFilter] = useState(hodCourseDefault);
   const [yearFilter, setYearFilter] = useState('All Years');
   const [statusFilter, setStatusFilter] = useState('All Statuses');
 
@@ -61,7 +68,9 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
   // Load Initial Students
   useEffect(() => {
     setIsLoading(true);
-    api.getStudents({ page: currentPage, limit: 5 }).then(res => {
+    const queryParams: any = { page: currentPage, limit: 5 };
+    if (courseFilter !== 'All Courses') queryParams.course = courseFilter;
+    api.getStudents(queryParams).then(res => {
       if (res.success && res.students) {
         setStudents(res.students);
         setTotalCount(res.total);
@@ -172,9 +181,19 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
             ‹
           </button>
           <div>
-            <h2 className="text-2xl font-bold text-[#191c1d] tracking-tight">Manage Students</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-[#191c1d] tracking-tight">Manage Students</h2>
+              {isHOD && (
+                <span className="bg-blue-50 text-[#00236f] border border-blue-200 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#00236f] animate-pulse inline-block" />
+                  HOD Scoped: {currentUser?.department || 'Computer Science & Engineering'}
+                </span>
+              )}
+            </div>
             <p className="text-sm text-[#444651] mt-1">
-              View, filter, and manage all student records across departments.
+              {isHOD
+                ? `Department student registry and progression console for ${currentUser?.department || 'Computer Science'}.`
+                : 'View, filter, and manage all student records across departments.'}
             </p>
           </div>
         </div>

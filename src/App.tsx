@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { User, StudentProfile, NoticeItem, UserRole, ActiveScreen } from './types';
 import { api, getStoredToken, setStoredToken, removeStoredToken, setStoredUser } from './api/client';
+import { isGitHubPages } from './api/supabaseClient';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { StudentDashboardView } from './components/StudentDashboardView';
@@ -391,10 +392,11 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
 };
 
 export default function App() {
+  const RouterComponent = isGitHubPages ? HashRouter : BrowserRouter;
   return (
-    <BrowserRouter>
+    <RouterComponent>
       <MainApp />
-    </BrowserRouter>
+    </RouterComponent>
   );
 }
 
@@ -758,6 +760,7 @@ function MainApp() {
                 onSearchChange={setSearchQuery}
               >
                 <ManageStudentsView
+                  currentUser={currentUser}
                   onSelectStudent={student => setViewingStudent(student)}
                   onOpenEmailReminders={() => setIsEmailRemindersOpen(true)}
                 />

@@ -903,6 +903,7 @@ export const Header: React.FC<HeaderProps> = ({
             },
           },
           { id: 'examination?tab=regular' as any, label: 'University Regular Examination Form', action: () => { onNavigate('examination?tab=regular' as any); setOpenDrawer(null); } },
+          { id: 'examination?tab=results' as any, label: 'CBCS Semester Grade Card & SGPA Gazette', action: () => { onNavigate('examination?tab=results' as any); setOpenDrawer(null); } },
           { id: 'examination?tab=reappear' as any, label: 'Reappear / Backlog Form', action: () => { onNavigate('examination?tab=reappear' as any); setOpenDrawer(null); } },
           { id: 'examination?tab=datesheet' as any, label: 'Datesheet & Examination Timetable', action: () => { onNavigate('examination?tab=datesheet' as any); setOpenDrawer(null); } },
           { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz & Examination LMS', action: () => { onNavigate('student-quiz-lms'); setOpenDrawer(null); } },

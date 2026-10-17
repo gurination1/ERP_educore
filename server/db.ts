@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import bcrypt from 'bcryptjs';
 import fs from 'fs';
 import path from 'path';
@@ -2507,9 +2510,16 @@ class DatabaseStore {
 
     const seedPath = path.join(process.cwd(), 'database', 'educore-seed.sqlite');
 
-    // 0. Try PostgreSQL connection (Primary & mandatory multi-tenant engine)
-    const pgUrl = process.env.POSTGRES_URL || (process.env.DATABASE_URL?.startsWith('postgres://') || process.env.DATABASE_URL?.startsWith('postgresql://') ? process.env.DATABASE_URL : '') || 'postgresql://postgres@127.0.0.1:5432/educore';
+    // 0. Try PostgreSQL / Supabase connection (Primary & mandatory multi-tenant engine)
+    let pgUrl = process.env.SUPABASE_POSTGRES_URL || process.env.POSTGRES_URL || (process.env.DATABASE_URL?.startsWith('postgres://') || process.env.DATABASE_URL?.startsWith('postgresql://') ? process.env.DATABASE_URL : '');
+    if (!pgUrl && process.env.SUPABASE_PROJECT_REF && process.env.SUPABASE_DB_PASS) {
+      pgUrl = `postgresql://postgres:${encodeURIComponent(process.env.SUPABASE_DB_PASS)}@db.${process.env.SUPABASE_PROJECT_REF}.supabase.co:5432/postgres`;
+    }
+    if (!pgUrl) {
+      pgUrl = 'postgresql://postgres@127.0.0.1:5432/educore';
+    }
     const pgHost = process.env.PGHOST || '127.0.0.1';
+    const isCloudPg = Boolean(pgUrl && !pgUrl.includes('localhost') && !pgUrl.includes('127.0.0.1'));
     if (pgUrl || pgHost) {
       try {
         const pool = new pg.Pool({
@@ -2519,8 +2529,8 @@ class DatabaseStore {
           user: !pgUrl ? process.env.PGUSER || 'postgres' : undefined,
           password: !pgUrl ? process.env.PGPASSWORD || '' : undefined,
           database: !pgUrl ? process.env.PGDATABASE || 'educore_erp' : undefined,
-          connectionTimeoutMillis: 5000,
-          ssl: process.env.NODE_ENV === 'production' && !pgUrl?.includes('localhost') ? { rejectUnauthorized: false } : undefined,
+          connectionTimeoutMillis: 10000,
+          ssl: isCloudPg ? { rejectUnauthorized: false } : undefined,
         });
         const client = await pool.connect();
         await client.query('SELECT 1');

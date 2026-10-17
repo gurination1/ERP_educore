@@ -20,10 +20,18 @@ export const getStoredUser = (): any => {
 };
 export const setStoredUser = (user: any): void => localStorage.setItem(USER_KEY, JSON.stringify(user));
 
+import { handleSupabaseRequest } from './supabaseAdapter';
+import { isGitHubPages } from './supabaseClient';
+
 async function apiRequest<T = any>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<{ success: boolean; data?: T; error?: string; [key: string]: any }> {
+  // If on GitHub Pages, directly utilize Supabase PostgreSQL adapter
+  if (isGitHubPages) {
+    return handleSupabaseRequest<T>(endpoint, options);
+  }
+
   const token = getStoredToken();
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string>),
@@ -46,6 +54,10 @@ async function apiRequest<T = any>(
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
+      if (res.status === 404 || res.status === 502 || res.status === 503) {
+        // Fallback to Supabase direct adapter
+        return handleSupabaseRequest<T>(endpoint, options);
+      }
       return {
         success: false,
         error: data.error || `HTTP Error ${res.status}: ${res.statusText}`,
@@ -58,12 +70,18 @@ async function apiRequest<T = any>(
       ...data,
     };
   } catch (err: any) {
-    return {
-      success: false,
-      error: err.message || 'Network request failed. Ensure server is running.',
-    };
+    // If backend offline or network failed, fallback to live Supabase PostgreSQL
+    try {
+      return await handleSupabaseRequest<T>(endpoint, options);
+    } catch (sbErr: any) {
+      return {
+        success: false,
+        error: err.message || 'Network request failed. Ensure server or Supabase is accessible.',
+      };
+    }
   }
 }
+
 
 export const api = {
   // Auth (Real credentials only, no demo bypasses)

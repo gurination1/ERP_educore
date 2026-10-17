@@ -298,18 +298,32 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
     }
   }, [currentSlotKey]);
 
+  const AVAILABLE_FACULTY_SUBJECTS = [
+    { code: 'CS-301', name: 'Data Structures & Algorithmic Foundations (Sem 3 • Sec A)', semester: 3, course: 'B.Tech CS' },
+    { code: 'CS-401', name: 'Distributed Cloud Architecture (Sem 4 • Sec A)', semester: 4, course: 'B.Tech CS' },
+    { code: 'CS-402', name: 'Advanced Relational DBMS & MariaDB (Sem 4 • Sec B)', semester: 4, course: 'B.Tech CS' },
+    { code: 'CS-501', name: 'Operating Systems & System Programming (Sem 5 • Sec A)', semester: 5, course: 'B.Tech CS' },
+    { code: 'CS-601', name: 'Software Engineering & Agile Methodologies (Sem 6 • Sec A)', semester: 6, course: 'B.Tech CS' },
+    { code: 'EC-401', name: 'Digital Signal Processing & Microcontrollers (Sem 4 • Sec A)', semester: 4, course: 'B.Tech ECE' },
+    { code: 'ME-401', name: 'Fluid Mechanics & Thermal Engineering (Sem 4 • Sec A)', semester: 4, course: 'B.Tech ME' },
+  ];
+
   const loadStudents = async () => {
     setIsLoading(true);
     try {
-      const courseFilter = selectedCourse.startsWith('CS') ? 'B.Tech CS' : selectedCourse;
-      const semesterFilter = 4;
+      const activeSub = AVAILABLE_FACULTY_SUBJECTS.find(s => s.code === selectedCourse);
+      const courseFilter = activeSub ? activeSub.course : (selectedCourse.startsWith('CS') ? 'B.Tech CS' : selectedCourse);
+      const semesterFilter = activeSub ? activeSub.semester : 4;
       const [stuRes, markRes] = await Promise.all([
         api.getStudents({ course: courseFilter, semester: semesterFilter, limit: 100 }),
-        api.getSessionalMarks({ courseCode: selectedCourse, semester: 4 }).catch(() => ({ success: false, marks: [] })),
+        api.getSessionalMarks({ courseCode: selectedCourse, semester: semesterFilter }).catch(() => ({ success: false, marks: [] })),
       ]);
       let res = stuRes;
       if (!res.success || !res.students || res.students.length === 0) {
         res = await api.getStudents({ course: courseFilter, limit: 100 });
+      }
+      if (!res.success || !res.students || res.students.length === 0) {
+        res = await api.getStudents({ limit: 100 });
       }
       const existingMarksMap = new Map();
       if (markRes.success && markRes.marks) {
@@ -1483,8 +1497,11 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                   onChange={e => setSelectedCourse(e.target.value)}
                   className="bg-[#f3f4f5] border-none text-xs font-bold text-[#191c1d] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#00236f] outline-none cursor-pointer"
                 >
-                  <option value="CS-401">CS-401: Distributed Cloud Architecture (Sem 4 • Sec A)</option>
-                  <option value="CS-402">CS-402: Advanced Relational DBMS & MariaDB (Sem 4 • Sec B)</option>
+                  {AVAILABLE_FACULTY_SUBJECTS.map(sub => (
+                    <option key={sub.code} value={sub.code}>
+                      {sub.code}: {sub.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -1829,8 +1846,11 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                 onChange={e => setSelectedCourse(e.target.value)}
                 className="bg-[#f3f4f5] border-none text-xs font-bold text-[#191c1d] rounded-lg px-3 py-2 outline-none cursor-pointer"
               >
-                <option value="CS-401">CS-401: Distributed Cloud Architecture</option>
-                <option value="CS-402">CS-402: Advanced Relational DBMS & MariaDB</option>
+                {AVAILABLE_FACULTY_SUBJECTS.map(sub => (
+                  <option key={sub.code} value={sub.code}>
+                    {sub.code}: {sub.name}
+                  </option>
+                ))}
               </select>
               <button
                 type="button"

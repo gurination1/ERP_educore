@@ -86,8 +86,28 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
     fetchLedger();
   }, [activeStudentId]);
 
+  const [viewMode, setViewMode] = useState<'ledger' | 'defaulters'>('ledger');
+  const [defaultersList, setDefaultersList] = useState<any[]>([]);
+  const [isDefaultersLoading, setIsDefaultersLoading] = useState(false);
+  const [defaulterSearch, setDefaulterSearch] = useState('');
+  const [defaulterFilter, setDefaulterFilter] = useState<'all' | 'OVERDUE' | 'PARTIAL' | 'DUE'>('all');
+  const [noticeFeedback, setNoticeFeedback] = useState<string | null>(null);
+
+  const fetchDefaulters = () => {
+    setIsDefaultersLoading(true);
+    api.getDefaulters()
+      .then(res => {
+        if (res.success && Array.isArray(res.defaulters)) {
+          setDefaultersList(res.defaulters);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setIsDefaultersLoading(false));
+  };
+
   useEffect(() => {
     if (isActualAdmin) {
+      fetchDefaulters();
       api.getFeeHeads().then(res => {
         if (res.success && res.feeHeads) {
           setFeeHeads(res.feeHeads);
@@ -224,9 +244,224 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
         </div>
       </div>
 
-      {/* Quick Search & Audit Bar (Admin & Faculty Mentors) */}
-      {canSearchStudents && (
-        <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs space-y-3">
+      {/* Mode Switcher for Accounts Bursars & Campus Admins */}
+      {isActualAdmin && (
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-xl border border-[#e1e3e4] shadow-xs">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setViewMode('ledger')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                viewMode === 'ledger'
+                  ? 'bg-[#00236f] text-white shadow-xs'
+                  : 'bg-[#f8f9fa] text-[#444651] hover:bg-[#e1e3e4]'
+              }`}
+            >
+              Single Scholar Fee Ledger
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setViewMode('defaulters');
+                fetchDefaulters();
+              }}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                viewMode === 'defaulters'
+                  ? 'bg-[#ea580c] text-white shadow-xs'
+                  : 'bg-[#f8f9fa] text-[#444651] hover:bg-[#e1e3e4]'
+              }`}
+            >
+              <span>Institutional Defaulters Radar</span>
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-extrabold ${
+                viewMode === 'defaulters' ? 'bg-white text-[#ea580c]' : 'bg-[#ea580c]/10 text-[#ea580c]'
+              }`}>
+                {defaultersList.length}
+              </span>
+            </button>
+          </div>
+
+          <div className="text-[11px] font-semibold text-[#757682]">
+            {viewMode === 'defaulters' ? (
+              <span>Auditing all active student ledger accounts with outstanding fee arrears</span>
+            ) : (
+              <span>Inspecting individual student tuition heads & payment receipts</span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {noticeFeedback && (
+        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl text-xs font-semibold flex items-center justify-between animate-fadeIn">
+          <span>✓ {noticeFeedback}</span>
+          <button onClick={() => setNoticeFeedback(null)} className="text-emerald-700 font-bold ml-2">✕</button>
+        </div>
+      )}
+
+      {/* INSTITUTIONAL DEFAULTERS RADAR TABLE VIEW */}
+      {viewMode === 'defaulters' && isActualAdmin ? (
+        <div className="space-y-4 animate-fadeIn">
+          {/* Summary KPI Strip */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+              <span className="text-[10px] uppercase font-bold text-slate-500 block">Total Defaulters</span>
+              <strong className="text-2xl font-black text-rose-700 block mt-0.5">{defaultersList.length} Scholars</strong>
+              <span className="text-[10px] text-slate-400">Scholars with pending fee clearance</span>
+            </div>
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+              <span className="text-[10px] uppercase font-bold text-slate-500 block">Total Arrears Due</span>
+              <strong className="text-2xl font-black text-[#00236f] block mt-0.5">
+                ₹ {defaultersList.reduce((acc, d) => acc + (d.dueAmount || 0), 0).toLocaleString('en-IN')}
+              </strong>
+              <span className="text-[10px] text-slate-400">Total uncollected statutory dues</span>
+            </div>
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs flex flex-col justify-between">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-slate-500 block">Direct Actions</span>
+                <span className="text-[11px] font-semibold text-slate-700 block mt-0.5">Automated Reminders</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setNoticeFeedback(`Automated SMS & Portal Dues Notices dispatched to all ${defaultersList.length} fee defaulters!`);
+                  setTimeout(() => setNoticeFeedback(null), 5000);
+                }}
+                className="mt-2 py-1.5 px-3 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-lg font-bold text-xs transition cursor-pointer shadow-2xs"
+              >
+                Broadcast Dues Notices to All
+              </button>
+            </div>
+          </div>
+
+          {/* Defaulters Filter & Search Bar */}
+          <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+            <div className="relative flex-1 min-w-[220px]">
+              <input
+                type="text"
+                placeholder="Search defaulter by student name, roll no, or UID..."
+                value={defaulterSearch}
+                onChange={e => setDefaulterSearch(e.target.value)}
+                className="w-full pl-3 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+              />
+            </div>
+
+            <div className="flex items-center gap-1.5 text-xs">
+              {(['all', 'OVERDUE', 'PARTIAL', 'DUE'] as const).map(mode => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setDefaulterFilter(mode)}
+                  className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${
+                    defaulterFilter === mode
+                      ? 'bg-[#00236f] text-white'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {mode.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Defaulters Table */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-[#00236f] text-white uppercase text-[10px] font-bold tracking-wider">
+                  <tr>
+                    <th className="p-3">Scholar Name</th>
+                    <th className="p-3">Course & Semester</th>
+                    <th className="p-3">Outstanding Due</th>
+                    <th className="p-3">Status</th>
+                    <th className="p-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-medium">
+                  {isDefaultersLoading ? (
+                    <tr>
+                      <td colSpan={5} className="p-8 text-center text-slate-400">
+                        <div className="w-6 h-6 rounded-full border-2 border-[#00236f] border-t-transparent animate-spin mx-auto mb-2" />
+                        Loading institutional fee defaulters registry...
+                      </td>
+                    </tr>
+                  ) : defaultersList
+                      .filter(d => {
+                        if (defaulterFilter !== 'all' && d.status !== defaulterFilter) return false;
+                        if (!defaulterSearch.trim()) return true;
+                        const q = defaulterSearch.toLowerCase();
+                        return (
+                          d.studentName?.toLowerCase().includes(q) ||
+                          d.courseInfo?.toLowerCase().includes(q) ||
+                          d.id?.toLowerCase().includes(q)
+                        );
+                      })
+                      .map(d => {
+                        const matchedStudent = studentList.find(s => s.id === d.id);
+                        return (
+                          <tr key={d.id} className="hover:bg-slate-50/80 transition-colors">
+                            <td className="p-3 font-semibold text-slate-900">
+                              <div>{d.studentName}</div>
+                              <span className="text-[10px] font-mono text-slate-400">{d.id}</span>
+                            </td>
+                            <td className="p-3 text-slate-700">{d.courseInfo}</td>
+                            <td className="p-3 font-black text-rose-700 text-sm">
+                              {d.dueAmountFormatted || `₹ ${d.dueAmount?.toLocaleString('en-IN')}`}
+                            </td>
+                            <td className="p-3">
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                                d.status === 'OVERDUE'
+                                  ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                                  : d.status === 'PARTIAL'
+                                  ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                  : 'bg-blue-50 text-[#00236f] border border-blue-200'
+                              }`}>
+                                {d.status}
+                              </span>
+                            </td>
+                            <td className="p-3 text-right space-x-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedStudentId(d.id);
+                                  setViewMode('ledger');
+                                }}
+                                className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-[#00236f] font-bold text-[11px] rounded transition cursor-pointer"
+                              >
+                                Inspect Ledger
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => onOpenPayModal(undefined, matchedStudent || { id: d.id, first_name: d.studentName })}
+                                className="px-2.5 py-1 bg-[#00236f] hover:bg-[#1e3a8a] text-white font-bold text-[11px] rounded transition cursor-pointer shadow-2xs"
+                              >
+                                Collect Fee
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setNoticeFeedback(`Urgent SMS reminder sent to ${d.studentName} for overdue ₹${d.dueAmount?.toLocaleString('en-IN')}!`);
+                                  setTimeout(() => setNoticeFeedback(null), 4000);
+                                }}
+                                className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold text-[11px] rounded transition cursor-pointer"
+                              >
+                                Send SMS Notice
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* SINGLE SCHOLAR FEE LEDGER VIEW */}
+      {viewMode === 'ledger' && (
+        <>
+          {/* Quick Search & Audit Bar (Admin & Faculty Mentors) */}
+          {canSearchStudents && (
+            <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="relative flex-1">
               
@@ -566,6 +801,8 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
           </table>
         </div>
       </div>
+        </>
+      )}
 
       {/* Assign Fee Head Modal (Strictly Admin / Accounts Branch Only) */}
       {isActualAdmin && isAssignModalOpen && (

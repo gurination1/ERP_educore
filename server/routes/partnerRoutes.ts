@@ -57,7 +57,7 @@ partnerRouter.get('/:id', authenticateToken, async (req: AuthRequest, res: Respo
 });
 
 // 5. Register new partner entity
-partnerRouter.post('/', authenticateToken, requireRole('admin', 'partner', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
+partnerRouter.post('/', authenticateToken, requireRole('admin', 'super_admin', 'partner', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { partner, contact, bank } = req.body;
     if (!partner || !partner.firm_name || !partner.email || !partner.pan_number || !partner.gst_number) {
@@ -89,7 +89,7 @@ partnerRouter.post('/', authenticateToken, requireRole('admin', 'partner', 'hr')
 });
 
 // 6. Update partner entity
-partnerRouter.put('/:id', authenticateToken, requireRole('admin', 'partner', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
+partnerRouter.put('/:id', authenticateToken, requireRole('admin', 'super_admin', 'partner', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const updated = await db.updatePartner(req.params.id, req.body);
     if (!updated) {

@@ -18,8 +18,11 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
   const [staffProfile, setStaffProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
-  const [profileLoading, setProfileLoading] = useState(false);
-  const [departmentFilter, setDepartmentFilter] = useState('all');
+  const isHOD = currentUser?.role === 'hod';
+  const hodDeptDefault = isHOD
+    ? (currentUser?.department?.toUpperCase().includes('ME') ? 'ME' : currentUser?.department?.toUpperCase().includes('ECE') ? 'ECE' : 'CSE')
+    : 'all';
+  const [departmentFilter, setDepartmentFilter] = useState(hodDeptDefault);
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'fresher' | 'rejoiner'>('all');
   const [searchQuery, setSearchQuery] = useState('');
