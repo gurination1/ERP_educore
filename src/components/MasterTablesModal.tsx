@@ -55,7 +55,7 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
       api.getMasterData()
         .then(res => {
           if (res.success) {
-            setData(res as any);
+            setData((res.data && res.data.states) ? res.data : (res as any));
           }
         })
         .finally(() => setIsLoading(false));
@@ -176,7 +176,7 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f1f3f4]">
-                  {data.states.map(s => (
+                  {(data?.states || []).map(s => (
                     <tr key={s.gst_code} className={s.gst_code === '03' ? 'bg-amber-50/50' : 'hover:bg-[#f8f9fa]'}>
                       <td className="py-2.5 px-4 font-mono font-bold text-[#00236f]">{s.gst_code}</td>
                       <td className="py-2.5 px-4 font-bold text-[#191c1d]">
@@ -274,7 +274,7 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f1f3f4]">
-                  {data.userTypes.map(u => (
+                  {(data?.userTypes || []).map(u => (
                     <tr key={u.type_code} className={u.role_key === 'super_admin' ? 'bg-amber-50/60' : 'hover:bg-[#f8f9fa]'}>
                       <td className="py-2.5 px-4 font-mono font-bold text-[#00236f]">{u.type_code}</td>
                       <td className="py-2.5 px-4 font-mono font-bold text-slate-700">{u.alpha_prefix}</td>
@@ -306,7 +306,7 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f1f3f4]">
-                  {data.degrees.map(d => (
+                  {(data?.degrees || []).map(d => (
                     <tr key={d.degree_code} className="hover:bg-[#f8f9fa]">
                       <td className="py-2.5 px-4 font-mono font-bold text-[#00236f]">{d.degree_code}</td>
                       <td className="py-2.5 px-4 font-bold text-[#191c1d]">{d.degree_name}</td>
@@ -335,7 +335,7 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f1f3f4]">
-                  {data.documentTypes.map(doc => (
+                  {(data?.documentTypes || []).map(doc => (
                     <tr key={doc.doc_type_code} className="hover:bg-[#f8f9fa]">
                       <td className="py-2.5 px-4 font-mono font-bold text-[#00236f]">{doc.doc_type_code}</td>
                       <td className="py-2.5 px-4 font-bold text-[#191c1d]">{doc.title}</td>

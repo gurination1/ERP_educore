@@ -138,10 +138,10 @@ export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => 
     if (filterCategory !== 'all' && g.category !== filterCategory) return false;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      const matchSub = g.subject.toLowerCase().includes(q);
-      const matchDesc = g.description.toLowerCase().includes(q);
-      const matchCode = g.tracking_code.toLowerCase().includes(q);
-      const matchName = g.student_name.toLowerCase().includes(q);
+      const matchSub = (g.subject || '').toLowerCase().includes(q);
+      const matchDesc = (g.description || '').toLowerCase().includes(q);
+      const matchCode = (g.tracking_code || '').toLowerCase().includes(q);
+      const matchName = (g.student_name || '').toLowerCase().includes(q);
       return matchSub || matchDesc || matchCode || matchName;
     }
     return true;

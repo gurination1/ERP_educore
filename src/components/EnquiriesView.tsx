@@ -116,7 +116,7 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
     if (res.success) {
       setIsCalling(true);
       setCallSession(res);
-      setFeedbackMsg(`Auto-Dialer active: Connected via ${res.provider.toUpperCase()} telephony gateway.`);
+      setFeedbackMsg(`Auto-Dialer active: Connected via ${String(res?.provider || 'EXOTEL').toUpperCase()} telephony gateway.`);
     } else {
       alert(res.error || 'Failed to start dialer');
     }
@@ -230,7 +230,7 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
                 : 'bg-gray-100 border-gray-300 text-gray-600'
             }`}
           >
-            {dialerSettings.is_enabled ? `[DIALER: ACTIVE (${dialerSettings.provider.toUpperCase()})]` : '[DIALER: DISABLED]'}
+            {dialerSettings?.is_enabled ? `[DIALER: ACTIVE (${String(dialerSettings?.provider || dialerSettings?.telephony_provider || 'EXOTEL').toUpperCase()})]` : '[DIALER: DISABLED]'}
           </button>
 
           {onNavigateToBulkImport && (
@@ -331,7 +331,7 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
                     <div className="flex justify-between items-center text-[9px] text-gray-400 mt-1 pt-1 border-t">
                       <span>ENQ NO: {e.enquiry_no}</span>
                       <span className="uppercase font-semibold text-[#ea580c]">
-                        [{e.status.replace(/_/g, ' ')}]
+                        [{String(e.status || 'new').replace(/_/g, ' ')}]
                       </span>
                     </div>
                   </div>
@@ -354,7 +354,7 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
                       {enquiryDetails.enquiry_no}
                     </span>
                     <span className="bg-[#ea580c] text-white px-2 py-0.2 rounded text-[9px] font-bold uppercase">
-                      {enquiryDetails.status.replace(/_/g, ' ')}
+                      {String(enquiryDetails.status || 'new').replace(/_/g, ' ')}
                     </span>
                   </div>
                   <p className="text-[10px] text-gray-500 mt-0.5">
@@ -399,7 +399,7 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
                       [TELEPHONY ACTIVE]: Connected to {enquiryDetails.student_name} ({enquiryDetails.mobile})
                     </span>
                     <span className="text-emerald-700">
-                      Gateway: {dialerSettings.provider.toUpperCase()} Internet Audio Stream | Recording: ACTIVE
+                      Gateway: {String(dialerSettings?.provider || dialerSettings?.telephony_provider || 'EXOTEL').toUpperCase()} Internet Audio Stream | Recording: ACTIVE
                     </span>
                   </div>
                   <span className="font-mono text-emerald-900 text-[13px] font-bold">

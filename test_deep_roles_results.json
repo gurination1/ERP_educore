@@ -1,0 +1,84 @@
+[
+  {
+    "role": "SUPER_ADMIN",
+    "success": false,
+    "headerPillsClicked": 4,
+    "sidebarItemsClicked": 0,
+    "subviewsTested": 0,
+    "errors": [
+      "Runtime safeguard triggered after clicking Header Pill \"Master Architecture\""
+    ]
+  },
+  {
+    "role": "ADMIN",
+    "success": false,
+    "headerPillsClicked": 2,
+    "sidebarItemsClicked": 0,
+    "subviewsTested": 0,
+    "errors": [
+      "Runtime safeguard triggered after clicking Header Pill \"Admissions Desk\""
+    ]
+  },
+  {
+    "role": "STAFF",
+    "success": true,
+    "headerPillsClicked": 6,
+    "sidebarItemsClicked": 0,
+    "subviewsTested": 7,
+    "errors": []
+  },
+  {
+    "role": "STUDENT",
+    "success": true,
+    "headerPillsClicked": 6,
+    "sidebarItemsClicked": 0,
+    "subviewsTested": 7,
+    "errors": []
+  },
+  {
+    "role": "HRMS",
+    "success": false,
+    "headerPillsClicked": 0,
+    "sidebarItemsClicked": 0,
+    "subviewsTested": 0,
+    "errors": [
+      "Runtime safeguard crashed immediately on dashboard load: EDUCORE ERP • RUNTIME SAFEGUARD\nAPPLICATION VIEW RECOVERED\n\nAn unexpected UI rendering anomaly was caught and isolated to prevent system disruption.\n\nException Details:\nCannot read properties of undefined (reading 'full_name')\nRELOAD DASHBOARD\nRESET TO LOGIN"
+    ]
+  },
+  {
+    "role": "ACCOUNTS",
+    "success": true,
+    "headerPillsClicked": 5,
+    "sidebarItemsClicked": 0,
+    "subviewsTested": 7,
+    "errors": []
+  },
+  {
+    "role": "COUNSELOR",
+    "success": false,
+    "headerPillsClicked": 2,
+    "sidebarItemsClicked": 0,
+    "subviewsTested": 0,
+    "errors": [
+      "Runtime safeguard triggered after clicking Header Pill \"Admissions CRM\""
+    ]
+  },
+  {
+    "role": "HOD",
+    "success": false,
+    "headerPillsClicked": 7,
+    "sidebarItemsClicked": 0,
+    "subviewsTested": 4,
+    "errors": [
+      "Runtime safeguard triggered on route /enquiries"
+    ]
+  },
+  {
+    "role": "PARTNER",
+    "success": true,
+    "headerPillsClicked": 3,
+    "sidebarItemsClicked": 0,
+    "subviewsTested": 7,
+    "errors": []
+  }
+]

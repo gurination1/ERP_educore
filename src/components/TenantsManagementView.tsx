@@ -179,11 +179,12 @@ export const TenantsManagementView: React.FC<TenantsManagementViewProps> = ({ cu
 
   // Filtered tenants
   const filteredTenants = tenants.filter(t => {
+    const q = (searchQuery || '').toLowerCase();
     const matchesSearch =
-      t.client_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.short_code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.subdomain.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.db_name.toLowerCase().includes(searchQuery.toLowerCase());
+      (t.client_name || '').toLowerCase().includes(q) ||
+      (t.short_code || '').toLowerCase().includes(q) ||
+      (t.subdomain || '').toLowerCase().includes(q) ||
+      (t.db_name || '').toLowerCase().includes(q);
 
     const matchesEntity = entityFilter === 'all' || t.entity_type === entityFilter;
     const matchesStatus =

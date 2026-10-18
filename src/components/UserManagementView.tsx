@@ -459,12 +459,12 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
     // Search query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      const matchName = u.full_name.toLowerCase().includes(q);
-      const matchUsername = u.username.toLowerCase().includes(q);
-      const matchEmail = u.email.toLowerCase().includes(q);
-      const matchEmpId = u.employee_id?.toLowerCase().includes(q);
-      const matchDept = u.department?.toLowerCase().includes(q);
-      const matchDesig = u.designation?.toLowerCase().includes(q);
+      const matchName = (u.full_name || '').toLowerCase().includes(q);
+      const matchUsername = (u.username || '').toLowerCase().includes(q);
+      const matchEmail = (u.email || '').toLowerCase().includes(q);
+      const matchEmpId = (u.employee_id || '').toLowerCase().includes(q);
+      const matchDept = (u.department || '').toLowerCase().includes(q);
+      const matchDesig = (u.designation || '').toLowerCase().includes(q);
       return matchName || matchUsername || matchEmail || matchEmpId || matchDept || matchDesig;
     }
 

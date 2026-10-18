@@ -79,7 +79,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
 
-  const isStudentActive = (profileData?.status || student.status || 'active').toLowerCase() === 'active';
+  const isStudentActive = String(profileData?.status || student?.status || 'active').toLowerCase() === 'active';
 
   const handleToggleStudentStatus = async () => {
     const actionName = isStudentActive ? 'Suspend' : 'Reactivate';

@@ -373,8 +373,8 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
                   </tr>
                 ) : (
                   students.map(s => {
-                    const fullName = `${s.first_name} ${s.last_name}`;
-                    const initials = `${s.first_name[0] || ''}${s.last_name[0] || ''}`.toUpperCase();
+                    const fullName = `${s.first_name || ''} ${s.last_name || ''}`.trim() || 'Student Scholar';
+                    const initials = `${(s.first_name || 'S')[0] || ''}${(s.last_name || '')[0] || ''}`.toUpperCase();
                     const courseCode = s.course?.code || 'B.Tech CS';
                     const isAccountActive = (s.status || 'active').toLowerCase() === 'active';
 

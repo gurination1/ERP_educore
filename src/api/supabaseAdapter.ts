@@ -55,6 +55,7 @@ const runtimeSlips = {
   ],
   dialerSettings: {
     is_enabled: true,
+    provider: 'exotel',
     telephony_provider: 'Tata Teleservices Cloud SIP Gateway',
     outbound_caller_id: '+91 172 400 9000',
     auto_record: true,
@@ -90,6 +91,61 @@ export async function handleSupabaseRequest<T = any>(
         database: 'supabase_postgres_live',
         hosting: isGitHubPages ? 'github_pages' : 'local_edge',
         timestamp: new Date().toISOString(),
+      };
+    }
+
+    if (pathname === '/api/master-data') {
+      const states = [
+        { gst_code: '01', state_name: 'Jammu and Kashmir', state_short_code: 'JK', is_union_territory: true },
+        { gst_code: '02', state_name: 'Himachal Pradesh', state_short_code: 'HP', is_union_territory: false },
+        { gst_code: '03', state_name: 'Punjab', state_short_code: 'PB', is_union_territory: false },
+        { gst_code: '04', state_name: 'Chandigarh', state_short_code: 'CH', is_union_territory: true },
+        { gst_code: '06', state_name: 'Haryana', state_short_code: 'HR', is_union_territory: false },
+        { gst_code: '07', state_name: 'Delhi', state_short_code: 'DL', is_union_territory: true },
+        { gst_code: '08', state_name: 'Rajasthan', state_short_code: 'RJ', is_union_territory: false },
+        { gst_code: '09', state_name: 'Uttar Pradesh', state_short_code: 'UP', is_union_territory: false },
+        { gst_code: '10', state_name: 'Bihar', state_short_code: 'BR', is_union_territory: false },
+        { gst_code: '27', state_name: 'Maharashtra', state_short_code: 'MH', is_union_territory: false },
+      ];
+      const userTypes = [
+        { type_code: '1001', alpha_prefix: 'STU', role_key: 'student', display_title: 'Student Scholar', description: 'Enrolled or admitted undergraduate/postgraduate student candidate' },
+        { type_code: '2001', alpha_prefix: 'FAC', role_key: 'staff', display_title: 'Faculty / Academic Staff', description: 'Teaching assistant, assistant professor, associate professor or lab in-charge' },
+        { type_code: '3001', alpha_prefix: 'HOD', role_key: 'hod', display_title: 'Head of Department (HOD)', description: 'Departmental administrative and curriculum head' },
+        { type_code: '4001', alpha_prefix: 'ADM', role_key: 'admin', display_title: 'Institutional Administrator', description: 'College registrar, dean, administrative head' },
+        { type_code: '5001', alpha_prefix: 'ACC', role_key: 'accounts', display_title: 'Accounts & Bursar Officer', description: 'Finance department, tuition collection, bursar' },
+        { type_code: '6001', alpha_prefix: 'CNS', role_key: 'counselor', display_title: 'Admissions Counselor', description: 'Counseling cell, leads pipeline, CRM coordinator' },
+        { type_code: '7001', alpha_prefix: 'PRT', role_key: 'partner', display_title: 'Corporate & Hiring Partner', description: 'Industry partners, corporate recruiters, and internship sponsors' },
+        { type_code: '8001', alpha_prefix: 'HRM', role_key: 'hr', display_title: 'HR & Establishment Officer', description: 'Human Resources, staff recruitment, leave, employee records & service books' },
+        { type_code: '9001', alpha_prefix: 'SUP', role_key: 'super_admin', display_title: 'Universal Provost & Super Admin', description: 'Apex system authority, universal access, invisible to subordinate users' },
+      ];
+      const degrees = [
+        { degree_code: 'BTECH_CSE', degree_name: 'Bachelor of Technology (Computer Science & Engineering)', level: 'undergraduate', duration_years: 4, total_semesters: 8, statutory_body: 'AICTE' },
+        { degree_code: 'BTECH_ME', degree_name: 'Bachelor of Technology (Mechanical Engineering)', level: 'undergraduate', duration_years: 4, total_semesters: 8, statutory_body: 'AICTE' },
+        { degree_code: 'MTECH_CSE', degree_name: 'Master of Technology (Computer Science & Engineering)', level: 'postgraduate', duration_years: 2, total_semesters: 4, statutory_body: 'AICTE' },
+        { degree_code: 'MBA', degree_name: 'Master of Business Administration', level: 'postgraduate', duration_years: 2, total_semesters: 4, statutory_body: 'AICTE' },
+        { degree_code: 'BCA', degree_name: 'Bachelor of Computer Applications', level: 'undergraduate', duration_years: 3, total_semesters: 6, statutory_body: 'UGC' },
+        { degree_code: 'MCA', degree_name: 'Master of Computer Applications', level: 'postgraduate', duration_years: 2, total_semesters: 4, statutory_body: 'AICTE' },
+        { degree_code: 'BSC_PHY', degree_name: 'Bachelor of Science (Physics)', level: 'undergraduate', duration_years: 3, total_semesters: 6, statutory_body: 'UGC' },
+        { degree_code: 'PHD_ENG', degree_name: 'Doctor of Philosophy (Engineering & Technology)', level: 'doctorate', duration_years: 3, total_semesters: 6, statutory_body: 'UGC' },
+      ];
+      const documentTypes = [
+        { doc_type_code: 'DOC_AADHAAR', title: 'UIDAI Aadhaar Card', mandatory_for: 'all', max_file_size_mb: 5, allowed_mime_types: 'image/jpeg,image/png,application/pdf' },
+        { doc_type_code: 'DOC_10TH', title: 'Matriculation (10th) Certificate & Marksheet', mandatory_for: 'all', max_file_size_mb: 5, allowed_mime_types: 'image/jpeg,image/png,application/pdf' },
+        { doc_type_code: 'DOC_12TH', title: 'Senior Secondary (12th / Diploma) Marksheet', mandatory_for: 'all', max_file_size_mb: 5, allowed_mime_types: 'image/jpeg,image/png,application/pdf' },
+        { doc_type_code: 'DOC_PB_DOMICILE', title: 'Punjab State Domicile Certificate (85% Quota)', mandatory_for: 'punjab_quota', max_file_size_mb: 5, allowed_mime_types: 'image/jpeg,image/png,application/pdf' },
+        { doc_type_code: 'DOC_INCOME_CERT', title: 'Tehsildar Annual Income Certificate (PMS / EWS)', mandatory_for: 'scholarship_pms', max_file_size_mb: 5, allowed_mime_types: 'image/jpeg,image/png,application/pdf' },
+        { doc_type_code: 'DOC_CASTE_CERT', title: 'SC / ST / OBC Category Certificate', mandatory_for: 'scholarship_pms', max_file_size_mb: 5, allowed_mime_types: 'image/jpeg,image/png,application/pdf' },
+        { doc_type_code: 'DOC_HOSTEL_AFF', title: 'Hostel Anti-Ragging Undertaking & Medical Slip', mandatory_for: 'hosteller', max_file_size_mb: 5, allowed_mime_types: 'image/jpeg,image/png,application/pdf' },
+      ];
+      return {
+        success: true,
+        universityStandard: 'PUP Patiala / MRSPTU / PU / UGC CBCS Standard',
+        institutionGstCode: '03 (Punjab State Excise & GSTIN Compliant)',
+        states,
+        userTypes,
+        degrees,
+        documentTypes,
+        data: { states, userTypes, degrees, documentTypes },
       };
     }
 
@@ -1069,11 +1125,37 @@ export async function handleSupabaseRequest<T = any>(
         primary_designation: 'Associate Professor',
         department_id: 'CSE',
         employee_status: 'ACTIVE',
+        category: 'general',
         login_enabled: true,
       };
 
       if (!sub) {
-        return { success: true, profile: defaultProfile, data: defaultProfile };
+        const fullProfileObj = {
+          ...defaultProfile,
+          basic: defaultProfile,
+          addresses: [
+            { id: 'addr-01', address_type: 'permanent', address_line1: 'House 42, Model Town Phase 1', city: 'Bathinda', state: 'Punjab', pincode: '151001' }
+          ],
+          bankAccounts: [
+            { id: 'bnk-01', bank_name: 'HDFC Bank', account_number: '50100234891234', ifsc_code: 'HDFC0000123', branch: 'Bathinda GT Road' }
+          ],
+          qualifications: [
+            { id: 'qlf-01', degree_name: 'Ph.D. in Computer Science', awarding_institute: 'MRSPTU Bathinda', year_of_completion: 2018 }
+          ],
+          experience: [
+            { id: 'exp-01', designation: 'Assistant Professor', organization: 'Thapar Institute', from_date: '2012-07-01', to_date: '2016-07-31' }
+          ],
+          orgJourney: [
+            { id: 'jrn-01', event_type: 'JOINING', effective_date: '2016-08-01', designation: 'Assistant Professor', department: 'CSE' }
+          ],
+          additional: {
+            blood_group: 'B+',
+            emergency_phone: '+91 98765 43210',
+            pf_uan: '100987654321',
+            esi_number: '1234567890',
+          },
+        };
+        return { success: true, profile: fullProfileObj, data: fullProfileObj };
       }
 
       if (sub === 'payroll') {
@@ -1218,6 +1300,36 @@ export async function handleSupabaseRequest<T = any>(
 
     if (pathname === '/api/enquiries/dialer/settings') {
       return { success: true, settings: runtimeSlips.dialerSettings };
+    }
+
+    if (pathname.startsWith('/api/enquiries/') && !pathname.endsWith('/dial') && !pathname.endsWith('/convert-to-student') && !pathname.includes('dialer') && method === 'GET') {
+      const enqId = pathname.replace('/api/enquiries/', '');
+      const { data: enqs } = await supabase.from('enquiries').select('*').eq('id', enqId);
+      const enq = (enqs && enqs[0]) || {
+        id: enqId,
+        enquiry_no: 'ENQ-2025-001',
+        student_name: 'Harmanpreet Singh',
+        father_name: 'Gurmeet Singh',
+        mobile: '+91 98721 11223',
+        email: 'harman.singh@gmail.com',
+        selected_course: 'B.Tech CS',
+        course_fee: 90000,
+        admission_probability: 85,
+        status: 'in_progress',
+        interactions: [
+          { id: 'int-01', stage_name: 'Telephonic Academic Counseling', remarks: 'Parent enquired about CSE hostel facilities and campus placement stats.', timestamp: 'Yesterday, 04:30 PM', call_status: 'Connected / Interested', probability_updated: 85 }
+        ],
+      };
+      if (!enq.interactions) {
+        enq.interactions = [
+          { id: 'int-01', stage_name: 'Telephonic Academic Counseling', remarks: 'Parent enquired about CSE hostel facilities and campus placement stats.', timestamp: 'Yesterday, 04:30 PM', call_status: 'Connected / Interested', probability_updated: enq.admission_probability || 85 }
+        ];
+      }
+      return {
+        success: true,
+        enquiry: enq,
+        data: enq,
+      };
     }
 
     // -------------------------------------------------------------

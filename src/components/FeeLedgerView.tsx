@@ -389,9 +389,9 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                         if (!defaulterSearch.trim()) return true;
                         const q = defaulterSearch.toLowerCase();
                         return (
-                          d.studentName?.toLowerCase().includes(q) ||
-                          d.courseInfo?.toLowerCase().includes(q) ||
-                          d.id?.toLowerCase().includes(q)
+                          (d.studentName || '').toLowerCase().includes(q) ||
+                          (d.courseInfo || '').toLowerCase().includes(q) ||
+                          String(d.id || '').toLowerCase().includes(q)
                         );
                       })
                       .map(d => {

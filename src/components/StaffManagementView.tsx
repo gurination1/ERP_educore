@@ -166,7 +166,18 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
       api.getStaffAdditionalRoles(id),
     ]);
     if (profRes.success && profRes.profile) {
-      setStaffProfile(profRes.profile);
+      const p = profRes.profile;
+      const normalized = p.basic ? p : {
+        ...p,
+        basic: p,
+        addresses: p.addresses || [],
+        bankAccounts: p.bankAccounts || [],
+        qualifications: p.qualifications || [],
+        experience: p.experience || [],
+        orgJourney: p.orgJourney || [],
+        additional: p.additional || {},
+      };
+      setStaffProfile(normalized);
     }
     if (rolesRes.success && rolesRes.roles) {
       setAdditionalRoles(rolesRes.roles);
@@ -807,28 +818,28 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                 <div>
                   <div className="flex items-center gap-2">
                     <h2 className="text-[14px] font-bold text-[#00236f]">
-                      {staffProfile.basic.full_name}
+                      {staffProfile.basic?.full_name || staffProfile.full_name || 'Faculty Member'}
                     </h2>
                     <span className="bg-[#00236f] text-white px-2 py-0.5 rounded text-[10px] font-mono">
-                      {staffProfile.basic.employee_id}
+                      {staffProfile.basic?.employee_id || staffProfile.employee_id || 'EMP'}
                     </span>
                     <span
                       className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        staffProfile.basic.employee_status === 'ACTIVE'
+                        (staffProfile.basic?.employee_status || staffProfile.employee_status) === 'ACTIVE'
                           ? 'bg-emerald-100 text-emerald-800'
-                          : staffProfile.basic.employee_status === 'RESIGNED'
+                          : (staffProfile.basic?.employee_status || staffProfile.employee_status) === 'RESIGNED'
                           ? 'bg-amber-100 text-amber-800'
                           : 'bg-rose-100 text-rose-800'
                       }`}
                     >
-                      {staffProfile.basic.employee_status}
+                      {staffProfile.basic?.employee_status || staffProfile.employee_status || 'ACTIVE'}
                     </span>
                   </div>
                   <div className="text-[10px] text-gray-500 mt-0.5 flex gap-3">
-                    <span>DESIGNATION: {staffProfile.basic.primary_designation}</span>
-                    <span>DEPARTMENT: {staffProfile.basic.department_id}</span>
-                    <span>JOINED: {staffProfile.basic.date_of_joining}</span>
-                    <span>CATEGORY: {staffProfile.basic.category.toUpperCase()}</span>
+                    <span>DESIGNATION: {staffProfile.basic?.primary_designation || staffProfile.primary_designation || 'Faculty'}</span>
+                    <span>DEPARTMENT: {staffProfile.basic?.department_id || staffProfile.department_id || 'General'}</span>
+                    <span>JOINED: {staffProfile.basic?.date_of_joining || '2020-01-01'}</span>
+                    <span>CATEGORY: {String(staffProfile.basic?.category || 'General').toUpperCase()}</span>
                   </div>
                 </div>
 
@@ -837,12 +848,12 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                   <button
                     onClick={handleToggleLogin}
                     className={`px-2.5 py-1 rounded text-[10px] font-bold border transition ${
-                      staffProfile.basic.login_enabled
+                      staffProfile.basic?.login_enabled
                         ? 'border-rose-400 text-rose-700 bg-rose-50 hover:bg-rose-100'
                         : 'border-emerald-400 text-emerald-700 bg-emerald-50 hover:bg-emerald-100'
                     }`}
                   >
-                    {staffProfile.basic.login_enabled ? '[DISABLE LOGIN]' : '[ENABLE LOGIN]'}
+                    {staffProfile.basic?.login_enabled ? '[DISABLE LOGIN]' : '[ENABLE LOGIN]'}
                   </button>
 
                   <button
@@ -855,9 +866,9 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                   <button
                     onClick={() => {
                       setStatusModalData({
-                        employee_status: staffProfile.basic.employee_status,
-                        date_of_resigning: staffProfile.basic.date_of_resigning || '',
-                        last_working_date: staffProfile.basic.last_working_date || '',
+                        employee_status: staffProfile.basic?.employee_status || 'ACTIVE',
+                        date_of_resigning: staffProfile.basic?.date_of_resigning || '',
+                        last_working_date: staffProfile.basic?.last_working_date || '',
                         remarks: '',
                       });
                       setShowStatusModal(true);
@@ -871,7 +882,7 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                     onClick={() => {
                       setDesignationForm({
                         eventType: 'PROMOTION',
-                        newDesignation: staffProfile.basic.primary_designation || '',
+                        newDesignation: staffProfile.basic?.primary_designation || '',
                         effectiveDate: new Date().toISOString().slice(0, 10),
                         remarks: '',
                       });
@@ -890,12 +901,12 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                   { id: 'overview', label: 'BASIC INFO' },
                   { id: 'payroll', label: 'PAYROLL & SECURITY' },
                   { id: 'exit-noc', label: 'EXIT NOC (5-PT)' },
-                  { id: 'addresses', label: `ADDRESSES (${staffProfile.addresses.length})` },
-                  { id: 'banks', label: `BANK ACCOUNTS (${staffProfile.bankAccounts.length})` },
-                  { id: 'qualifications', label: `QUALIFICATIONS (${staffProfile.qualifications.length})` },
-                  { id: 'experience', label: `EXPERIENCE (${staffProfile.experience.length})` },
-                  { id: 'journey', label: `ORG JOURNEY (${staffProfile.orgJourney.length})` },
-                  { id: 'additional-roles', label: `ADDITIONAL ROLES (${additionalRoles.length})` },
+                  { id: 'addresses', label: `ADDRESSES (${staffProfile.addresses?.length || 0})` },
+                  { id: 'banks', label: `BANK ACCOUNTS (${staffProfile.bankAccounts?.length || 0})` },
+                  { id: 'qualifications', label: `QUALIFICATIONS (${staffProfile.qualifications?.length || 0})` },
+                  { id: 'experience', label: `EXPERIENCE (${staffProfile.experience?.length || 0})` },
+                  { id: 'journey', label: `ORG JOURNEY (${staffProfile.orgJourney?.length || 0})` },
+                  { id: 'additional-roles', label: `ADDITIONAL ROLES (${additionalRoles?.length || 0})` },
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -917,26 +928,26 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-gray-50 p-3 rounded border border-gray-200 text-[10px]">
                     <div>
                       <span className="text-gray-500 font-semibold block">FATHER NAME:</span>
-                      <span className="font-bold text-gray-800">{staffProfile.basic.father_name || 'N/A'}</span>
+                      <span className="font-bold text-gray-800">{staffProfile.basic?.father_name || staffProfile.father_name || 'N/A'}</span>
                     </div>
                     <div>
                       <span className="text-gray-500 font-semibold block">DATE OF BIRTH:</span>
-                      <span className="font-bold text-gray-800">{staffProfile.basic.dob || 'N/A'}</span>
+                      <span className="font-bold text-gray-800">{staffProfile.basic?.dob || staffProfile.dob || 'N/A'}</span>
                     </div>
                     <div>
                       <span className="text-gray-500 font-semibold block">GENDER:</span>
-                      <span className="font-bold text-gray-800">{staffProfile.basic.gender.toUpperCase()}</span>
+                      <span className="font-bold text-gray-800">{String(staffProfile.basic?.gender || staffProfile.gender || 'Not Specified').toUpperCase()}</span>
                     </div>
                     <div>
                       <span className="text-gray-500 font-semibold block">PORTAL LOGIN:</span>
                       <span className="font-bold text-gray-800">
-                        {staffProfile.basic.login_enabled ? 'ALLOWED (ACTIVE)' : 'DISABLED BY ADMIN'}
+                        {(staffProfile.basic?.login_enabled ?? staffProfile.login_enabled) ? 'ALLOWED (ACTIVE)' : 'DISABLED BY ADMIN'}
                       </span>
                     </div>
                     <div>
                       <span className="text-gray-500 font-semibold block">PASSWORD CHANGE REQUIRED:</span>
                       <span className="font-bold text-gray-800">
-                        {staffProfile.basic.must_change_password ? 'YES (MANDATORY ON NEXT LOGIN)' : 'NO'}
+                        {staffProfile.basic?.must_change_password ? 'YES (MANDATORY ON NEXT LOGIN)' : 'NO'}
                       </span>
                     </div>
                     <div>
@@ -987,7 +998,7 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                 <div className="space-y-3">
                   <div className="flex items-center justify-between pb-1 border-b border-gray-100">
                     <span className="font-extrabold text-[11px] text-[#00236f] tracking-wide uppercase">
-                      Staff Residential & Domicile Addresses ({staffProfile.addresses.length})
+                      Staff Residential & Domicile Addresses ({staffProfile.addresses?.length || 0})
                     </span>
                     {canManageHR && (
                       <button
@@ -999,14 +1010,14 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                       </button>
                     )}
                   </div>
-                  {staffProfile.addresses.length === 0 ? (
+                  {!staffProfile.addresses || staffProfile.addresses.length === 0 ? (
                     <div className="text-gray-400 py-6 text-center">No addresses registered.</div>
                   ) : (
-                    staffProfile.addresses.map((a: any) => (
+                    (staffProfile.addresses || []).map((a: any) => (
                       <div key={a.id} className="border border-gray-200 p-2.5 rounded bg-gray-50 flex justify-between items-center text-[10px]">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-[#00236f]">{a.address_type.toUpperCase()} ADDRESS</span>
+                            <span className="font-bold text-[#00236f]">{String(a.address_type || 'residential').toUpperCase()} ADDRESS</span>
                             {a.is_default && (
                               <span className="bg-[#00236f] text-white px-1.5 py-0.2 rounded text-[8px] font-bold">
                                 DEFAULT
@@ -1026,7 +1037,7 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                 <div className="space-y-3">
                   <div className="flex items-center justify-between pb-1 border-b border-gray-100">
                     <span className="font-extrabold text-[11px] text-[#00236f] tracking-wide uppercase">
-                      Salary Disbursal Bank Mandates ({staffProfile.bankAccounts.length})
+                      Salary Disbursal Bank Mandates ({staffProfile.bankAccounts?.length || 0})
                     </span>
                     {canManageHR && (
                       <button
@@ -1052,10 +1063,10 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                       AUDIT COMPLIANT
                     </span>
                   </div>
-                  {staffProfile.bankAccounts.length === 0 ? (
+                  {!staffProfile.bankAccounts || staffProfile.bankAccounts.length === 0 ? (
                     <div className="text-gray-400 py-6 text-center">No bank accounts registered.</div>
                   ) : (
-                    staffProfile.bankAccounts.map((b: any) => (
+                    (staffProfile.bankAccounts || []).map((b: any) => (
                       <div key={b.id} className="border border-gray-200 p-2.5 rounded bg-gray-50 flex justify-between items-center text-[10px]">
                         <div>
                           <div className="flex items-center gap-2">
@@ -1079,7 +1090,7 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                 <div className="space-y-3">
                   <div className="flex items-center justify-between pb-1 border-b border-gray-100">
                     <span className="font-extrabold text-[11px] text-[#00236f] tracking-wide uppercase">
-                      Academic Degrees & UGC NET/PhD ({staffProfile.qualifications.length})
+                      Academic Degrees & UGC NET/PhD ({staffProfile.qualifications?.length || 0})
                     </span>
                     {canManageHR && (
                       <button
@@ -1091,10 +1102,10 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                       </button>
                     )}
                   </div>
-                  {staffProfile.qualifications.length === 0 ? (
+                  {!staffProfile.qualifications || staffProfile.qualifications.length === 0 ? (
                     <div className="text-gray-400 py-6 text-center">No academic qualifications listed.</div>
                   ) : (
-                    staffProfile.qualifications.map((q: any) => (
+                    (staffProfile.qualifications || []).map((q: any) => (
                       <div key={q.id} className="border border-gray-200 p-2.5 rounded bg-gray-50 flex justify-between items-center text-[10px]">
                         <div>
                           <div className="flex items-center gap-2">
@@ -1118,7 +1129,7 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                 <div className="space-y-3">
                   <div className="flex items-center justify-between pb-1 border-b border-gray-100">
                     <span className="font-extrabold text-[11px] text-[#00236f] tracking-wide uppercase">
-                      Prior Industrial & Academic Experience ({staffProfile.experience.length})
+                      Prior Industrial & Academic Experience ({staffProfile.experience?.length || 0})
                     </span>
                     {canManageHR && (
                       <button
@@ -1130,10 +1141,10 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                       </button>
                     )}
                   </div>
-                  {staffProfile.experience.length === 0 ? (
+                  {!staffProfile.experience || staffProfile.experience.length === 0 ? (
                     <div className="text-gray-400 py-6 text-center">No prior work experience listed.</div>
                   ) : (
-                    staffProfile.experience.map((e: any) => (
+                    (staffProfile.experience || []).map((e: any) => (
                       <div key={e.id} className="border border-gray-200 p-2.5 rounded bg-gray-50 flex justify-between items-center text-[10px]">
                         <div>
                           <div className="flex items-center gap-2">
@@ -1155,14 +1166,14 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
 
               {activeTab === 'journey' && (
                 <div className="space-y-2">
-                  {staffProfile.orgJourney.length === 0 ? (
+                  {!staffProfile.orgJourney || staffProfile.orgJourney.length === 0 ? (
                     <div className="text-gray-400 py-6 text-center">No career journey events recorded.</div>
                   ) : (
-                    staffProfile.orgJourney.map((j: any) => (
+                    (staffProfile.orgJourney || []).map((j: any) => (
                       <div key={j.id} className="border-l-2 border-[#00236f] pl-3 py-1 bg-gray-50/50 p-2 rounded text-[10px]">
                         <div className="flex items-center justify-between">
                           <span className="font-bold text-[#00236f] uppercase">
-                            [EVENT: {j.event_type.replace(/_/g, ' ')}]
+                            [EVENT: {String(j.event_type || 'UPDATE').replace(/_/g, ' ')}]
                           </span>
                           <span className="text-gray-400 font-mono text-[9px]">{j.effective_date}</span>
                         </div>
@@ -1849,7 +1860,7 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                   STAFF MEMBER:
                 </label>
                 <div className="p-2 bg-slate-50 rounded border border-slate-200 font-semibold text-slate-800">
-                  {staffProfile.basic.full_name} ({staffProfile.basic.employee_id}) — Current: <span className="text-[#00236f]">{staffProfile.basic.primary_designation}</span>
+                  {staffProfile.basic?.full_name || staffProfile.full_name || 'Staff Member'} ({staffProfile.basic?.employee_id || staffProfile.employee_id || 'EMP'}) — Current: <span className="text-[#00236f]">{staffProfile.basic?.primary_designation || staffProfile.primary_designation || 'Staff'}</span>
                 </div>
               </div>
 

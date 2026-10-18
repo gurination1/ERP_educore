@@ -61,10 +61,10 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
     if (search.trim()) {
       const q = search.toLowerCase();
       return (
-        l.actor_name.toLowerCase().includes(q) ||
-        l.action.toLowerCase().includes(q) ||
-        l.details.toLowerCase().includes(q) ||
-        l.target_id.toLowerCase().includes(q)
+        (l.actor_name || '').toLowerCase().includes(q) ||
+        (l.action || '').toLowerCase().includes(q) ||
+        (l.details || '').toLowerCase().includes(q) ||
+        (l.target_id ? String(l.target_id).toLowerCase().includes(q) : false)
       );
     }
     return true;

@@ -219,7 +219,7 @@ This transcript is digitally generated and certified by EduCore Academic ERP.`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `transcript_${stu.student_id}_${stu.full_name.toLowerCase().replace(/\s+/g, '_')}.txt`;
+    a.download = `transcript_${stu.student_id || 'STU'}_${String(stu.full_name || 'student').toLowerCase().replace(/\s+/g, '_')}.txt`;
     document.body.appendChild(a);
     a.click();
     a.remove();
