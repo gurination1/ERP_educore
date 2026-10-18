@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduCore ERP — Admissions Cloud Telephony & CTI Bridge</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            educore: {
+              primary: '#00236f',
+              'primary-container': '#1e3a8a',
+              secondary: '#006a61',
+              surface: '#f8f9fa',
+              card: '#ffffff',
+              border: '#e1e3e4',
+              'border-subtle': '#edeeef',
+              text: '#191c1d',
+              muted: '#757682',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #f8f9fa;
+      color: #191c1d;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    
+    /* Live Soundwave Frequency bars */
+    @keyframes wavePulse {
+      0%, 100% { height: 4px; opacity: 0.3; }
+      50% { height: 20px; opacity: 1; }
+    }
+    .wave-anim {
+      animation: wavePulse 0.9s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+    }
+    .wave-anim:nth-child(1) { animation-delay: 0.1s; }
+    .wave-anim:nth-child(2) { animation-delay: 0.35s; }
+    .wave-anim:nth-child(3) { animation-delay: 0.6s; }
+    .wave-anim:nth-child(4) { animation-delay: 0.2s; }
+    .wave-anim:nth-child(5) { animation-delay: 0.45s; }
+    .wave-anim:nth-child(6) { animation-delay: 0.15s; }
+    .wave-anim:nth-child(7) { animation-delay: 0.5s; }
+    .wave-anim:nth-child(8) { animation-delay: 0.25s; }
+
+    /* Spring-loaded HUD entrance */
+    .hud-enter {
+      animation: springSlide 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes springSlide {
+      from { transform: translate(-50%, 120%); opacity: 0; }
+      to { transform: translate(-50%, 0%); opacity: 1; }
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #c5c5d3; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #757682; }
+  </style>
+</head>
+<body class="min-h-screen antialiased flex flex-col justify-between selection:bg-[#00236f]/15 selection:text-[#00236f]">
+
+  <!-- ========================================================================= -->
+  <!-- TOP BRAND & TELEPHONY STATUS BAR (EDUCORE ERP THEME)                       -->
+  <!-- ========================================================================= -->
+  <header class="border-b border-[#e1e3e4] bg-white sticky top-0 z-40 px-6 py-3 shadow-2xs">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      <!-- Brand & DID Info -->
+      <div class="flex items-center gap-3.5">
+        <div class="w-9 h-9 rounded-xl bg-[#00236f] flex items-center justify-center text-white shadow-xs">
+          <span class="material-symbols-outlined text-[20px]">school</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-sm tracking-tight text-[#00236f]">EduCore ERP</span>
+            <span class="text-xs text-[#757682] font-semibold">| Admissions CTI Gateway</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              TRAI DLT • Exotel Voice Bridge
+            </span>
+          </div>
+          <p class="text-[11px] text-[#757682] font-mono mt-0.5">
+            Pilot DID: <strong class="text-[#191c1d]">+91-172-500-EDUCORE</strong> • Zero Personal Phone Leakage • PTU Quota Intake
+          </p>
+        </div>
+      </div>
+
+      <!-- Counselor Station & Controls -->
+      <div class="flex items-center gap-3">
+        <!-- Counselor Badge -->
+        <div class="hidden sm:flex items-center gap-2.5 pr-3 border-r border-[#e1e3e4] text-xs">
+          <div class="w-8 h-8 rounded-full bg-[#00236f] text-white flex items-center justify-center font-bold text-xs">
+            HK
+          </div>
+          <div class="flex flex-col text-left">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <strong class="text-[#191c1d] text-xs">Harleen Kaur</strong>
+              <span class="text-[#757682] font-mono text-[10px]">(Ext: 402)</span>
+            </div>
+            <span class="text-[10px] text-[#757682]">Head Counselor • Admissions Desk</span>
+          </div>
+        </div>
+
+        <!-- Audio FX Toggle -->
+        <button onclick="toggleAudioFx()" id="btnAudioMute" class="p-2 rounded-lg border border-[#e1e3e4] bg-[#f8f9fa] hover:bg-[#f1f2f4] text-[#444651] transition-colors cursor-pointer" title="Toggle Synthesized Call Sound FX">
+          <span class="material-symbols-outlined text-[18px]" id="audioIcon">volume_up</span>
+        </button>
+
+        <!-- Webhook Inspector -->
+        <button onclick="openWebhookInspector()" class="px-3 py-1.5 rounded-lg border border-[#e1e3e4] bg-[#f8f9fa] hover:bg-[#f1f2f4] text-[#00236f] font-mono text-xs flex items-center gap-1.5 transition-colors cursor-pointer font-bold">
+          <span class="material-symbols-outlined text-[16px] text-sky-600">terminal</span>
+          <span>Webhook CDR Feed</span>
+          <span id="webhookCountBadge" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        </button>
+
+        <a href="http://localhost:3000/" class="px-3 py-1.5 rounded-lg bg-[#00236f] hover:bg-[#1e3a8a] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer">
+          <span class="material-symbols-outlined text-[15px]">dashboard</span>
+          <span>Back to Main ERP</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN WORKSPACE: CRM PIPELINE & CLICK-TO-CALL LEADS                         -->
+  <!-- ========================================================================= -->
+  <main class="max-w-7xl mx-auto w-full px-6 py-6 space-y-6 flex-1">
+
+    <!-- Metric KPI Banner -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-2xs flex items-center justify-between">
+        <div>
+          <span class="text-[11px] font-bold uppercase text-[#757682] tracking-wider">Today's Call Bridge</span>
+          <div class="text-2xl font-black text-[#191c1d] mt-1" id="statCallCount">28 Calls</div>
+          <span class="text-[11px] text-emerald-700 font-semibold flex items-center gap-0.5 mt-0.5">
+            <span class="material-symbols-outlined text-[13px]">trending_up</span>
+            <span>+14% vs yesterday</span>
+          </span>
+        </div>
+        <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100">
+          <span class="material-symbols-outlined text-[22px]">phone_forwarded</span>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-2xs flex items-center justify-between">
+        <div>
+          <span class="text-[11px] font-bold uppercase text-[#757682] tracking-wider">Avg Call Duration</span>
+          <div class="text-2xl font-black text-[#191c1d] mt-1" id="statAvgTalk">3m 42s</div>
+          <span class="text-[11px] text-[#757682] font-mono mt-0.5">Standard PTU Ingestion</span>
+        </div>
+        <div class="w-11 h-11 rounded-xl bg-blue-50 text-[#00236f] flex items-center justify-center border border-blue-100">
+          <span class="material-symbols-outlined text-[22px]">timer</span>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-2xs flex items-center justify-between">
+        <div>
+          <span class="text-[11px] font-bold uppercase text-[#757682] tracking-wider">Campus Visits Booked</span>
+          <div class="text-2xl font-black text-[#191c1d] mt-1" id="statVisits">12 Scheduled</div>
+          <span class="text-[11px] text-emerald-700 font-semibold flex items-center gap-0.5 mt-0.5">
+            <span class="material-symbols-outlined text-[13px]">event_available</span>
+            <span>43% Conversion</span>
+          </span>
+        </div>
+        <div class="w-11 h-11 rounded-xl bg-teal-50 text-[#006a61] flex items-center justify-center border border-teal-100">
+          <span class="material-symbols-outlined text-[22px]">apartment</span>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-2xs flex items-center justify-between">
+        <div>
+          <span class="text-[11px] font-bold uppercase text-[#757682] tracking-wider">Pilot DID Line SLA</span>
+          <div class="text-2xl font-black text-emerald-700 mt-1">99.98%</div>
+          <span class="text-[11px] text-[#757682] font-mono mt-0.5">TRAI 10-Digit Masked</span>
+        </div>
+        <div class="w-11 h-11 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center border border-purple-100">
+          <span class="material-symbols-outlined text-[22px]">verified</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lead Queue Toolbar -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-[#e1e3e4] shadow-2xs">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-[20px] text-[#00236f]">contact_phone</span>
+        <h2 class="font-bold text-sm text-[#191c1d]">Admissions Inquiry & Recall Pipeline</h2>
+        <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#f3f4f5] text-[#444651]">
+          6 Hot Leads Pending
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-semibold">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+          <span>Auto 2-Leg Bridge Ready</span>
+        </div>
+        <button onclick="triggerManualDialer()" class="px-3 py-1.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
+          <span class="material-symbols-outlined text-[15px]">dialpad</span>
+          <span>Direct Dial Pad</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Candidate Leads Table (EduCore High-Craft Design) -->
+    <div class="bg-white rounded-xl border border-[#e1e3e4] shadow-2xs overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-[#f8f9fa] border-b border-[#e1e3e4] text-[11px] font-bold text-[#757682] uppercase tracking-wider">
+              <th class="py-3 px-4">Candidate Profile</th>
+              <th class="py-3 px-4">Course & Stage</th>
+              <th class="py-3 px-4">Priority / Quota</th>
+              <th class="py-3 px-4">Scheduled Recall</th>
+              <th class="py-3 px-4">Last Interaction & Notes</th>
+              <th class="py-3 px-4 text-right">Instant CTI Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#f3f4f5]" id="leadTableBody">
+            <!-- Injected via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Recent Telephony CDR Call Log -->
+    <div class="bg-white rounded-xl border border-[#e1e3e4] shadow-2xs p-4 space-y-3">
+      <div class="flex items-center justify-between pb-2 border-b border-[#e1e3e4]">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[18px] text-[#006a61]">receipt_long</span>
+          <h3 class="font-bold text-xs text-[#191c1d] uppercase tracking-wide">Live Ingested Telephony CDRs (Voice Recordings)</h3>
+        </div>
+        <span class="text-[11px] font-mono text-[#757682]">Encrypted AES-256 Storage</span>
+      </div>
+      <div class="space-y-2" id="cdrFeedContainer">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- iPHONE CALLKIT / DYNAMIC ISLAND DOCKED CTI BAR (EduCore Style)              -->
+  <!-- ========================================================================= -->
+  <div id="iphoneCallDock" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-2xl hidden hud-enter">
+    <div class="bg-slate-950/92 backdrop-blur-2xl border border-slate-700/60 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] text-white rounded-3xl p-4 md:px-6 md:py-4 flex flex-col md:flex-row items-center justify-between gap-4 transition-all">
+      
+      <!-- Left: Avatar & Candidate Info -->
+      <div class="flex items-center gap-3.5 w-full md:w-auto">
+        <div class="relative">
+          <div class="w-12 h-12 rounded-full bg-linear-to-br from-[#00236f] to-[#1e3a8a] text-white flex items-center justify-center font-bold text-base shadow-md border border-white/10" id="hudCandidateAvatar">
+            GS
+          </div>
+          <span class="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5" id="hudPulseRing">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-slate-950"></span>
+          </span>
+        </div>
+
+        <div class="flex flex-col min-w-0">
+          <div class="flex items-center gap-2">
+            <h4 class="font-bold text-sm tracking-tight text-white truncate" id="hudCandidateName">
+              Gurinder Singh
+            </h4>
+            <span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              DID Masked
+            </span>
+          </div>
+          <div class="flex items-center gap-1.5 text-xs text-slate-400 font-mono mt-0.5">
+            <span id="hudCandidatePhone">+91 98765-43210</span>
+            <span>•</span>
+            <span class="text-[11px] text-slate-300 truncate" id="hudCandidateCourse">B.Tech CSE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center: Live Call Status & Audio Waveform -->
+      <div class="flex flex-col items-center justify-center px-2 py-1 bg-slate-900/60 rounded-xl border border-white/5 min-w-[150px]">
+        <div id="hudCallStatusPill" class="flex items-center gap-2">
+          <!-- Waveform Equalizer -->
+          <div class="flex items-center gap-0.5 h-5 px-1" id="hudWaveform">
+            <span class="w-0.5 rounded-full bg-emerald-400 wave-anim"></span>
+            <span class="w-0.5 rounded-full bg-emerald-400 wave-anim"></span>
+            <span class="w-0.5 rounded-full bg-emerald-400 wave-anim"></span>
+            <span class="w-0.5 rounded-full bg-emerald-400 wave-anim"></span>
+            <span class="w-0.5 rounded-full bg-emerald-400 wave-anim"></span>
+            <span class="w-0.5 rounded-full bg-emerald-400 wave-anim"></span>
+            <span class="w-0.5 rounded-full bg-emerald-400 wave-anim"></span>
+            <span class="w-0.5 rounded-full bg-emerald-400 wave-anim"></span>
+          </div>
+          <span class="font-mono text-sm font-bold text-white tracking-wider" id="hudCallTimer">
+            00:00
+          </span>
+        </div>
+        <span class="text-[9px] text-slate-400 font-mono mt-0.5" id="hudCallStatusText">
+          Bridge Pilot: +91-172-500-EDUCORE
+        </span>
+      </div>
+
+      <!-- Right: Tactile iPhone Controls -->
+      <div class="flex items-center gap-2">
+        <!-- Mute Mic -->
+        <button
+          onclick="toggleMute()"
+          id="btnHudMute"
+          class="w-10 h-10 rounded-full bg-slate-800/80 hover:bg-slate-800 text-slate-300 border border-slate-700 flex items-center justify-center transition-all cursor-pointer"
+          title="Mute Counselor Microphone"
+        >
+          <span class="material-symbols-outlined text-[19px]" id="iconHudMute">mic</span>
+        </button>
+
+        <!-- Hold Call -->
+        <button
+          onclick="toggleHold()"
+          id="btnHudHold"
+          class="w-10 h-10 rounded-full bg-slate-800/80 hover:bg-slate-800 text-slate-300 border border-slate-700 flex items-center justify-center transition-all cursor-pointer"
+          title="Hold / Pause Call"
+        >
+          <span class="material-symbols-outlined text-[19px]" id="iconHudHold">pause</span>
+        </button>
+
+        <!-- DTMF Keypad -->
+        <button
+          onclick="toggleKeypadDrawer()"
+          class="w-10 h-10 rounded-full bg-slate-800/80 hover:bg-slate-800 text-slate-300 border border-slate-700 flex items-center justify-center transition-all cursor-pointer"
+          title="DTMF In-Call Keypad"
+        >
+          <span class="material-symbols-outlined text-[19px]">dialpad</span>
+        </button>
+
+        <!-- End Call / Red Button -->
+        <button
+          onclick="endActiveCall()"
+          class="w-12 h-12 rounded-full bg-rose-600 hover:bg-rose-500 active:scale-95 text-white flex items-center justify-center shadow-lg shadow-rose-900/50 transition-all cursor-pointer ml-1"
+          title="End Telephony Call"
+        >
+          <span class="material-symbols-outlined text-[24px]">call_end</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- DTMF Keypad Drawer -->
+    <div id="keypadDrawer" class="hidden mt-2.5 mx-auto max-w-xs bg-slate-950/95 backdrop-blur-2xl border border-slate-800 rounded-2xl p-3 shadow-2xl text-center">
+      <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
+        <span class="text-[11px] font-mono text-slate-400">DTMF In-Call Keypad</span>
+        <span class="text-xs font-mono font-bold text-white px-2 py-0.5 rounded bg-slate-900" id="keypadScreen">
+          Ready
+        </span>
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <button onclick="pressDtmf('1')" class="h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-mono font-bold text-sm flex items-center justify-center border border-slate-700/50">1</button>
+        <button onclick="pressDtmf('2')" class="h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-mono font-bold text-sm flex items-center justify-center border border-slate-700/50">2</button>
+        <button onclick="pressDtmf('3')" class="h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-mono font-bold text-sm flex items-center justify-center border border-slate-700/50">3</button>
+        <button onclick="pressDtmf('4')" class="h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-mono font-bold text-sm flex items-center justify-center border border-slate-700/50">4</button>
+        <button onclick="pressDtmf('5')" class="h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-mono font-bold text-sm flex items-center justify-center border border-slate-700/50">5</button>
+        <button onclick="pressDtmf('6')" class="h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-mono font-bold text-sm flex items-center justify-center border border-slate-700/50">6</button>
+        <button onclick="pressDtmf('7')" class="h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-mono font-bold text-sm flex items-center justify-center border border-slate-700/50">7</button>
+        <button onclick="pressDtmf('8')" class="h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-mono font-bold text-sm flex items-center justify-center border border-slate-700/50">8</button>
+        <button onclick="pressDtmf('9')" class="h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-mono font-bold text-sm flex items-center justify-center border border-slate-700/50">9</button>
+        <button onclick="pressDtmf('*')" class="h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-mono font-bold text-sm flex items-center justify-center border border-slate-700/50">*</button>
+        <button onclick="pressDtmf('0')" class="h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-mono font-bold text-sm flex items-center justify-center border border-slate-700/50">0</button>
+        <button onclick="pressDtmf('#')" class="h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-mono font-bold text-sm flex items-center justify-center border border-slate-700/50">#</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- POST-CALL AUTO-DISPOSITION SHEET (EDUCORE ERP THEME)                       -->
+  <!-- ========================================================================= -->
+  <div id="dispositionModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full border border-[#e1e3e4] shadow-2xl overflow-hidden">
+      <div class="bg-[#00236f] text-white p-5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-emerald-400">
+            <span class="material-symbols-outlined text-[24px]">call_log</span>
+          </div>
+          <div>
+            <h3 class="font-bold text-sm tracking-tight text-white">Log Call Disposition & Action</h3>
+            <p class="text-xs text-blue-200" id="dispHeaderSub">Candidate: Gurinder Singh • Call Duration: 01:45</p>
+          </div>
+        </div>
+        <button onclick="closeDispositionModal()" class="text-white/70 hover:text-white cursor-pointer">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4 text-xs">
+        <div class="p-3 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl flex items-center justify-between text-[#444651]">
+          <div>
+            <span class="text-[10px] text-[#757682] uppercase font-bold block">DID Bridge Pilot</span>
+            <span class="font-mono font-semibold text-[#191c1d]">+91-172-500-EDUCORE</span>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-[#757682] uppercase font-bold block">Recorded Duration</span>
+            <span class="font-mono font-bold text-emerald-700" id="dispRecordedDuration">01:45</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[#191c1d] font-bold mb-1.5">
+            Call Outcome / Stage <span class="text-red-500">*</span>
+          </label>
+          <div class="grid grid-cols-2 gap-2" id="dispOutcomeGrid">
+            <button onclick="selectOutcome(this, 'campus_visit_scheduled')" class="disp-outcome-btn p-2.5 rounded-xl border text-left font-medium transition-all bg-[#00236f] text-white border-[#00236f] shadow-xs cursor-pointer">
+              🏫 Campus Visit Scheduled
+            </button>
+            <button onclick="selectOutcome(this, 'callback_requested')" class="disp-outcome-btn p-2.5 rounded-xl border text-left font-medium transition-all bg-[#f8f9fa] border-[#e1e3e4] text-[#444651] hover:bg-white cursor-pointer">
+              📞 Callback Requested
+            </button>
+            <button onclick="selectOutcome(this, 'punjab_quota_concession')" class="disp-outcome-btn p-2.5 rounded-xl border text-left font-medium transition-all bg-[#f8f9fa] border-[#e1e3e4] text-[#444651] hover:bg-white cursor-pointer">
+              🎓 Quota / Fee Concession
+            </button>
+            <button onclick="selectOutcome(this, 'documents_pending')" class="disp-outcome-btn p-2.5 rounded-xl border text-left font-medium transition-all bg-[#f8f9fa] border-[#e1e3e4] text-[#444651] hover:bg-white cursor-pointer">
+              📄 Documents Pending
+            </button>
+            <button onclick="selectOutcome(this, 'busy_callback')" class="disp-outcome-btn p-2.5 rounded-xl border text-left font-medium transition-all bg-[#f8f9fa] border-[#e1e3e4] text-[#444651] hover:bg-white cursor-pointer">
+              ⏳ Busy / Retrying
+            </button>
+            <button onclick="selectOutcome(this, 'not_interested')" class="disp-outcome-btn p-2.5 rounded-xl border text-left font-medium transition-all bg-[#f8f9fa] border-[#e1e3e4] text-[#444651] hover:bg-white cursor-pointer">
+              ❌ Not Interested
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[#191c1d] font-bold mb-1">Priority Flag</label>
+            <select id="dispPriority" class="w-full p-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-semibold text-[#191c1d] outline-none">
+              <option value="p1_high">🔥 P1 High (Hot Lead)</option>
+              <option value="p2_medium">⚡ P2 Medium (Follow-up)</option>
+              <option value="p3_low">💤 P3 Standard (Warm)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[#191c1d] font-bold mb-1">Next Follow-Up Date</label>
+            <input type="date" id="dispNextDate" class="w-full p-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-medium text-[#191c1d] outline-none" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[#191c1d] font-bold mb-1">Counselor Call Notes</label>
+          <textarea id="dispNotes" rows="3" placeholder="Notes on candidate query, parent discussion, fee concessions, or visit timings..." class="w-full p-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs text-[#191c1d] outline-none"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-[#e1e3e4]">
+          <button onclick="closeDispositionModal()" class="px-4 py-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] text-[#444651] rounded-lg font-bold cursor-pointer">
+            Discard
+          </button>
+          <button onclick="saveDispositionLog()" class="px-5 py-2 bg-[#006a61] hover:bg-[#004f48] text-white rounded-lg font-bold shadow-xs flex items-center gap-1.5 cursor-pointer">
+            <span class="material-symbols-outlined text-[16px]">check_circle</span>
+            <span>Save Disposition to CRM</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Webhook Inspector Modal -->
+  <div id="webhookModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-2xl w-full border border-[#e1e3e4] shadow-2xl overflow-hidden">
+      <div class="bg-slate-900 text-white p-4 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-400 text-[20px]">webhook</span>
+          <h3 class="font-mono font-bold text-xs text-white">Exotel/Ozonetel Webhook CDR Inspector (HMAC Verified)</h3>
+        </div>
+        <button onclick="closeWebhookInspector()" class="text-slate-400 hover:text-white cursor-pointer">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+      <div class="p-4 bg-slate-950 font-mono text-[11px] text-emerald-400 overflow-x-auto max-h-96" id="webhookJsonBox">
+        // Waiting for CDR webhook payload...
+      </div>
+      <div class="p-3 bg-slate-900 border-t border-slate-800 text-right">
+        <button onclick="closeWebhookInspector()" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-mono font-bold">
+          Close Inspector
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manual Dial Pad Modal -->
+  <div id="manualDialModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-sm w-full border border-[#e1e3e4] shadow-2xl overflow-hidden p-5 space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-[#e1e3e4]">
+        <h3 class="font-bold text-sm text-[#00236f] flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[18px]">dialpad</span>
+          <span>Direct Phone Dialer</span>
+        </h3>
+        <button onclick="closeManualDialer()" class="text-[#757682] hover:text-[#191c1d]">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-bold text-[#757682] mb-1">Candidate Phone Number</label>
+        <input type="tel" id="manualPhoneInput" value="+91 98140-55231" class="w-full p-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm font-mono font-bold text-[#191c1d] outline-none" />
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold text-[#757682] mb-1">Candidate Name (Optional)</label>
+        <input type="text" id="manualNameInput" value="Walk-in Parent Inquiry" class="w-full p-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-semibold text-[#191c1d] outline-none" />
+      </div>
+
+      <button onclick="startManualCall()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
+        <span class="material-symbols-outlined text-[17px]">call</span>
+        <span>Initiate 2-Leg Bridge Call</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Leads Data
+    const leads = [
+      {
+        id: 'lead-1',
+        name: 'Gurinder Singh',
+        phone: '+91 98765-43210',
+        course: 'B.Tech Computer Science',
+        intake_step: 1,
+        priority: 'p1_high',
+        city: 'Bathinda, Punjab',
+        quota: 'punjab_85',
+        scheduled_recall: 'Today, 6:30 PM',
+        notes: 'Inquired about Punjab State 85% domicile fee waiver. Father wants campus hostel visit.',
+        last_contact: '2 days ago (SMS)',
+      },
+      {
+        id: 'lead-2',
+        name: 'Amanpreet Kaur',
+        phone: '+91 98144-88219',
+        course: 'B.Pharm (Pharmacy)',
+        intake_step: 2,
+        priority: 'p1_high',
+        city: 'Patiala, Punjab',
+        quota: 'punjab_85',
+        scheduled_recall: 'Today, 7:15 PM',
+        notes: '10+2 marksheet 86.4% in Medical. Comparing fee structure with Punjabi University Patiala.',
+        last_contact: '1 day ago (Inquiry)',
+      },
+      {
+        id: 'lead-3',
+        name: 'Rohit Verma',
+        phone: '+91 99881-22450',
+        course: 'B.Tech Artificial Intelligence',
+        intake_step: 1,
+        priority: 'p2_medium',
+        city: 'Ambala, Haryana',
+        quota: 'other_state_15',
+        scheduled_recall: 'Tomorrow, 11:00 AM',
+        notes: 'JEE Main rank 1,42,000. Asked if direct admission without counselling is allowed.',
+        last_contact: '3 days ago (Call)',
+      },
+      {
+        id: 'lead-4',
+        name: 'Simranjeet Kaur',
+        phone: '+91 94172-33418',
+        course: 'BBA (Management)',
+        intake_step: 1,
+        priority: 'p3_low',
+        city: 'Ludhiana, Punjab',
+        quota: 'punjab_85',
+        scheduled_recall: 'Tomorrow, 2:30 PM',
+        notes: 'Interested in bus transit route from Khanna/Samrala. Callback requested.',
+        last_contact: '5 days ago (Walk-in)',
+      },
+      {
+        id: 'lead-5',
+        name: 'Jaspreet Singh Dhillon',
+        phone: '+91 98884-11920',
+        course: 'B.Tech Mechanical Engg',
+        intake_step: 2,
+        priority: 'p2_medium',
+        city: 'Moga, Punjab',
+        quota: 'punjab_85',
+        scheduled_recall: 'Oct 03, 10:30 AM',
+        notes: 'Diploma lateral entry inquiry. Credits transfer under NEP-2020 requested.',
+        last_contact: '4 days ago (Email)',
+      },
+    ];
+
+    let currentCandidate = null;
+    let callTimerInterval = null;
+    let callDuration = 0;
+    let isMuted = false;
+    let isOnHold = false;
+    let audioFxOn = true;
+    let audioCtx = null;
+    let ringOsc1 = null;
+    let ringOsc2 = null;
+
+    // Web Audio Synthesizer
+    function getAudioCtx() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playTone(freq, dur = 0.2, type = 'sine') {
+      if (!audioFxOn) return;
+      try {
+        const ctx = getAudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.04, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + dur);
+      } catch (e) {}
+    }
+
+    function startRingbackTone() {
+      if (!audioFxOn) return;
+      try {
+        const ctx = getAudioCtx();
+        ringOsc1 = ctx.createOscillator();
+        ringOsc2 = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        ringOsc1.frequency.value = 440;
+        ringOsc2.frequency.value = 480;
+
+        const now = ctx.currentTime;
+        gain.gain.setValueAtTime(0.03, now);
+        for (let i = 0; i < 4; i++) {
+          gain.gain.setValueAtTime(0.04, now + i * 5);
+          gain.gain.setValueAtTime(0, now + i * 5 + 2);
+        }
+
+        ringOsc1.connect(gain);
+        ringOsc2.connect(gain);
+        gain.connect(ctx.destination);
+
+        ringOsc1.start();
+        ringOsc2.start();
+      } catch (e) {}
+    }
+
+    function stopRingbackTone() {
+      try {
+        if (ringOsc1) { ringOsc1.stop(); ringOsc1.disconnect(); ringOsc1 = null; }
+        if (ringOsc2) { ringOsc2.stop(); ringOsc2.disconnect(); ringOsc2 = null; }
+      } catch (e) {}
+    }
+
+    function playConnectChime() {
+      if (!audioFxOn) return;
+      [523.25, 659.25, 783.99].forEach((f, i) => {
+        setTimeout(() => playTone(f, 0.3), i * 120);
+      });
+    }
+
+    function toggleAudioFx() {
+      audioFxOn = !audioFxOn;
+      document.getElementById('audioIcon').textContent = audioFxOn ? 'volume_up' : 'volume_off';
+    }
+
+    // Render Leads Table
+    function renderTable() {
+      const tbody = document.getElementById('leadTableBody');
+      tbody.innerHTML = leads.map(lead => `
+        <tr class="hover:bg-[#f8f9fa] transition-colors">
+          <td class="py-3 px-4 font-bold text-[#191c1d]">
+            <div class="flex items-center gap-1.5">
+              <span>${lead.name}</span>
+              ${lead.intake_step === 1 ? '<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-300">Walk-In</span>' : ''}
+            </div>
+            <div class="text-[10px] text-[#757682] font-normal flex items-center gap-1 mt-0.5">
+              <span class="font-mono text-[#00236f]">${lead.phone}</span>
+              <span>•</span>
+              <span>${lead.city}</span>
+            </div>
+          </td>
+          <td class="py-3 px-4 text-[#444651]">
+            <div class="font-semibold text-[#191c1d]">${lead.course}</div>
+            <div class="text-[10px] text-[#757682] mt-0.5">Step ${lead.intake_step}: Campus Inquiry Registered</div>
+          </td>
+          <td class="py-3 px-4">
+            ${lead.priority === 'p1_high' 
+              ? '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300"><span class="material-symbols-outlined text-[13px] text-rose-600">local_fire_department</span><span>P1 High</span></span>'
+              : '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300"><span class="material-symbols-outlined text-[13px] text-amber-600">flag</span><span>P2 Medium</span></span>'}
+          </td>
+          <td class="py-3 px-4">
+            <span class="font-semibold text-amber-800 text-[11px] flex items-center gap-1">
+              <span class="material-symbols-outlined text-[13px]">alarm</span>
+              <span>${lead.scheduled_recall}</span>
+            </span>
+          </td>
+          <td class="py-3 px-4 max-w-xs text-[#444651]">
+            <p class="truncate text-[11px] text-[#191c1d]" title="${lead.notes}">${lead.notes}</p>
+            <span class="text-[10px] text-[#757682]">${lead.last_contact}</span>
+          </td>
+          <td class="py-3 px-4 text-right">
+            <button onclick="initiateCall('${lead.id}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-lg text-[11px] font-bold transition-all shadow-xs flex items-center gap-1.5 ml-auto cursor-pointer">
+              <span class="material-symbols-outlined text-[14px]">phone_in_talk</span>
+              <span>Click to Call</span>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Call Workflow
+    function initiateCall(leadId) {
+      const candidate = leads.find(l => l.id === leadId);
+      if (!candidate) return;
+      currentCandidate = candidate;
+
+      // Setup HUD
+      document.getElementById('hudCandidateAvatar').textContent = candidate.name.split(' ').map(n => n[0]).join('');
+      document.getElementById('hudCandidateName').textContent = candidate.name;
+      document.getElementById('hudCandidatePhone').textContent = candidate.phone;
+      document.getElementById('hudCandidateCourse').textContent = candidate.course;
+      
+      const dock = document.getElementById('iphoneCallDock');
+      dock.classList.remove('hidden');
+
+      // State: Dialing Leg A
+      document.getElementById('hudCallTimer').textContent = 'Dialing...';
+      document.getElementById('hudCallStatusText').textContent = 'Dialing Counselor Station (Leg A)...';
+      document.getElementById('hudWaveform').style.display = 'none';
+
+      setTimeout(() => {
+        // State: Ringing Candidate
+        document.getElementById('hudCallTimer').textContent = 'Ringing...';
+        document.getElementById('hudCallStatusText').textContent = 'Ringing Candidate (Masked Via +91-172-500-EDUCORE)...';
+        startRingbackTone();
+
+        setTimeout(() => {
+          // State: Connected
+          stopRingbackTone();
+          playConnectChime();
+          document.getElementById('hudWaveform').style.display = 'flex';
+          document.getElementById('hudCallStatusText').textContent = '2-Leg Bridged • Rec: Active';
+
+          callDuration = 0;
+          if (callTimerInterval) clearInterval(callTimerInterval);
+          callTimerInterval = setInterval(() => {
+            callDuration++;
+            const m = String(Math.floor(callDuration / 60)).padStart(2, '0');
+            const s = String(callDuration % 60).padStart(2, '0');
+            document.getElementById('hudCallTimer').textContent = `${m}:${s}`;
+          }, 1000);
+        }, 3000);
+      }, 1000);
+    }
+
+    function endActiveCall() {
+      stopRingbackTone();
+      if (callTimerInterval) clearInterval(callTimerInterval);
+      document.getElementById('iphoneCallDock').classList.add('hidden');
+
+      // Open Disposition Modal
+      const m = String(Math.floor(callDuration / 60)).padStart(2, '0');
+      const s = String(callDuration % 60).padStart(2, '0');
+      const timeStr = `${m}:${s}`;
+
+      document.getElementById('dispHeaderSub').textContent = `Candidate: ${currentCandidate?.name || 'Inquiry'} • Call Duration: ${timeStr}`;
+      document.getElementById('dispRecordedDuration').textContent = timeStr;
+      document.getElementById('dispNextDate').value = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+      document.getElementById('dispositionModal').classList.remove('hidden');
+    }
+
+    function toggleMute() {
+      isMuted = !isMuted;
+      document.getElementById('btnHudMute').classList.toggle('bg-rose-600', isMuted);
+      document.getElementById('iconHudMute').textContent = isMuted ? 'mic_off' : 'mic';
+    }
+
+    function toggleHold() {
+      isOnHold = !isOnHold;
+      document.getElementById('btnHudHold').classList.toggle('bg-amber-600', isOnHold);
+      document.getElementById('iconHudHold').textContent = isOnHold ? 'play_arrow' : 'pause';
+      document.getElementById('hudWaveform').style.opacity = isOnHold ? '0.2' : '1';
+    }
+
+    function toggleKeypadDrawer() {
+      document.getElementById('keypadDrawer').classList.toggle('hidden');
+    }
+
+    function pressDtmf(k) {
+      document.getElementById('keypadScreen').textContent = `Key: ${k}`;
+      playTone(852, 0.15);
+    }
+
+    function selectOutcome(btn, val) {
+      document.querySelectorAll('.disp-outcome-btn').forEach(b => {
+        b.className = 'disp-outcome-btn p-2.5 rounded-xl border text-left font-medium transition-all bg-[#f8f9fa] border-[#e1e3e4] text-[#444651] hover:bg-white cursor-pointer';
+      });
+      btn.className = 'disp-outcome-btn p-2.5 rounded-xl border text-left font-medium transition-all bg-[#00236f] text-white border-[#00236f] shadow-xs cursor-pointer';
+      btn.dataset.selected = val;
+    }
+
+    function closeDispositionModal() {
+      document.getElementById('dispositionModal').classList.add('hidden');
+    }
+
+    function saveDispositionLog() {
+      closeDispositionModal();
+      addCdrLog(currentCandidate?.name || 'Inquiry Candidate', currentCandidate?.phone || '+91 98765-XXXXX', callDuration);
+      alert('Call disposition saved! Follow-up updated in student CRM ledger.');
+    }
+
+    function addCdrLog(name, phone, secs) {
+      const container = document.getElementById('cdrFeedContainer');
+      const m = String(Math.floor(secs / 60)).padStart(2, '0');
+      const s = String(secs % 60).padStart(2, '0');
+      const callId = `cdr_${Date.now()}`;
+
+      const item = document.createElement('div');
+      item.className = 'p-3 bg-[#f8f9fa] rounded-xl border border-[#e1e3e4] flex items-center justify-between text-xs';
+      item.innerHTML = `
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+            <span class="material-symbols-outlined text-[16px]">call_received</span>
+          </div>
+          <div>
+            <div class="font-bold text-[#191c1d]">${name} <span class="text-[10px] text-[#757682] font-mono">(${phone})</span></div>
+            <div class="text-[10px] text-[#757682] font-mono">Virtual DID: +91-172-500-EDUCORE • Exotel Leg Bridge Complete</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 text-right">
+          <div>
+            <span class="font-mono font-bold text-emerald-700">${m}:${s}</span>
+            <span class="text-[9px] text-[#757682] block">Just Now</span>
+          </div>
+          <button onclick="playSampleRecording()" class="p-1.5 rounded-lg bg-white border border-[#e1e3e4] text-[#00236f] hover:bg-[#f1f2f4] cursor-pointer" title="Stream Audio MP3 Recording">
+            <span class="material-symbols-outlined text-[16px]">play_circle</span>
+          </button>
+        </div>
+      `;
+      container.prepend(item);
+    }
+
+    function playSampleRecording() {
+      playTone(440, 0.4);
+      alert('Simulating playback of encrypted AWS S3 Call Recording MP3: https://s3.ap-south-1.amazonaws.com/educore-recordings/call_20261001_ext402.mp3');
+    }
+
+    function openWebhookInspector() {
+      const json = {
+        event: "call.completed",
+        telephony_provider: "Exotel",
+        call_sid: "ca_" + Math.random().toString(36).substring(7),
+        from_counselor: "+91-98765-00402",
+        to_candidate: currentCandidate?.phone || "+91-98765-43210",
+        virtual_pilot_did: "+91-172-500-EDUCORE",
+        duration_seconds: callDuration || 105,
+        recording_url: "https://telephony-s3.educore.edu.in/cdr/rec_" + Date.now() + ".mp3",
+        status: "completed",
+        hmac_sha256_signature: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        timestamp: new Date().toISOString()
+      };
+      document.getElementById('webhookJsonBox').textContent = JSON.stringify(json, null, 2);
+      document.getElementById('webhookModal').classList.remove('hidden');
+    }
+
+    function closeWebhookInspector() {
+      document.getElementById('webhookModal').classList.add('hidden');
+    }
+
+    function triggerManualDialer() {
+      document.getElementById('manualDialModal').classList.remove('hidden');
+    }
+
+    function closeManualDialer() {
+      document.getElementById('manualDialModal').classList.add('hidden');
+    }
+
+    function startManualCall() {
+      const phone = document.getElementById('manualPhoneInput').value;
+      const name = document.getElementById('manualNameInput').value;
+      closeManualDialer();
+      initiateCall({ id: 'manual', name, phone, course: 'Direct Walk-in Inquiry' });
+    }
+
+    // Initialize
+    renderTable();
+    addCdrLog('Harpreet Kaur', '+91 98150-11204', 184);
+    addCdrLog('Vikramaditya Sharma', '+91 97790-44912', 96);
+  </script>
+</body>
+</html>
