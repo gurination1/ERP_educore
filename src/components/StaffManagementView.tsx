@@ -18,6 +18,7 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
   const [staffProfile, setStaffProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(false);
   const isHOD = currentUser?.role === 'hod';
   const hodDeptDefault = isHOD
     ? (currentUser?.department?.toUpperCase().includes('ME') ? 'ME' : currentUser?.department?.toUpperCase().includes('ECE') ? 'ECE' : 'CSE')
