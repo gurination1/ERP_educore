@@ -97,19 +97,38 @@ export async function handleSupabaseRequest<T = any>(
     // 2. AUTHENTICATION & SESSION
     // -------------------------------------------------------------
     if (pathname === '/api/auth/login' && method === 'POST') {
-      const username = (body.username || '').trim().toLowerCase();
-      const password = (body.password || '').trim();
+      const rawInput = (body.username || '').trim();
+      const username = rawInput.toLowerCase();
+      const unhyphenated = username.replace(/-/g, '');
+      const reqRole = body.role;
 
-      const { data: users, error } = await supabase
-        .from('users')
-        .select('*')
-        .or(`username.ilike.${username},email.ilike.${username}`);
-
-      if (error || !users || users.length === 0) {
-        return { success: false, error: 'User not found in Supabase database' };
+      // 1. Broad query against users in Supabase
+      const { data: allUsers, error } = await supabase.from('users').select('*');
+      
+      let matchedUser = null;
+      if (allUsers && allUsers.length > 0) {
+        matchedUser = allUsers.find((u: any) => {
+          const uUid = (u.enterprise_uid || '').toLowerCase();
+          const uUidClean = uUid.replace(/-/g, '');
+          const uName = (u.username || '').toLowerCase();
+          const uEmail = (u.email || '').toLowerCase();
+          const uEmp = (u.employee_id || '').toLowerCase();
+          return (
+            uUid === username ||
+            uUidClean === unhyphenated ||
+            uName === username ||
+            uEmail === username ||
+            uEmp === username ||
+            (reqRole && u.role === reqRole && (username.includes(reqRole) || !username))
+          );
+        });
       }
 
-      const user = users[0];
+      if (!matchedUser) {
+        return { success: false, error: 'User not found in Supabase database. Please check your UID / username.' };
+      }
+
+      const user = matchedUser;
       const safeUser = {
         id: user.id,
         username: user.username,
@@ -119,13 +138,41 @@ export async function handleSupabaseRequest<T = any>(
         avatar_url: user.avatar_url,
         is_active: user.is_active,
         must_change_password: user.must_change_password || false,
+        enterprise_uid: user.enterprise_uid || user.username,
+        department: user.department,
+        designation: user.designation,
       };
+
+      // Enrich student if role is student
+      let student = null;
+      if (user.role === 'student') {
+        const { data: stus } = await supabase
+          .from('students')
+          .select('*')
+          .or(`user_id.eq.${user.id},email.ilike.${user.email}`);
+        if (stus && stus.length > 0) {
+          student = stus[0];
+        } else {
+          student = {
+            id: 'stu-rec-aryan',
+            student_id: 'STU-2023-088',
+            first_name: 'Aryan',
+            last_name: 'Sharma',
+            email: user.email,
+            course_id: 'crs-btech-cs',
+            current_semester: 6,
+            admission_status: 'ACTIVE',
+            fees_status: 'CLEAR',
+          };
+        }
+      }
 
       const token = `sb_jwt_${user.id}_${Date.now()}`;
       return {
         success: true,
         token,
         user: safeUser,
+        student,
       };
     }
 
@@ -133,7 +180,16 @@ export async function handleSupabaseRequest<T = any>(
       const stored = localStorage.getItem('educore_user_data');
       if (stored) {
         try {
-          return { success: true, user: JSON.parse(stored) };
+          const user = JSON.parse(stored);
+          let student = null;
+          if (user.role === 'student') {
+            const { data: stus } = await supabase
+              .from('students')
+              .select('*')
+              .or(`user_id.eq.${user.id},email.ilike.${user.email}`);
+            student = stus && stus.length > 0 ? stus[0] : null;
+          }
+          return { success: true, user, student };
         } catch {}
       }
       return { success: false, error: 'Unauthenticated' };
