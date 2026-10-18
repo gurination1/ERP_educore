@@ -1823,7 +1823,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                   <div className="p-2 bg-[#f3f4f5] rounded-lg">
                     <span className="text-[10px] text-[#757682] block">Affiliating Board</span>
                     <strong className="text-[#191c1d] text-xs truncate block" title={scrutinyApplicant.board_name}>
-                      {scrutinyApplicant.board_name ? scrutinyApplicant.board_name.split(' ')[0] : 'PSEB'}
+                      {scrutinyApplicant.board_name ? String(scrutinyApplicant.board_name).split(' ')[0] : 'PSEB'}
                     </strong>
                   </div>
                 </div>

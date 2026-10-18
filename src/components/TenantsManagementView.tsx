@@ -360,7 +360,7 @@ export const TenantsManagementView: React.FC<TenantsManagementViewProps> = ({ cu
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-[#00236f]/10 text-[#00236f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#00236f]/20">
-                          {t.short_code.slice(0, 3)}
+                          {(t.short_code || t.client_id || 'TNT').slice(0, 3)}
                         </div>
                         <div>
                           <div className="font-semibold text-slate-900">{t.client_name}</div>
@@ -499,7 +499,7 @@ export const TenantsManagementView: React.FC<TenantsManagementViewProps> = ({ cu
                   value={newTenant.client_name}
                   onChange={e => {
                     const name = e.target.value;
-                    const words = name.split(' ').map(w => w[0]).join('').slice(0, 6).toUpperCase();
+                    const words = (name || '').split(' ').filter(Boolean).map(w => w[0] || '').join('').slice(0, 6).toUpperCase();
                     setNewTenant(prev => ({
                       ...prev,
                       client_name: name,

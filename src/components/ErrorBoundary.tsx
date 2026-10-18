@@ -29,14 +29,16 @@ export class ErrorBoundary extends Component<Props, State> {
 
   private handleReset = () => {
     this.setState({ hasError: false, error: null, errorInfo: null });
-    window.location.href = '/dashboard';
+    const isGh = window.location.pathname.toLowerCase().includes('/erp_educore');
+    window.location.href = isGh ? '/ERP_educore/' : '/dashboard';
   };
 
   private handleClearAndHome = () => {
     localStorage.removeItem('educore_jwt_token');
     localStorage.removeItem('educore_user_data');
     this.setState({ hasError: false, error: null, errorInfo: null });
-    window.location.href = '/';
+    const isGh = window.location.pathname.toLowerCase().includes('/erp_educore');
+    window.location.href = isGh ? '/ERP_educore/' : '/';
   };
 
   public render() {

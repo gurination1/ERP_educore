@@ -331,7 +331,7 @@ academicTopologyRouter.post('/sessional-marks', authenticateToken, requireRole('
     }
 
     const actorId = req.user?.full_name || req.user?.username || 'faculty';
-    const result = await db.saveSessionalMarks(parseResult.data.marks, actorId);
+    const result = await db.saveSessionalMarks(parseResult.data.marks as any, actorId);
     res.json({
       success: true,
       message: `Internal sessional marks for ${result.count} students saved and locked for University evaluation audit!`,

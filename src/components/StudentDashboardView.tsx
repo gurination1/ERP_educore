@@ -335,7 +335,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
             )}
           </div>
           <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-            {((notices && notices.length > 0) ? notices : [
+            {(Array.isArray(notices) && notices.length > 0 ? notices : [
               {
                 title: 'University Final Semester Theory Examinations May-2026',
                 notice_date: 'May 12, 2026',

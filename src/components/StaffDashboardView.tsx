@@ -549,9 +549,9 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
     ? currentUser.full_name
         .split(' ')
         .filter(Boolean)
-        .map(n => n[0])
-        .slice(0, 2)
+        .map(n => n[0] || '')
         .join('')
+        .slice(0, 2)
         .toUpperCase()
     : isCounselor
     ? 'AC'
@@ -1210,7 +1210,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                 ) : (
                   counselorEnquiries.map((enq: any) => (
                     <tr key={enq.id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="p-3.5 font-mono font-bold text-[#00236f]">{enq.token_number || enq.id?.slice(0, 8)}</td>
+                      <td className="p-3.5 font-mono font-bold text-[#00236f]">{enq.token_number || String(enq.id || 'ENQ').slice(0, 8)}</td>
                       <td className="p-3.5">
                         <strong className="text-[#191c1d] block">{enq.student_name}</strong>
                         {enq.father_name && <span className="text-[10px] text-slate-500">S/D of {enq.father_name}</span>}
@@ -1222,7 +1222,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                       <td className="p-3.5 font-semibold text-[#00236f]">{enq.selected_course || 'B.Tech CSE'}</td>
                       <td className="p-3.5">
                         <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-mono text-[10px] font-semibold">
-                          {enq.remarks?.match(/10th:\s*[\d.]+%/) ? enq.remarks.slice(0, 24) : 'Class 12: 85%'}
+                          {enq.remarks?.match(/10th:\s*[\d.]+%/) ? String(enq.remarks || '').slice(0, 24) : 'Class 12: 85%'}
                         </span>
                       </td>
                       <td className="p-3.5">

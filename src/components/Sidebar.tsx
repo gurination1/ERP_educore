@@ -187,7 +187,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-[9px] text-[#ea580c] font-bold">[{item.id.slice(0, 3).toUpperCase()}]</span>
+                  <span className="font-mono text-[9px] text-[#ea580c] font-bold">[{String(item.id || 'NAV').slice(0, 3).toUpperCase()}]</span>
                   <span>{item.label}</span>
                 </div>
                 {item.badge && (
@@ -208,17 +208,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {currentUser.avatar_url ? (
               <img
                 src={currentUser.avatar_url}
-                alt={currentUser.full_name}
+                alt={currentUser.full_name || currentUser.username}
                 referrerPolicy="no-referrer"
                 className="w-8 h-8 rounded-full object-cover border border-[#c5c5d3]"
               />
             ) : (
               <div className="w-8 h-8 rounded-full bg-[#00236f] text-white flex items-center justify-center text-xs font-bold">
-                {currentUser.full_name
+                {(currentUser.full_name || currentUser.username || 'U')
                   .split(' ')
-                  .map(n => n[0])
+                  .filter(Boolean)
+                  .map(n => n[0] || '')
                   .join('')
-                  .slice(0, 2)}
+                  .slice(0, 2)
+                  .toUpperCase()}
               </div>
             )}
             <div className="flex-1 min-w-0">

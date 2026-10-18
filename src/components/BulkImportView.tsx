@@ -396,7 +396,7 @@ Navkiran Gill,9872011223,navkiran.gill@gmail.com,B.Tech CSE,S. Harnek Singh,fema
             <div className="space-y-2">
               <span className="font-bold text-[#00236f] block border-b pb-1">UPLOADED DATA PREVIEW (SAMPLE 3 ROWS)</span>
               <div className="space-y-1.5 max-h-[380px] overflow-y-auto">
-                {parsedRows.slice(0, 3).map((r, i) => (
+                {(parsedRows || []).slice(0, 3).map((r, i) => (
                   <div key={i} className="border p-2 rounded bg-white text-[9px] font-mono space-y-0.5">
                     <span className="font-bold text-[#00236f] block">ROW #{i + 1}:</span>
                     {Object.entries(r).map(([k, v]: any) => (
@@ -488,10 +488,10 @@ Navkiran Gill,9872011223,navkiran.gill@gmail.com,B.Tech CSE,S. Harnek Singh,fema
                 {/* Fresh Rows */}
                 <div className="border p-3 rounded bg-emerald-50/40 space-y-1.5">
                   <span className="font-bold text-emerald-900 block border-b pb-1">
-                    [TIER 1] FRESH LEADS SAMPLE ({validationResult.freshRows.length})
+                    [TIER 1] FRESH LEADS SAMPLE ({validationResult?.freshRows?.length || 0})
                   </span>
                   <div className="space-y-1 max-h-[260px] overflow-y-auto">
-                    {validationResult.freshRows.slice(0, 5).map((r, i) => (
+                    {(validationResult?.freshRows || []).slice(0, 5).map((r, i) => (
                       <div key={i} className="border border-emerald-200 bg-white p-1.5 rounded flex justify-between items-center">
                         <div>
                           <strong className="text-gray-800">{r.student_name}</strong>

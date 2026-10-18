@@ -453,8 +453,8 @@ Generated at ${new Date().toISOString()} via EduCore Document Vault Engine`;
 
                   {/* Integrity Hash & Actions */}
                   <div className="flex items-center justify-between pt-1 border-t border-[#f3f4f5] text-[10px]">
-                    <span className="font-mono text-[#757682] truncate max-w-[260px]" title={doc.sha256_hash}>
-                      SHA-256: {doc.sha256_hash.slice(0, 16)}...
+                    <span className="font-mono text-[#757682] truncate max-w-[260px]" title={doc.sha256_hash || ''}>
+                      SHA-256: {(doc.sha256_hash || 'e3b0c44298fc1c14').slice(0, 16)}...
                     </span>
 
                     <div className="flex items-center gap-2">
@@ -526,7 +526,7 @@ Generated at ${new Date().toISOString()} via EduCore Document Vault Engine`;
               </div>
               <div className="flex justify-between">
                 <span className="text-[#757682]">Cryptographic Digest:</span>
-                <span className="font-mono text-[10px]">{selectedDoc.sha256_hash.slice(0, 24)}...</span>
+                <span className="font-mono text-[10px]">{(selectedDoc.sha256_hash || 'e3b0c44298fc1c14').slice(0, 24)}...</span>
               </div>
               {selectedDoc.remarks && (
                 <div className="pt-2 border-t border-[#e1e3e4]">

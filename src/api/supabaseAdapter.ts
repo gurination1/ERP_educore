@@ -64,7 +64,7 @@ const runtimeSlips = {
 export async function handleSupabaseRequest<T = any>(
   endpoint: string,
   options: RequestInit = {}
-): Promise<AdapterResponse<T>> {
+): Promise<any> {
   const method = (options.method || 'GET').toUpperCase();
   const urlObj = new URL(endpoint, 'http://localhost');
   const pathname = urlObj.pathname;

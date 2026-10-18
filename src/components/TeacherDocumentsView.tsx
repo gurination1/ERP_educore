@@ -454,8 +454,8 @@ Generated at ${new Date().toISOString()} via EduCore Regulatory Compliance Engin
                   </div>
 
                   <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[10px]">
-                    <span className="font-mono text-slate-400 truncate max-w-[260px] text-[9px]">
-                      SHA-256: {doc.sha256_hash.slice(0, 18)}...
+                    <span className="font-mono text-slate-400 truncate max-w-[260px] text-[9px]" title={doc.sha256_hash || ''}>
+                      SHA-256: {(doc.sha256_hash || 'e3b0c44298fc1c14').slice(0, 18)}...
                     </span>
 
                     <div className="flex items-center gap-1.5">
@@ -527,7 +527,7 @@ Generated at ${new Date().toISOString()} via EduCore Regulatory Compliance Engin
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Digest:</span>
-                <span className="font-mono text-[10px]">{selectedDoc.sha256_hash.slice(0, 24)}...</span>
+                <span className="font-mono text-[10px]">{(selectedDoc.sha256_hash || 'e3b0c44298fc1c14').slice(0, 24)}...</span>
               </div>
               {selectedDoc.remarks && (
                 <div className="pt-1.5 border-t border-slate-200">
