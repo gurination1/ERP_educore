@@ -114,10 +114,10 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
     setCounselorLoading(true);
     try {
       const [radarRes, enqRes, stuRes, feeRes] = await Promise.all([
-        api.getFollowupRadar().catch(() => ({ success: false })),
-        api.getEnquiries().catch(() => ({ success: false })),
-        api.getStudents({ limit: 50 }).catch(() => ({ success: false })),
-        api.getFeeHeads().catch(() => ({ success: false })),
+        api.getFollowupRadar().catch(() => ({ success: false } as any)),
+        api.getEnquiries().catch(() => ({ success: false } as any)),
+        api.getStudents({ limit: 50 }).catch(() => ({ success: false } as any)),
+        api.getFeeHeads().catch(() => ({ success: false } as any)),
       ]);
       if (radarRes.success && radarRes.prospects) {
         setCounselorProspects(radarRes.prospects);

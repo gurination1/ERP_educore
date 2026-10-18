@@ -20,6 +20,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
   onPayFee,
   onOpenAdmitCard,
 }) => {
+  const navigate = useNavigate();
   const [profileData, setProfileData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPromoting, setIsPromoting] = useState(false);

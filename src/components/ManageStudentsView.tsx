@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
-import { api } from '../api/client';
+import { api, getStoredToken } from '../api/client';
 import { StudentProfile, User } from '../types';
 
 interface ManageStudentsViewProps {
@@ -174,7 +174,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => safeGoBack(navigate, '/dashboard')}
+            onClick={() => navigate('/dashboard')}
             className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-base transition-all cursor-pointer border border-slate-200/80 shadow-2xs shrink-0"
             title="Return to Previous Screen (Alt + ←)"
           >
