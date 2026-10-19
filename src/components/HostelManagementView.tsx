@@ -40,7 +40,7 @@ interface HostelManagementViewProps {
 
 export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ currentUser }) => {
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'buildings' | 'rooms' | 'residents' | 'mess' | 'maintenance' | 'transport'
+    'overview' | 'unassigned' | 'buildings' | 'rooms' | 'residents' | 'mess' | 'maintenance' | 'transport'
   >('overview');
 
   // Search & Filter state
@@ -135,7 +135,9 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
       room_name: 'Guru Mahal Suite',
       capacity: 2,
       current_occupancy: 2,
+      washroom_type: 'ARW',
       is_ac: true,
+      has_window: true,
       has_almirah: true,
       monthly_rent: 7500,
       semester_rent: 42000,
@@ -150,7 +152,9 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
       room_name: 'Baljinder Memorial Room',
       capacity: 3,
       current_occupancy: 2,
+      washroom_type: 'FCW',
       is_ac: false,
+      has_window: true,
       has_almirah: true,
       monthly_rent: 5500,
       semester_rent: 30000,
@@ -165,7 +169,9 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
       room_name: 'Falcon Wing 103',
       capacity: 4,
       current_occupancy: 4,
+      washroom_type: 'FCW',
       is_ac: false,
+      has_window: false,
       has_almirah: true,
       monthly_rent: 4500,
       semester_rent: 24000,
@@ -180,7 +186,9 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
       room_name: 'Kalpana Chawla Room',
       capacity: 2,
       current_occupancy: 1,
+      washroom_type: 'ARW',
       is_ac: true,
+      has_window: true,
       has_almirah: true,
       monthly_rent: 7500,
       semester_rent: 42000,
@@ -195,7 +203,9 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
       room_name: 'Pinecrest Leased Suite 301',
       capacity: 2,
       current_occupancy: 0,
+      washroom_type: 'ARW',
       is_ac: true,
+      has_window: true,
       has_almirah: true,
       monthly_rent: 8000,
       semester_rent: 45000,
@@ -349,6 +359,159 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
     { uid: '1001-01-99-03-01', name: 'Harpreet Kaur', course: 'B.Sc Agriculture', stopRequested: 'Goniana Mandi', appliedDate: '2026-10-15' },
     { uid: '1001-01-98-03-01', name: 'Manjot Singh', course: 'B.Tech ECE', stopRequested: 'Civil Lines', appliedDate: '2026-10-16' },
   ];
+
+  // Unallocated Hostel Scholars Queue (Karanvir Sir Lecture 4 Segment 7)
+  const [unallocatedHostelScholars, setUnallocatedHostelScholars] = useState([
+    {
+      uid: '1001-01-10-03-01',
+      name: 'Manpreet Singh',
+      course: 'BCA (Cloud & AI)',
+      semester: 1,
+      gender: 'male',
+      preferredRoomType: 'AC 2-Sharing (ARW)',
+      appliedDate: '2026-10-14',
+      contact: '+91 98141 55667',
+      hasTransport: false,
+    },
+    {
+      uid: '1001-01-11-03-01',
+      name: 'Simran Kaur',
+      course: 'B.Tech Computer Science',
+      semester: 1,
+      gender: 'female',
+      preferredRoomType: 'Non-AC 3-Sharing (FCW)',
+      appliedDate: '2026-10-15',
+      contact: '+91 98722 33445',
+      hasTransport: true,
+    },
+    {
+      uid: '1001-01-12-03-01',
+      name: 'Harjot Singh Virk',
+      course: 'MBA Finance',
+      semester: 1,
+      gender: 'male',
+      preferredRoomType: 'AC 1-Sharing (ARW)',
+      appliedDate: '2026-10-16',
+      contact: '+91 94170 88990',
+      hasTransport: false,
+    },
+    {
+      uid: '1001-01-13-03-01',
+      name: 'Gagandeep Sharma',
+      course: 'B.Sc Agriculture',
+      semester: 1,
+      gender: 'male',
+      preferredRoomType: 'Non-AC 2-Sharing (ARW)',
+      appliedDate: '2026-10-17',
+      contact: '+91 98888 22114',
+      hasTransport: false,
+    },
+  ]);
+
+  // Add Room Wizard Modal State (Karanvir Sir Lecture 4: Floor auto-numbering, ARW vs FCW, Nickname)
+  const [isAddRoomModalOpen, setIsAddRoomModalOpen] = useState(false);
+  const [newRoomBuildingId, setNewRoomBuildingId] = useState('bld-01');
+  const [newRoomFloor, setNewRoomFloor] = useState(2);
+  const [newRoomNumber, setNewRoomNumber] = useState('204');
+  const [newRoomName, setNewRoomName] = useState('Ballu Hacker Suite');
+  const [newRoomCapacity, setNewRoomCapacity] = useState(2);
+  const [newRoomWashroomType, setNewRoomWashroomType] = useState<'ARW' | 'FCW'>('ARW');
+  const [newRoomIsAc, setNewRoomIsAc] = useState(true);
+  const [newRoomHasWindow, setNewRoomHasWindow] = useState(true);
+  const [newRoomHasAlmirah, setNewRoomHasAlmirah] = useState(true);
+  const [newRoomMonthlyRent, setNewRoomMonthlyRent] = useState('7500');
+  const [newRoomSemesterRent, setNewRoomSemesterRent] = useState('42000');
+
+  // Scholar Allotment Modal State
+  const [isAllocatingModalOpen, setIsAllocatingModalOpen] = useState(false);
+  const [allocatingScholar, setAllocatingScholar] = useState<any | null>(null);
+  const [selectedRoomForScholar, setSelectedRoomForScholar] = useState('');
+
+  // Add New Room Handler (Karanvir Sir Lecture 4)
+  const handleCreateRoom = (e: React.FormEvent) => {
+    e.preventDefault();
+    const bld = buildings.find((b) => b.id === newRoomBuildingId) || buildings[0];
+    const newRoom: HostelRoom = {
+      id: `rm-${Date.now()}`,
+      building_id: bld.id,
+      building_name: bld.code,
+      floor_number: Number(newRoomFloor),
+      room_number: newRoomNumber.trim(),
+      room_name: newRoomName.trim() || undefined,
+      capacity: Number(newRoomCapacity),
+      current_occupancy: 0,
+      washroom_type: newRoomWashroomType,
+      is_ac: newRoomIsAc,
+      has_window: newRoomHasWindow,
+      has_almirah: newRoomHasAlmirah,
+      monthly_rent: Number(newRoomMonthlyRent),
+      semester_rent: Number(newRoomSemesterRent),
+      status: 'available',
+    };
+    setRooms([newRoom, ...rooms]);
+    setIsAddRoomModalOpen(false);
+    showToast(
+      `Room ${newRoom.room_number} ("${newRoom.room_name || ''}") created in Block ${newRoom.building_name} with ${newRoom.washroom_type} washroom!`
+    );
+  };
+
+  // Scholar Room Allotment Execution
+  const handleExecuteScholarAllotment = () => {
+    if (!allocatingScholar || !selectedRoomForScholar) return;
+    const room = rooms.find((r) => r.id === selectedRoomForScholar);
+    if (!room) return;
+    if (room.current_occupancy >= room.capacity) {
+      showToast(`Selected room ${room.room_number} is already at full capacity!`, 'error');
+      return;
+    }
+
+    // Update room occupancy
+    setRooms((prev) =>
+      prev.map((r) =>
+        r.id === room.id
+          ? {
+              ...r,
+              current_occupancy: r.current_occupancy + 1,
+              status: r.current_occupancy + 1 >= r.capacity ? 'occupied' : 'available',
+            }
+          : r
+      )
+    );
+
+    // Create resident record
+    const newResident: HostelResident = {
+      id: `res-${Date.now()}`,
+      student_uid: allocatingScholar.uid,
+      student_name: allocatingScholar.name,
+      course_name: allocatingScholar.course,
+      semester: allocatingScholar.semester,
+      building_id: room.building_id,
+      building_name: room.building_name,
+      room_id: room.id,
+      room_number: room.room_number,
+      room_name: room.room_name,
+      bed_number: room.current_occupancy + 1,
+      allotted_date: new Date().toISOString().split('T')[0],
+      billing_cycle: 'semester',
+      fee_status: 'paid',
+      amount_due: 0,
+      mess_enrolled: true,
+      mess_status: 'active',
+      mess_dues_amount: 0,
+      has_transport: allocatingScholar.hasTransport,
+      guardian_contact: allocatingScholar.contact,
+    };
+
+    setResidents([newResident, ...residents]);
+    setUnallocatedHostelScholars((prev) => prev.filter((s) => s.uid !== allocatingScholar.uid));
+    setIsAllocatingModalOpen(false);
+    setAllocatingScholar(null);
+    setSelectedRoomForScholar('');
+
+    showToast(
+      `Scholar ${newResident.student_name} allotted Room ${room.room_number} (${room.room_name || ''}) in Block ${room.building_name}!`
+    );
+  };
 
   // Room Deletion Guard (Karanvir Sir Lecture 4): Cannot delete room if occupied!
   const handleDeleteRoom = (roomId: string) => {
@@ -531,8 +694,9 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-slate-200 text-xs font-bold text-slate-600">
         {[
           { id: 'overview', label: 'Operations Overview', icon: Building2 },
+          { id: 'unassigned', label: `Unallocated Scholars (${unallocatedHostelScholars.length})`, icon: Users },
           { id: 'buildings', label: 'Buildings & Blocks (3)', icon: Building2 },
-          { id: 'rooms', label: 'Room Inventory & Beds', icon: Bed },
+          { id: 'rooms', label: 'Room Inventory & Typology', icon: Bed },
           { id: 'residents', label: 'Resident Scholars', icon: Users },
           { id: 'mess', label: 'Mess & No-Dues Clearance', icon: UtensilsCrossed },
           { id: 'maintenance', label: 'Maintenance & Safety Timers', icon: Wrench },
@@ -829,8 +993,18 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
               </select>
             </div>
 
-            <div className="text-[11px] text-slate-500 font-semibold">
-              Showing {rooms.length} registered rooms • Strict Room Deletion Safety Active
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-slate-500 font-semibold hidden sm:inline">
+                Showing {rooms.length} registered rooms • Strict Room Deletion Safety Active
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsAddRoomModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#00236f] hover:bg-[#001744] text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add Room (Auto-Numbered)</span>
+              </button>
             </div>
           </div>
 
@@ -886,11 +1060,26 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
                         <div>
                           <span className="font-semibold text-slate-700">Block:</span> {room.building_name} • Floor {room.floor_number}
                         </div>
-                        <div>
-                          <span className="font-semibold text-slate-700">Amenities:</span>{' '}
-                          {room.has_almirah ? 'Dedicated Almirahs' : 'Shared Closet'} • {room.capacity}-Seater Layout
+                        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                          <span className={`px-2 py-0.5 rounded-md font-black text-[9px] border ${
+                            room.washroom_type === 'ARW'
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                              : 'bg-indigo-50 text-indigo-800 border-indigo-200'
+                          }`}>
+                            {room.washroom_type === 'ARW' ? 'ARW (Attached Washroom)' : 'FCW (Floor Common Washroom)'}
+                          </span>
+                          <span className={`px-2 py-0.5 rounded-md font-bold text-[9px] border ${
+                            room.has_window
+                              ? 'bg-amber-50 text-amber-800 border-amber-200'
+                              : 'bg-slate-100 text-slate-500 border-slate-200'
+                          }`}>
+                            {room.has_window ? 'Window: Yes' : 'Interior (No Window)'}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-semibold text-[9px] border border-slate-200">
+                            {room.has_almirah ? 'Dedicated Almirah' : 'Shared Closet'}
+                          </span>
                         </div>
-                        <div>
+                        <div className="pt-1">
                           <span className="font-semibold text-slate-700">Rent Structure:</span> ₹{room.monthly_rent.toLocaleString()}/mo • ₹{room.semester_rent.toLocaleString()}/sem
                         </div>
                       </div>
@@ -1435,6 +1624,283 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
           </div>
         </div>
       )}
+      {/* MODAL 3: ADD ROOM WIZARD (Karanvir Sir Lecture 4) */}
+      {isAddRoomModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-slate-100 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-black text-[#00236f] flex items-center gap-2">
+                <Bed className="w-5 h-5 text-[#ea580c]" />
+                <span>Add Room (Floor-Wise Auto-Numbering)</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsAddRoomModalOpen(false)}
+                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateRoom} className="space-y-4 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Residence Block:</label>
+                  <select
+                    value={newRoomBuildingId}
+                    onChange={(e) => {
+                      setNewRoomBuildingId(e.target.value);
+                      const b = buildings.find((x) => x.id === e.target.value);
+                      if (b) setNewRoomNumber(`${newRoomFloor}0${rooms.filter((r) => r.building_id === b.id && r.floor_number === newRoomFloor).length + 1}`);
+                    }}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs bg-white font-semibold text-slate-800 focus:outline-none"
+                  >
+                    {buildings.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name} ({b.code})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Floor Number:</label>
+                  <select
+                    value={newRoomFloor}
+                    onChange={(e) => {
+                      const fl = Number(e.target.value);
+                      setNewRoomFloor(fl);
+                      setNewRoomNumber(`${fl}0${rooms.filter((r) => r.building_id === newRoomBuildingId && r.floor_number === fl).length + 1}`);
+                    }}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs bg-white font-semibold text-slate-800 focus:outline-none"
+                  >
+                    {[1, 2, 3, 4, 5].map((fl) => (
+                      <option key={fl} value={fl}>
+                        Floor {fl} ({fl === 1 ? 'Ground/First' : fl === 2 ? 'Second Floor' : `Floor ${fl}`})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Room Number (Auto-Suggested):</label>
+                  <input
+                    type="text"
+                    value={newRoomNumber}
+                    onChange={(e) => setNewRoomNumber(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-mono font-black text-slate-900 bg-slate-50 focus:outline-none"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Custom Room Nickname:</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Guru Mahal, Baljinder Room, Ballu Hacker"
+                    value={newRoomName}
+                    onChange={(e) => setNewRoomName(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Typology and Washroom (Karanvir Sir Lecture 4 exact words: ARW vs FCW) */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Capacity (Beds):</label>
+                  <select
+                    value={newRoomCapacity}
+                    onChange={(e) => setNewRoomCapacity(Number(e.target.value))}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs bg-white font-semibold text-slate-800 focus:outline-none"
+                  >
+                    <option value={1}>1-Seater (Single Suite)</option>
+                    <option value={2}>2-Seater (Double Sharing)</option>
+                    <option value={3}>3-Seater (Triple Sharing)</option>
+                    <option value={4}>4-Seater (Dorm Layout)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Washroom Typology:</label>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setNewRoomWashroomType('ARW')}
+                      className={`p-2 rounded-xl text-center font-bold text-[11px] border cursor-pointer ${
+                        newRoomWashroomType === 'ARW'
+                          ? 'bg-[#00236f] text-white border-[#00236f]'
+                          : 'bg-white text-slate-700 border-slate-200'
+                      }`}
+                    >
+                      ARW (Attached)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNewRoomWashroomType('FCW')}
+                      className={`p-2 rounded-xl text-center font-bold text-[11px] border cursor-pointer ${
+                        newRoomWashroomType === 'FCW'
+                          ? 'bg-[#00236f] text-white border-[#00236f]'
+                          : 'bg-white text-slate-700 border-slate-200'
+                      }`}
+                    >
+                      FCW (Common)
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Amenities Toggles */}
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex flex-wrap items-center justify-between gap-3 font-bold text-slate-700">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newRoomIsAc}
+                    onChange={(e) => setNewRoomIsAc(e.target.checked)}
+                    className="rounded"
+                  />
+                  <span>AC Climate Control</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newRoomHasWindow}
+                    onChange={(e) => setNewRoomHasWindow(e.target.checked)}
+                    className="rounded"
+                  />
+                  <span>External Window</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newRoomHasAlmirah}
+                    onChange={(e) => setNewRoomHasAlmirah(e.target.checked)}
+                    className="rounded"
+                  />
+                  <span>Dedicated Almirah</span>
+                </label>
+              </div>
+
+              {/* Rents */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Monthly Rent (₹):</label>
+                  <input
+                    type="number"
+                    value={newRoomMonthlyRent}
+                    onChange={(e) => setNewRoomMonthlyRent(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Semester Rent (₹):</label>
+                  <input
+                    type="number"
+                    value={newRoomSemesterRent}
+                    onChange={(e) => setNewRoomSemesterRent(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsAddRoomModalOpen(false)}
+                  className="px-4 py-2 rounded-xl font-bold text-slate-600 hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl font-bold bg-[#00236f] text-white hover:bg-[#001744] shadow-sm"
+                >
+                  Create Room & Register Beds
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: ALLOT ROOM TO UNALLOCATED SCHOLAR */}
+      {isAllocatingModalOpen && allocatingScholar && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 space-y-4 text-xs">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-black text-[#00236f] flex items-center gap-2">
+                <Bed className="w-5 h-5 text-[#ea580c]" />
+                <span>Allot Residence Room & Bed</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsAllocatingModalOpen(false)}
+                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 font-bold"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-2xl space-y-1">
+              <div className="font-black text-[#00236f] text-sm">{allocatingScholar.name}</div>
+              <div className="text-[11px] text-slate-600 font-mono">
+                UID: {allocatingScholar.uid} • {allocatingScholar.course} (Sem {allocatingScholar.semester})
+              </div>
+              <div className="text-[11px] text-[#ea580c] font-bold">
+                Requested Typology: {allocatingScholar.preferredRoomType}
+              </div>
+            </div>
+
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">Select Available Vacant Room:</label>
+              <select
+                value={selectedRoomForScholar}
+                onChange={(e) => setSelectedRoomForScholar(e.target.value)}
+                className="w-full p-2.5 rounded-xl border border-slate-200 text-xs bg-white font-semibold text-slate-800 focus:outline-none"
+              >
+                <option value="">-- Choose Matching Vacant Room --</option>
+                {rooms
+                  .filter((r) => r.current_occupancy < r.capacity)
+                  .map((r) => (
+                    <option key={r.id} value={r.id}>
+                      Room {r.room_number} ({r.building_name} • {r.room_name || `${r.capacity}-Seater`} • {r.washroom_type} • {r.capacity - r.current_occupancy} Bed(s) Free • ₹{r.semester_rent}/sem)
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-[11px] text-amber-900 leading-relaxed font-semibold">
+              Note: Allotting this room will automatically update live residence occupancy, mark mess registration, and synchronize statutory ledger dues.
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setIsAllocatingModalOpen(false)}
+                className="px-4 py-2 rounded-xl font-bold text-slate-600 hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!selectedRoomForScholar}
+                onClick={handleExecuteScholarAllotment}
+                className="px-5 py-2 rounded-xl font-bold bg-[#00236f] text-white hover:bg-[#001744] shadow-sm disabled:opacity-40"
+              >
+                Confirm Allotment & Generate Token
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

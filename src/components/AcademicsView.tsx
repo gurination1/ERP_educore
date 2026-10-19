@@ -197,16 +197,29 @@ export const AcademicsView: React.FC<AcademicsViewProps> = ({ currentUser }) => 
   const [selectedCourse, setSelectedCourse] = useState<CourseItem | null>(null);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  // Batches state
+  // Batches state (Karanvir Sir Lecture 4 Full-Page Step-by-Step Architecture)
+  const [isPromotingBatch, setIsPromotingBatch] = useState(false);
+  const [promoteSourceBatchId, setPromoteSourceBatchId] = useState('');
+  const [promoteTargetSemester, setPromoteTargetSemester] = useState(2);
+  const [promoteSession, setPromoteSession] = useState('2025-26');
+  const [promoteAttendanceCutoff, setPromoteAttendanceCutoff] = useState(75);
+  const [promoteApprovalDean, setPromoteApprovalDean] = useState('Dr. Balwinder Singh (Dean Academics)');
   const [batches, setBatches] = useState<any[]>([]);
-  const [isAddBatchOpen, setIsAddBatchOpen] = useState(false);
+  const [isCreatingBatch, setIsCreatingBatch] = useState(false);
+  const currentMonthNum = new Date().getMonth() + 1;
+  const initialTermType: 'odd' | 'even' = (currentMonthNum >= 8 && currentMonthNum <= 11) ? 'odd' : 'even';
+  const [batchTermType, setBatchTermType] = useState<'odd' | 'even'>(initialTermType);
   const [newBatch, setNewBatch] = useState({
     course_id: 'cse',
-    batch_name: '2024-2028',
-    start_year: 2024,
-    end_year: 2028,
+    batch_name: `B.Tech CSE - Semester ${initialTermType === 'odd' ? '1' : '2'} - 2025-26`,
+    batch_code: `BATCH-CSE-2025-${initialTermType.toUpperCase()}-01`,
+    start_year: 2025,
+    end_year: 2029,
     academic_system: 'semester' as 'semester' | 'annual',
-    active_terms: [1, 2],
+    active_terms: initialTermType === 'odd' ? [1, 3, 5, 7] : [2, 4, 6, 8],
+    section_count: 2,
+    intake_capacity: 120,
+    requires_approval: true,
   });
 
   // Sections state
@@ -333,6 +346,28 @@ export const AcademicsView: React.FC<AcademicsViewProps> = ({ currentUser }) => 
     }
   };
 
+  const handleExecuteBatchPromotion = (e: React.FormEvent) => {
+    e.preventDefault();
+    const source = batches.find(b => b.id === promoteSourceBatchId) || batches[0] || { batch_name: 'B.Tech CSE - Sem 1', course_id: 'cse' };
+    const coursePrefix = source.batch_name ? source.batch_name.split(' - ')[0] : 'Course';
+    const newBatchName = `${coursePrefix} - Semester ${promoteTargetSemester} - ${promoteSession}`;
+    const newBatchObj = {
+      id: `batch-${Date.now().toString().slice(-6)}`,
+      batch_code: `BATCH-${(source.course_id || 'CSE').toUpperCase()}-${promoteSession.split('-')[0]}-SEM${promoteTargetSemester}`,
+      batch_name: newBatchName,
+      course_id: source.course_id || 'cse',
+      start_year: 2025,
+      end_year: 2029,
+      academic_system: source.academic_system || 'semester',
+      total_terms: 8,
+      active_terms_json: `Semester ${promoteTargetSemester}`,
+      status: 'active',
+    };
+    setBatches([newBatchObj, ...batches]);
+    setIsPromotingBatch(false);
+    alert(`Batch ${newBatchObj.batch_name} successfully promoted & launched under Dean Academic Approval!`);
+  };
+
   const handleCreateBatch = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -343,8 +378,8 @@ export const AcademicsView: React.FC<AcademicsViewProps> = ({ currentUser }) => 
       });
       if (res.success) {
         setBatches(prev => [res.batch, ...prev]);
-        setIsAddBatchOpen(false);
-        setFeedback({ type: 'success', message: `Batch ${res.batch.batch_name} created.` });
+        setIsCreatingBatch(false);
+        setFeedback({ type: 'success', message: `Batch ${res.batch.batch_name} created successfully without popups.` });
       } else {
         setFeedback({ type: 'error', message: res.error || 'Failed to create batch' });
       }
@@ -740,59 +775,324 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
       )}
 
       {/* ======================================================== */}
-      {/* TAB 2: BATCHES (Level 4: Semester vs Annual)             */}
+      {/* TAB 2: BATCHES (Level 4: Semester vs Annual) - Karanvir Sir Full-Page Step-by-Step Architecture */}
       {/* ======================================================== */}
       {activeTab === 'batches' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-bold text-slate-900 text-sm">Academic Batches (Level 4 Topology)</h3>
-              <p className="text-slate-500 text-xs">Configure Semester vs Annual systems and toggle active terms.</p>
-            </div>
-            <button
-              onClick={() => setIsAddBatchOpen(true)}
-              className="px-3 py-1.5 bg-[#00236f] text-white rounded-lg font-semibold hover:bg-[#001950] transition-colors"
-            >
-              + Create Batch
-            </button>
-          </div>
+          {!isCreatingBatch ? (
+            <>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-slate-900 text-sm">Academic Batches (Level 4 Topology)</h3>
+                  <p className="text-slate-500 text-xs">Configure Semester vs Annual systems and toggle active terms.</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-2.5 py-1 bg-amber-50 text-amber-800 rounded-lg text-xs font-bold border border-amber-200">
+                    Auto-Term Mode: {batchTermType === 'odd' ? 'Odd (Aug-Nov)' : 'Even (Dec-Feb)'}
+                  </span>
+                  
+                  {/* Karanvir Sir Dynamic Seasonal Batch Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextType = batchTermType === 'odd' ? 'even' : 'odd';
+                      setBatchTermType(nextType);
+                      setNewBatch(prev => ({
+                        ...prev,
+                        batch_name: `B.Tech CSE - Semester ${nextType === 'odd' ? '1' : '2'} - 2025-26`,
+                        batch_code: `BATCH-CSE-2025-${nextType.toUpperCase()}-01`,
+                        active_terms: nextType === 'odd' ? [1, 3, 5, 7] : [2, 4, 6, 8],
+                      }));
+                      setIsCreatingBatch(true);
+                    }}
+                    className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold text-xs transition-colors shadow-xs cursor-pointer"
+                  >
+                    {batchTermType === 'odd' ? '+ Create Even Semesters (Upcoming)' : '+ Create New Session Odd Semesters'}
+                  </button>
 
-          <div className="bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-xs">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-b border-slate-200 font-semibold text-slate-700">
-                <tr>
-                  <th className="px-4 py-2.5">Batch Name</th>
-                  <th className="px-4 py-2.5">Course</th>
-                  <th className="px-4 py-2.5">Start / End Year</th>
-                  <th className="px-4 py-2.5">Academic System</th>
-                  <th className="px-4 py-2.5">Active Terms</th>
-                  <th className="px-4 py-2.5">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {batches.map(b => (
-                  <tr key={b.id} className="hover:bg-slate-50/50">
-                    <td className="px-4 py-3 font-bold text-slate-900">{b.batch_name}</td>
-                    <td className="px-4 py-3 uppercase text-slate-600 font-mono">{b.course_id}</td>
-                    <td className="px-4 py-3">{b.start_year} – {b.end_year}</td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${b.academic_system === 'annual' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}`}>
-                        {b.academic_system} ({b.total_terms} terms)
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 font-mono text-slate-600">
-                      {b.active_terms_json || 'Terms 1, 2'}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                        Active
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                  {/* Karanvir Sir Promote Batch & Roster Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (batches.length > 0 && !promoteSourceBatchId) {
+                        setPromoteSourceBatchId(batches[0].id);
+                      }
+                      setIsPromotingBatch(true);
+                    }}
+                    className="px-3 py-1.5 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-lg font-bold text-xs transition-colors shadow-xs cursor-pointer"
+                  >
+                    Promote Batch & Roster
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsCreatingBatch(true)}
+                    className="px-3.5 py-1.5 bg-[#00236f] text-white rounded-lg font-semibold hover:bg-[#001950] transition-colors shadow-xs text-xs cursor-pointer"
+                  >
+                    + Deploy New Batch
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-xs">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 border-b border-slate-200 font-semibold text-slate-700">
+                    <tr>
+                      <th className="px-4 py-2.5">Batch Code & Name</th>
+                      <th className="px-4 py-2.5">Course</th>
+                      <th className="px-4 py-2.5">Start / End Year</th>
+                      <th className="px-4 py-2.5">Academic System</th>
+                      <th className="px-4 py-2.5">Active Terms</th>
+                      <th className="px-4 py-2.5">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {batches.map(b => (
+                      <tr key={b.id} className="hover:bg-slate-50/50">
+                        <td className="px-4 py-3">
+                          <strong className="font-bold text-slate-900 block">{b.batch_name}</strong>
+                          <span className="font-mono text-[10px] text-slate-400">{b.id || b.batch_code || 'BATCH-2025-01'}</span>
+                        </td>
+                        <td className="px-4 py-3 uppercase text-slate-600 font-mono font-semibold">{b.course_id}</td>
+                        <td className="px-4 py-3 font-mono">{b.start_year} – {b.end_year}</td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${b.academic_system === 'annual' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}`}>
+                            {b.academic_system} ({b.total_terms} terms)
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 font-mono text-slate-600">
+                          {b.active_terms_json || 'Terms 1, 2'}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                            Active
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : (
+            /* Karanvir Sir Full-Page Step-by-Step Batch Creation Screen */
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6 animate-fade-in">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#00236f]" />
+                    <h3 className="font-bold text-slate-900 text-base">
+                      Deploy New Academic Batch (Full-Page Workflow)
+                    </h3>
+                    <span className="px-2 py-0.5 bg-blue-50 text-[#00236f] rounded text-[10px] font-bold border border-blue-200">
+                      NO POPUPS • LECTURE 4
+                    </span>
+                  </div>
+                  <p className="text-slate-500 text-xs mt-1">
+                    Auto-configured batch hierarchy, auto-generated batch ID, and odd/even semester ordinance detection.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsCreatingBatch(false)}
+                  className="px-3 py-1.5 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl text-xs font-semibold"
+                >
+                  ← Back to Batches
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateBatch} className="space-y-5 text-xs">
+                {/* Step 1: Semester Ordinance Auto-Detection */}
+                <div className="p-4 bg-slate-50 border border-slate-200/90 rounded-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-slate-900 uppercase text-[11px] tracking-wide">
+                      Step 1: Academic Term Type Auto-Detection (Aug-Nov = Odd, Dec-Feb = Even)
+                    </span>
+                    <span className="text-[10px] text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded font-bold">
+                      Calendar Month: {currentMonthNum} ({batchTermType.toUpperCase()} SEMESTER CYCLE)
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBatchTermType('odd');
+                        setNewBatch(prev => ({
+                          ...prev,
+                          batch_name: `B.Tech CSE - Semester 1 - 2025-26`,
+                          batch_code: `BATCH-CSE-2025-ODD-01`,
+                          active_terms: [1, 3, 5, 7],
+                        }));
+                      }}
+                      className={`p-3 rounded-xl border text-left transition ${
+                        batchTermType === 'odd'
+                          ? 'border-[#00236f] bg-blue-50/80 ring-1 ring-[#00236f]'
+                          : 'border-slate-200 bg-white hover:bg-slate-50'
+                      }`}
+                    >
+                      <strong className="block text-slate-900 text-xs">Odd Semesters (Term 1 / 3 / 5 / 7)</strong>
+                      <span className="text-[10px] text-slate-500">Scheduled August to November Academic Window</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBatchTermType('even');
+                        setNewBatch(prev => ({
+                          ...prev,
+                          batch_name: `B.Tech CSE - Semester 2 - 2025-26`,
+                          batch_code: `BATCH-CSE-2025-EVEN-01`,
+                          active_terms: [2, 4, 6, 8],
+                        }));
+                      }}
+                      className={`p-3 rounded-xl border text-left transition ${
+                        batchTermType === 'even'
+                          ? 'border-[#00236f] bg-blue-50/80 ring-1 ring-[#00236f]'
+                          : 'border-slate-200 bg-white hover:bg-slate-50'
+                      }`}
+                    >
+                      <strong className="block text-slate-900 text-xs">Even Semesters (Term 2 / 4 / 6 / 8)</strong>
+                      <span className="text-[10px] text-slate-500">Scheduled December to April Academic Window</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Step 2: Course & Identification */}
+                <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-3">
+                  <span className="font-bold text-slate-900 uppercase text-[11px] tracking-wide block">
+                    Step 2: Course Selection & Auto-Suggested Nomenclature
+                  </span>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Affiliated Course *</label>
+                      <select
+                        value={newBatch.course_id}
+                        onChange={e => {
+                          const cid = e.target.value;
+                          const code = cid.toUpperCase();
+                          setNewBatch(prev => ({
+                            ...prev,
+                            course_id: cid,
+                            batch_name: `${code} - Semester ${batchTermType === 'odd' ? '1' : '2'} - 2025-26`,
+                            batch_code: `BATCH-${code}-2025-${batchTermType.toUpperCase()}-01`,
+                          }));
+                        }}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800"
+                      >
+                        <option value="cse">CSE (B.Tech Computer Science & Engineering)</option>
+                        <option value="ece">ECE (B.Tech Electronics & Communication)</option>
+                        <option value="me">ME (B.Tech Mechanical Engineering)</option>
+                        <option value="ce">CE (B.Tech Civil Engineering)</option>
+                        <option value="mba">MBA (Master of Business Administration)</option>
+                        <option value="bpharm">B.Pharm (Bachelor of Pharmacy)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Auto-Suggested Batch Name *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={newBatch.batch_name}
+                        onChange={e => setNewBatch(prev => ({ ...prev, batch_name: e.target.value }))}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Auto Batch ID (Read-Only System Handle)
+                      </label>
+                      <input
+                        type="text"
+                        readOnly
+                        value={newBatch.batch_code}
+                        className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl font-mono text-slate-600 font-bold cursor-not-allowed"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 3: Academic System & Duration */}
+                <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-3">
+                  <span className="font-bold text-slate-900 uppercase text-[11px] tracking-wide block">
+                    Step 3: Academic System, Years & Capacity
+                  </span>
+
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Academic System</label>
+                      <select
+                        value={newBatch.academic_system}
+                        onChange={e => setNewBatch(prev => ({ ...prev, academic_system: e.target.value as any }))}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold"
+                      >
+                        <option value="semester">Semester System (8 Terms)</option>
+                        <option value="annual">Annual System (4 Terms)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Start Year</label>
+                      <input
+                        type="number"
+                        value={newBatch.start_year}
+                        onChange={e => setNewBatch(prev => ({ ...prev, start_year: parseInt(e.target.value, 10) || 2025 }))}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">End Year</label>
+                      <input
+                        type="number"
+                        value={newBatch.end_year}
+                        onChange={e => setNewBatch(prev => ({ ...prev, end_year: parseInt(e.target.value, 10) || 2029 }))}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Sanctioned Intake</label>
+                      <input
+                        type="number"
+                        value={newBatch.intake_capacity}
+                        onChange={e => setNewBatch(prev => ({ ...prev, intake_capacity: parseInt(e.target.value, 10) || 120 }))}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Controls */}
+                <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+                  <span className="text-[11px] text-slate-500">
+                    🛡️ Batch will be provisioned in Master Architecture and linked with Fee Policies.
+                  </span>
+
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsCreatingBatch(false)}
+                      className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold transition"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-5 py-2 bg-[#00236f] hover:bg-[#001950] text-white rounded-xl font-bold transition shadow-xs"
+                    >
+                      Deploy Academic Batch ✓
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          )}
         </div>
       )}
 
@@ -1522,6 +1822,99 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
           </div>
         </div>
       )}
+      {/* MODAL: BATCH PROMOTION WORKFLOW (Karanvir Sir Lecture 4 Segment 4) */}
+      {isPromotingBatch && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-slate-100 space-y-4 text-xs">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-black text-[#00236f] flex items-center gap-2">
+                <span>Promote Academic Batch & Enrolled Scholars</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsPromotingBatch(false)}
+                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleExecuteBatchPromotion} className="space-y-4">
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Source Current Batch:</label>
+                <select
+                  value={promoteSourceBatchId}
+                  onChange={e => setPromoteSourceBatchId(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-white"
+                >
+                  {batches.map(b => (
+                    <option key={b.id} value={b.id}>
+                      {b.batch_name} ({b.course_id?.toUpperCase()})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Target Promoted Semester:</label>
+                  <select
+                    value={promoteTargetSemester}
+                    onChange={e => setPromoteTargetSemester(Number(e.target.value))}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-white"
+                  >
+                    {[2, 3, 4, 5, 6, 7, 8].map(s => (
+                      <option key={s} value={s}>Semester {s}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Target Academic Session:</label>
+                  <input
+                    type="text"
+                    value={promoteSession}
+                    onChange={e => setPromoteSession(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50"
+                  />
+                </div>
+              </div>
+
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-[11px] text-amber-900 leading-relaxed font-semibold">
+                Ordinance Gate: Only scholars satisfying the {promoteAttendanceCutoff}% biometric attendance threshold and passing minimum core credits will transition to the promoted roster. Dues clearance verified.
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Dean / HOD Statutory Authorization:</label>
+                <input
+                  type="text"
+                  value={promoteApprovalDean}
+                  onChange={e => setPromoteApprovalDean(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50"
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsPromotingBatch(false)}
+                  className="px-4 py-2 rounded-xl font-bold text-slate-600 hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl font-bold bg-[#ea580c] hover:bg-[#c2410c] text-white shadow-sm"
+                >
+                  Execute Batch Promotion & Advance Roster
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

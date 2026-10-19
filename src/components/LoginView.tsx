@@ -35,18 +35,18 @@ export const LoginView: React.FC<LoginViewProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
-  // In-place flip state (Karanvir Sir Lecture 4)
-  const [isFlipped, setIsFlipped] = useState(false);
+  // In-place flip state (Karanvir Sir Lecture 4: Orange theme for Forgot Password, Blue theme for Contact Admin)
+  const [flipMode, setFlipMode] = useState<'none' | 'forgot_password' | 'contact_admin'>('none');
   const [otpChannel, setOtpChannel] = useState<'email' | 'whatsapp' | 'sms'>('email');
   const [otpDestination, setOtpDestination] = useState('');
   const [otpSentMessage, setOtpSentMessage] = useState<string | null>(null);
 
   // Contact Admin state (Karanvir Sir Lecture 4: Dropdown regarding username/password/others + concern)
-  const [isContactAdminOpen, setIsContactAdminOpen] = useState(false);
   const [contactSubject, setContactSubject] = useState<'regarding_username' | 'regarding_password' | 'regarding_others'>('regarding_password');
   const [contactIdentifier, setContactIdentifier] = useState('');
   const [contactConcern, setContactConcern] = useState('');
   const [contactSuccessMessage, setContactSuccessMessage] = useState<string | null>(null);
+  const [activeTicketBadge, setActiveTicketBadge] = useState<string | null>(null);
 
   // Validation warning (Karanvir Sir Lecture 4: 13 digits for student, 8-9 for employee)
   const [validationWarning, setValidationWarning] = useState<string | null>(null);
@@ -94,21 +94,37 @@ export const LoginView: React.FC<LoginViewProps> = ({
     );
     setTimeout(() => {
       setOtpSentMessage(null);
-      setIsFlipped(false);
+      setFlipMode('none');
     }, 3800);
   };
 
   const handleContactAdminSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const tktId = `TKT-${Math.floor(100000 + Math.random() * 900000)}`;
+    const newTicket = {
+      id: tktId,
+      ticket_number: tktId,
+      user_identifier: contactIdentifier || username || 'GUEST',
+      category: contactSubject,
+      concern_text: contactConcern,
+      status: 'open',
+      created_at: new Date().toISOString(),
+    };
+    try {
+      const existing = JSON.parse(localStorage.getItem('educore_support_tickets') || '[]');
+      localStorage.setItem('educore_support_tickets', JSON.stringify([newTicket, ...existing]));
+    } catch (err) {
+      console.warn('Could not persist ticket to localStorage', err);
+    }
     setContactSuccessMessage(
-      `Support ticket #${tktId} generated successfully in the Authority Console. Admin team notified.`
+      `Support ticket #${tktId} generated successfully in Authority Console. Admin team notified.`
     );
+    setActiveTicketBadge(tktId);
     setTimeout(() => {
       setContactSuccessMessage(null);
-      setIsContactAdminOpen(false);
+      setFlipMode('none');
       setContactConcern('');
-    }, 3500);
+    }, 3200);
   };
 
   return (
@@ -137,10 +153,14 @@ export const LoginView: React.FC<LoginViewProps> = ({
           </p>
         </div>
 
-        {/* 3D Flip Card Container */}
+        {/* 3D Flip Card Container (Karanvir Sir Lecture 4: Orange theme for Forgot Password, Blue theme for Contact Admin flipped from opposite direction) */}
         <div
           className={`relative transition-all duration-500 transform-style-3d ${
-            isFlipped ? 'rotate-y-180' : ''
+            flipMode === 'forgot_password'
+              ? 'rotate-y-180'
+              : flipMode === 'contact_admin'
+              ? '-rotate-y-180'
+              : ''
           }`}
         >
           {/* FRONT FACE: REGULAR LOGIN */}
@@ -258,6 +278,23 @@ export const LoginView: React.FC<LoginViewProps> = ({
               </div>
             </div>
 
+            {/* Support Ticket Dispatched Badge */}
+            {activeTicketBadge && (
+              <div className="mb-3 p-2.5 bg-blue-50 border border-blue-200 text-blue-900 rounded-xl text-[11px] font-semibold flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
+                  <span>Support Ticket #{activeTicketBadge} active in Admin Console queue</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTicketBadge(null)}
+                  className="text-blue-500 hover:text-blue-800 text-[10px] font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
             {/* Error Banner */}
             {errorMessage && (
               <div className="mb-3 p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-semibold flex items-center gap-2">
@@ -281,7 +318,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   htmlFor="login-username-input"
                   className="block text-[11px] font-bold text-slate-700 tracking-tight mb-1"
                 >
-                  Canonical Enterprise UID / Registered Handle
+                  Registered UID / EMP ID (13 Digits Student / 8-10 Digits Staff)
                 </label>
                 <input
                   id="login-username-input"
@@ -289,7 +326,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   required
                   value={username}
                   onChange={(e) => handleUsernameChange(e.target.value)}
-                  placeholder="e.g. 4001-01-03-01, 10001-01-03-01, or 1001-88-03-01"
+                  placeholder="e.g. 1001-88-03-01, 4001-01-03-01, or 10001-01-03-01"
                   className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl font-mono text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/20 focus:border-[#00236f] transition-all"
                 />
               </div>
@@ -302,10 +339,10 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   >
                     Password
                   </label>
-                  {/* Flip to Forgot Password (Karanvir Sir Lecture 4) */}
+                  {/* Flip 1: Forgot Password (Orange Theme Flip) */}
                   <button
                     type="button"
-                    onClick={() => setIsFlipped(true)}
+                    onClick={() => setFlipMode('forgot_password')}
                     className="text-[11px] font-semibold text-[#ea580c] hover:underline cursor-pointer"
                   >
                     Forgot Password?
@@ -343,11 +380,11 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   <span className="text-[11px] text-slate-600 font-medium">Keep active session</span>
                 </label>
 
-                {/* Contact Admin Link (Karanvir Sir Lecture 4) */}
+                {/* Flip 2: Contact Admin (Blue Theme Flip - No Modal Popup) */}
                 <button
                   type="button"
-                  onClick={() => setIsContactAdminOpen(true)}
-                  className="text-[11px] font-bold text-slate-600 hover:text-[#00236f] underline cursor-pointer"
+                  onClick={() => setFlipMode('contact_admin')}
+                  className="text-[11px] font-bold text-[#00236f] hover:underline cursor-pointer"
                 >
                   Contact Admin
                 </button>
@@ -376,197 +413,212 @@ export const LoginView: React.FC<LoginViewProps> = ({
             </div>
           </div>
 
-          {/* BACK FACE: IN-PLACE FLIP FORGOT PASSWORD (Karanvir Sir Lecture 4) */}
-          <div className="absolute inset-0 bg-white/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] border border-white/60 backface-hidden rotate-y-180 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <button
-                  type="button"
-                  onClick={() => setIsFlipped(false)}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-[#00236f] hover:underline cursor-pointer"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>Back to Sign In</span>
-                </button>
-                <span className="px-2.5 py-0.5 rounded-full bg-orange-100 text-[#ea580c] font-black text-[10px] uppercase">
-                  Fast OTP Dispatch
-                </span>
-              </div>
-
-              <h2 className="text-base font-extrabold text-[#00236f] tracking-tight mb-1">
-                Password Recovery & OTP Dispatch
-              </h2>
-              <p className="text-[11px] text-slate-500 mb-4">
-                Select your preferred OTP delivery channel linked to your canonical profile:
-              </p>
-
-              {otpSentMessage ? (
-                <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 space-y-2 animate-in fade-in">
-                  <div className="flex items-center gap-2 font-bold text-xs">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span>OTP Dispatched Successfully</span>
-                  </div>
-                  <p className="text-xs leading-relaxed">{otpSentMessage}</p>
-                  <p className="text-[10px] text-emerald-700 italic">
-                    Returning to login view automatically...
-                  </p>
-                </div>
-              ) : (
-                <form onSubmit={handleSendOtp} className="space-y-4">
-                  {/* Channel Selector */}
-                  <div className="grid grid-cols-3 gap-2">
-                    {[
-                      { id: 'email', label: 'Email OTP', icon: Mail },
-                      { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
-                      { id: 'sms', label: 'SMS Carrier', icon: PhoneCall },
-                    ].map((ch) => {
-                      const Icon = ch.icon;
-                      const isSel = otpChannel === ch.id;
-                      return (
-                        <button
-                          key={ch.id}
-                          type="button"
-                          onClick={() => setOtpChannel(ch.id as any)}
-                          className={`p-2.5 rounded-xl border flex flex-col items-center gap-1 cursor-pointer transition-all ${
-                            isSel
-                              ? 'bg-[#00236f] text-white border-[#00236f] shadow-xs'
-                              : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
-                          }`}
-                        >
-                          <Icon className="w-4 h-4" />
-                          <span className="text-[10px] font-bold">{ch.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                      Enter 13-Digit Student UID / Registered Email / Phone:
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={otpDestination}
-                      onChange={(e) => setOtpDestination(e.target.value)}
-                      placeholder={
-                        otpChannel === 'email'
-                          ? 'scholar@bfgi.edu.in or 1001-88-03-01'
-                          : '+91 98XXX XXXXX'
-                      }
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs focus:bg-white focus:outline-none focus:border-[#00236f]"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full py-2.5 rounded-xl font-bold text-xs bg-[#ea580c] hover:bg-[#c2410c] text-white shadow-sm transition-all cursor-pointer"
-                  >
-                    Send One-Time Password (OTP) →
-                  </button>
-                </form>
-              )}
-            </div>
-
-            <div className="text-[10px] text-slate-400 text-center pt-3 border-t border-slate-100">
-              Need immediate clearance? Use "Contact Admin" on login screen.
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* CONTACT ADMIN SUPPORT MODAL (Karanvir Sir Lecture 4) */}
-      {isContactAdminOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-black text-[#00236f] flex items-center gap-2">
-                <HelpCircle className="w-4 h-4 text-[#ea580c]" />
-                <span>Contact Authority & Support Ticket</span>
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsContactAdminOpen(false)}
-                className="text-slate-400 hover:text-slate-700 text-xs font-bold"
-              >
-                ✕
-              </button>
-            </div>
-
-            {contactSuccessMessage ? (
-              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 space-y-1">
-                <div className="font-bold text-xs flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>Ticket Logged in Admin Console</span>
-                </div>
-                <p className="text-xs">{contactSuccessMessage}</p>
-              </div>
-            ) : (
-              <form onSubmit={handleContactAdminSubmit} className="space-y-3 text-xs">
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">
-                    Select Concern Category:
-                  </label>
-                  {/* Karanvir Sir Lecture 4 exact dropdown */}
-                  <select
-                    value={contactSubject}
-                    onChange={(e) => setContactSubject(e.target.value as any)}
-                    className="w-full p-2.5 rounded-xl border border-slate-200 font-semibold text-slate-800 bg-white focus:outline-none focus:border-[#00236f]"
-                  >
-                    <option value="regarding_username">regarding username</option>
-                    <option value="regarding_password">regarding password</option>
-                    <option value="regarding_others">regarding others</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">
-                    Your UID, Employee ID, or Phone:
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={contactIdentifier}
-                    onChange={(e) => setContactIdentifier(e.target.value)}
-                    placeholder="e.g. 1001-88-03-01 or 4001010301"
-                    className="w-full p-2.5 rounded-xl border border-slate-200 font-mono text-xs focus:outline-none focus:border-[#00236f]"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">
-                    Describe your issue / concern:
-                  </label>
-                  <textarea
-                    required
-                    rows={3}
-                    value={contactConcern}
-                    onChange={(e) => setContactConcern(e.target.value)}
-                    placeholder="Explain the credential or access difficulty you are experiencing..."
-                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-[#00236f]"
-                  />
-                </div>
-
-                <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+          {/* BACK FACE 1: FORGOT PASSWORD (Orange Theme, Karanvir Sir Lecture 4) */}
+          {flipMode === 'forgot_password' && (
+            <div className="absolute inset-0 bg-white/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 shadow-[0_25px_60px_-15px_rgba(234,88,12,0.3)] border-2 border-orange-300/80 backface-hidden rotate-y-180 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-4">
                   <button
                     type="button"
-                    onClick={() => setIsContactAdminOpen(false)}
-                    className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
+                    onClick={() => setFlipMode('none')}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[#ea580c] hover:underline cursor-pointer"
                   >
-                    Cancel
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Back to Sign In</span>
                   </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 rounded-xl text-xs font-bold bg-[#00236f] hover:bg-[#001744] text-white shadow-sm cursor-pointer"
-                  >
-                    Submit Ticket to Admin Panel
-                  </button>
+                  <span className="px-2.5 py-0.5 rounded-full bg-orange-100 text-[#ea580c] font-black text-[10px] uppercase">
+                    Orange Theme • OTP Dispatch
+                  </span>
                 </div>
-              </form>
-            )}
-          </div>
+
+                <h2 className="text-base font-extrabold text-[#ea580c] tracking-tight mb-1">
+                  Password Recovery via Secure OTP
+                </h2>
+                <p className="text-[11px] text-slate-600 mb-4">
+                  Select your enabled communication channel to receive instant login credentials:
+                </p>
+
+                {otpSentMessage ? (
+                  <div className="p-4 rounded-2xl bg-orange-50 border border-orange-200 text-orange-950 space-y-2 animate-in fade-in">
+                    <div className="flex items-center gap-2 font-bold text-xs text-[#ea580c]">
+                      <CheckCircle2 className="w-4 h-4 text-[#ea580c]" />
+                      <span>OTP Dispatched Successfully</span>
+                    </div>
+                    <p className="text-xs leading-relaxed font-medium">{otpSentMessage}</p>
+                    <p className="text-[10px] text-orange-700 italic">
+                      Please check your SMS / WhatsApp / Email for your password. Returning to login...
+                    </p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSendOtp} className="space-y-4">
+                    {/* Channel Selector */}
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { id: 'email', label: 'Email OTP', icon: Mail },
+                        { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
+                        { id: 'sms', label: 'SMS Carrier', icon: PhoneCall },
+                      ].map((ch) => {
+                        const Icon = ch.icon;
+                        const isSel = otpChannel === ch.id;
+                        return (
+                          <button
+                            key={ch.id}
+                            type="button"
+                            onClick={() => setOtpChannel(ch.id as any)}
+                            className={`p-2.5 rounded-xl border flex flex-col items-center gap-1 cursor-pointer transition-all ${
+                              isSel
+                                ? 'bg-[#ea580c] text-white border-[#ea580c] shadow-xs'
+                                : 'bg-slate-50 hover:bg-orange-50/50 text-slate-700 border-slate-200'
+                            }`}
+                          >
+                            <Icon className="w-4 h-4" />
+                            <span className="text-[10px] font-bold">{ch.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Enter 13-Digit Student UID / 8-10 Digit EMP ID / Registered Handle:
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={otpDestination}
+                        onChange={(e) => setOtpDestination(e.target.value)}
+                        placeholder={
+                          otpChannel === 'email'
+                            ? 'scholar@bfgi.edu.in or 1001-88-03-01'
+                            : '+91 98XXX XXXXX or 1001-88-03-01'
+                        }
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs focus:bg-white focus:outline-none focus:border-[#ea580c] focus:ring-1 focus:ring-[#ea580c]"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-2.5 rounded-xl font-bold text-xs bg-[#ea580c] hover:bg-[#c2410c] text-white shadow-sm transition-all cursor-pointer"
+                    >
+                      Send Temporary Credentials / OTP →
+                    </button>
+                  </form>
+                )}
+              </div>
+
+              <div className="text-[10px] text-slate-400 text-center pt-3 border-t border-slate-100">
+                Facing account lockout? Use "Contact Admin" to dispatch an urgent support ticket.
+              </div>
+            </div>
+          )}
+
+          {/* BACK FACE 2: CONTACT ADMIN (Blue Theme In-Place Flip, Karanvir Sir Lecture 4) */}
+          {flipMode === 'contact_admin' && (
+            <div className="absolute inset-0 bg-white/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 shadow-[0_25px_60px_-15px_rgba(0,35,111,0.3)] border-2 border-blue-400/80 backface-hidden -rotate-y-180 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <button
+                    type="button"
+                    onClick={() => setFlipMode('none')}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[#00236f] hover:underline cursor-pointer"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Back to Sign In</span>
+                  </button>
+                  <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-[#00236f] font-black text-[10px] uppercase">
+                    Blue Theme • Admin Authority Helpdesk
+                  </span>
+                </div>
+
+                <h2 className="text-base font-extrabold text-[#00236f] tracking-tight mb-1">
+                  Contact Authority & Log Support Ticket
+                </h2>
+                <p className="text-[11px] text-slate-600 mb-3">
+                  Submit credentials or account accessibility issues directly to the Institution Provost & System Admin:
+                </p>
+
+                {contactSuccessMessage ? (
+                  <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 text-blue-950 space-y-2 animate-in fade-in">
+                    <div className="flex items-center gap-2 font-bold text-xs text-[#00236f]">
+                      <CheckCircle2 className="w-4 h-4 text-[#00236f]" />
+                      <span>Ticket Logged into Admin Authority Console</span>
+                    </div>
+                    <p className="text-xs leading-relaxed font-medium">{contactSuccessMessage}</p>
+                    <p className="text-[10px] text-blue-700 italic">
+                      Support queue updated. Returning to login screen automatically...
+                    </p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleContactAdminSubmit} className="space-y-3 text-xs">
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">
+                        Select Concern Category (Karanvir Sir Master Ordinance):
+                      </label>
+                      <select
+                        value={contactSubject}
+                        onChange={(e) => setContactSubject(e.target.value as any)}
+                        className="w-full p-2 rounded-xl border border-slate-200 font-semibold text-slate-800 bg-white focus:outline-none focus:border-[#00236f] focus:ring-1 focus:ring-[#00236f]"
+                      >
+                        <option value="regarding_username">regarding username</option>
+                        <option value="regarding_password">regarding password</option>
+                        <option value="regarding_others">regarding others</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">
+                        Your UID, Employee ID, or Phone:
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={contactIdentifier}
+                        onChange={(e) => setContactIdentifier(e.target.value)}
+                        placeholder="e.g. 1001-88-03-01, 4001-01-03-01, or +91 90411 72159"
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs focus:bg-white focus:outline-none focus:border-[#00236f]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">
+                        Describe your concern / access issue:
+                      </label>
+                      <textarea
+                        required
+                        rows={2}
+                        value={contactConcern}
+                        onChange={(e) => setContactConcern(e.target.value)}
+                        placeholder="Explain the credential, password, or system access obstacle you encountered..."
+                        className="w-full p-2 bg-slate-50 border border-slate-200 text-xs rounded-xl focus:bg-white focus:outline-none focus:border-[#00236f] resize-none"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-100">
+                      <button
+                        type="button"
+                        onClick={() => setFlipMode('none')}
+                        className="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-4 py-2 rounded-xl text-xs font-bold bg-[#00236f] hover:bg-[#001744] text-white shadow-sm cursor-pointer transition-all active:scale-[0.99]"
+                      >
+                        Submit Ticket to Admin Panel →
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+
+              <div className="text-[10px] text-slate-400 text-center pt-2 border-t border-slate-100">
+                Tickets are cryptographically hashed and logged to the Admin Authority Console queue.
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };

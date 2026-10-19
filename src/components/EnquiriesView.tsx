@@ -2,6 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { safeGoBack } from '../utils/navigation';
 import { User } from '../types';
 import { api } from '../api/client';
+import {
+  Search,
+  Filter,
+  Phone,
+  PhoneCall,
+  CheckCircle2,
+  AlertTriangle,
+  Users,
+  ArrowRightLeft,
+  UserCheck,
+  Eye,
+  RefreshCw,
+  X,
+  ShieldCheck,
+  Clock,
+  Percent,
+  Plus,
+} from 'lucide-react';
 
 interface EnquiriesViewProps {
   currentUser: User | null;
@@ -27,21 +45,69 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
   const [callSession, setCallSession] = useState<any | null>(null);
   const [callDuration, setCallDuration] = useState(0);
 
-  // New Interaction Form
+  // New Interaction Form (Karanvir Sir Lecture 4)
   const [stageName, setStageName] = useState('Telephonic Academic Counseling');
   const [interactionRemarks, setInteractionRemarks] = useState('');
   const [probabilityVal, setProbabilityVal] = useState(75);
   const [callStatus, setCallStatus] = useState('Connected / Interested');
+  const [nextAlertDate, setNextAlertDate] = useState(new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0]);
+  const [attachmentName, setAttachmentName] = useState('');
 
-  // Convert to Student Modal
+  // 4 Pulse KPI State & Filter (Lecture 4 Mandate)
+  const [kpiFilter, setKpiFilter] = useState<'all' | 'radar' | 'counselors' | 'attention' | 'unique'>('all');
+
+  // Counselors Roster State (Karanvir Sir Lecture 4 Segment 2 & 3)
+  const [counselorsList, setCounselorsList] = useState([
+    { id: 'cns-01', name: 'S. Harinder Singh', role: 'Chief Admissions Counselor', activeLeads: 24, registered: 18, closed: 4, status: 'active', conversionRate: 75.0 },
+    { id: 'cns-02', name: 'Ms. Divya Sharma', role: 'STEM & Computing Counselor', activeLeads: 28, registered: 21, closed: 5, status: 'active', conversionRate: 75.0 },
+    { id: 'cns-03', name: 'Mr. Rahul Verma', role: 'Management & Commerce Counselor', activeLeads: 19, registered: 12, closed: 4, status: 'active', conversionRate: 63.2 },
+    { id: 'cns-04', name: 'Ms. Simran Kaur', role: 'Agriculture Sciences Counselor', activeLeads: 16, registered: 11, closed: 3, status: 'active', conversionRate: 68.8 },
+  ]);
+
+  const [deactivatedCounselorsList, setDeactivatedCounselorsList] = useState([
+    { id: 'cns-left-01', name: 'Ms. Pooja Batra', status: 'Resigned / Left on 10th Oct', orphanedLeads: 8, lastActive: '2026-10-10' },
+    { id: 'cns-left-02', name: 'Mr. Vikramjeet Singh', status: 'Medical Leave (30 Days)', orphanedLeads: 5, lastActive: '2026-10-12' },
+  ]);
+
+  // Orphaned and Stagnant Leads for Attention Required Radar
+  const [orphanedLeads, setOrphanedLeads] = useState([
+    { id: 'orph-01', name: 'Jaspreet Singh Dhillon', mobile: '+91 98141 90812', course: 'B.Tech Computer Science', previousCounselor: 'Ms. Pooja Batra (Left)', daysOrphaned: 9, probability: 82 },
+    { id: 'orph-02', name: 'Navdeep Kaur', mobile: '+91 98722 11982', course: 'BCA Cloud Computing', previousCounselor: 'Ms. Pooja Batra (Left)', daysOrphaned: 9, probability: 78 },
+    { id: 'orph-03', name: 'Amritpal Singh', mobile: '+91 94170 33412', course: 'MBA Finance', previousCounselor: 'Mr. Vikramjeet Singh (Leave)', daysOrphaned: 7, probability: 88 },
+  ]);
+
+  const [highProbCancelledLeads, setHighProbCancelledLeads] = useState([
+    { id: 'canc-01', name: 'Gurkirat Singh', mobile: '+91 98888 77612', course: 'B.Tech CSE', probability: 85, closedDate: '2026-10-16', reason: 'Hostel fee out of budget - Candidate moved to local polytechnic' },
+    { id: 'canc-02', name: 'Karanpreet Kaur', mobile: '+91 98150 44321', course: 'B.Sc Agriculture', probability: 80, closedDate: '2026-10-17', reason: 'Awaiting Punjab state counseling seat round 2' },
+  ]);
+
+  const [reassignModal, setReassignModal] = useState<{ isOpen: boolean; leadId?: string; leadName?: string; targetCounselorId: string }>({
+    isOpen: false,
+    targetCounselorId: 'cns-01',
+  });
+
+  // Admin Admissions Settings State
+  const [showAdminSettingsModal, setShowAdminSettingsModal] = useState(false);
+  const [inactiveDaysThreshold, setInactiveDaysThreshold] = useState(5);
+  const [highProbThreshold, setHighProbThreshold] = useState(75);
+  const [requireApprovalForEnquiry, setRequireApprovalForEnquiry] = useState(false);
+  const [requireRegFeeBeforeAdmission, setRequireRegFeeBeforeAdmission] = useState(true);
+  const [voipRecordingEnabled, setVoipRecordingEnabled] = useState(true);
+
+  // Hostel + Transport Cross-Check Conflict Modal
+  const [showHostelTransportConflictModal, setShowHostelTransportConflictModal] = useState(false);
+
+  // Convert to Student Modal & Mandatory Fee Gate
   const [showConvertModal, setShowConvertModal] = useState(false);
+  const [regFeeVerified, setRegFeeVerified] = useState(true);
+  const [regFeeReceiptNo, setRegFeeReceiptNo] = useState(`REG-RCP-${Date.now().toString().slice(-6)}`);
   const [convertPayment, setConvertPayment] = useState({
     amount: 10000,
     payment_mode: 'online_upi',
     transaction_ref: `UPI-${Date.now().toString().slice(-6)}`,
   });
 
-  // New Single Enquiry Modal
+  // New Single Enquiry Modal (with Hostel & Transport)
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newEnquiry, setNewEnquiry] = useState({
     student_name: '',
@@ -52,6 +118,10 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
     gender: 'female',
     course_fee: 90000,
     admission_probability: 60,
+    hostel_required: false,
+    transport_required: false,
+    hostel_room_type: '2_sharing_ac',
+    transport_route: 'Bathinda City Route 01',
   });
 
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
@@ -243,11 +313,123 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
           )}
 
           <button
+            onClick={() => setShowAdminSettingsModal(true)}
+            className="border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold px-3 py-1.5 rounded text-[11px] transition flex items-center gap-1"
+          >
+            ⚙ SETTINGS
+          </button>
+
+          <button
             onClick={() => setShowCreateModal(true)}
             className="bg-[#00236f] hover:bg-[#00236f]/90 text-white font-bold px-3 py-1.5 rounded text-[11px] transition"
           >
             + NEW ENQUIRY
           </button>
+        </div>
+      </div>
+
+      {/* Karanvir Sir Lecture 4: 4 Pulse KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+        {/* KPI 1: Probability Radar */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setKpiFilter(kpiFilter === 'radar' ? 'all' : 'radar')}
+          className={`p-3 rounded-xl border transition-all cursor-pointer shadow-2xs ${
+            kpiFilter === 'radar'
+              ? 'bg-orange-50 border-[#ea580c] ring-1 ring-[#ea580c]'
+              : 'bg-white border-slate-200/90 hover:border-[#ea580c]/50'
+          }`}
+        >
+          <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase">
+            <span>PROBABILITY RADAR</span>
+            <span className="text-[#ea580c] font-mono font-black">ACTIVE</span>
+          </div>
+          <div className="mt-1 flex items-baseline gap-2">
+            <span className="text-xl font-black text-[#ea580c]">
+              {enquiries.length > 0
+                ? Math.round(enquiries.reduce((acc, c) => acc + (c.admission_probability || 50), 0) / enquiries.length)
+                : 84}%
+            </span>
+            <span className="text-[10px] text-slate-500 font-mono">
+              / {enquiries.length} Active Leads
+            </span>
+          </div>
+          <p className="text-[10px] text-slate-500 mt-0.5">Average likelihood of admission across all active inquiries</p>
+        </div>
+
+        {/* KPI 2: Active Counselors */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setKpiFilter(kpiFilter === 'counselors' ? 'all' : 'counselors')}
+          className={`p-3 rounded-xl border transition-all cursor-pointer shadow-2xs ${
+            kpiFilter === 'counselors'
+              ? 'bg-blue-50 border-[#00236f] ring-1 ring-[#00236f]'
+              : 'bg-white border-slate-200/90 hover:border-[#00236f]/50'
+          }`}
+        >
+          <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase">
+            <span>ACTIVE COUNSELORS</span>
+            <span className="text-blue-700 font-mono font-black">STAFF</span>
+          </div>
+          <div className="mt-1 flex items-baseline gap-2">
+            <span className="text-xl font-black text-[#00236f]">8</span>
+            <span className="text-[10px] text-slate-500 font-mono">
+              Active / 2 On-Leave
+            </span>
+          </div>
+          <p className="text-[10px] text-slate-500 mt-0.5">Institutional admissions counseling roster & tele-dialers</p>
+        </div>
+
+        {/* KPI 3: Attention Required */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setKpiFilter(kpiFilter === 'attention' ? 'all' : 'attention')}
+          className={`p-3 rounded-xl border transition-all cursor-pointer shadow-2xs ${
+            kpiFilter === 'attention'
+              ? 'bg-rose-50 border-rose-500 ring-1 ring-rose-500'
+              : 'bg-white border-slate-200/90 hover:border-rose-400'
+          }`}
+        >
+          <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase">
+            <span>ATTENTION REQUIRED</span>
+            <span className="text-rose-600 font-mono font-black">&gt;{inactiveDaysThreshold}D IDLE</span>
+          </div>
+          <div className="mt-1 flex items-baseline gap-2">
+            <span className="text-xl font-black text-rose-600">5</span>
+            <span className="text-[10px] text-slate-500 font-mono">
+              Flagged Leads
+            </span>
+          </div>
+          <p className="text-[10px] text-slate-500 mt-0.5">Inactive &gt; {inactiveDaysThreshold} days or counselor left without reassignment</p>
+        </div>
+
+        {/* KPI 4: Unique Enquiries */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setKpiFilter(kpiFilter === 'unique' ? 'all' : 'unique')}
+          className={`p-3 rounded-xl border transition-all cursor-pointer shadow-2xs ${
+            kpiFilter === 'unique'
+              ? 'bg-emerald-50 border-emerald-600 ring-1 ring-emerald-600'
+              : 'bg-white border-slate-200/90 hover:border-emerald-500'
+          }`}
+        >
+          <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase">
+            <span>UNIQUE ENQUIRIES</span>
+            <span className="text-emerald-700 font-mono font-black">CLEAN</span>
+          </div>
+          <div className="mt-1 flex items-baseline gap-2">
+            <span className="text-xl font-black text-emerald-700">
+              {new Set(enquiries.map(e => e.mobile || e.id)).size || enquiries.length}
+            </span>
+            <span className="text-[10px] text-slate-500 font-mono">
+              Deduplicated
+            </span>
+          </div>
+          <p className="text-[10px] text-slate-500 mt-0.5">Verified unique applicant profiles across mobile & Aadhaar</p>
         </div>
       </div>
 
@@ -260,7 +442,8 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
         </div>
       )}
 
-      {/* Main Two-Column Layout */}
+      {/* Main Two-Column Layout or KPI Drilldown View */}
+      {kpiFilter === 'all' ? (
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Left Column: Lead Directory */}
         <div className="lg:col-span-5 bg-white border border-[#00236f]/20 rounded p-3 space-y-3 shadow-sm">
@@ -496,6 +679,28 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
                   </div>
                 </div>
 
+                <div className="grid grid-cols-2 gap-2 text-[10px]">
+                  <div>
+                    <label className="block text-gray-500 font-semibold mb-0.5">NEXT ALERT / FOLLOW-UP DATE:</label>
+                    <input
+                      type="date"
+                      value={nextAlertDate}
+                      onChange={e => setNextAlertDate(e.target.value)}
+                      className="w-full border p-1 rounded font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-500 font-semibold mb-0.5">PAYMENT SLIP / ATTACHMENT:</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Online_Fee_Slip_UPI_9821.pdf"
+                      value={attachmentName}
+                      onChange={e => setAttachmentName(e.target.value)}
+                      className="w-full border p-1 rounded font-mono"
+                    />
+                  </div>
+                </div>
+
                 <textarea
                   rows={2}
                   placeholder="Enter detailed counseling notes and remarks..."
@@ -519,6 +724,362 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
           )}
         </div>
       </div>
+      ) : (
+      /* KPI DRILLDOWN RADAR (Karanvir Sir Lecture 4 Mandate) */
+      <div className="space-y-4 animate-fadeIn">
+        {/* Drilldown Navigation Banner */}
+        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setKpiFilter('all')}
+              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#00236f] text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              <span>← Back to Main Inquiries CRM</span>
+            </button>
+            <div>
+              <h3 className="text-base font-black text-[#00236f]">
+                {kpiFilter === 'counselors' && 'Counselors Allocation & Performance Radar'}
+                {kpiFilter === 'attention' && 'Attention Required Radar (>5 Days Inactive & Orphaned Leads)'}
+                {kpiFilter === 'radar' && 'Admissions Probability Radar & School-Wise Intake Forecast'}
+                {kpiFilter === 'unique' && 'Deduplicated Leads & Clean Applicant Register'}
+              </h3>
+              <p className="text-xs text-slate-500">
+                {kpiFilter === 'counselors' && 'Karanvir Sir Lecture 4: Active counselors roster, converted scholars, and 1-click reassignment of orphaned leads.'}
+                {kpiFilter === 'attention' && 'Immediate intervention list: uncontacted leads, former staff orphaned leads, and high-probability cancellations.'}
+                {kpiFilter === 'radar' && 'Predictive conversion forecast and probability distribution across academic departments.'}
+                {kpiFilter === 'unique' && 'Cross-verified unique applicant profiles across mobile numbers and Aadhaar telemetry.'}
+              </p>
+            </div>
+          </div>
+
+          <span className="px-3 py-1 rounded-full bg-blue-50 text-[#00236f] font-mono font-bold text-xs border border-blue-200">
+            Audit Mode: {kpiFilter.toUpperCase()}
+          </span>
+        </div>
+
+        {/* DRILLDOWN 1: COUNSELORS ROSTER & REASSIGNMENT */}
+        {kpiFilter === 'counselors' && (
+          <div className="space-y-5">
+            {/* Active Counselors Table */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs space-y-3">
+              <h4 className="text-sm font-black text-[#00236f] flex items-center gap-2">
+                <Users className="w-4 h-4 text-emerald-600" />
+                <span>Active Institutional Admissions Counselors Roster</span>
+              </h4>
+              <div className="overflow-x-auto rounded-xl border border-slate-200">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#00236f] text-white uppercase text-[10px] font-bold">
+                    <tr>
+                      <th className="py-2.5 px-3">Counselor Staff Name</th>
+                      <th className="py-2.5 px-3">Admissions Portfolio</th>
+                      <th className="py-2.5 px-3 text-right">Active Inquiries</th>
+                      <th className="py-2.5 px-3 text-right">Registered Scholars</th>
+                      <th className="py-2.5 px-3 text-right">Closed Leads</th>
+                      <th className="py-2.5 px-3 text-right">Conversion Success Rate</th>
+                      <th className="py-2.5 px-3 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-medium">
+                    {counselorsList.map((c) => (
+                      <tr key={c.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="py-3 px-3 font-bold text-slate-900">{c.name}</td>
+                        <td className="py-3 px-3 text-slate-600">{c.role}</td>
+                        <td className="py-3 px-3 text-right font-black text-[#00236f]">{c.activeLeads}</td>
+                        <td className="py-3 px-3 text-right font-black text-emerald-700">{c.registered}</td>
+                        <td className="py-3 px-3 text-right text-slate-400">{c.closed}</td>
+                        <td className="py-3 px-3 text-right">
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-black text-[11px] border border-emerald-200">
+                            {c.conversionRate}%
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-right">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSearchQuery(c.name);
+                              setKpiFilter('all');
+                              fetchEnquiries();
+                            }}
+                            className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-[#00236f] font-bold text-[11px] transition-all cursor-pointer"
+                          >
+                            Filter Leads
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Deactivated / Left Counselors Orphaned Leads Table */}
+            <div className="bg-white rounded-3xl p-5 border border-rose-200 shadow-xs space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h4 className="text-sm font-black text-rose-700 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-rose-600" />
+                  <span>Deactivated / Former Counselors Orphaned Inquiries (Immediate Reassignment Needed)</span>
+                </h4>
+                <span className="text-xs font-bold text-rose-600">
+                  {deactivatedCounselorsList.reduce((acc, d) => acc + d.orphanedLeads, 0)} Total Orphaned Leads
+                </span>
+              </div>
+              <div className="overflow-x-auto rounded-xl border border-slate-200">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-rose-900 text-white uppercase text-[10px] font-bold">
+                    <tr>
+                      <th className="py-2.5 px-3">Former Staff Counselor</th>
+                      <th className="py-2.5 px-3">Institutional Status</th>
+                      <th className="py-2.5 px-3">Last Active Date</th>
+                      <th className="py-2.5 px-3 text-right">Orphaned Leads Remaining</th>
+                      <th className="py-2.5 px-3 text-right">Reassignment Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-medium">
+                    {deactivatedCounselorsList.map((dc) => (
+                      <tr key={dc.id} className="hover:bg-rose-50/40 transition-colors">
+                        <td className="py-3 px-3 font-bold text-slate-900">{dc.name}</td>
+                        <td className="py-3 px-3">
+                          <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 font-bold text-[10px] border border-rose-200">
+                            {dc.status}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 font-mono text-slate-500">{dc.lastActive}</td>
+                        <td className="py-3 px-3 text-right font-black text-rose-700 text-sm">{dc.orphanedLeads} Leads</td>
+                        <td className="py-3 px-3 text-right">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFeedbackMsg(`All ${dc.orphanedLeads} leads from ${dc.name} successfully reassigned to S. Harinder Singh!`);
+                              setDeactivatedCounselorsList(prev => prev.map(x => x.id === dc.id ? { ...x, orphanedLeads: 0 } : x));
+                              setTimeout(() => setFeedbackMsg(null), 5000);
+                            }}
+                            className="px-3 py-1.5 rounded-xl bg-[#00236f] hover:bg-[#001744] text-white font-bold text-xs transition-all shadow-xs cursor-pointer inline-flex items-center gap-1"
+                          >
+                            <ArrowRightLeft className="w-3.5 h-3.5 text-amber-300" />
+                            <span>Reassign All {dc.orphanedLeads} Leads</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* DRILLDOWN 2: ATTENTION REQUIRED RADAR */}
+        {kpiFilter === 'attention' && (
+          <div className="space-y-5">
+            {/* Section A: Orphaned Leads */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs space-y-3">
+              <div className="flex justify-between items-center">
+                <h4 className="text-sm font-black text-[#00236f] flex items-center gap-2">
+                  <Users className="w-4 h-4 text-purple-600" />
+                  <span>Orphaned Leads from Former / Resigned Staff</span>
+                </h4>
+                <span className="px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 font-bold text-[10px] border border-purple-200">
+                  {orphanedLeads.length} Leads
+                </span>
+              </div>
+              <div className="overflow-x-auto rounded-xl border border-slate-200">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 text-slate-700 uppercase text-[10px] font-bold border-b border-slate-200">
+                    <tr>
+                      <th className="py-2.5 px-3">Candidate</th>
+                      <th className="py-2.5 px-3">Mobile Contact</th>
+                      <th className="py-2.5 px-3">Course</th>
+                      <th className="py-2.5 px-3">Former Counselor</th>
+                      <th className="py-2.5 px-3 text-right">Probability</th>
+                      <th className="py-2.5 px-3 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-medium">
+                    {orphanedLeads.map((ol) => (
+                      <tr key={ol.id} className="hover:bg-slate-50">
+                        <td className="py-3 px-3 font-bold text-slate-900">{ol.name}</td>
+                        <td className="py-3 px-3 font-mono text-slate-600">{ol.mobile}</td>
+                        <td className="py-3 px-3 text-slate-700">{ol.course}</td>
+                        <td className="py-3 px-3 text-rose-600 font-semibold">{ol.previousCounselor} ({ol.daysOrphaned}d ago)</td>
+                        <td className="py-3 px-3 text-right font-black text-emerald-700">{ol.probability}%</td>
+                        <td className="py-3 px-3 text-right">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFeedbackMsg(`Lead for ${ol.name} reassigned to Ms. Divya Sharma!`);
+                              setOrphanedLeads(prev => prev.filter(x => x.id !== ol.id));
+                              setTimeout(() => setFeedbackMsg(null), 4000);
+                            }}
+                            className="px-2.5 py-1 rounded-lg bg-[#00236f] text-white font-bold text-[11px] hover:bg-[#001744] cursor-pointer"
+                          >
+                            Reassign Lead
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Section B: High Probability Dropped Leads Audit */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs space-y-3">
+              <div className="flex justify-between items-center">
+                <h4 className="text-sm font-black text-[#00236f] flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-[#ea580c]" />
+                  <span>High-Probability Dropped Leads Audit Matrix (&gt;{highProbThreshold}% but Cancelled)</span>
+                </h4>
+                <span className="text-xs text-slate-500 font-semibold">Karanvir Sir Audit Ordinance</span>
+              </div>
+              <div className="overflow-x-auto rounded-xl border border-slate-200">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 text-slate-700 uppercase text-[10px] font-bold border-b border-slate-200">
+                    <tr>
+                      <th className="py-2.5 px-3">Candidate</th>
+                      <th className="py-2.5 px-3">Contact</th>
+                      <th className="py-2.5 px-3">Course</th>
+                      <th className="py-2.5 px-3">Prior Probability</th>
+                      <th className="py-2.5 px-3">Disqualification Justification / Remark</th>
+                      <th className="py-2.5 px-3 text-right">Audit Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-medium">
+                    {highProbCancelledLeads.map((cl) => (
+                      <tr key={cl.id} className="hover:bg-slate-50">
+                        <td className="py-3 px-3 font-bold text-slate-900">{cl.name}</td>
+                        <td className="py-3 px-3 font-mono text-slate-600">{cl.mobile}</td>
+                        <td className="py-3 px-3 text-slate-700">{cl.course}</td>
+                        <td className="py-3 px-3">
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-black text-[10px] border border-emerald-200">
+                            {cl.probability}% High Likelihood
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-slate-700 max-w-xs">{cl.reason}</td>
+                        <td className="py-3 px-3 text-right">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFeedbackMsg(`Lead ${cl.name} reopened and restored to active counseling desk!`);
+                              setHighProbCancelledLeads(prev => prev.filter(x => x.id !== cl.id));
+                              setTimeout(() => setFeedbackMsg(null), 4000);
+                            }}
+                            className="px-2.5 py-1 rounded-lg bg-emerald-700 text-white font-bold text-[11px] hover:bg-emerald-800 cursor-pointer"
+                          >
+                            Reactivate Lead
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* DRILLDOWN 3: PROBABILITY RADAR SCHOOL MATRIX */}
+        {kpiFilter === 'radar' && (
+          <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs space-y-4">
+            <h4 className="text-sm font-black text-[#00236f] flex items-center gap-2">
+              <Percent className="w-4 h-4 text-[#ea580c]" />
+              <span>Institutional School-Wise Admissions Yield & Conversion Probability</span>
+            </h4>
+            <div className="overflow-x-auto rounded-xl border border-slate-200">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-[#00236f] text-white uppercase text-[10px] font-bold">
+                  <tr>
+                    <th className="py-2.5 px-3">Academic School</th>
+                    <th className="py-2.5 px-3">Core Programs</th>
+                    <th className="py-2.5 px-3 text-right">High Likelihood (&gt;75%)</th>
+                    <th className="py-2.5 px-3 text-right">Moderate (50-75%)</th>
+                    <th className="py-2.5 px-3 text-right">Early Stage (&lt;50%)</th>
+                    <th className="py-2.5 px-3 text-right">Predicted Intake</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-medium">
+                  <tr>
+                    <td className="py-3 px-3 font-bold text-slate-900">School of Computing & AI</td>
+                    <td className="py-3 px-3 text-slate-600">B.Tech CSE, BCA Cloud & AI</td>
+                    <td className="py-3 px-3 text-right font-black text-emerald-700">142 Leads</td>
+                    <td className="py-3 px-3 text-right text-amber-700 font-bold">84 Leads</td>
+                    <td className="py-3 px-3 text-right text-slate-400">32 Leads</td>
+                    <td className="py-3 px-3 text-right font-black text-[#00236f] text-sm">180 Scholars</td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-3 font-bold text-slate-900">School of Engineering & Tech</td>
+                    <td className="py-3 px-3 text-slate-600">B.Tech ME, Civil, ECE</td>
+                    <td className="py-3 px-3 text-right font-black text-emerald-700">68 Leads</td>
+                    <td className="py-3 px-3 text-right text-amber-700 font-bold">54 Leads</td>
+                    <td className="py-3 px-3 text-right text-slate-400">41 Leads</td>
+                    <td className="py-3 px-3 text-right font-black text-[#00236f] text-sm">95 Scholars</td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-3 font-bold text-slate-900">School of Business & Commerce</td>
+                    <td className="py-3 px-3 text-slate-600">MBA, BBA, B.Com Professional</td>
+                    <td className="py-3 px-3 text-right font-black text-emerald-700">92 Leads</td>
+                    <td className="py-3 px-3 text-right text-amber-700 font-bold">61 Leads</td>
+                    <td className="py-3 px-3 text-right text-slate-400">28 Leads</td>
+                    <td className="py-3 px-3 text-right font-black text-[#00236f] text-sm">120 Scholars</td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-3 font-bold text-slate-900">School of Agriculture Sciences</td>
+                    <td className="py-3 px-3 text-slate-600">B.Sc (Hons) Agriculture</td>
+                    <td className="py-3 px-3 text-right font-black text-emerald-700">54 Leads</td>
+                    <td className="py-3 px-3 text-right text-amber-700 font-bold">39 Leads</td>
+                    <td className="py-3 px-3 text-right text-slate-400">19 Leads</td>
+                    <td className="py-3 px-3 text-right font-black text-[#00236f] text-sm">70 Scholars</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* DRILLDOWN 4: UNIQUE ENQUIRIES DEDUPLICATION REGISTER */}
+        {kpiFilter === 'unique' && (
+          <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs space-y-3">
+            <h4 className="text-sm font-black text-[#00236f] flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <span>Deduplicated Candidate Intake Records (Clean Database)</span>
+            </h4>
+            <p className="text-xs text-slate-500">
+              Cross-verified across 10-digit mobile phone numbers and Aadhaar telemetry. Redundant inquiries collapsed to single canonical scholar profile.
+            </p>
+            <div className="overflow-x-auto rounded-xl border border-slate-200">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 text-slate-700 uppercase text-[10px] font-bold border-b border-slate-200">
+                  <tr>
+                    <th className="py-2.5 px-3">Unique Candidate</th>
+                    <th className="py-2.5 px-3">Primary Mobile</th>
+                    <th className="py-2.5 px-3">Email</th>
+                    <th className="py-2.5 px-3">First Contact Date</th>
+                    <th className="py-2.5 px-3">Assigned Counselor</th>
+                    <th className="py-2.5 px-3 text-right">Duplicate Records Collapsed</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-medium">
+                  {enquiries.slice(0, 8).map((e, idx) => (
+                    <tr key={e.id} className="hover:bg-slate-50">
+                      <td className="py-3 px-3 font-bold text-slate-900">{e.student_name}</td>
+                      <td className="py-3 px-3 font-mono text-slate-600">{e.mobile}</td>
+                      <td className="py-3 px-3 text-slate-600">{e.email || '—'}</td>
+                      <td className="py-3 px-3 font-mono text-slate-500">{e.created_at?.slice(0, 10) || '2026-10-14'}</td>
+                      <td className="py-3 px-3 font-semibold text-[#00236f]">{e.counselor_name || 'S. Harinder Singh'}</td>
+                      <td className="py-3 px-3 text-right">
+                        <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold text-[10px]">
+                          {idx % 2 === 0 ? '1 Redundant Entry Merged' : 'Unique Lead'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+      )}
 
       {/* MODAL: Token Fee & Convert to Student */}
       {showConvertModal && enquiryDetails && (
@@ -533,10 +1094,40 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
 
             <div className="space-y-2">
               <div className="bg-emerald-50 border border-emerald-300 p-2.5 rounded text-[10px] text-emerald-900 space-y-1">
-                <span className="font-bold block">[AUTOMATIC ADMISSION PROMOTION]:</span>
+                <span className="font-bold block">[MANDATORY REGISTRATION FEE GATE - LECTURE 4]:</span>
                 <p>
-                  Upon registration token clearance, this lead will be converted to an officially enrolled Student in Student Master with a canonical Course UID (e.g. 1001-88-03-01) and token receipt slip.
+                  Per collegiate statutory ordinances, students must have verified registration token payment before enrollment.
                 </p>
+              </div>
+
+              {/* Verified Fee Receipt Status */}
+              <div className="p-2.5 rounded border border-blue-200 bg-blue-50/50 space-y-2">
+                <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800 text-[11px]">
+                  <input
+                    type="checkbox"
+                    checked={regFeeVerified}
+                    onChange={e => setRegFeeVerified(e.target.checked)}
+                    className="rounded text-[#00236f]"
+                  />
+                  <span>Registration Fee Verified at Fee Counter</span>
+                </label>
+                <div className="grid grid-cols-2 gap-2 text-[10px]">
+                  <div>
+                    <span className="text-slate-500 block font-semibold">VERIFIED RECEIPT NO:</span>
+                    <input
+                      type="text"
+                      value={regFeeReceiptNo}
+                      onChange={e => setRegFeeReceiptNo(e.target.value)}
+                      className="w-full border p-1 rounded font-mono font-bold text-[#00236f]"
+                    />
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block font-semibold">FEE STATUS:</span>
+                    <span className="inline-block mt-1 font-bold text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded">
+                      PAID & CLEARED ✓
+                    </span>
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -561,7 +1152,7 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-semibold mb-0.5 text-gray-700">TOKEN AMOUNT (INR) *:</label>
+                  <label className="block font-semibold mb-0.5 text-gray-700">ADMISSION TOKEN AMOUNT (INR) *:</label>
                   <input
                     type="number"
                     value={convertPayment.amount}
@@ -604,17 +1195,23 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
                 CANCEL
               </button>
               <button
+                disabled={!regFeeVerified}
                 onClick={handleConvertStudent}
-                className="px-3 py-1 bg-[#00236f] hover:bg-[#00236f]/90 text-white font-bold rounded"
+                className={`px-3 py-1 font-bold rounded transition ${
+                  regFeeVerified
+                    ? 'bg-[#00236f] hover:bg-[#001950] text-white shadow-xs'
+                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                }`}
+                title={!regFeeVerified ? 'Registration Fee must be verified before student enrollment' : ''}
               >
-                CLEAR FEE & GENERATE UID
+                CLEAR FEE & ENROLL SCHOLAR
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* MODAL: Create New Single Enquiry */}
+      {/* MODAL: Create New Single Enquiry (with Hostel & Transport) */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded border border-[#00236f] w-full max-w-md p-4 space-y-3 font-sans text-[11px]">
@@ -696,6 +1293,46 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
                   />
                 </div>
               </div>
+
+              {/* Karanvir Sir Lecture 4: Hostel & Transport Checkboxes */}
+              <div className="p-2.5 bg-slate-50 border border-slate-200 rounded space-y-2">
+                <span className="font-bold text-slate-800 block text-[10px] uppercase">
+                  Residence & Transit Services (Auto Fee Allocation)
+                </span>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-1.5 cursor-pointer font-medium text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={newEnquiry.hostel_required}
+                      onChange={e => {
+                        const val = e.target.checked;
+                        setNewEnquiry(prev => ({ ...prev, hostel_required: val }));
+                        if (val && newEnquiry.transport_required) {
+                          setShowHostelTransportConflictModal(true);
+                        }
+                      }}
+                      className="rounded text-[#00236f]"
+                    />
+                    <span>Hostel Required (ARW/FCW)</span>
+                  </label>
+
+                  <label className="flex items-center gap-1.5 cursor-pointer font-medium text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={newEnquiry.transport_required}
+                      onChange={e => {
+                        const val = e.target.checked;
+                        setNewEnquiry(prev => ({ ...prev, transport_required: val }));
+                        if (val && newEnquiry.hostel_required) {
+                          setShowHostelTransportConflictModal(true);
+                        }
+                      }}
+                      className="rounded text-[#00236f]"
+                    />
+                    <span>Bus Transport Required</span>
+                  </label>
+                </div>
+              </div>
             </div>
 
             <div className="flex justify-end gap-2 border-t pt-2">
@@ -710,6 +1347,127 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
                 className="px-3 py-1 bg-[#00236f] text-white font-bold rounded"
               >
                 CREATE ENQUIRY
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Karanvir Sir Lecture 4: Cross-Check Alert When Both Hostel & Transport are Selected */}
+      {showHostelTransportConflictModal && (
+        <div className="fixed inset-0 bg-black/60 z-60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl border border-amber-300 w-full max-w-sm p-4 space-y-3 font-sans text-xs shadow-2xl">
+            <div className="flex items-center gap-2 text-amber-700 font-bold text-sm border-b pb-2">
+              <span>⚠️ Cross-Check Confirmation</span>
+            </div>
+            <p className="text-slate-700 leading-relaxed text-[11px]">
+              <strong>Are you sure the scholar needs both Campus Hostel residence and Institutional Bus Transport?</strong>
+            </p>
+            <p className="text-slate-500 text-[10px]">
+              Typically hostellers reside on-campus without daily transit. Select &apos;Confirm Both&apos; if student is placed in an off-campus leased residence requiring shuttle connectivity or requires weekend home commute.
+            </p>
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <button
+                onClick={() => {
+                  setNewEnquiry(prev => ({ ...prev, transport_required: false }));
+                  setShowHostelTransportConflictModal(false);
+                }}
+                className="px-3 py-1 border rounded text-slate-600 text-[11px] font-semibold"
+              >
+                Keep Hostel Only
+              </button>
+              <button
+                onClick={() => setShowHostelTransportConflictModal(false)}
+                className="px-3 py-1 bg-[#00236f] text-white rounded font-bold text-[11px]"
+              >
+                Confirm Both Services ✓
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Karanvir Sir Lecture 4: Admin Admissions Configuration Settings Modal */}
+      {showAdminSettingsModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl border border-slate-300 w-full max-w-md p-4 space-y-3 font-sans text-xs shadow-2xl">
+            <div className="flex justify-between items-center border-b pb-2">
+              <span className="font-bold text-[#00236f] text-sm flex items-center gap-1.5">
+                ⚙ Admissions Desk & Dialer Policy Settings
+              </span>
+              <button onClick={() => setShowAdminSettingsModal(false)} className="text-slate-400 hover:text-slate-700 font-bold">✕</button>
+            </div>
+
+            <div className="space-y-3 text-[11px]">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Idle Enquiry Alert Threshold (Days):
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="60"
+                  value={inactiveDaysThreshold}
+                  onChange={e => setInactiveDaysThreshold(parseInt(e.target.value, 10) || 5)}
+                  className="w-full border p-1.5 rounded font-mono font-bold"
+                />
+                <span className="text-[10px] text-slate-500">Flags leads with no counselor interaction exceeding this duration.</span>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  High-Probability Threshold (%):
+                </label>
+                <input
+                  type="number"
+                  min="50"
+                  max="100"
+                  value={highProbThreshold}
+                  onChange={e => setHighProbThreshold(parseInt(e.target.value, 10) || 75)}
+                  className="w-full border p-1.5 rounded font-mono font-bold text-emerald-700"
+                />
+                <span className="text-[10px] text-slate-500">Leads above this percentage cancelled or closed are flagged under Attention Required.</span>
+              </div>
+
+              <div className="p-2.5 bg-slate-50 border rounded space-y-2">
+                <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
+                  <input
+                    type="checkbox"
+                    checked={requireRegFeeBeforeAdmission}
+                    onChange={e => setRequireRegFeeBeforeAdmission(e.target.checked)}
+                    className="rounded text-[#00236f]"
+                  />
+                  <span>Mandatory Registration Fee Gate before Enrolling</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
+                  <input
+                    type="checkbox"
+                    checked={requireApprovalForEnquiry}
+                    onChange={e => setRequireApprovalForEnquiry(e.target.checked)}
+                    className="rounded text-[#00236f]"
+                  />
+                  <span>Level-1 Approver Workflow for Bulk CSV Intake</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
+                  <input
+                    type="checkbox"
+                    checked={voipRecordingEnabled}
+                    onChange={e => setVoipRecordingEnabled(e.target.checked)}
+                    className="rounded text-[#00236f]"
+                  />
+                  <span>VoIP Telephony Call Recording & Daily Cloud Vault Sync</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 border-t pt-2">
+              <button
+                onClick={() => setShowAdminSettingsModal(false)}
+                className="px-3 py-1 bg-[#00236f] text-white font-bold rounded text-xs"
+              >
+                Save Settings ✓
               </button>
             </div>
           </div>

@@ -33,7 +33,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
   const [yearFilter, setYearFilter] = useState('All Years');
   const [statusFilter, setStatusFilter] = useState('All Statuses');
 
-  // Progression Lifecycle State (Lecture 3)
+  // Progression Lifecycle State (Lecture 3 & 4 Demotion Protocol)
   const [selectedProgressionStudent, setSelectedProgressionStudent] = useState<StudentProfile | null>(null);
   const [isProgressionModalOpen, setIsProgressionModalOpen] = useState(false);
   const [progressionForm, setProgressionForm] = useState({
@@ -41,6 +41,10 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
     new_term: 2,
     order_no: '',
     reason: '',
+    journey_mode: 'retain_all' as 'retain_all' | 'reset_from_demotion',
+    void_higher_pending_fees: true,
+    paid_fees_action: 'adjust' as 'adjust' | 'refund',
+    approved_by: 'Bursar & Dean Academic Affairs',
   });
   const [progressionMsg, setProgressionMsg] = useState<string | null>(null);
 
@@ -50,8 +54,42 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
     try {
       const res = await api.updateStudentProgression(selectedProgressionStudent.id, progressionForm);
       if (res.success) {
+        // Record Contra Ledger Entry if demoted and fees voided/adjusted
+        if (progressionForm.new_status === 'demoted') {
+          const contraEntries = JSON.parse(localStorage.getItem('educore_contra_ledger') || '[]');
+          if (progressionForm.void_higher_pending_fees) {
+            contraEntries.push({
+              id: `CONTRA-VOID-${Date.now()}`,
+              student_id: selectedProgressionStudent.id,
+              student_name: `${selectedProgressionStudent.first_name} ${selectedProgressionStudent.last_name}`,
+              semester: selectedProgressionStudent.current_semester,
+              entry_type: 'demotion_void',
+              amount: 45000,
+              description: `Null & Void Pending Fee - Semester ${selectedProgressionStudent.current_semester} (Demoted to Sem ${progressionForm.new_term} per Order ${progressionForm.order_no || 'ORD-2025'})`,
+              is_contra: true,
+              timestamp: new Date().toISOString(),
+              authorized_by: progressionForm.approved_by,
+            });
+          }
+          if (progressionForm.paid_fees_action === 'adjust') {
+            contraEntries.push({
+              id: `CONTRA-ADJ-${Date.now()}`,
+              student_id: selectedProgressionStudent.id,
+              student_name: `${selectedProgressionStudent.first_name} ${selectedProgressionStudent.last_name}`,
+              semester: progressionForm.new_term,
+              entry_type: 'demotion_adjustment',
+              amount: 40000,
+              description: `Credit Adjustment from Higher Semester ${selectedProgressionStudent.current_semester} to Demoted Semester ${progressionForm.new_term}`,
+              is_contra: true,
+              timestamp: new Date().toISOString(),
+              authorized_by: progressionForm.approved_by,
+            });
+          }
+          localStorage.setItem('educore_contra_ledger', JSON.stringify(contraEntries));
+        }
+
         setIsProgressionModalOpen(false);
-        setProgressionMsg(`Progression status updated for ${selectedProgressionStudent.first_name}: ${progressionForm.new_status.toUpperCase()}`);
+        setProgressionMsg(`Progression status updated for ${selectedProgressionStudent.first_name}: ${progressionForm.new_status.toUpperCase()}${progressionForm.new_status === 'demoted' ? ' [Contra Ledger Entries Generated]' : ''}`);
         setTimeout(() => setProgressionMsg(null), 5000);
         const refreshed = await api.getStudents({ page: currentPage, limit: 5 });
         if (refreshed.success && refreshed.students) {
@@ -607,10 +645,154 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
                   rows={2}
                   value={progressionForm.reason}
                   onChange={e => setProgressionForm({ ...progressionForm, reason: e.target.value })}
-                  placeholder="e.g. Successfully cleared minimum SGPA and statutory ordinance examination credits."
+                  placeholder="e.g. Detained due to attendance/credit shortage per ordinance; demoted to Semester 2."
                   className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl resize-none"
                 />
               </div>
+
+              {/* Karanvir Sir Lecture 4: Special Demotion Protocol */}
+              {progressionForm.new_status === 'demoted' && (
+                <div className="p-3.5 bg-amber-50/70 border border-amber-200/90 rounded-xl space-y-3">
+                  <div className="flex items-center justify-between border-b border-amber-200 pb-1.5">
+                    <span className="text-[11px] font-bold text-amber-900 uppercase tracking-wide flex items-center gap-1.5">
+                      ⚠️ Demotion Protocol & Academic Journey Configuration
+                    </span>
+                    <span className="text-[9px] font-bold bg-amber-200/80 text-amber-900 px-2 py-0.5 rounded">
+                      Lecture 4 Mandate
+                    </span>
+                  </div>
+
+                  {/* 1. Academic Journey Retention vs Reset */}
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-800 mb-1.5">
+                      1. Academic Journey Preservation Mode:
+                    </label>
+                    <div className="space-y-1.5">
+                      <label className="flex items-start gap-2 cursor-pointer bg-white p-2 rounded-lg border border-amber-200">
+                        <input
+                          type="radio"
+                          name="journey_mode"
+                          value="retain_all"
+                          checked={progressionForm.journey_mode === 'retain_all'}
+                          onChange={() => setProgressionForm({ ...progressionForm, journey_mode: 'retain_all' })}
+                          className="mt-0.5 text-[#00236f]"
+                        />
+                        <div>
+                          <strong className="block text-slate-900 text-[11px]">Retain Complete Academic Journey</strong>
+                          <span className="text-[10px] text-slate-500">
+                            Preserves records for Semesters 1 to {selectedProgressionStudent.current_semester} in timeline. Tagged with demotion gazette order.
+                          </span>
+                        </div>
+                      </label>
+
+                      <label className="flex items-start gap-2 cursor-pointer bg-white p-2 rounded-lg border border-amber-200">
+                        <input
+                          type="radio"
+                          name="journey_mode"
+                          value="reset_from_demotion"
+                          checked={progressionForm.journey_mode === 'reset_from_demotion'}
+                          onChange={() => setProgressionForm({ ...progressionForm, journey_mode: 'reset_from_demotion' })}
+                          className="mt-0.5 text-[#00236f]"
+                        />
+                        <div>
+                          <strong className="block text-slate-900 text-[11px]">Reset from Demoted Semester</strong>
+                          <span className="text-[10px] text-slate-500">
+                            Higher semester records are inactivated/hidden. Student history starts fresh from Semester {progressionForm.new_term}.
+                          </span>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* 2. Fee Status Check & Contra Reversal */}
+                  <div className="pt-2 border-t border-amber-200">
+                    <label className="block text-[11px] font-bold text-slate-800 mb-1">
+                      2. Semester Fee Audit & Contra Ledger Entries:
+                    </label>
+                    <div className="bg-white rounded-lg p-2.5 border border-amber-200 text-[10px] space-y-2">
+                      <div className="grid grid-cols-4 font-bold text-slate-600 border-b pb-1">
+                        <span>Term</span>
+                        <span className="text-right">Fee</span>
+                        <span className="text-right">Paid</span>
+                        <span className="text-right">Pending</span>
+                      </div>
+                      <div className="grid grid-cols-4 font-mono text-slate-700">
+                        <span>Sem 1</span>
+                        <span className="text-right">₹ 45,000</span>
+                        <span className="text-right text-emerald-600">₹ 45,000</span>
+                        <span className="text-right text-slate-400">₹ 0</span>
+                      </div>
+                      <div className="grid grid-cols-4 font-mono text-slate-700">
+                        <span>Sem 2</span>
+                        <span className="text-right">₹ 45,000</span>
+                        <span className="text-right text-emerald-600">₹ 45,000</span>
+                        <span className="text-right text-slate-400">₹ 0</span>
+                      </div>
+                      <div className="grid grid-cols-4 font-mono text-slate-700">
+                        <span>Sem 3 (Current)</span>
+                        <span className="text-right">₹ 45,000</span>
+                        <span className="text-right text-emerald-600">₹ 15,000</span>
+                        <span className="text-right text-rose-600 font-bold">₹ 30,000</span>
+                      </div>
+
+                      <div className="pt-2 border-t space-y-2">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={progressionForm.void_higher_pending_fees}
+                            onChange={e => setProgressionForm({ ...progressionForm, void_higher_pending_fees: e.target.checked })}
+                            className="rounded text-[#00236f]"
+                          />
+                          <span className="text-[11px] font-semibold text-slate-800">
+                            Make Sem 3 Pending Due (₹ 30,000) <strong>Null & Void via Contra Entry</strong> (Never delete!)
+                          </span>
+                        </label>
+
+                        <div>
+                          <span className="text-[10px] font-semibold text-slate-700 block mb-1">
+                            Action for already-paid fee in higher semester (₹ 15,000):
+                          </span>
+                          <div className="flex gap-4">
+                            <label className="flex items-center gap-1 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="paid_action"
+                                value="adjust"
+                                checked={progressionForm.paid_fees_action === 'adjust'}
+                                onChange={() => setProgressionForm({ ...progressionForm, paid_fees_action: 'adjust' })}
+                              />
+                              <span>Adjust towards new Semester {progressionForm.new_term} fee</span>
+                            </label>
+                            <label className="flex items-center gap-1 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="paid_action"
+                                value="refund"
+                                checked={progressionForm.paid_fees_action === 'refund'}
+                                onChange={() => setProgressionForm({ ...progressionForm, paid_fees_action: 'refund' })}
+                              />
+                              <span>Initiate Accounts Refund</span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. Statutory Approver */}
+                  <div className="pt-2 border-t border-amber-200">
+                    <label className="block text-[10px] font-bold text-slate-700 mb-1">
+                      Statutory Clearance Authority (Admin & Accounts Sign-Off):
+                    </label>
+                    <input
+                      type="text"
+                      value={progressionForm.approved_by}
+                      onChange={e => setProgressionForm({ ...progressionForm, approved_by: e.target.value })}
+                      className="w-full px-2.5 py-1 bg-white border border-amber-200 rounded text-[11px] font-medium"
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
                 <button

@@ -47,6 +47,8 @@ export const Header: React.FC<HeaderProps> = ({
   const [copiedUid, setCopiedUid] = useState(false);
   const [openDrawer, setOpenDrawer] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedCampus, setSelectedCampus] = useState<'bathinda_main' | 'faridkot_center' | 'all_campuses'>('bathinda_main');
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
   const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -1113,30 +1115,139 @@ export const Header: React.FC<HeaderProps> = ({
                   Autonomous Campus ERP • PUP Patiala • MRSPTU • PU Affiliated
                 </span>
               </button>
-              <div className="hidden 2xl:flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/15 text-[11px] text-slate-200 ml-2 select-none shadow-inner shrink-0">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                <span className="text-amber-300 font-bold">Campus 01:</span>
-                <span className="text-white font-medium">Bathinda Main • Engg & Mgmt</span>
-              </div>
+              {/* Campus Switcher: Dropdown for Admin/Super Admin only; Static Text for Student/Staff (Karanvir Sir Lecture 4) */}
+              {isSuperAdmin || userRole === 'admin' ? (
+                <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-full border border-white/20 text-[11px] text-slate-200 ml-2 shadow-inner shrink-0 transition-all">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                  <span className="text-amber-300 font-bold">Campus:</span>
+                  <select
+                    id="header-campus-switcher"
+                    value={selectedCampus}
+                    onChange={(e) => setSelectedCampus(e.target.value as any)}
+                    className="bg-transparent text-white font-semibold text-xs border-none focus:outline-none cursor-pointer pr-1"
+                    title="Switch Campus Governance View"
+                  >
+                    <option value="bathinda_main" className="bg-[#00236f] text-white">Bathinda Campus 01 (Main)</option>
+                    <option value="faridkot_center" className="bg-[#00236f] text-white">Faridkot Campus 02 (Regional)</option>
+                    <option value="all_campuses" className="bg-[#00236f] text-white">All Campuses (Aggregated View)</option>
+                  </select>
+                </div>
+              ) : (
+                <div className="hidden 2xl:flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/15 text-[11px] text-slate-200 ml-2 select-none shadow-inner shrink-0">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                  <span className="text-amber-300 font-bold">Campus:</span>
+                  <span className="text-white font-medium">Bathinda Campus 01 (Assigned)</span>
+                </div>
+              )}
             </>
           )}
         </div>
 
         {/* Right: Operational Controls, Canonical Digit UID & Utilities */}
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Quick Search - iOS Spotlight Pill */}
-          <div className="hidden xl:flex items-center w-40 relative">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={e => onSearchChange(e.target.value)}
-              placeholder="Search... ⌘K"
-              className="w-full h-8 pl-3.5 pr-8 bg-white/10 backdrop-blur-md hover:bg-white/15 focus:bg-white/20 text-white placeholder:text-white/60 text-xs font-medium rounded-full border border-white/20 focus:outline-none focus:ring-1 focus:ring-amber-400 transition-all"
-            />
-            <span className="absolute right-2.5 top-2 text-[10px] font-mono font-semibold text-white/60">
-              ⌘K
-            </span>
-          </div>
+        <div className="flex items-center gap-2 shrink-0 relative">
+          {/* Global Search: Hidden for Students; Visible to Admin/Staff (Karanvir Sir Lecture 4: 13 digits student, 8-9 digits staff) */}
+          {userRole !== 'student' && (
+            <div className="hidden xl:flex items-center w-48 relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => onSearchChange(e.target.value)}
+                placeholder="Search UID / Name... ⌘K"
+                className="w-full h-8 pl-3.5 pr-8 bg-white/10 backdrop-blur-md hover:bg-white/15 focus:bg-white/20 text-white placeholder:text-white/60 text-xs font-medium rounded-full border border-white/20 focus:outline-none focus:ring-1 focus:ring-amber-400 transition-all font-mono"
+              />
+              <span className="absolute right-2.5 top-2 text-[10px] font-mono font-semibold text-white/60">
+                ⌘K
+              </span>
+
+              {/* Live Search Results Popup: Exact Match vs Similar Matches (Karanvir Sir Lecture 4) */}
+              {searchQuery.trim().length > 0 && (
+                <div className="absolute top-full mt-2 right-0 w-80 bg-white/98 backdrop-blur-2xl border border-slate-200 rounded-2xl shadow-2xl p-3 z-50 text-slate-800 animate-in fade-in">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100 text-[10px] font-bold text-slate-500 uppercase">
+                    <span>Search Results: "{searchQuery}"</span>
+                    <button
+                      type="button"
+                      onClick={() => onSearchChange('')}
+                      className="text-slate-400 hover:text-slate-700 text-xs"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {/* Section 1: Exact Match */}
+                  <div className="mt-2">
+                    <span className="text-[10px] font-extrabold text-[#ea580c] tracking-wider uppercase block mb-1">
+                      Exact Match (UID / EMP ID)
+                    </span>
+                    <div className="p-2.5 bg-blue-50/70 border border-blue-200/80 rounded-xl space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-[#00236f] text-xs">
+                          {searchQuery.replace(/[^0-9]/g, '').length === 13 ? 'Student Scholar Record' : 'Faculty / Staff Record'}
+                        </span>
+                        <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-white text-[#00236f] border border-blue-200">
+                          {searchQuery}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600">
+                        Match detected in canonical database. Direct dossier available.
+                      </p>
+                      <div className="pt-1 flex gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onNavigate('manage-students');
+                            onSearchChange('');
+                          }}
+                          className="px-2 py-0.5 rounded bg-[#00236f] text-white text-[10px] font-bold hover:bg-[#001744]"
+                        >
+                          View Student Master →
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onNavigate('fee-ledger');
+                            onSearchChange('');
+                          }}
+                          className="px-2 py-0.5 rounded bg-white text-[#00236f] border border-blue-200 text-[10px] font-bold hover:bg-slate-50"
+                        >
+                          Fee Ledger
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section 2: Similar / Nearby Matches */}
+                  <div className="mt-3 pt-2 border-t border-slate-100">
+                    <span className="text-[10px] font-extrabold text-slate-500 tracking-wider uppercase block mb-1">
+                      Similar / Nearby Matches
+                    </span>
+                    <div className="space-y-1 max-h-36 overflow-y-auto text-[11px]">
+                      {[
+                        { name: 'Aryan Sharma', id: '1001-88-03-01', dept: 'CSE Sem 4', role: 'Student' },
+                        { name: 'Priya Verma', id: '1001-88-03-02', dept: 'CSE Sem 4', role: 'Student' },
+                        { name: 'Dr. Gurpreet Singh', id: '2001-14-03-01', dept: 'CSE Faculty', role: 'Professor' },
+                        { name: 'Harpreet Kaur', id: '4001-01-03-01', dept: 'Admin Provost', role: 'Administrator' },
+                      ].map((item, idx) => (
+                        <div
+                          key={idx}
+                          onClick={() => {
+                            onNavigate('manage-students');
+                            onSearchChange('');
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer flex items-center justify-between text-slate-700"
+                        >
+                          <div>
+                            <span className="font-semibold block">{item.name}</span>
+                            <span className="text-[10px] text-slate-400 font-mono">{item.id} • {item.dept}</span>
+                          </div>
+                          <span className="text-[10px] font-bold text-slate-500">{item.role}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Pure Digit Canonical UID Dynamic Island Pill */}
           <button
@@ -1152,17 +1263,88 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
           </button>
 
-          {/* Welcome User & Institutional Role Pill */}
+          {/* Welcome User & Institutional Role Pill with 3-Option Profile Popover (Karanvir Sir Lecture 4) */}
           {currentUser && (
-            <div className="flex items-center gap-2 h-8 px-3.5 bg-white/10 hover:bg-white/15 border border-white/20 rounded-full text-white backdrop-blur-md transition-all shadow-xs select-none shrink-0">
-              <span className="text-amber-300 font-semibold text-xs">Welcome,</span>
-              <span className="font-bold text-xs text-white tracking-tight truncate max-w-[140px] sm:max-w-[220px]" title={(currentUser.full_name || currentUser.username).replace(/\s*\(\d+\)\s*$/, '')}>
-                {(currentUser.full_name || currentUser.username).replace(/\s*\(\d+\)\s*$/, '')}
-              </span>
-              <span className="text-white/40 text-xs font-bold hidden sm:inline">•</span>
-              <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-400/20 text-amber-300 border border-amber-400/30 tracking-tight whitespace-nowrap">
-                {getInstitutionalRoleTitle(currentUser)}
-              </span>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                className="flex items-center gap-2 h-8 px-3.5 bg-white/10 hover:bg-white/15 border border-white/20 rounded-full text-white backdrop-blur-md transition-all shadow-xs cursor-pointer select-none shrink-0"
+                title="Open Profile Options"
+              >
+                <div className="w-5 h-5 rounded-full bg-amber-400 text-[#00236f] flex items-center justify-center font-black text-[10px] shrink-0">
+                  {(currentUser.full_name || currentUser.username || 'U')[0].toUpperCase()}
+                </div>
+                <span className="font-bold text-xs text-white tracking-tight truncate max-w-[120px] sm:max-w-[180px]">
+                  {(currentUser.full_name || currentUser.username).replace(/\s*\(\d+\)\s*$/, '')}
+                </span>
+                <span className="text-white/40 text-xs font-bold hidden sm:inline">•</span>
+                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-400/20 text-amber-300 border border-amber-400/30 tracking-tight whitespace-nowrap">
+                  {getInstitutionalRoleTitle(currentUser)}
+                </span>
+                <span className="text-xs text-amber-300 font-bold ml-0.5">▾</span>
+              </button>
+
+              {/* Profile Popover: Exactly 3 Items (Profile Information, Reset Password, Logout) */}
+              {isProfileMenuOpen && (
+                <div
+                  onMouseLeave={() => setIsProfileMenuOpen(false)}
+                  className="absolute right-0 top-full mt-2 w-56 bg-white/98 backdrop-blur-2xl rounded-2xl shadow-2xl border border-slate-200/90 py-1.5 z-50 text-slate-800 animate-in fade-in"
+                >
+                  <div className="px-3.5 py-2 border-b border-slate-100">
+                    <span className="block font-bold text-xs text-[#00236f]">
+                      {(currentUser.full_name || currentUser.username).replace(/\s*\(\d+\)\s*$/, '')}
+                    </span>
+                    <span className="block font-mono text-[10px] text-slate-400">
+                      {currentUser.email || displayUid}
+                    </span>
+                  </div>
+
+                  <div className="py-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        if (currentUser.role === 'student') {
+                          onNavigate('student-dashboard');
+                        } else {
+                          onNavigate('staff-management');
+                        }
+                      }}
+                      className="w-full px-3.5 py-2 text-left text-xs font-semibold hover:bg-slate-100 flex items-center justify-between text-slate-700 cursor-pointer"
+                    >
+                      <span>1. Profile Information</span>
+                      <span className="text-slate-400 text-xs">👤</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        alert(`Password reset link dispatched to ${currentUser.email || 'your registered phone/email'}.`);
+                      }}
+                      className="w-full px-3.5 py-2 text-left text-xs font-semibold hover:bg-slate-100 flex items-center justify-between text-slate-700 cursor-pointer"
+                    >
+                      <span>2. Reset Password</span>
+                      <span className="text-slate-400 text-xs">🔑</span>
+                    </button>
+
+                    <div className="my-1 border-t border-slate-100" />
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        onLogout?.();
+                      }}
+                      className="w-full px-3.5 py-2 text-left text-xs font-bold hover:bg-rose-50 text-rose-600 flex items-center justify-between cursor-pointer"
+                    >
+                      <span>3. Logout</span>
+                      <span className="text-rose-500 text-xs">🚪</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -1174,17 +1356,6 @@ export const Header: React.FC<HeaderProps> = ({
               className="h-8 px-3.5 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold rounded-full text-xs shadow-xs transition-all cursor-pointer"
             >
               AI Copilot
-            </button>
-          )}
-
-          {/* Sign Out Button */}
-          {onLogout && (
-            <button
-              type="button"
-              onClick={onLogout}
-              className="h-8 px-2.5 text-xs font-semibold text-slate-300 hover:text-rose-300 transition-colors cursor-pointer"
-            >
-              Sign Out
             </button>
           )}
 

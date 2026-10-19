@@ -44,11 +44,110 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   });
 
   const [departmentRows, setDepartmentRows] = useState<any[]>([
-    { name: 'Computer Science & Engineering', code: 'CSE', students: 480, faculty: 18, fsr: '1:17.2', attendanceAvg: '81.2%', status: 'Compliant' },
-    { name: 'Mechanical Engineering', code: 'ME', students: 240, faculty: 10, fsr: '1:19.0', attendanceAvg: '76.8%', status: 'Compliant' },
-    { name: 'Civil Engineering', code: 'CE', students: 180, faculty: 8, fsr: '1:18.5', attendanceAvg: '78.4%', status: 'Compliant' },
-    { name: 'Management & Business Studies', code: 'MBA', students: 350, faculty: 14, fsr: '1:19.5', attendanceAvg: '84.0%', status: 'Compliant' },
+    { name: 'Computer Science & Engineering', code: 'CSE', students: 480, active: 450, deactive: 22, struckOff: 8, faculty: 18, fsr: '1:17.2', attendanceAvg: '81.2%', status: 'Compliant' },
+    { name: 'Mechanical Engineering', code: 'ME', students: 240, active: 225, deactive: 11, struckOff: 4, faculty: 10, fsr: '1:19.0', attendanceAvg: '76.8%', status: 'Compliant' },
+    { name: 'Civil Engineering', code: 'CE', students: 180, active: 168, deactive: 9, struckOff: 3, faculty: 8, fsr: '1:18.5', attendanceAvg: '78.4%', status: 'Compliant' },
+    { name: 'Management & Business Studies', code: 'MBA', students: 350, active: 335, deactive: 10, struckOff: 5, faculty: 14, fsr: '1:19.5', attendanceAvg: '84.0%', status: 'Compliant' },
   ]);
+
+  // Master Search & Reports Engine State (Karanvir Sir Lecture 4)
+  const [reportSchool, setReportSchool] = useState('all');
+  const [reportEntity, setReportEntity] = useState<'student' | 'teacher'>('student');
+  const [reportSubCategory, setReportSubCategory] = useState('admission_details');
+  const [reportPeriod, setReportPeriod] = useState<'current' | 'previous' | 'custom'>('current');
+  const [customStartDate, setCustomStartDate] = useState('2025-01-01');
+  const [customEndDate, setCustomEndDate] = useState('2025-12-31');
+  const [isReportGenerated, setIsReportGenerated] = useState(false);
+  const [generatedReport, setGeneratedReport] = useState<any[]>([]);
+
+  // Support Tickets Queue (from Login View's Contact Admin flip)
+  const [supportTickets, setSupportTickets] = useState<any[]>([]);
+
+  const loadSupportTickets = () => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('educore_support_tickets') || '[]');
+      if (stored && stored.length > 0) {
+        setSupportTickets(stored);
+      } else {
+        const mockTickets = [
+          {
+            id: 'TKT-829144',
+            ticket_number: 'TKT-829144',
+            user_identifier: '1001-88-03-01',
+            category: 'regarding_password',
+            concern_text: 'Student portal password locked after multiple semester fee attempts. Need OTP reset.',
+            status: 'open',
+            created_at: new Date(Date.now() - 3600000).toISOString(),
+          },
+          {
+            id: 'TKT-619203',
+            ticket_number: 'TKT-619203',
+            user_identifier: '2001-14-03-01',
+            category: 'regarding_username',
+            concern_text: 'Faculty handle not recognized in Sessional Mark Entry portal. Please verify mapping.',
+            status: 'in_progress',
+            created_at: new Date(Date.now() - 14400000).toISOString(),
+          },
+          {
+            id: 'TKT-491028',
+            ticket_number: 'TKT-491028',
+            user_identifier: '10001-01-03-01',
+            category: 'regarding_others',
+            concern_text: 'Hostel warden biometric sync anomaly for Block A boys residence.',
+            status: 'resolved',
+            created_at: new Date(Date.now() - 86400000).toISOString(),
+          },
+        ];
+        setSupportTickets(mockTickets);
+        localStorage.setItem('educore_support_tickets', JSON.stringify(mockTickets));
+      }
+    } catch {
+      // Fallback
+    }
+  };
+
+  const handleResolveTicket = (id: string) => {
+    setSupportTickets(prev => {
+      const updated = prev.map(t => t.id === id ? { ...t, status: 'resolved' } : t);
+      localStorage.setItem('educore_support_tickets', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const handleGenerateReport = () => {
+    setIsReportGenerated(true);
+    if (reportEntity === 'student') {
+      setGeneratedReport([
+        { id: '1001-88-03-01', name: 'Aryan Sharma', school: 'School of Engineering', dept: 'CSE', term: 'Sem 4', metric: '₹ 85,000 Paid (Contra Policy Applied)', attendance: '88.4%', status: 'Active' },
+        { id: '1001-88-03-02', name: 'Priya Verma', school: 'School of Engineering', dept: 'CSE', term: 'Sem 4', metric: '₹ 90,000 Paid (Full Clearance)', attendance: '91.2%', status: 'Active' },
+        { id: '1001-88-03-03', name: 'Rohan Mehra', school: 'School of Management', dept: 'MBA', term: 'Sem 2', metric: '₹ 45,000 Due (Exam Hold)', attendance: '74.2% [DETENTION WARNING]', status: 'Active' },
+        { id: '1001-88-03-04', name: 'Simran Kaur', school: 'School of Engineering', dept: 'ME', term: 'Sem 6', metric: '₹ 92,000 Paid (Merit Concession)', attendance: '82.0%', status: 'Active' },
+        { id: '1001-88-03-05', name: 'Gurjit Singh', school: 'School of Engineering', dept: 'CE', term: 'Sem 4', metric: 'Demoted to Sem 2 (Pending Fees Voided)', attendance: '68.5%', status: 'Demoted' },
+        { id: '1001-88-03-06', name: 'Harpreet Gill', school: 'School of Commerce', dept: 'B.Com', term: 'Sem 2', metric: 'Struck-off (Non-Payment of Dues)', attendance: '42.1%', status: 'Struck-Off' },
+      ]);
+    } else {
+      setGeneratedReport([
+        { id: '2001-14-03-01', name: 'Dr. Gurpreet Singh', school: 'School of Engineering', dept: 'CSE', term: 'Associate Prof', metric: '₹ 1,15,000 / mo (Cleared)', attendance: '18 Lectures / Wk', status: 'Active' },
+        { id: '2001-14-03-02', name: 'Prof. Sunita Rao', school: 'School of Management', dept: 'MBA', term: 'Assistant Prof', metric: 'Under Exit NOC Handover', attendance: '14 Lectures / Wk', status: 'Resigned' },
+        { id: '2001-14-03-03', name: 'Er. Jaswinder Brar', school: 'School of Engineering', dept: 'ME', term: 'Assistant Prof', metric: '₹ 95,000 / mo (Cleared)', attendance: '16 Lectures / Wk', status: 'Active' },
+        { id: '2001-14-03-04', name: 'Dr. Neha Mittal', school: 'School of Engineering', dept: 'CSE', term: 'Associate Prof', metric: '₹ 1,10,000 / mo (Cleared)', attendance: '19 Lectures / Wk', status: 'Active' },
+      ]);
+    }
+  };
+
+  const downloadReportCSV = () => {
+    if (generatedReport.length === 0) return;
+    const headers = Object.keys(generatedReport[0]).join(',');
+    const rows = generatedReport.map(r => Object.values(r).map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers, ...rows].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `EduCore_Report_${reportEntity}_${reportSubCategory}_${reportPeriod}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const [pendingGovernanceActions, setPendingGovernanceActions] = useState<any[]>([
     { id: 'gov-01', title: 'Student Progression Review', subtitle: '8 Semester 4 students pending promotion ordinance review', type: 'progression', actionScreen: 'manage-students' },
@@ -257,18 +356,189 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         </div>
       </div>
 
-      {/* Main Grid: Departmental Workload & Accreditation (7 cols) + Executive Actions (5 cols) */}
+      {/* Karanvir Sir Lecture 4: Full-Width Master Search & Reports Engine */}
+      <div className="bg-white/95 backdrop-blur-xl rounded-2xl p-4 border border-slate-200/80 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)]">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse" />
+              <h3 className="text-xs font-bold text-[#00236f] uppercase tracking-wide">
+                Institutional Master Search & Reports Engine
+              </h3>
+              <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full font-mono text-[10px] font-bold border border-blue-200/70">
+                MULTI-TIER FILTER & CSV EXPORT
+              </span>
+            </div>
+            <p className="text-slate-500 text-[11px] mt-0.5">
+              Live executive intelligence for Teachers (Joining, Payroll, Workload) and Students (Admission, Attendance, Fee Ledger, Demotions).
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {isReportGenerated && generatedReport.length > 0 && (
+              <button
+                onClick={downloadReportCSV}
+                className="h-8 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>↓ Download CSV</span>
+              </button>
+            )}
+            <button
+              onClick={handleGenerateReport}
+              className="h-8 px-4 bg-[#00236f] hover:bg-[#001950] text-white rounded-lg font-bold text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>⚡ Generate Report</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 4 Multi-Tier Selector Dropdowns */}
+        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+          <div>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+              1. School / Faculty Cluster
+            </label>
+            <select
+              value={reportSchool}
+              onChange={e => setReportSchool(e.target.value)}
+              className="w-full h-8 px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-medium text-xs focus:ring-1 focus:ring-[#00236f] outline-none"
+            >
+              <option value="all">All Schools & Campuses</option>
+              <option value="School of Engineering">School of Engineering & Tech (Bathinda 01)</option>
+              <option value="School of Management">School of Management & Commerce (Campus 02)</option>
+              <option value="School of Applied Sciences">School of Applied Sciences</option>
+              <option value="School of Humanities">School of Humanities & Social Sciences</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+              2. Target Entity Category
+            </label>
+            <select
+              value={reportEntity}
+              onChange={e => {
+                const ent = e.target.value as 'student' | 'teacher';
+                setReportEntity(ent);
+                setReportSubCategory(ent === 'student' ? 'admission' : 'joining');
+              }}
+              className="w-full h-8 px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-bold text-xs focus:ring-1 focus:ring-[#00236f] outline-none"
+            >
+              <option value="student">Student / Undergraduate Scholars</option>
+              <option value="teacher">Teacher / Faculty & Academic Staff</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+              3. Operational Sub-Category
+            </label>
+            <select
+              value={reportSubCategory}
+              onChange={e => setReportSubCategory(e.target.value)}
+              className="w-full h-8 px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-medium text-xs focus:ring-1 focus:ring-[#00236f] outline-none"
+            >
+              {reportEntity === 'teacher' ? (
+                <>
+                  <option value="joining">Joining & Profile Verification Details</option>
+                  <option value="payroll">Payroll, Salary Disbursements & ESI/PF</option>
+                  <option value="workload">Academic Workload, Timetable & Lesson Plans</option>
+                </>
+              ) : (
+                <>
+                  <option value="admission">Admissions Intake, Merit & Category Registry</option>
+                  <option value="attendance">Daily & Cumulative Lecture Attendance (75% Gate)</option>
+                  <option value="fees">Fee Ledgers, Contra Negation Policies & Dues</option>
+                  <option value="demotions">Academic Demotions & Course Reset Orders</option>
+                  <option value="events">Institutional & Sports Events Participation</option>
+                </>
+              )}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+              4. Session / Temporal Scope
+            </label>
+            <select
+              value={reportPeriod}
+              onChange={e => setReportPeriod(e.target.value)}
+              className="w-full h-8 px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-medium text-xs focus:ring-1 focus:ring-[#00236f] outline-none"
+            >
+              <option value="current">Current Academic Session (2025-26)</option>
+              <option value="last">Previous Session (2024-25)</option>
+              <option value="historical">Historical Archive (2023-24 & Prior)</option>
+              <option value="custom">Custom Date & Statutory Period</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Live Interactive Report Table */}
+        {isReportGenerated && (
+          <div className="mt-4 pt-3 border-t border-slate-100">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-bold text-[#00236f] uppercase">
+                Showing {generatedReport.length} Records ({reportEntity.toUpperCase()} • {reportSubCategory.toUpperCase()} • {reportPeriod.toUpperCase()})
+              </span>
+              <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                Audit Verified & Formatted
+              </span>
+            </div>
+            <div className="overflow-x-auto rounded-xl border border-slate-200">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 border-b border-slate-200 font-bold text-slate-600 text-[11px]">
+                  <tr>
+                    <th className="py-2.5 px-3">UID / EMP ID</th>
+                    <th className="py-2.5 px-3">Full Name</th>
+                    <th className="py-2.5 px-3">Faculty / School</th>
+                    <th className="py-2.5 px-3">Department</th>
+                    <th className="py-2.5 px-3">{reportEntity === 'student' ? 'Term / Semester' : 'Designation'}</th>
+                    <th className="py-2.5 px-3">{reportEntity === 'student' ? 'Financial / Fee Metric' : 'Compensation / Handover'}</th>
+                    <th className="py-2.5 px-3 text-center">{reportEntity === 'student' ? 'Attendance' : 'Workload Load'}</th>
+                    <th className="py-2.5 px-3 text-right">Lifecycle Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 bg-white">
+                  {generatedReport.map((row, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="py-2 px-3 font-mono font-bold text-[#00236f]">{row.id}</td>
+                      <td className="py-2 px-3 font-semibold text-slate-800">{row.name}</td>
+                      <td className="py-2 px-3 text-slate-600">{row.school}</td>
+                      <td className="py-2 px-3 font-mono text-slate-600">{row.dept}</td>
+                      <td className="py-2 px-3 text-slate-700 font-medium">{row.term}</td>
+                      <td className="py-2 px-3 font-medium text-slate-900">{row.metric}</td>
+                      <td className="py-2 px-3 text-center font-mono font-semibold text-slate-700">{row.attendance}</td>
+                      <td className="py-2 px-3 text-right">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          row.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                          row.status === 'Demoted' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                          row.status === 'Struck-Off' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
+                          'bg-slate-100 text-slate-700 border border-slate-200'
+                        }`}>
+                          {row.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Main Grid: Departmental Workload & Accreditation (7 cols) + Executive Actions & Support Tickets (5 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
-        {/* Departmental Accreditation & FSR Health Matrix (7 cols) */}
+        {/* Departmental Accreditation & Student Status Breakdown (7 cols) */}
         <div className="lg:col-span-7 bg-white/95 backdrop-blur-xl rounded-2xl p-4 border border-slate-200/80 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
               <div>
                 <h3 className="text-xs font-bold text-[#00236f] uppercase tracking-wide">
-                  Departmental Academic Topology & Accreditation Status
+                  Departmental Academic Topology & Student Breakdown
                 </h3>
                 <p className="text-slate-500 text-[11px]">
-                  FSR ratios, attendance averages, and teaching capacity across institutional clusters
+                  Active, Deactivated, and Struck-off student proportions with Faculty-to-Student Ratio (FSR)
                 </p>
               </div>
               <span className="px-2.5 py-0.5 bg-slate-100 text-slate-700 rounded-full font-mono text-[11px] font-bold">
@@ -279,12 +549,14 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             <div className="mt-3 overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-200/80 text-[11px] text-slate-400 uppercase font-bold tracking-wider">
+                  <tr className="border-b border-slate-200/80 text-[10px] text-slate-400 uppercase font-bold tracking-wider">
                     <th className="py-2 px-2">Academic Department</th>
-                    <th className="py-2 px-2 text-center">Students</th>
+                    <th className="py-2 px-2 text-center">Total Enrolled</th>
+                    <th className="py-2 px-2 text-center">Active (%)</th>
+                    <th className="py-2 px-2 text-center">Deactive (%)</th>
+                    <th className="py-2 px-2 text-center">Struck-Off (%)</th>
                     <th className="py-2 px-2 text-center">Faculty</th>
                     <th className="py-2 px-2 text-center">FSR</th>
-                    <th className="py-2 px-2 text-center">Avg Attendance</th>
                     <th className="py-2 px-2 text-right">Status</th>
                   </tr>
                 </thead>
@@ -298,14 +570,20 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                       <td className="py-2 px-2 text-center font-mono font-bold text-slate-700">
                         {d.students}
                       </td>
+                      <td className="py-2 px-2 text-center font-mono font-bold text-emerald-700">
+                        {d.active} ({d.activePct}%)
+                      </td>
+                      <td className="py-2 px-2 text-center font-mono text-amber-700 font-semibold">
+                        {d.deactive} ({d.deactivePct}%)
+                      </td>
+                      <td className="py-2 px-2 text-center font-mono text-rose-700 font-semibold">
+                        {d.struckOff} ({d.struckOffPct}%)
+                      </td>
                       <td className="py-2 px-2 text-center font-mono text-slate-700">
                         {d.faculty}
                       </td>
                       <td className="py-2 px-2 text-center font-mono font-bold text-emerald-700">
                         {d.fsr}
-                      </td>
-                      <td className="py-2 px-2 text-center font-mono text-slate-700">
-                        {d.attendanceAvg}
                       </td>
                       <td className="py-2 px-2 text-right">
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
@@ -330,9 +608,10 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           </div>
         </div>
 
-        {/* Executive Governance Actions & Progression Ordinances (5 cols) */}
-        <div className="lg:col-span-5 bg-white/95 backdrop-blur-xl rounded-2xl p-4 border border-slate-200/80 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] flex flex-col justify-between">
-          <div>
+        {/* Executive Governance Actions & Live Support Tickets (5 cols) */}
+        <div className="lg:col-span-5 space-y-3">
+          {/* Executive Governance Actions */}
+          <div className="bg-white/95 backdrop-blur-xl rounded-2xl p-4 border border-slate-200/80 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)]">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
               <div>
                 <h3 className="text-xs font-bold text-[#00236f] uppercase tracking-wide">
@@ -412,17 +691,74 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             </div>
           </div>
 
-          <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-            <span>Document Compliance Vault: <strong className="text-emerald-700">92.6% Verified</strong></span>
-            <button
-              onClick={() => onNavigate('manage-students')}
-              className="text-[#00236f] font-bold hover:underline cursor-pointer"
-            >
-              Progression Ordinance Desk &rarr;
-            </button>
+          {/* Karanvir Sir Lecture 4: Live Support Tickets Queue (From Login View Contact Admin Flip) */}
+          <div className="bg-white/95 backdrop-blur-xl rounded-2xl p-4 border border-blue-200/80 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)]">
+            <div className="flex items-center justify-between border-b border-blue-100 pb-2.5">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-blue-600" />
+                <h3 className="text-xs font-bold text-[#00236f] uppercase tracking-wide">
+                  Live Support Tickets Queue
+                </h3>
+              </div>
+              <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full font-mono text-[10px] font-bold border border-blue-200">
+                {supportTickets.filter(t => t.status !== 'resolved').length} Open
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 mt-1">
+              Tickets submitted from Login Page &quot;Contact Admin&quot; 3D flip card.
+            </p>
+
+            <div className="mt-3 space-y-2 max-h-56 overflow-y-auto pr-1">
+              {supportTickets.length === 0 ? (
+                <div className="text-center py-4 text-slate-400 text-xs">No pending support tickets.</div>
+              ) : (
+                supportTickets.map(t => (
+                  <div
+                    key={t.id}
+                    className={`p-2.5 rounded-xl border text-xs transition ${
+                      t.status === 'resolved'
+                        ? 'bg-slate-50/80 border-slate-200 text-slate-500'
+                        : 'bg-white border-blue-200/90 shadow-2xs'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-1.5 font-mono">
+                        <strong className="text-slate-900 font-bold text-[11px]">{t.ticket_number}</strong>
+                        <span className="text-slate-400 text-[10px]">({t.user_identifier})</span>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
+                        t.status === 'resolved'
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : t.status === 'in_progress'
+                          ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                          : 'bg-rose-50 text-rose-700 border border-rose-200'
+                      }`}>
+                        {t.status.replace(/_/g, ' ')}
+                      </span>
+                    </div>
+
+                    <p className="text-[11px] text-slate-700 font-medium leading-relaxed mb-2">
+                      {t.concern_text}
+                    </p>
+
+                    <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1.5 border-t border-slate-100">
+                      <span>{new Date(t.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                      {t.status !== 'resolved' && (
+                        <button
+                          onClick={() => handleResolveTicket(t.id)}
+                          className="px-2 py-0.5 bg-[#00236f] hover:bg-[#001950] text-white rounded font-bold text-[10px] transition cursor-pointer"
+                        >
+                          Mark Resolved ✓
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
           </div>
         </div>
       </div>
     </div>
+  </div>
   );
 };

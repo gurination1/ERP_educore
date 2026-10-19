@@ -398,6 +398,17 @@ export interface StudentProfile {
   };
   status?: string;
   progression_status?: 'promoted' | 'demoted' | 'struck_off' | 'deactivated' | 'active';
+  demoted_history?: Array<{
+    demoted_from_semester: number;
+    demoted_to_semester: number;
+    order_no: string;
+    reason: string;
+    timestamp: string;
+    journey_mode: 'retain_all' | 'reset_from_demotion';
+    voided_fees_amount?: number;
+    adjusted_fees_amount?: number;
+  }>;
+  journey_retention_mode?: 'retain_all' | 'reset_from_demotion';
   enterprise_uid?: string;
   roll_number?: string;
   mobile?: string;
@@ -588,10 +599,12 @@ export interface HostelBuilding {
   name: string;
   code: string;
   address: string;
+  location_type: 'in_campus' | 'off_campus';
   ownership: 'owned' | 'leased';
   vendor_name?: string;
   vendor_contact?: string;
   google_maps_url?: string;
+  google_coordinates?: string;
   total_floors: number;
   total_rooms: number;
   maintenance_due_days: number; // 360 days timer alert
@@ -611,6 +624,8 @@ export interface HostelRoom {
   room_name?: string; // Custom room names like "Guru Mahal", "Baljinder Room"
   capacity: number; // 1, 2, 3, 4-seater
   current_occupancy: number;
+  washroom_type: 'ARW' | 'FCW'; // Attached Room Washroom (ARW) vs Floor Common Washroom (FCW)
+  has_window: boolean;
   is_ac: boolean;
   has_almirah: boolean;
   monthly_rent: number;
@@ -757,3 +772,30 @@ export interface SessionalMarkEntry {
   updatedBy?: string;
   updatedAt?: string;
 }
+
+// Karanvir Sir Lecture 4 Fee Policy & Contra Ledger Reversal Models
+export interface FeePolicy {
+  id: string;
+  policy_code: string; // e.g. POL-MERIT-10K
+  name: string; // e.g. Merit Concession 2025
+  discount_amount: number;
+  discount_percentage?: number;
+  applicable_heads: string[]; // ['tuition_fee', 'other_fee'] or ['all']
+  applicable_scope: 'entire_course' | 'current_semester_only';
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface ContraLedgerEntry {
+  id: string;
+  student_id: string;
+  semester: number;
+  entry_type: 'contra_negation' | 'policy_credit' | 'fee_debit' | 'payment_credit' | 'demotion_adjustment' | 'demotion_void';
+  amount: number;
+  reference_policy_id?: string;
+  description: string; // e.g. "Opposite Entry for Policy #POL-MERIT-10K" or "Null & Void Pending Fee - Sem 3"
+  is_contra: boolean;
+  timestamp: string;
+  authorized_by: string;
+}
+
