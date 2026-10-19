@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
-import { User } from '../types';
+import { User, StaffRoleAssignment, DefaultCategoryRights } from '../types';
 import { api } from '../api/client';
 
 export type StaffTab = 'overview' | 'payroll' | 'exit-noc' | 'addresses' | 'banks' | 'qualifications' | 'experience' | 'journey' | 'additional-roles';
@@ -29,6 +29,139 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<StaffTab>(urlTab || initialTab || 'overview');
   const canManageHR = !currentUser || ['admin', 'super_admin', 'hr', 'hod'].includes(currentUser.role);
+
+  // Karanvir Sir Lecture 4 Segment 6: View Mode (Staff Directory vs Roles Matrix & Bulk Revoke)
+  const [mainViewMode, setMainViewMode] = useState<'directory' | 'roles_matrix'>('directory');
+  const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>('all');
+  const [selectedStaffIdsForRevoke, setSelectedStaffIdsForRevoke] = useState<string[]>([]);
+  const [activeRoleAssignments, setActiveRoleAssignments] = useState<StaffRoleAssignment[]>([
+    {
+      id: 'ra-01',
+      employee_id: '2001-14-03-01',
+      staff_name: 'Dr. Gurpreet Singh',
+      department: 'Computer Science & Engineering',
+      role_key: 'fee_collector',
+      role_title: 'Tuition Fee Collection Cashier',
+      granted_by: 'Campus Provost 4001',
+      granted_at: '2025-08-01',
+      is_active: true,
+    },
+    {
+      id: 'ra-02',
+      employee_id: '2001-14-03-03',
+      staff_name: 'Er. Jaswinder Brar',
+      department: 'Mechanical Engineering',
+      role_key: 'fee_collector',
+      role_title: 'Tuition Fee Collection Cashier',
+      granted_by: 'Campus Provost 4001',
+      granted_at: '2025-08-05',
+      is_active: true,
+    },
+    {
+      id: 'ra-03',
+      employee_id: '2001-14-03-04',
+      staff_name: 'Dr. Neha Mittal',
+      department: 'Computer Science & Engineering',
+      role_key: 'admissions_counselor',
+      role_title: 'Senior Admissions Lead Counselor',
+      granted_by: 'Dean Academics',
+      granted_at: '2025-07-15',
+      is_active: true,
+    },
+    {
+      id: 'ra-04',
+      employee_id: '10001-01-03-01',
+      staff_name: 'Er. Harminder Singh',
+      department: 'Campus Infrastructure',
+      role_key: 'hostel_warden',
+      role_title: 'Chief Residence Warden (Block A/B)',
+      granted_by: 'Campus Provost 4001',
+      granted_at: '2025-06-10',
+      is_active: true,
+    },
+    {
+      id: 'ra-05',
+      employee_id: '2001-14-03-02',
+      staff_name: 'Prof. Sunita Rao',
+      department: 'Management Studies',
+      role_key: 'fee_collector',
+      role_title: 'Tuition Fee Collection Cashier',
+      granted_by: 'Campus Provost 4001',
+      granted_at: '2025-08-02',
+      is_active: true,
+    },
+  ]);
+
+  const [defaultRightsData, setDefaultRightsData] = useState<DefaultCategoryRights[]>([
+    {
+      category: 'teaching',
+      category_label: 'Teaching Faculty & Professors',
+      default_roles: ['Faculty Advisor', 'Lecture Attendance Officer', 'CA Marks Evaluator'],
+      rights: [
+        { key: 'mark_attendance', label: 'Take Classroom Lecture Attendance (75% Gate)', enabled: true },
+        { key: 'enter_sessional_marks', label: 'Submit MST 1/2 and Assignment Sessional Marks', enabled: true },
+        { key: 'view_syllabus', label: 'Access CBCS Curriculum & Syllabus Units', enabled: true },
+        { key: 'verify_admit_cards', label: 'Verify Admit Cards & Hall Tickets', enabled: true },
+        { key: 'collect_fees', label: 'Cashier Quick Fee Collection Desk', enabled: false },
+        { key: 'demote_scholar', label: 'Sign-off Student Demotion & Contra Entry', enabled: false },
+        { key: 'manage_hostel', label: 'Hostel Bed Allotment & Mess Clearance', enabled: false },
+      ],
+    },
+    {
+      category: 'non_teaching',
+      category_label: 'Non-Teaching Operations & Facilities',
+      default_roles: ['Residence Warden', 'Cashier', 'Transport Fleet Manager'],
+      rights: [
+        { key: 'collect_fees', label: 'Cashier Quick Fee Collection Desk', enabled: true },
+        { key: 'manage_hostel', label: 'Hostel Bed Allotment & Mess Clearance', enabled: true },
+        { key: 'log_maintenance', label: '360-day Facility Overhaul & Inspection Logging', enabled: true },
+        { key: 'manage_transport', label: 'Collegiate Bus Route & Seat Allocation', enabled: true },
+        { key: 'enter_sessional_marks', label: 'Submit MST 1/2 and Assignment Sessional Marks', enabled: false },
+        { key: 'demote_scholar', label: 'Sign-off Student Demotion & Contra Entry', enabled: false },
+      ],
+    },
+    {
+      category: 'administration',
+      category_label: 'Administrative Governance (Deans & Provosts)',
+      default_roles: ['Campus Provost', 'Dean Academics', 'Registrar', 'Bursar'],
+      rights: [
+        { key: 'batch_deployment', label: 'Deploy Full-Page Academic Batches & Sessions', enabled: true },
+        { key: 'demote_scholar', label: 'Sign-off Student Demotion & Contra Entry', enabled: true },
+        { key: 'fee_policies', label: 'Create Fee Policies & Reversal Contra Ledgers', enabled: true },
+        { key: 'resolve_tickets', label: 'Resolve Login Support Tickets Queue', enabled: true },
+        { key: 'master_architecture', label: 'Mutate Master Tables (States, Degrees, Depts)', enabled: true },
+        { key: 'bulk_revoke_roles', label: 'Universal Role Assignment & Bulk Revocation', enabled: true },
+      ],
+    },
+  ]);
+
+  const handleToggleCategoryRight = (category: string, rightKey: string) => {
+    setDefaultRightsData(prev =>
+      prev.map(cat => {
+        if (cat.category !== category) return cat;
+        return {
+          ...cat,
+          rights: cat.rights.map(r => r.key === rightKey ? { ...r, enabled: !r.enabled } : r),
+        };
+      })
+    );
+  };
+
+  const handleSingleRevokeRole = (roleAssignmentId: string, staffName: string, roleTitle: string) => {
+    setActiveRoleAssignments(prev => prev.filter(r => r.id !== roleAssignmentId));
+    setSelectedStaffIdsForRevoke(prev => prev.filter(id => id !== roleAssignmentId));
+    setActionSuccessMsg(`Revoked role '${roleTitle}' from ${staffName}. Access terminated.`);
+    setTimeout(() => setActionSuccessMsg(null), 4000);
+  };
+
+  const handleBulkRevokeRoles = () => {
+    if (selectedStaffIdsForRevoke.length === 0) return;
+    const count = selectedStaffIdsForRevoke.length;
+    setActiveRoleAssignments(prev => prev.filter(r => !selectedStaffIdsForRevoke.includes(r.id)));
+    setSelectedStaffIdsForRevoke([]);
+    setActionSuccessMsg(`Karanvir Sir Ordinance: Bulk revoked assigned role from ${count} staff member(s). Live permissions terminated.`);
+    setTimeout(() => setActionSuccessMsg(null), 4000);
+  };
 
   useEffect(() => {
     if (urlTab) {
@@ -588,9 +721,38 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Karanvir Sir Lecture 4 Segment 6: View Mode Switcher */}
+          <div className="flex items-center gap-1 p-0.5 bg-slate-100 rounded-lg border border-slate-200">
+            <button
+              type="button"
+              onClick={() => setMainViewMode('directory')}
+              className={`px-2.5 py-1 rounded text-[11px] font-bold transition cursor-pointer ${
+                mainViewMode === 'directory'
+                  ? 'bg-[#00236f] text-white shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Staff Directory
+            </button>
+            <button
+              type="button"
+              onClick={() => setMainViewMode('roles_matrix')}
+              className={`px-2.5 py-1 rounded text-[11px] font-bold transition flex items-center gap-1 cursor-pointer ${
+                mainViewMode === 'roles_matrix'
+                  ? 'bg-[#00236f] text-white shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <span>Roles & Bulk Revoke Matrix</span>
+              <span className="px-1 py-0.2 rounded bg-amber-400 text-[#00236f] text-[8px] font-black">
+                LECTURE 4
+              </span>
+            </button>
+          </div>
+
           <button
             onClick={() => setShowCreateModal(true)}
-            className="bg-[#00236f] hover:bg-[#00236f]/90 text-white font-bold px-3 py-1.5 rounded text-[11px] transition"
+            className="bg-[#00236f] hover:bg-[#00236f]/90 text-white font-bold px-3 py-1.5 rounded text-[11px] transition cursor-pointer shadow-2xs"
           >
             + ONBOARD NEW STAFF
           </button>
@@ -681,10 +843,208 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
         </div>
       </div>
 
-      {/* Two Column Layout: Staff List on Left, Multi-Table Inspector on Right */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Left Column: Staff Directory */}
-        <div className="lg:col-span-4 bg-white border border-[#00236f]/20 rounded p-3 space-y-3 shadow-sm">
+      {mainViewMode === 'roles_matrix' ? (
+        <div className="space-y-6 animate-fade-in text-xs">
+          {/* Roles Management & Bulk Revocation Console (Karanvir Sir Lecture 4 Segment 6) */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#00236f]" />
+                  <h3 className="font-extrabold text-sm text-[#00236f] uppercase tracking-wide">
+                    Campus Roles Assignment & Bulk Revocation Console
+                  </h3>
+                  <span className="px-2 py-0.5 bg-blue-50 text-[#00236f] rounded-full text-[10px] font-bold border border-blue-200">
+                    LECTURE 4 • SEGMENT 6
+                  </span>
+                </div>
+                <p className="text-slate-500 text-xs mt-0.5">
+                  Universal privilege management: Inspect active role holders across departments, allocate cross-departmental duties, or execute 1-click bulk role revocations.
+                </p>
+              </div>
+
+              {/* Bulk Revoke Action Bar */}
+              <div className="flex items-center gap-2">
+                {selectedStaffIdsForRevoke.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleBulkRevokeRoles}
+                    className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span>Bulk Revoke Role from {selectedStaffIdsForRevoke.length} Staff Member(s)</span>
+                    <span className="text-white/80">✕</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Filter by Role Key */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-700">Filter by Specific Role:</span>
+                <select
+                  value={selectedRoleFilter}
+                  onChange={e => {
+                    setSelectedRoleFilter(e.target.value);
+                    setSelectedStaffIdsForRevoke([]);
+                  }}
+                  className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs text-slate-800"
+                >
+                  <option value="all">All Assigned Institutional Roles</option>
+                  <option value="fee_collector">Tuition Fee Collection Cashier</option>
+                  <option value="admissions_counselor">Admissions Lead Counselor</option>
+                  <option value="hostel_warden">Residence Warden & Mess In-charge</option>
+                </select>
+              </div>
+
+              <span className="text-xs text-slate-500 font-medium">
+                Showing {activeRoleAssignments.filter(r => selectedRoleFilter === 'all' || r.role_key === selectedRoleFilter).length} active assignments
+              </span>
+            </div>
+
+            {/* Roles Table */}
+            <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold">
+                  <tr>
+                    <th className="py-2.5 px-3 w-10 text-center">
+                      <input
+                        type="checkbox"
+                        checked={
+                          selectedStaffIdsForRevoke.length > 0 &&
+                          selectedStaffIdsForRevoke.length ===
+                            activeRoleAssignments.filter(r => selectedRoleFilter === 'all' || r.role_key === selectedRoleFilter).length
+                        }
+                        onChange={e => {
+                          const currentFiltered = activeRoleAssignments.filter(r => selectedRoleFilter === 'all' || r.role_key === selectedRoleFilter);
+                          if (e.target.checked) {
+                            setSelectedStaffIdsForRevoke(currentFiltered.map(r => r.id));
+                          } else {
+                            setSelectedStaffIdsForRevoke([]);
+                          }
+                        }}
+                        className="rounded text-[#00236f] focus:ring-0 cursor-pointer"
+                      />
+                    </th>
+                    <th className="py-2.5 px-3">Faculty / Staff Member</th>
+                    <th className="py-2.5 px-3">Department</th>
+                    <th className="py-2.5 px-3">Assigned Role & Privilege</th>
+                    <th className="py-2.5 px-3">Granting Authority</th>
+                    <th className="py-2.5 px-3">Grant Date</th>
+                    <th className="py-2.5 px-3 text-right">Revoke Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-medium">
+                  {activeRoleAssignments
+                    .filter(r => selectedRoleFilter === 'all' || r.role_key === selectedRoleFilter)
+                    .map(r => {
+                      const isChecked = selectedStaffIdsForRevoke.includes(r.id);
+                      return (
+                        <tr key={r.id} className={`hover:bg-slate-50/70 transition-colors ${isChecked ? 'bg-rose-50/40' : ''}`}>
+                          <td className="py-3 px-3 text-center">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => {
+                                setSelectedStaffIdsForRevoke(prev =>
+                                  prev.includes(r.id) ? prev.filter(x => x !== r.id) : [...prev, r.id]
+                                );
+                              }}
+                              className="rounded text-rose-600 focus:ring-0 cursor-pointer"
+                            />
+                          </td>
+                          <td className="py-3 px-3">
+                            <div className="font-bold text-[#00236f]">{r.staff_name}</div>
+                            <div className="font-mono text-[10px] text-slate-400">{r.employee_id}</div>
+                          </td>
+                          <td className="py-3 px-3 text-slate-600">{r.department}</td>
+                          <td className="py-3 px-3">
+                            <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-[#00236f] font-bold text-[11px] border border-blue-200">
+                              {r.role_title}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-slate-700">{r.granted_by}</td>
+                          <td className="py-3 px-3 font-mono text-[11px] text-slate-500">{r.granted_at}</td>
+                          <td className="py-3 px-3 text-right">
+                            <button
+                              type="button"
+                              onClick={() => handleSingleRevokeRole(r.id, r.staff_name, r.role_title)}
+                              className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[11px] transition-all cursor-pointer border border-rose-200"
+                            >
+                              Revoke
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Section B: Default Rights Matrix by Staff Category (Segment 6) */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
+            <div className="border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
+                <h3 className="font-extrabold text-sm text-[#00236f] uppercase tracking-wide">
+                  Default Privilege Rights Matrix by Staff Category
+                </h3>
+                <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-bold border border-emerald-200">
+                  AUTO-APPLY ORDINANCE
+                </span>
+              </div>
+              <p className="text-slate-500 text-xs mt-0.5">
+                Karanvir Sir Lecture 4 Ordinance: Baseline privileges automatically granted whenever a Teaching, Non-Teaching, or Administrative staff member is provisioned.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {defaultRightsData.map(cat => (
+                <div key={cat.category} className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                    <span className="font-extrabold text-xs text-[#00236f] uppercase">{cat.category_label}</span>
+                    <span className="text-[10px] text-emerald-700 font-bold bg-emerald-100 px-2 py-0.2 rounded">
+                      AUTO-APPLIED
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    {cat.rights.map(r => (
+                      <label key={r.key} className="flex items-start gap-2 cursor-pointer p-1.5 rounded-lg hover:bg-white transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={r.enabled}
+                          onChange={() => handleToggleCategoryRight(cat.category, r.key)}
+                          className="mt-0.5 rounded text-[#00236f] focus:ring-0 cursor-pointer"
+                        />
+                        <span className={`text-[11px] font-medium leading-tight ${r.enabled ? 'text-slate-800' : 'text-slate-400'}`}>
+                          {r.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActionSuccessMsg(`Default rights matrix for ${cat.category_label} saved successfully.`);
+                      setTimeout(() => setActionSuccessMsg(null), 3000);
+                    }}
+                    className="w-full py-1.5 rounded-xl bg-[#00236f] hover:bg-[#001744] text-white font-bold text-xs transition cursor-pointer"
+                  >
+                    Save Category Baseline
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Two Column Layout: Staff List on Left, Multi-Table Inspector on Right */
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          {/* Left Column: Staff Directory */}
+          <div className="lg:col-span-4 bg-white border border-[#00236f]/20 rounded p-3 space-y-3 shadow-sm">
           <div className="space-y-2">
             <input
               type="text"
@@ -1577,6 +1937,7 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
           )}
         </div>
       </div>
+      )}
 
       {/* MODAL: Transition Status */}
       {showStatusModal && (

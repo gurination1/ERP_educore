@@ -519,6 +519,11 @@ export interface AcademicBatch {
   active_terms_json: string;
   current_term: number;
   is_active: boolean;
+  approval_status?: 'pending_approval' | 'approved';
+  approved_by?: string;
+  approved_at?: string;
+  fee_due_date?: string;
+  attendance_lock_date?: string;
   created_at: string;
 }
 
@@ -785,6 +790,10 @@ export const DEFAULT_BATCHES: AcademicBatch[] = [
     active_terms_json: JSON.stringify([1, 2, 3, 4]),
     current_term: 3,
     is_active: true,
+    approval_status: 'approved',
+    approved_by: 'Dean Academic Council',
+    fee_due_date: '2025-08-31',
+    attendance_lock_date: '2025-11-20',
     created_at: '2024-07-01T00:00:00Z',
   },
   {
@@ -798,6 +807,10 @@ export const DEFAULT_BATCHES: AcademicBatch[] = [
     active_terms_json: JSON.stringify([1, 2]),
     current_term: 2,
     is_active: true,
+    approval_status: 'approved',
+    approved_by: 'Dean Academic Council',
+    fee_due_date: '2025-08-31',
+    attendance_lock_date: '2025-11-20',
     created_at: '2024-07-01T00:00:00Z',
   },
   {
@@ -811,7 +824,27 @@ export const DEFAULT_BATCHES: AcademicBatch[] = [
     active_terms_json: JSON.stringify([1, 2]),
     current_term: 1,
     is_active: true,
+    approval_status: 'approved',
+    approved_by: 'Dean Academic Council',
+    fee_due_date: '2025-08-31',
+    attendance_lock_date: '2025-11-20',
     created_at: '2024-07-01T00:00:00Z',
+  },
+  {
+    id: 'batch-cse-2025-p',
+    course_id: 'cse',
+    batch_name: 'B.Tech CSE - Semester 1 - 2025-26',
+    start_year: 2025,
+    end_year: 2029,
+    academic_system: 'semester',
+    total_terms: 8,
+    active_terms_json: JSON.stringify([1]),
+    current_term: 1,
+    is_active: false,
+    approval_status: 'pending_approval',
+    fee_due_date: '2025-08-31',
+    attendance_lock_date: '2025-11-20',
+    created_at: '2025-07-15T00:00:00Z',
   },
 ];
 
@@ -4371,6 +4404,7 @@ class DatabaseStore {
     const accountsHash = bcrypt.hashSync('accounts123', 10);
     const partnerHash = bcrypt.hashSync('partner123', 10);
     const hrHash = bcrypt.hashSync('hr123', 10);
+    const wardenHash = bcrypt.hashSync('warden123', 10);
 
     const demoStaffAccounts = [
       { id: 'usr-super-01', username: 'superadmin', email: 'superadmin@educore.edu', hash: superHash, role: 'super_admin', full_name: 'Prof. Dr. Amritpal Singh (Chief System Provost)', department: 'Executive Directorate & University Governance', designation: 'Chief System Provost & Chancellor Delegate', employee_id: 'PRO-SUP-001', enterprise_uid: '9001-01-03-01' },
@@ -4381,6 +4415,7 @@ class DatabaseStore {
       { id: 'usr-accounts-01', username: 'accounts01', email: 'accounts@educore.edu', hash: accountsHash, role: 'accounts', full_name: 'Manmohan Sharma (Chief Accounts Officer)', department: 'Finance & Accounts Section', designation: 'Chief Accounts Officer', employee_id: 'ACC-OFF-005', enterprise_uid: '5001-05-03-01' },
       { id: 'usr-partner-01', username: 'partner01', email: 'partner@educore.edu', hash: partnerHash, role: 'partner', full_name: 'Infosys Campus Relations Lead', department: 'Corporate Relations', designation: 'Campus Hiring Director', employee_id: 'PRT-INF-001', enterprise_uid: '7001-01-03-01' },
       { id: 'usr-hr-01', username: 'hr01', email: 'hr@educore.edu', hash: hrHash, role: 'hr', full_name: 'Sumanpreet Kaur (Chief HR & Establishment Officer)', department: 'Human Resources & Establishment Section', designation: 'Chief HR & Establishment Officer', employee_id: 'HRM-OFF-001', enterprise_uid: '8001-01-03-01' },
+      { id: 'usr-hostel-01', username: 'hostel01', email: 'hostel@educore.edu', hash: wardenHash, role: 'hostel', full_name: 'Warden Baljinder Singh (Chief Residence Officer)', department: 'Campus Infrastructure & Residences', designation: 'Chief Hostel Warden', employee_id: 'HST-WRD-001', enterprise_uid: '10001-01-03-01' },
     ];
 
     for (const sa of demoStaffAccounts) {
@@ -5010,6 +5045,7 @@ class DatabaseStore {
           { username: 'accounts01', email: 'accounts@educore.edu', name: 'Manmohan Sharma (Chief Accounts Officer)', role: 'accounts' as const, dept: 'Finance & Accounts Section', desig: 'Chief Accounts Officer', empId: 'ACC-OFF-005', pass: 'accounts123', uid: '5001-05-03-01' },
           { username: 'partner01', email: 'partner@educore.edu', name: 'Infosys Campus Relations Lead', role: 'partner' as const, dept: 'Corporate Relations', desig: 'Campus Hiring Director', empId: 'PRT-INF-001', pass: 'partner123', uid: '7001-01-03-01' },
           { username: 'hr01', email: 'hr@educore.edu', name: 'Sumanpreet Kaur (Chief HR & Establishment Officer)', role: 'hr' as const, dept: 'Human Resources & Establishment Section', desig: 'Chief HR & Establishment Officer', empId: 'HRM-OFF-001', pass: 'hr123', uid: '8001-01-03-01' },
+          { username: 'hostel01', email: 'hostel@educore.edu', name: 'Warden Baljinder Singh (Chief Residence Officer)', role: 'hostel' as const, dept: 'Campus Infrastructure & Residences', desig: 'Chief Hostel Warden', empId: 'HST-WRD-001', pass: 'warden123', uid: '10001-01-03-01' },
         ];
 
         for (const stf of demoStaffAccounts) {
@@ -5261,6 +5297,7 @@ class DatabaseStore {
     else if (val === '3001-01-03-bfgi' || val === '3001-03-bfgi-0001') effectiveVal = 'hod_cse';
     else if (val === '5001-05-03-bfgi' || val === '5001-03-bfgi-0005') effectiveVal = 'accounts01';
     else if (val === 'hr' || val === 'hr01' || val === '8001-01-03-01' || val === '8001010301' || val === '8001-01-01-03-01' || val === '800101010301' || val === '8001-01-03-bfgi' || val === '8001-03-bfgi-0001') effectiveVal = 'hr01';
+    else if (val === 'hostel' || val === 'hostel01' || val === 'warden' || val === '10001-01-03-01' || val === '10001010301' || val === '10001-01-01-03-01' || val === '1000101010301' || val === '10001-01-03-bfgi' || val === '10001-03-bfgi-0001') effectiveVal = 'hostel01';
 
     if (this.mode === 'mariadb' && this.mariaPool) {
       const [rows]: any = await this.mariaPool.query(
@@ -8497,12 +8534,14 @@ class DatabaseStore {
     const active_terms_json = batch.active_terms_json || JSON.stringify([1, 2]);
     const current_term = batch.current_term || 1;
     const is_active = batch.is_active !== undefined ? !!batch.is_active : true;
-    const created_at = new Date().toISOString();
+    const approval_status = batch.approval_status || 'pending_approval';
+    const fee_due_date = batch.fee_due_date || '2025-08-31';
+    const attendance_lock_date = batch.attendance_lock_date || '2025-11-20';
 
     const record: AcademicBatch = {
       id, course_id, batch_name, start_year, end_year,
       academic_system, total_terms, active_terms_json, current_term,
-      is_active, created_at,
+      is_active, approval_status, fee_due_date, attendance_lock_date, created_at,
     };
 
     if (this.pgPool) {
@@ -8518,6 +8557,35 @@ class DatabaseStore {
     else this.batches.unshift(record);
 
     return record;
+  }
+
+  public async approveBatch(id: string, approvedBy = 'Dean Academic Council'): Promise<AcademicBatch | null> {
+    const batch = this.batches.find(b => b.id === id);
+    if (!batch) return null;
+    batch.approval_status = 'approved';
+    batch.is_active = true;
+    batch.approved_by = approvedBy;
+    batch.approved_at = new Date().toISOString();
+
+    if (this.pgPool) {
+      await this.pgPool.query(
+        `UPDATE batches SET is_active = true WHERE id = $1`,
+        [id]
+      ).catch(() => {});
+    }
+
+    await this.createAuditLog({
+      actor_id: 'dean-01',
+      actor_name: approvedBy,
+      actor_role: 'admin',
+      action: 'ACADEMIC_BATCH_APPROVED',
+      target_type: 'batch',
+      target_id: id,
+      details: `Academic batch ${batch.batch_name} formally approved for student enrollment & admissions intake per Lecture 4 Mandate.`,
+      severity: 'info',
+    });
+
+    return batch;
   }
 
   public async getSections(batchId?: string): Promise<AcademicSection[]> {

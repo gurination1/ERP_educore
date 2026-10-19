@@ -411,6 +411,7 @@ export const api = {
   // Academic Topology (Batches, Sections, Curriculum, Allocations, Timetable)
   getBatches: (courseId?: string) => apiRequest(`/api/academics/batches${courseId ? `?courseId=${courseId}` : ''}`),
   createBatch: (data: any) => apiRequest('/api/academics/batches', { method: 'POST', body: JSON.stringify(data) }),
+  approveBatch: (batchId: string) => apiRequest(`/api/academics/batches/${batchId}/approve`, { method: 'POST' }),
   getSections: (batchId?: string) => apiRequest(`/api/academics/sections${batchId ? `?batchId=${batchId}` : ''}`),
   createSection: (data: any) => apiRequest('/api/academics/sections', { method: 'POST', body: JSON.stringify(data) }),
   transferStudentSection: (data: any) => apiRequest('/api/academics/sections/transfer', { method: 'POST', body: JSON.stringify(data) }),

@@ -45,6 +45,21 @@ academicTopologyRouter.post('/batches', authenticateToken, requireRole('admin', 
   }
 });
 
+academicTopologyRouter.post('/batches/:id/approve', authenticateToken, requireRole('admin', 'super_admin', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const batchId = req.params.id;
+    const actorName = req.user?.full_name || 'Academic Dean / Admin';
+    const batch = await db.approveBatch(batchId, actorName);
+    if (!batch) {
+      res.status(404).json({ success: false, error: 'Batch not found' });
+      return;
+    }
+    res.json({ success: true, batch });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // ====================================================
 // 2. SECTIONS (Level 5 of 5-Level Academic Topology)
 // ====================================================

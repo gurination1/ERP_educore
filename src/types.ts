@@ -799,3 +799,44 @@ export interface ContraLedgerEntry {
   authorized_by: string;
 }
 
+// Karanvir Sir Lecture 4 Building Maintenance Timers & Overhauls
+export interface BuildingMaintenanceRecord {
+  id: string;
+  building_id: string;
+  building_name: string;
+  category: 'routine_maintenance' | 'white_wash' | 'security_check' | 'hygiene_check' | 'electrical_check';
+  category_label: string;
+  frequency_days: number; // e.g. 360 for white wash, 90 for electrical
+  last_inspection_date: string;
+  next_due_date: string;
+  days_remaining: number;
+  inspected_by: string;
+  vendor_name?: string;
+  status: 'compliant' | 'due_soon' | 'overdue';
+  remarks?: string;
+}
+
+// Karanvir Sir Lecture 4 Roles Assignment, Default Rights & Bulk Revoke
+export interface StaffRoleAssignment {
+  id: string;
+  employee_id: string;
+  staff_name: string;
+  department: string;
+  role_key: string;
+  role_title: string;
+  granted_by: string;
+  granted_at: string;
+  is_active: boolean;
+}
+
+export interface DefaultCategoryRights {
+  category: 'teaching' | 'non_teaching' | 'administration';
+  category_label: string;
+  default_roles: string[];
+  rights: {
+    key: string;
+    label: string;
+    enabled: boolean;
+  }[];
+}
+

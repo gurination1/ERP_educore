@@ -56,6 +56,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
 
   const [isMessClearanceModalOpen, setIsMessClearanceModalOpen] = useState(false);
   const [clearingResident, setClearingResident] = useState<HostelResident | null>(null);
+  const [messBillingPolicy, setMessBillingPolicy] = useState<'monthly' | 'semester_lump_sum'>('monthly');
 
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
@@ -73,6 +74,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
       name: 'Shaheed Bhagat Singh Residence Block A',
       code: 'SBS-A',
       address: 'Main Campus, Muktsar Road, Bathinda, Punjab',
+      location_type: 'in_campus',
       ownership: 'owned',
       total_floors: 4,
       total_rooms: 48,
@@ -91,6 +93,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
       name: 'Mata Gujri Girls Hostel Block B',
       code: 'MG-B',
       address: 'North Enclave, Main Campus, Bathinda, Punjab',
+      location_type: 'in_campus',
       ownership: 'owned',
       total_floors: 3,
       total_rooms: 36,
@@ -109,6 +112,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
       name: 'Baba Deep Singh Scholar Enclave Block C',
       code: 'BDS-C',
       address: 'Ring Road Campus Extension, Bathinda, Punjab',
+      location_type: 'off_campus',
       ownership: 'leased',
       vendor_name: 'Malwa Infrastructure & Hospitality Pvt Ltd',
       vendor_contact: '+91 98765 43210 (Mr. Sandhu)',
@@ -878,15 +882,26 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
                   <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-[#00236f] font-mono font-bold text-[10px]">
                     {b.code}
                   </span>
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                      b.ownership === 'owned'
-                        ? 'bg-blue-50 text-blue-700 border-blue-200'
-                        : 'bg-purple-50 text-purple-700 border-purple-200'
-                    }`}
-                  >
-                    {b.ownership === 'owned' ? 'College Owned' : 'Leased Facility'}
-                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                        b.location_type === 'in_campus'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : 'bg-amber-50 text-amber-700 border-amber-200'
+                      }`}
+                    >
+                      {b.location_type === 'in_campus' ? 'In-Campus (Main Gate)' : 'Off-Campus (Outside Boundary)'}
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                        b.ownership === 'owned'
+                          ? 'bg-blue-50 text-blue-700 border-blue-200'
+                          : 'bg-purple-50 text-purple-700 border-purple-200'
+                      }`}
+                    >
+                      {b.ownership === 'owned' ? 'College Owned' : 'Leased Facility'}
+                    </span>
+                  </div>
                 </div>
 
                 <h3 className="text-base font-black text-[#00236f] leading-snug">{b.name}</h3>
@@ -1255,10 +1270,37 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
               </div>
 
               <div className="flex items-center gap-2 text-xs">
-                <span className="text-slate-500 font-semibold">Billing Frequency:</span>
-                <span className="px-3 py-1 rounded-xl bg-slate-100 font-bold text-[#00236f]">
-                  Configurable: Monthly vs Semester Billing
-                </span>
+                <span className="text-slate-500 font-semibold">Mess Policy Mode:</span>
+                <div className="flex items-center p-0.5 bg-slate-100 rounded-xl border border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMessBillingPolicy('monthly');
+                      showToast('Mess Billing set to Monthly Diet Audit Mode.');
+                    }}
+                    className={`px-3 py-1 rounded-lg font-bold text-[11px] transition cursor-pointer ${
+                      messBillingPolicy === 'monthly'
+                        ? 'bg-[#00236f] text-white shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Monthly Diet Billing
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMessBillingPolicy('semester_lump_sum');
+                      showToast('Mess Billing set to Semester Lump-Sum (Non-Refundable).');
+                    }}
+                    className={`px-3 py-1 rounded-lg font-bold text-[11px] transition cursor-pointer ${
+                      messBillingPolicy === 'semester_lump_sum'
+                        ? 'bg-[#ea580c] text-white shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Semester Lump-Sum (Fixed)
+                  </button>
+                </div>
               </div>
             </div>
 

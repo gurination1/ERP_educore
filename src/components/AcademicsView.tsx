@@ -219,6 +219,10 @@ export const AcademicsView: React.FC<AcademicsViewProps> = ({ currentUser }) => 
     active_terms: initialTermType === 'odd' ? [1, 3, 5, 7] : [2, 4, 6, 8],
     section_count: 2,
     intake_capacity: 120,
+    start_date: initialTermType === 'odd' ? '2025-08-01' : '2025-12-15',
+    end_date: initialTermType === 'odd' ? '2025-12-10' : '2026-04-30',
+    fee_due_date: initialTermType === 'odd' ? '2025-08-31' : '2025-12-31',
+    attendance_lock_date: initialTermType === 'odd' ? '2025-11-20' : '2026-04-10',
     requires_approval: true,
   });
 
@@ -368,18 +372,35 @@ export const AcademicsView: React.FC<AcademicsViewProps> = ({ currentUser }) => 
     alert(`Batch ${newBatchObj.batch_name} successfully promoted & launched under Dean Academic Approval!`);
   };
 
+  const canApproveBatch = currentUser?.role === 'admin' || currentUser?.role === 'super_admin' || currentUser?.role === 'hod';
+
+  const handleApproveBatch = async (batchId: string) => {
+    try {
+      const res = await api.approveBatch(batchId);
+      if (res.success) {
+        setBatches(prev => prev.map(b => b.id === batchId ? { ...b, approval_status: 'approved', is_active: true } : b));
+        setFeedback({ type: 'success', message: 'Batch formally approved by Dean Academic Council! Unlocked for student admission enrollment.' });
+      } else {
+        setFeedback({ type: 'error', message: res.error || 'Failed to approve batch' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message });
+    }
+  };
+
   const handleCreateBatch = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const res = await api.createBatch({
         ...newBatch,
+        approval_status: 'pending_approval',
         total_terms: newBatch.academic_system === 'annual' ? 4 : 8,
         active_terms_json: JSON.stringify(newBatch.active_terms),
       });
       if (res.success) {
         setBatches(prev => [res.batch, ...prev]);
         setIsCreatingBatch(false);
-        setFeedback({ type: 'success', message: `Batch ${res.batch.batch_name} created successfully without popups.` });
+        setFeedback({ type: 'success', message: `Batch ${res.batch.batch_name} created and submitted for Dean Academic Approval per Lecture 4 Mandate.` });
       } else {
         setFeedback({ type: 'error', message: res.error || 'Failed to create batch' });
       }
@@ -834,6 +855,31 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
                 </div>
               </div>
 
+              {batches.filter(b => b.approval_status === 'pending_approval').length > 0 && (
+                <div className="p-3 bg-amber-50/90 border border-amber-200/90 rounded-xl flex items-center justify-between text-xs animate-fadeIn">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                    <div>
+                      <strong className="text-amber-950 font-bold block">
+                        {batches.filter(b => b.approval_status === 'pending_approval').length} Academic Batch Awaiting Council & Dean Approval
+                      </strong>
+                      <span className="text-[11px] text-amber-700">
+                        Karanvir Sir Lecture 4 Mandate: Batch cannot begin student admissions intake until formally approved.
+                      </span>
+                    </div>
+                  </div>
+                  {canApproveBatch && (
+                    <button
+                      type="button"
+                      onClick={() => batches.filter(b => b.approval_status === 'pending_approval').forEach(b => handleApproveBatch(b.id))}
+                      className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-xs cursor-pointer"
+                    >
+                      Approve All Pending ({batches.filter(b => b.approval_status === 'pending_approval').length})
+                    </button>
+                  )}
+                </div>
+              )}
+
               <div className="bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-xs">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-50 border-b border-slate-200 font-semibold text-slate-700">
@@ -843,6 +889,7 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
                       <th className="px-4 py-2.5">Start / End Year</th>
                       <th className="px-4 py-2.5">Academic System</th>
                       <th className="px-4 py-2.5">Active Terms</th>
+                      <th className="px-4 py-2.5">Statutory Cutoffs</th>
                       <th className="px-4 py-2.5">Status</th>
                     </tr>
                   </thead>
@@ -863,10 +910,35 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
                         <td className="px-4 py-3 font-mono text-slate-600">
                           {b.active_terms_json || 'Terms 1, 2'}
                         </td>
+                        <td className="px-4 py-3 text-[11px]">
+                          <div className="font-mono text-slate-600">
+                            <span className="font-bold text-slate-700">Fee Due:</span> {b.fee_due_date || '2025-08-31'}
+                          </div>
+                          <div className="font-mono text-[#ea580c] font-bold">
+                            <span>Lock:</span> {b.attendance_lock_date || '2025-11-20'}
+                          </div>
+                        </td>
                         <td className="px-4 py-3">
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                            Active
-                          </span>
+                          {b.approval_status === 'pending_approval' ? (
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                ⏳ Pending Approval
+                              </span>
+                              {canApproveBatch && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleApproveBatch(b.id)}
+                                  className="px-2 py-0.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold shadow-xs transition cursor-pointer"
+                                >
+                                  ✓ Approve
+                                </button>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                              ✓ Active & Approved
+                            </span>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -1066,6 +1138,67 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
                       />
                     </div>
                   </div>
+                </div>
+
+                {/* Step 4: Key Statutory Dates (Karanvir Sir Lecture 4: Start Date, End Date, Fee Due Date, Attendance Lock Date) */}
+                <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-slate-900 uppercase text-[11px] tracking-wide block">
+                      Step 4: Statutory Timelines, Fee Due Date & Attendance Lock Date
+                    </span>
+                    <span className="px-2 py-0.5 bg-amber-50 text-amber-800 text-[10px] font-bold rounded border border-amber-200">
+                      ORDINANCE MANDATE
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Semester Start Date *</label>
+                      <input
+                        type="date"
+                        required
+                        value={newBatch.start_date}
+                        onChange={e => setNewBatch(prev => ({ ...prev, start_date: e.target.value }))}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs text-slate-800"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Semester End Date *</label>
+                      <input
+                        type="date"
+                        required
+                        value={newBatch.end_date}
+                        onChange={e => setNewBatch(prev => ({ ...prev, end_date: e.target.value }))}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs text-slate-800"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Tuition Fee Due Date *</label>
+                      <input
+                        type="date"
+                        required
+                        value={newBatch.fee_due_date}
+                        onChange={e => setNewBatch(prev => ({ ...prev, fee_due_date: e.target.value }))}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs text-slate-800"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#ea580c] mb-1">Attendance Lock Date *</label>
+                      <input
+                        type="date"
+                        required
+                        value={newBatch.attendance_lock_date}
+                        onChange={e => setNewBatch(prev => ({ ...prev, attendance_lock_date: e.target.value }))}
+                        className="w-full px-3 py-2 bg-orange-50/60 border border-orange-200 rounded-xl font-mono text-xs font-bold text-[#ea580c]"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-slate-400">
+                    * Attendance Lock Date freezes faculty roster modifications for University Examination Eligibility (75% Gate).
+                  </p>
                 </div>
 
                 {/* Footer Controls */}

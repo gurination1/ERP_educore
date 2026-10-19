@@ -51,6 +51,7 @@ const ROLES = [
       'Academics & Exams',
       'Faculty & HRMS',
       'Institutional Governance',
+      'Hostel & Residence',
     ],
     testRoute: '/manage-students',
     screenshotName: '2_admin.png',
@@ -171,6 +172,24 @@ const ROLES = [
     testRoute: '/staff-management',
     screenshotName: '9_hr.png',
   },
+  {
+    role: 'hostel',
+    label: 'Chief Hostel Warden & Residence Officer',
+    uid: '10001-01-03-01',
+    password: 'warden123',
+    expectedRoleBadge: ['Chief Hostel Warden', 'Residence Officer', 'Hostel Warden', 'Warden'],
+    expectedNavItems: [
+      'Hostel Operations',
+      'Buildings & Blocks',
+      'Room Inventory & Beds',
+      'Resident Scholars',
+      'Mess Dues & Clearance',
+      'Transport Fleet',
+      'Grievances',
+    ],
+    testRoute: '/hostel',
+    screenshotName: '10_hostel.png',
+  },
 ];
 
 let spawnedServer = null;
@@ -197,7 +216,12 @@ async function ensureServer() {
     console.log(`[LAUNCH] Spawning local server on port ${port}...`);
     spawnedServer = spawn(process.execPath, [serverScript], {
       cwd: process.cwd(),
-      env: { ...process.env, PORT: port, NODE_ENV: 'production' },
+      env: {
+        ...process.env,
+        PORT: port,
+        NODE_ENV: 'production',
+        JWT_SECRET: process.env.JWT_SECRET || 'educore-enterprise-super-secure-jwt-key-2026-punjab-03',
+      },
       stdio: 'pipe',
     });
 

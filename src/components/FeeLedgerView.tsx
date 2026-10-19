@@ -22,6 +22,7 @@ import {
   ShieldCheck,
   Percent,
   Download,
+  Lock,
 } from 'lucide-react';
 
 interface FeeLedgerViewProps {
@@ -122,6 +123,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
 }) => {
   const [searchParams] = useSearchParams();
   const isActualAdmin = currentUser ? ['admin', 'super_admin', 'accounts'].includes(currentUser.role) : !currentStudent;
+  const isDirectorOrAdmin = currentUser ? ['admin', 'super_admin'].includes(currentUser.role) : false;
   const isStaff = currentUser ? ['staff', 'hod', 'counselor', 'hr'].includes(currentUser.role) : false;
   const isStudent = currentUser?.role === 'student' || (!isActualAdmin && !isStaff && Boolean(currentStudent));
   const canSearchStudents = isActualAdmin || isStaff;
@@ -210,6 +212,9 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
   const [deskRefNo, setDeskRefNo] = useState('');
   const [deskRemarks, setDeskRemarks] = useState('Counter Tuition Fee Installment - Verified');
   const [deskIsSubmitting, setDeskIsSubmitting] = useState(false);
+  const [deskTxnDate, setDeskTxnDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [deskAdminOverrideDate, setDeskAdminOverrideDate] = useState(false);
+  const [deskDateOverrideReason, setDeskDateOverrideReason] = useState('');
 
   // Dynamic Fee Policies State (Karanvir Sir Lecture 4 Segment 5)
   const [feePolicies, setFeePolicies] = useState<FeePolicy[]>(() => {
@@ -327,6 +332,13 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
     // Store in recent receipts
     try {
       const existing = JSON.parse(localStorage.getItem('educore_recent_receipts') || '[]');
+      const finalRemarks = deskAdminOverrideDate
+        ? `${deskRemarks} [ADMIN DATE OVERRIDE: ${deskTxnDate} - Reason: ${deskDateOverrideReason || 'Administrative Regularization'}]`
+        : deskRemarks;
+      const finalTimestamp = deskAdminOverrideDate
+        ? `${deskTxnDate}T12:00:00.000Z`
+        : new Date().toISOString();
+
       existing.unshift({
         receiptNo,
         studentId: deskSelectedStudent.student_id || deskSelectedStudent.id,
@@ -334,8 +346,10 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
         amount: amt,
         paymentMode: deskPaymentMode,
         referenceNo: deskRefNo || 'CASH-COUNTER-01',
-        remarks: deskRemarks,
-        timestamp: new Date().toISOString(),
+        remarks: finalRemarks,
+        timestamp: finalTimestamp,
+        is_backdated_admin_override: deskAdminOverrideDate,
+        override_reason: deskDateOverrideReason || undefined,
       });
       localStorage.setItem('educore_recent_receipts', JSON.stringify(existing.slice(0, 50)));
     } catch (err) {}
@@ -864,6 +878,61 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                         className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none"
                       />
                     </div>
+                  </div>
+
+                  {/* Transaction Date Lock (Karanvir Sir Lecture 4 Segment 5 Mandate: Anti-Backdating) */}
+                  <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/90 text-xs space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 font-bold text-slate-700">
+                        <Lock className="w-3.5 h-3.5 text-amber-600" />
+                        <span>Transaction Date Lock (Statutory Mandate):</span>
+                      </div>
+                      {isDirectorOrAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => setDeskAdminOverrideDate(!deskAdminOverrideDate)}
+                          className="text-[10px] font-bold text-[#ea580c] hover:underline cursor-pointer"
+                        >
+                          {deskAdminOverrideDate ? 'Re-lock to Today' : 'Admin Date Override ⚙️'}
+                        </button>
+                      )}
+                    </div>
+
+                    {!deskAdminOverrideDate ? (
+                      <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-slate-200 text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-bold text-slate-900">{deskTxnDate}</span>
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black border border-emerald-200">
+                            TODAY • LOCKED
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-slate-500 font-medium">
+                          Staff cannot backdate entries
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5 p-2 rounded-xl bg-amber-50/70 border border-amber-200">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="date"
+                            value={deskTxnDate}
+                            onChange={e => setDeskTxnDate(e.target.value)}
+                            className="px-2.5 py-1 bg-white border border-amber-300 rounded-lg text-xs font-mono font-bold text-slate-900 focus:outline-none"
+                          />
+                          <span className="text-[10px] font-bold text-amber-800">
+                            Admin Backdating Override
+                          </span>
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="Mandatory Audit Justification for Date Override..."
+                          value={deskDateOverrideReason}
+                          onChange={e => setDeskDateOverrideReason(e.target.value)}
+                          className="w-full px-2.5 py-1 bg-white border border-amber-300 rounded-lg text-[11px] text-slate-800 focus:outline-none"
+                          required={deskAdminOverrideDate}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {/* Submit Button */}

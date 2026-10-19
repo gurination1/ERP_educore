@@ -162,6 +162,25 @@ export const Header: React.FC<HeaderProps> = ({
       ? 'fee-ledger'
       : 'student-dashboard';
 
+  const getActiveModuleTitle = (): string => {
+    if (activeScreen === 'hostel-management' || effectivePath.startsWith('/hostel')) return 'Hostel & Residence';
+    if (activeScreen === 'admin-dashboard' || effectivePath.startsWith('/admin')) return 'Operations Console';
+    if (activeScreen === 'super-admin-dashboard') return 'Platform Overview';
+    if (activeScreen === 'student-dashboard') return 'Scholar Home';
+    if (activeScreen === 'staff-dashboard') return 'Faculty Desk';
+    if (activeScreen === 'fee-ledger' || effectivePath.startsWith('/fees')) return 'Tuition & Ledgers';
+    if (activeScreen === 'enquiries' || effectivePath.startsWith('/enquiries')) return 'Admissions CRM';
+    if (activeScreen === 'admissions' || effectivePath.startsWith('/admissions')) return 'Admissions Desk';
+    if (activeScreen === 'manage-students' || effectivePath.startsWith('/students')) return 'Student Directory';
+    if (activeScreen === 'academics' || effectivePath.startsWith('/academics')) return 'Academics & Exams';
+    if (activeScreen === 'examination' || effectivePath.startsWith('/examination')) return 'Admit Card & Exams';
+    if (activeScreen === 'staff-management' || effectivePath.startsWith('/staff-management')) return 'Faculty & HRMS';
+    if (activeScreen === 'user-management' || effectivePath.startsWith('/user-management')) return 'Institutional Governance';
+    if (activeScreen === 'reports' || effectivePath.startsWith('/reports')) return 'Institutional MIS Reports';
+    return 'Campus Console';
+  };
+  const activeModuleTitle = getActiveModuleTitle();
+
   let menuSections: Array<{
     id: string;
     label: string;
@@ -1139,6 +1158,23 @@ export const Header: React.FC<HeaderProps> = ({
                   <span className="text-white font-medium">Bathinda Campus 01 (Assigned)</span>
                 </div>
               )}
+
+              {/* Karanvir Sir Lecture 4 Breadcrumb: Campus > Active Module */}
+              <div className="hidden lg:flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-xs text-white ml-2 shrink-0">
+                <span className="text-slate-300 font-medium">
+                  {selectedCampus === 'bathinda_main' ? 'Campus 01' : selectedCampus === 'faridkot_center' ? 'Campus 02' : 'All Campuses'}
+                </span>
+                <span className="text-amber-300 font-bold">›</span>
+                <span className="text-amber-300 font-black tracking-tight">{activeModuleTitle}</span>
+              </div>
+
+              {/* Prominent Orange Academic Session / Term Badge (Karanvir Sir Lecture 4 Segment 0) */}
+              <div className="hidden xl:flex items-center gap-1.5 px-3 py-1 bg-[#ea580c]/35 border border-[#ea580c]/80 text-amber-200 font-black text-xs rounded-full shadow-sm ml-2 shrink-0">
+                <span className="w-2 h-2 rounded-full bg-[#ea580c] animate-pulse shrink-0" />
+                <span className="text-amber-100 font-bold uppercase tracking-wide">Session 2025-2026</span>
+                <span className="text-amber-400 font-bold">•</span>
+                <span className="text-white font-medium text-[11px]">Odd Sem (Aug-Nov)</span>
+              </div>
             </>
           )}
         </div>

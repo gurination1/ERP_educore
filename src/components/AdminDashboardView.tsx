@@ -309,6 +309,9 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           <div className="mt-2 text-[11px] text-slate-500">
             <span>AICTE Mandate: <strong className="text-slate-700">&le; 1:20 for Engineering</strong></span>
           </div>
+          <div className="mt-1.5 pt-1.5 border-t border-slate-100 text-[10px] text-slate-600 font-mono">
+            Staff: <strong className="text-emerald-700">50 Teaching</strong> + <strong className="text-blue-700">40 Non-Teaching</strong> + <strong className="text-slate-700">10 Admin</strong> = <strong className="text-[#00236f]">100 Total</strong>
+          </div>
         </div>
 
         {/* Metric 3: 75% Attendance Exam Gate Compliance */}
@@ -527,6 +530,106 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         )}
       </div>
 
+      {/* Karanvir Sir Lecture 4 & User Request: Hostel is in diff new role, ALSO in Admin */}
+      <div className="bg-gradient-to-r from-blue-900/10 via-white to-amber-50/50 rounded-2xl p-4 border border-blue-200/90 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)]">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-blue-100/80 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-[#00236f] text-white flex items-center justify-center font-bold text-xs shadow-sm">
+              🏨
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xs font-bold text-[#00236f] uppercase tracking-wide">
+                  Campus Residence, Hostel & Fleet Command Hub
+                </h3>
+                <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full font-mono text-[10px] font-bold border border-emerald-200">
+                  WARDEN ROLE SYNC ACTIVE
+                </span>
+              </div>
+              <p className="text-slate-500 text-[11px] mt-0.5">
+                Admin central oversight of Residence Blocks (Owned vs Leased), ARW/FCW Room Typology, 360-day Overhaul Timers, and Mess No-Dues Clearance.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onNavigate('hostel-management')}
+              className="px-3 py-1.5 rounded-xl bg-[#00236f] hover:bg-[#001744] text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>Launch Full Hostel Console</span>
+              <span>&rarr;</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+          {/* Tile 1: Total Residence Capacity & Occupancy */}
+          <div
+            onClick={() => onNavigate('hostel-management?tab=rooms' as any)}
+            className="p-3 rounded-xl bg-white border border-slate-200/90 hover:border-[#00236f]/40 cursor-pointer transition-all shadow-2xs group"
+          >
+            <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase">
+              <span>Residence Beds</span>
+              <span className="text-[#00236f] group-hover:underline">144 Total</span>
+            </div>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span className="text-lg font-black text-[#00236f]">122 Occupied</span>
+              <span className="text-[10px] font-semibold text-emerald-600">84.7% Filled</span>
+            </div>
+            <div className="text-[10px] text-slate-500 mt-1">22 Vacant Beds (ARW / FCW)</div>
+          </div>
+
+          {/* Tile 2: Unallocated Hostel Queue */}
+          <div
+            onClick={() => onNavigate('hostel-management?tab=unassigned' as any)}
+            className="p-3 rounded-xl bg-white border border-amber-200/90 hover:border-amber-400 cursor-pointer transition-all shadow-2xs group"
+          >
+            <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase">
+              <span>Unallocated Queue</span>
+              <span className="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 text-[9px] font-bold">ATTENTION</span>
+            </div>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span className="text-lg font-black text-amber-700">5 Scholars</span>
+              <span className="text-[10px] font-semibold text-amber-600">Awaiting Bed</span>
+            </div>
+            <div className="text-[10px] text-slate-500 mt-1">1-Click Allotment Desk &rarr;</div>
+          </div>
+
+          {/* Tile 3: 360-Day Maintenance & Overhaul */}
+          <div
+            onClick={() => onNavigate('hostel-management?tab=maintenance' as any)}
+            className="p-3 rounded-xl bg-white border border-slate-200/90 hover:border-[#00236f]/40 cursor-pointer transition-all shadow-2xs group"
+          >
+            <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase">
+              <span>Safety & Overhaul</span>
+              <span className="text-rose-600 font-bold text-[9px]">1 DUE SOON</span>
+            </div>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span className="text-lg font-black text-rose-700">18 Days Left</span>
+              <span className="text-[10px] text-slate-500">Block B</span>
+            </div>
+            <div className="text-[10px] text-slate-500 mt-1">Annual Painting & Hygiene Audit</div>
+          </div>
+
+          {/* Tile 4: Mess No-Dues Clearance Gate */}
+          <div
+            onClick={() => onNavigate('hostel-management?tab=mess' as any)}
+            className="p-3 rounded-xl bg-white border border-slate-200/90 hover:border-[#00236f]/40 cursor-pointer transition-all shadow-2xs group"
+          >
+            <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase">
+              <span>Mess Dues Gate</span>
+              <span className="text-emerald-600 font-bold text-[9px]">ACTIVE</span>
+            </div>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span className="text-lg font-black text-slate-800">2 Clearance</span>
+              <span className="text-[10px] font-semibold text-emerald-600">Pending Sign-off</span>
+            </div>
+            <div className="text-[10px] text-slate-500 mt-1">Deposit Release NOC Ordinance</div>
+          </div>
+        </div>
+      </div>
+
       {/* Main Grid: Departmental Workload & Accreditation (7 cols) + Executive Actions & Support Tickets (5 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
         {/* Departmental Accreditation & Student Status Breakdown (7 cols) */}
@@ -550,7 +653,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-slate-200/80 text-[10px] text-slate-400 uppercase font-bold tracking-wider">
-                    <th className="py-2 px-2">Academic Department</th>
+                    <th className="py-2 px-2">Academic Department / School</th>
                     <th className="py-2 px-2 text-center">Total Enrolled</th>
                     <th className="py-2 px-2 text-center">Active (%)</th>
                     <th className="py-2 px-2 text-center">Deactive (%)</th>
@@ -561,37 +664,88 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {filteredDepartmentRows.map((d, i) => (
-                    <tr key={i} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="py-2 px-2">
-                        <strong className="text-slate-900 block font-semibold text-xs">{d.name}</strong>
-                        <span className="text-slate-400 font-mono text-[10px]">{d.code}</span>
-                      </td>
-                      <td className="py-2 px-2 text-center font-mono font-bold text-slate-700">
-                        {d.students}
-                      </td>
-                      <td className="py-2 px-2 text-center font-mono font-bold text-emerald-700">
-                        {d.active} ({d.activePct}%)
-                      </td>
-                      <td className="py-2 px-2 text-center font-mono text-amber-700 font-semibold">
-                        {d.deactive} ({d.deactivePct}%)
-                      </td>
-                      <td className="py-2 px-2 text-center font-mono text-rose-700 font-semibold">
-                        {d.struckOff} ({d.struckOffPct}%)
-                      </td>
-                      <td className="py-2 px-2 text-center font-mono text-slate-700">
-                        {d.faculty}
-                      </td>
-                      <td className="py-2 px-2 text-center font-mono font-bold text-emerald-700">
-                        {d.fsr}
-                      </td>
-                      <td className="py-2 px-2 text-right">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
-                          {d.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                  {/* Karanvir Sir Lecture 4 Segment 0: Prominent Summary Total Row at TOP, not bottom */}
+                  {(() => {
+                    const totalStudents = filteredDepartmentRows.reduce((acc, d) => acc + (d.students || 0), 0);
+                    const totalActive = filteredDepartmentRows.reduce((acc, d) => acc + (d.active || 0), 0);
+                    const totalDeactive = filteredDepartmentRows.reduce((acc, d) => acc + (d.deactive || 0), 0);
+                    const totalStruckOff = filteredDepartmentRows.reduce((acc, d) => acc + (d.struckOff || 0), 0);
+                    const totalFaculty = filteredDepartmentRows.reduce((acc, d) => acc + (d.faculty || 0), 0);
+                    const totActivePct = totalStudents > 0 ? (Math.round((totalActive / totalStudents) * 1000) / 10).toFixed(1) : '0.0';
+                    const totDeactivePct = totalStudents > 0 ? (Math.round((totalDeactive / totalStudents) * 1000) / 10).toFixed(1) : '0.0';
+                    const totStruckOffPct = totalStudents > 0 ? (Math.round((totalStruckOff / totalStudents) * 1000) / 10).toFixed(1) : '0.0';
+                    return (
+                      <tr className="bg-blue-50/90 font-bold border-b-2 border-blue-200 text-slate-900">
+                        <td className="py-2.5 px-2">
+                          <span className="text-[#00236f] font-black uppercase text-[11px] tracking-wide flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-[#00236f]"></span>
+                            ALL SCHOOLS TOTAL (HEAD SUMMARY)
+                          </span>
+                          <span className="text-slate-500 font-mono text-[9px] font-normal">Aggregated Campus Cohort</span>
+                        </td>
+                        <td className="py-2.5 px-2 text-center font-mono font-black text-[#00236f]">
+                          {totalStudents}
+                        </td>
+                        <td className="py-2.5 px-2 text-center font-mono font-black text-emerald-800">
+                          {totalActive} <span className="text-[10px] font-semibold text-emerald-600">({totActivePct}%)</span>
+                        </td>
+                        <td className="py-2.5 px-2 text-center font-mono font-bold text-amber-800">
+                          {totalDeactive} <span className="text-[10px] font-normal text-amber-600">({totDeactivePct}%)</span>
+                        </td>
+                        <td className="py-2.5 px-2 text-center font-mono font-bold text-rose-800">
+                          {totalStruckOff} <span className="text-[10px] font-normal text-rose-600">({totStruckOffPct}%)</span>
+                        </td>
+                        <td className="py-2.5 px-2 text-center font-mono font-black text-slate-800">
+                          {totalFaculty}
+                        </td>
+                        <td className="py-2.5 px-2 text-center font-mono font-black text-[#00236f]">
+                          1:{(totalStudents / (totalFaculty || 1)).toFixed(1)}
+                        </td>
+                        <td className="py-2.5 px-2 text-right">
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-[#00236f] text-white">
+                            CANONICAL
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })()}
+
+                  {filteredDepartmentRows.map((d, i) => {
+                    const activePct = d.students > 0 ? (Math.round((d.active / d.students) * 1000) / 10).toFixed(1) : '0.0';
+                    const deactivePct = d.students > 0 ? (Math.round((d.deactive / d.students) * 1000) / 10).toFixed(1) : '0.0';
+                    const struckOffPct = d.students > 0 ? (Math.round((d.struckOff / d.students) * 1000) / 10).toFixed(1) : '0.0';
+                    return (
+                      <tr key={i} className="hover:bg-slate-50/70 transition-colors">
+                        <td className="py-2 px-2">
+                          <strong className="text-slate-900 block font-semibold text-xs">{d.name}</strong>
+                          <span className="text-slate-400 font-mono text-[10px]">{d.code}</span>
+                        </td>
+                        <td className="py-2 px-2 text-center font-mono font-bold text-slate-700">
+                          {d.students}
+                        </td>
+                        <td className="py-2 px-2 text-center font-mono font-bold text-emerald-700">
+                          {d.active} <span className="text-[10px] font-normal text-emerald-600">({activePct}%)</span>
+                        </td>
+                        <td className="py-2 px-2 text-center font-mono text-amber-700 font-semibold">
+                          {d.deactive} <span className="text-[10px] font-normal text-amber-600">({deactivePct}%)</span>
+                        </td>
+                        <td className="py-2 px-2 text-center font-mono text-rose-700 font-semibold">
+                          {d.struckOff} <span className="text-[10px] font-normal text-rose-600">({struckOffPct}%)</span>
+                        </td>
+                        <td className="py-2 px-2 text-center font-mono text-slate-700">
+                          {d.faculty}
+                        </td>
+                        <td className="py-2 px-2 text-center font-mono font-bold text-emerald-700">
+                          {d.fsr}
+                        </td>
+                        <td className="py-2 px-2 text-right">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                            {d.status}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
