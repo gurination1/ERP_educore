@@ -43,6 +43,8 @@ import { PaymentGatewaysView } from './components/PaymentGatewaysView';
 import { FieldPermissionsView } from './components/FieldPermissionsView';
 import { SuperAdminDashboardView } from './components/SuperAdminDashboardView';
 import { HostelManagementView } from './components/HostelManagementView';
+import { TransportManagementView } from './components/TransportManagementView';
+import { MandatoryPasswordChangeModal } from './components/MandatoryPasswordChangeModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 interface LayoutProps {
@@ -281,6 +283,9 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
       case '/hostel':
       case '/hostel-management':
         return { category: 'Campus Residences', title: 'Hostel Operations, Residence & Logistics Command' };
+      case '/transport':
+      case '/transport-management':
+        return { category: 'Fleet Operations', title: 'Institutional Fleet & Bus Pass Management' };
       default:
         return { category: 'Portal', title: 'Console Module' };
     }
@@ -538,6 +543,8 @@ function MainApp() {
 
     if (pathPart === 'fee-ledger' || pathPart === 'fees') {
       navigate(`/fees${qs}`);
+    } else if (pathPart === 'transport' || pathPart === 'transport-management') {
+      navigate(`/transport${qs}`);
     } else if (pathPart === 'hostel-management' || pathPart === 'hostel') {
       navigate(`/hostel${qs}`);
     } else if (
@@ -1184,6 +1191,31 @@ function MainApp() {
         />
 
         <Route
+          path="/transport"
+          element={
+            !currentUser ? (
+              <Navigate to="/" replace />
+            ) : !['admin', 'super_admin', 'accounts', 'counselor', 'staff', 'student'].includes(currentUser.role) ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <AuthenticatedLayout
+                currentUser={currentUser}
+                onLogout={handleLogout}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              >
+                <TransportManagementView currentUser={currentUser} />
+              </AuthenticatedLayout>
+            )
+          }
+        />
+
+        <Route
+          path="/transport-management"
+          element={<Navigate to="/transport" replace />}
+        />
+
+        <Route
           path="/bulk-import"
           element={
             !currentUser ? (
@@ -1319,6 +1351,16 @@ function MainApp() {
             setIsReceiptOpen(true);
             refreshCurrentStudent();
           }}
+        />
+      )}
+
+      {currentUser?.must_change_password && (
+        <MandatoryPasswordChangeModal
+          currentUser={currentUser}
+          onSuccess={() => {
+            setCurrentUser(prev => prev ? { ...prev, must_change_password: false } : null);
+          }}
+          onLogout={handleLogout}
         />
       )}
 

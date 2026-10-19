@@ -433,9 +433,9 @@ export const Header: React.FC<HeaderProps> = ({
           { id: 'hostel-management?tab=residents' as any, label: 'Resident Scholars Registry', action: () => { onNavigate('hostel-management?tab=residents' as any); setOpenDrawer(null); } },
           { id: 'hostel-management?tab=mess' as any, label: 'Mess & Digital No-Dues Clearance', action: () => { onNavigate('hostel-management?tab=mess' as any); setOpenDrawer(null); } },
           { id: 'hostel-management?tab=maintenance' as any, label: '360-Day Maintenance & Overhaul', action: () => { onNavigate('hostel-management?tab=maintenance' as any); setOpenDrawer(null); } },
-          { id: 'hostel-management?tab=transport' as any, label: 'Transport Fleet & Seat Queues', action: () => { onNavigate('hostel-management?tab=transport' as any); setOpenDrawer(null); } },
+          { id: 'transport' as any, label: 'Transport Fleet & Seat Queues', action: () => { onNavigate('transport' as any); setOpenDrawer(null); } },
         ],
-        isActive: ['/hostel', '/hostel-management'].some(p => effectivePath.startsWith(p)) || activeScreen === 'hostel-management',
+        isActive: ['/hostel', '/hostel-management', '/transport'].some(p => effectivePath.startsWith(p)) || activeScreen === 'hostel-management',
       },
     ];
   } else if (userRole === 'hr') {
@@ -921,16 +921,16 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'transport',
         label: 'Transport Fleet',
-        defaultScreen: 'hostel-management?tab=transport' as any,
+        defaultScreen: 'transport' as any,
         action: () => {
-          onNavigate('hostel-management?tab=transport' as any);
+          onNavigate('transport' as any);
           setOpenDrawer(null);
         },
         items: [
-          { id: 'hostel-management?tab=transport' as any, label: 'Bus Fleet Capacity & Drivers', action: () => { onNavigate('hostel-management?tab=transport' as any); setOpenDrawer(null); } },
-          { id: 'hostel-management?tab=transport' as any, label: 'Unallocated Transport Queue', action: () => { onNavigate('hostel-management?tab=transport' as any); setOpenDrawer(null); } },
+          { id: 'transport' as any, label: 'Bus Fleet Capacity & Drivers', action: () => { onNavigate('transport' as any); setOpenDrawer(null); } },
+          { id: 'transport' as any, label: 'Unallocated Transport Queue', action: () => { onNavigate('transport' as any); setOpenDrawer(null); } },
         ],
-        isActive: isHostel && currentTab === 'transport',
+        isActive: effectivePath.startsWith('/transport') || (isHostel && currentTab === 'transport'),
       },
       {
         id: 'grievances',

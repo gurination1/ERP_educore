@@ -1961,12 +1961,13 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
                   <option value="ACTIVE">ACTIVE</option>
                   <option value="RESIGNED">RESIGNED (SERVING NOTICE)</option>
                   <option value="TERMINATED">STATUTORILY TERMINATED</option>
+                  <option value="AWOL">ABSENT WITHOUT LEAVE (AWOL)</option>
                   <option value="AOL">ABSENT OUT OF LEAVE (AOL)</option>
                   <option value="DEACTIVATED">DEACTIVATED / RELIEVED</option>
                 </select>
               </div>
 
-              {['RESIGNED', 'TERMINATED', 'AOL', 'DEACTIVATED'].includes(statusModalData.employee_status) && (
+              {['RESIGNED', 'TERMINATED', 'AWOL', 'AOL', 'DEACTIVATED'].includes(statusModalData.employee_status) && (
                 <>
                   <div>
                     <label className="block font-semibold mb-1 text-gray-700">EFFECTIVE RESIGNATION/NOTICE DATE:</label>

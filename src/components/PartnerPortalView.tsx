@@ -59,6 +59,10 @@ export const PartnerPortalView: React.FC<PartnerPortalViewProps> = ({ currentUse
     contact_name: '',
     contact_email: '',
     contact_phone: '',
+    bank_name: 'HDFC Bank Ltd',
+    account_number: '',
+    ifsc_code: '',
+    branch_name: 'Corporate Campus Branch',
   });
 
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
@@ -164,6 +168,13 @@ export const PartnerPortalView: React.FC<PartnerPortalViewProps> = ({ currentUse
         designation: 'University Relations Lead',
         email: newPartnerData.contact_email || newPartnerData.email,
         phone: newPartnerData.contact_phone || newPartnerData.phone,
+        is_default: true,
+      } : undefined,
+      bank: newPartnerData.account_number ? {
+        bank_name: newPartnerData.bank_name || 'HDFC Bank Ltd',
+        account_number: newPartnerData.account_number,
+        ifsc_code: newPartnerData.ifsc_code || 'HDFC0001234',
+        branch_name: newPartnerData.branch_name || 'Corporate Campus Branch',
         is_default: true,
       } : undefined,
     });
@@ -879,6 +890,54 @@ This transcript is digitally generated and certified by EduCore Academic ERP.`;
                   onChange={e => setNewPartnerData({ ...newPartnerData, contact_phone: e.target.value })}
                   className="w-full border p-1.5 rounded"
                 />
+              </div>
+
+              <div className="col-span-2 pt-2 border-t mt-1">
+                <span className="font-bold text-[#00236f] block text-[10px] uppercase mb-1">
+                  Corporate Bank Account (Primary Escrow • Multi-Valued Default):
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block font-semibold mb-0.5">BANK NAME:</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. HDFC Bank Ltd"
+                      value={newPartnerData.bank_name}
+                      onChange={e => setNewPartnerData({ ...newPartnerData, bank_name: e.target.value })}
+                      className="w-full border p-1.5 rounded"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-0.5">ACCOUNT NUMBER:</label>
+                    <input
+                      type="text"
+                      placeholder="50200012345678"
+                      value={newPartnerData.account_number}
+                      onChange={e => setNewPartnerData({ ...newPartnerData, account_number: e.target.value })}
+                      className="w-full border p-1.5 rounded font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-0.5">IFSC CODE:</label>
+                    <input
+                      type="text"
+                      placeholder="HDFC0001234"
+                      value={newPartnerData.ifsc_code}
+                      onChange={e => setNewPartnerData({ ...newPartnerData, ifsc_code: e.target.value })}
+                      className="w-full border p-1.5 rounded font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-0.5">BRANCH NAME:</label>
+                    <input
+                      type="text"
+                      placeholder="Industrial Estate Branch"
+                      value={newPartnerData.branch_name}
+                      onChange={e => setNewPartnerData({ ...newPartnerData, branch_name: e.target.value })}
+                      className="w-full border p-1.5 rounded"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 

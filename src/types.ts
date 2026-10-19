@@ -105,6 +105,11 @@ export interface StaffBasicInfo {
   custom_attr_2?: string;
   custom_attr_3?: string;
   custom_attr_4?: string;
+  custom_field_1?: string;
+  custom_field_2?: string;
+  custom_field_3?: string;
+  custom_field_4?: string;
+  custom_field_5?: string;
   custom_meta_json?: string;
 }
 
@@ -195,6 +200,11 @@ export interface PartnerProfile {
   address: string;
   is_active: boolean;
   created_at: string;
+  custom_field_1?: string;
+  custom_field_2?: string;
+  custom_field_3?: string;
+  custom_field_4?: string;
+  custom_field_5?: string;
   custom_meta_json?: string;
 }
 
@@ -412,6 +422,11 @@ export interface StudentProfile {
   enterprise_uid?: string;
   roll_number?: string;
   mobile?: string;
+  custom_field_1?: string;
+  custom_field_2?: string;
+  custom_field_3?: string;
+  custom_field_4?: string;
+  custom_field_5?: string;
 }
 
 export interface AdmissionFollowup {
@@ -631,6 +646,11 @@ export interface HostelRoom {
   monthly_rent: number;
   semester_rent: number;
   status: 'available' | 'occupied' | 'maintenance';
+  custom_field_1?: string;
+  custom_field_2?: string;
+  custom_field_3?: string;
+  custom_field_4?: string;
+  custom_field_5?: string;
 }
 
 export interface HostelResident {
@@ -674,16 +694,68 @@ export interface MessClearanceRecord {
 export interface TransportVehicle {
   id: string;
   vehicle_number: string;
-  seater_capacity: number;
+  seater_capacity: number; // 32, 40, 52 seater
   is_ac: boolean;
   ownership: 'college_owned' | 'vendor_leased';
   vendor_name?: string;
+  vendor_contact?: string;
   driver_name: string;
   driver_phone: string;
+  driver_license_no?: string;
+  driver_type?: 'college_staff' | 'contractor';
+  route_id?: string;
   route_name: string;
   stops: string[];
   total_allocated: number;
+  fitness_expiry_date?: string;
+  insurance_expiry_date?: string;
+  puc_expiry_date?: string;
+  maintenance_due_days?: number;
   is_active: boolean;
+  custom_field_1?: string;
+  custom_field_2?: string;
+  custom_field_3?: string;
+  custom_field_4?: string;
+  custom_field_5?: string;
+}
+
+export interface TransportRoute {
+  id: string;
+  route_code: string;
+  route_name: string;
+  start_point: string;
+  end_point: string;
+  pickup_time_morning: string;
+  drop_time_evening: string;
+  assigned_vehicle_id: string;
+  assigned_vehicle_number: string;
+  stops: Array<{
+    stop_name: string;
+    stop_sequence: number;
+    pickup_time: string;
+    semester_fare: number;
+  }>;
+  total_enrolled: number;
+  is_active: boolean;
+}
+
+export interface StudentBusPass {
+  id: string;
+  pass_number: string;
+  student_uid: string;
+  student_name: string;
+  course_name: string;
+  semester: number;
+  route_id: string;
+  route_name: string;
+  boarding_stop: string;
+  vehicle_number: string;
+  seat_number: string;
+  issue_date: string;
+  expiry_date: string;
+  fee_status: 'paid' | 'due';
+  rfid_tag_id: string;
+  status: 'active' | 'suspended' | 'cancelled';
 }
 
 export interface SupportTicket {

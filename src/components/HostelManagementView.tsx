@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Building2,
   Bed,
@@ -39,9 +40,23 @@ interface HostelManagementViewProps {
 }
 
 export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ currentUser }) => {
-  const [activeTab, setActiveTab] = useState<
-    'overview' | 'unassigned' | 'buildings' | 'rooms' | 'residents' | 'mess' | 'maintenance' | 'transport'
-  >('overview');
+  const [searchParams] = useSearchParams();
+  const urlTab = searchParams.get('tab');
+
+  const getInitialTab = (): 'overview' | 'unassigned' | 'buildings' | 'rooms' | 'residents' | 'mess' | 'maintenance' | 'transport' => {
+    if (urlTab && ['overview', 'unassigned', 'buildings', 'rooms', 'residents', 'mess', 'maintenance', 'transport'].includes(urlTab)) {
+      return urlTab as any;
+    }
+    return 'overview';
+  };
+
+  const [activeTab, setActiveTab] = useState(getInitialTab());
+
+  useEffect(() => {
+    if (urlTab && ['overview', 'unassigned', 'buildings', 'rooms', 'residents', 'mess', 'maintenance', 'transport'].includes(urlTab)) {
+      setActiveTab(urlTab as any);
+    }
+  }, [urlTab]);
 
   // Search & Filter state
   const [searchTerm, setSearchTerm] = useState('');
@@ -1411,6 +1426,25 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
       {/* TAB 7: TRANSPORT FLEET & QUEUES */}
       {activeTab === 'transport' && (
         <div className="space-y-4">
+          <div className="p-4 bg-sky-50 border border-sky-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <Bus className="w-6 h-6 text-[#00236f] shrink-0" />
+              <div>
+                <h4 className="text-xs font-black text-[#00236f]">Dedicated Fleet Operations & RFID Bus Pass Console</h4>
+                <p className="text-[11px] text-slate-600">
+                  Manage commercial driver KYC, stop-wise fares, RFID passes, and 90/360-day RTO fitness checks in the standalone Fleet module.
+                </p>
+              </div>
+            </div>
+            <a
+              href="/transport"
+              className="px-4 py-2 bg-[#00236f] hover:bg-[#001b54] text-white rounded-xl text-xs font-black self-start sm:self-auto shrink-0 shadow-2xs flex items-center gap-1.5 transition-all"
+            >
+              <span>Launch Fleet Console</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Bus Fleet */}
             <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-3">

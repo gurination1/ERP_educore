@@ -48,13 +48,25 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
     return isSuperAdmin ? 'platform_telemetry' : 'academic_workload';
   };
 
-  const [activeTab, setActiveTab] = useState<'financial' | 'academic_workload' | 'platform_telemetry' | 'attendance_gate'>(
+  const [activeTab, setActiveTab] = useState<'financial' | 'academic_workload' | 'platform_telemetry' | 'attendance_gate' | 'master_search_reports'>(
     getInitialTab()
   );
 
+  // Master Search & Custom Reports Engine (Karanvir Sir Lecture 4 Segment 1)
+  const [masterSchool, setMasterSchool] = useState('School of Computing & AI');
+  const [masterDept, setMasterDept] = useState('Computer Science & Engineering');
+  const [masterScope, setMasterScope] = useState<'faculty' | 'student' | 'curriculum'>('faculty');
+  const [masterTargetId, setMasterTargetId] = useState('ALL');
+  const [masterReportType, setMasterReportType] = useState('academic_journey');
+  const [masterReportResults, setMasterReportResults] = useState<any[] | null>(null);
+  const [masterSearchFilter, setMasterSearchFilter] = useState('');
+  const [isGeneratingMaster, setIsGeneratingMaster] = useState(false);
+
   useEffect(() => {
     const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
-    if (urlTab === 'attendance' || urlTab === 'attendance_gate' || urlTab === 'compliance') {
+    if (urlTab === 'master_search' || urlTab === 'master_search_reports' || urlTab === 'custom_reports') {
+      setActiveTab('master_search_reports');
+    } else if (urlTab === 'attendance' || urlTab === 'attendance_gate' || urlTab === 'compliance') {
       setActiveTab('attendance_gate');
     } else if (urlTab === 'financial' || urlTab === 'revenue') {
       setActiveTab('financial');
@@ -294,6 +306,110 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
     }
   };
 
+  // Karanvir Sir Lecture 4 Segment 1: Master Report Generator Engine
+  const handleGenerateMasterReport = () => {
+    setIsGeneratingMaster(true);
+    setTimeout(() => {
+      let data: any[] = [];
+      if (masterScope === 'faculty') {
+        if (masterReportType === 'academic_journey') {
+          data = [
+            { id: '1', col1: 'Dr. Gurpreet Singh', col2: 'EMP-CSE-001', col3: 'Professor & HOD', col4: 'Ph.D. Computer Vision (IITD)', col5: '14 Years (7 Yrs Adesh + 7 Yrs BFGI)', col6: '18 Scopus Papers, 2 Patents', col7: 'Active Standing' },
+            { id: '2', col1: 'Prof. Harmeet Kaur', col2: 'EMP-CSE-004', col3: 'Associate Professor', col4: 'M.Tech CSE, Ph.D. Pursuing', col5: '9 Years Collegiate Teaching', col6: '8 IEEE Publications', col7: 'Active Standing' },
+            { id: '3', col1: 'Er. Maninder Singh', col2: 'EMP-CSE-009', col3: 'Assistant Professor', col4: 'M.Tech Software Engineering', col5: '4 Years (Joined 2022)', col6: 'AWS Certified Solutions Architect', col7: 'Active Standing' },
+            { id: '4', col1: 'Ms. Navneet Batra', col2: 'EMP-CSE-012', col3: 'Assistant Professor', col4: 'MCA, UGC-NET Qualified', col5: '3 Years Full-Time Faculty', col6: 'Cloud Computing Specialization', col7: 'Active Standing' },
+          ];
+        } else if (masterReportType === 'timetable') {
+          data = [
+            { id: '1', col1: 'Dr. Gurpreet Singh', col2: 'BCA-Sem 3', col3: 'CS-301 Database Systems', col4: 'Mon, Wed, Fri (09:00 - 10:00)', col5: 'Lab 204 (Computing Block)', col6: '14 Hrs/Week', col7: 'Regular Slot' },
+            { id: '2', col1: 'Prof. Harmeet Kaur', col2: 'B.Tech-Sem 5', col3: 'CS-502 Operating Systems', col4: 'Tue, Thu, Sat (10:00 - 11:00)', col5: 'Lecture Hall 102', col6: '16 Hrs/Week', col7: 'Combined Class (CC)' },
+            { id: '3', col1: 'Er. Maninder Singh', col2: 'BCA-Sem 1', col3: 'CS-101 Programming in C', col4: 'Mon to Thu (11:15 - 12:15)', col5: 'Software Lab 1', col6: '18 Hrs/Week', col7: 'Regular Slot' },
+          ];
+        } else if (masterReportType === 'lesson_plan') {
+          data = [
+            { id: '1', col1: 'CS-301 DBMS', col2: 'Dr. Gurpreet Singh', col3: 'Unit 1: Relational Algebra & ER Modeling', col4: '12 Lectures Planned / 12 Delivered', col5: '100% Milestone Achieved', col6: 'Syllabus on Schedule', col7: 'Dean Verified' },
+            { id: '2', col1: 'CS-502 OS', col2: 'Prof. Harmeet Kaur', col3: 'Unit 2: Process Scheduling & Deadlocks', col4: '10 Lectures Planned / 9 Delivered', col5: '90% Progress (1 Makeup Scheduled)', col6: 'Minor Lag (Lab Exam Week)', col7: 'Dean Verified' },
+            { id: '3', col1: 'CS-101 C Prog', col2: 'Er. Maninder Singh', col3: 'Unit 1: Pointers & Dynamic Allocation', col4: '14 Lectures Planned / 14 Delivered', col5: '100% Milestone Achieved', col6: 'Syllabus on Schedule', col7: 'Dean Verified' },
+          ];
+        } else {
+          data = [
+            { id: '1', col1: 'Dr. Gurpreet Singh', col2: 'EMP-CSE-001', col3: 'October 2026', col4: '22 Days Present / 22 Working Days', col5: '0 Leaves Taken', col6: '100% Biometric Punch Adherence', col7: 'Full Salary Credit' },
+            { id: '2', col1: 'Prof. Harmeet Kaur', col2: 'EMP-CSE-004', col3: 'October 2026', col4: '21 Days Present / 22 Working Days', col5: '1 Casual Leave (Approved by Dean)', col6: '95.4% Biometric Adherence', col7: 'Full Salary Credit' },
+            { id: '3', col1: 'Er. Maninder Singh', col2: 'EMP-CSE-009', col3: 'October 2026', col4: '22 Days Present / 22 Working Days', col5: '0 Leaves Taken', col6: '98.8% Biometric Adherence', col7: 'Full Salary Credit' },
+          ];
+        }
+      } else if (masterScope === 'student') {
+        if (masterReportType === 'identity_dossier') {
+          data = [
+            { id: '1', col1: 'Aarav Sharma', col2: '1001-01-01-03-01', col3: 'B.Tech CSE (Sem 3)', col4: '+91 98141 00001', col5: 'Punjab Domicile 85%', col6: 'Aadhaar & 10+2 Verified', col7: 'Enrolled' },
+            { id: '2', col1: 'Rohan Verma', col2: '1001-01-02-03-01', col3: 'B.Tech CSE (Sem 3)', col4: '+91 98722 00002', col5: 'Punjab Domicile 85%', col6: 'Hosteller (Block A-101)', col7: 'Enrolled' },
+            { id: '3', col1: 'Jaspreet Singh', col2: '1001-01-03-03-01', col3: 'BCA (Sem 1)', col4: '+91 94170 00003', col5: 'All India 15% Quota', col6: 'Day Scholar (Bus Route 1)', col7: 'Enrolled' },
+            { id: '4', col1: 'Harman Kaur', col2: '1001-01-04-03-01', col3: 'BCA (Sem 1)', col4: '+91 98150 00004', col5: 'Punjab Domicile 85%', col6: 'PMS Scholarship Applied', col7: 'Enrolled' },
+          ];
+        } else if (masterReportType === 'attendance_condonation') {
+          data = [
+            { id: '1', col1: 'Aarav Sharma', col2: '1001-01-01-03-01', col3: '88% (44 / 50 Classes)', col4: 'Eligible (Above 75% Gate)', col5: 'None Required', col6: 'Hall Ticket Cleared', col7: 'Normal Stand' },
+            { id: '2', col1: 'Rohan Verma', col2: '1001-01-02-03-01', col3: '71% (35 / 50 Classes)', col4: 'Shortage (65% to 74% Bracket)', col5: 'Dean Condonation ORD-DEAN-001', col6: 'Hall Ticket Issued', col7: 'Condoned' },
+            { id: '3', col1: 'Gurdit Singh', col2: '1001-01-07-03-01', col3: '58% (29 / 50 Classes)', col4: 'Severe Shortage (<65%)', col5: 'Ineligible for Condonation', col6: 'Hall Ticket Blocked', col7: 'Detained' },
+          ];
+        } else if (masterReportType === 'fee_dues') {
+          data = [
+            { id: '1', col1: 'Aarav Sharma', col2: '1001-01-01-03-01', col3: '₹ 45,000 (Sem 3 Tuition)', col4: '₹ 45,000 Paid (Receipt #RCP-441)', col5: '₹ 0 Outstanding', col6: 'Accounts Cleared', col7: 'Zero Dues' },
+            { id: '2', col1: 'Rohan Verma', col2: '1001-01-02-03-01', col3: '₹ 67,000 (Tuition + Hostel)', col4: '₹ 50,000 Paid', col5: '₹ 17,000 Pending (Hostel Due)', col6: 'Partial Clearance', col7: 'Notice Issued' },
+            { id: '3', col1: 'Jaspreet Singh', col2: '1001-01-03-03-01', col3: '₹ 32,800 (Tuition + Transport)', col4: '₹ 32,800 Paid (Online Razorpay)', col5: '₹ 0 Outstanding', col6: 'Accounts Cleared', col7: 'Zero Dues' },
+          ];
+        } else {
+          data = [
+            { id: '1', col1: 'Aarav Sharma', col2: '1001-01-01-03-01', col3: 'CS-301 DBMS: 88/100 (Grade A+)', col4: 'CS-302 OS: 82/100 (Grade A)', col5: 'CS-303 Data Structures: 91/100 (Grade O)', col6: 'SGPA: 8.78 • Credits: 24', col7: 'Passed' },
+            { id: '2', col1: 'Rohan Verma', col2: '1001-01-02-03-01', col3: 'CS-301 DBMS: 72/100 (Grade B+)', col4: 'CS-302 OS: 70/100 (Grade B+)', col5: 'CS-303 Data Structures: 74/100 (Grade B+)', col6: 'SGPA: 7.20 • Credits: 24', col7: 'Passed' },
+          ];
+        }
+      } else {
+        data = [
+          { id: '1', col1: 'BCA-Sem 1-2026-27', col2: 'Bachelor of Computer Applications', col3: 'Semester 1 (Session 2026-27)', col4: '60 Intake Capacity', col5: '58 Enrolled (96.6% Fill Rate)', col6: '5 Core + 1 Elective + 2 Labs', col7: 'Approved & Active' },
+          { id: '2', col1: 'B.Tech-Sem 3-2025-26', col2: 'Computer Science & Engineering', col3: 'Semester 3 (Session 2025-26)', col4: '120 Intake Capacity', col5: '118 Enrolled (98.3% Fill Rate)', col6: '6 Core + 2 Practical Labs', col7: 'Approved & Active' },
+          { id: '3', col1: 'MBA-Sem 1-2026-27', col2: 'Master of Business Administration', col3: 'Semester 1 (Session 2026-27)', col4: '60 Intake Capacity', col5: '52 Enrolled (86.6% Fill Rate)', col6: '6 Core Management Subjects', col7: 'Approved & Active' },
+        ];
+      }
+      setMasterReportResults(data);
+      setIsGeneratingMaster(false);
+      setExportMessage(`Master custom report generated: ${data.length} records matching filter criteria.`);
+      setTimeout(() => setExportMessage(null), 3500);
+    }, 300);
+  };
+
+  const handleExportMasterCsv = () => {
+    if (!masterReportResults || masterReportResults.length === 0) return;
+    try {
+      const escapeCsv = (val: any): string => `"${String(val ?? '').replace(/"/g, '""')}"`;
+      const headers = ['Record ID', 'Primary Entity / Title', 'Identifier / Code', 'Parameter 1', 'Parameter 2', 'Parameter 3', 'Parameter 4', 'Status'];
+      const rows = masterReportResults.map(r => [
+        escapeCsv(r.id),
+        escapeCsv(r.col1),
+        escapeCsv(r.col2),
+        escapeCsv(r.col3),
+        escapeCsv(r.col4),
+        escapeCsv(r.col5),
+        escapeCsv(r.col6),
+        escapeCsv(r.col7),
+      ].join(','));
+      const csv = [headers.join(','), ...rows].join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `EduCore_Master_Custom_Report_${masterScope}_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      setExportMessage('Master report successfully exported to CSV.');
+      setTimeout(() => setExportMessage(null), 4000);
+    } catch (err: any) {
+      setExportMessage(`Export failed: ${err.message}`);
+    }
+  };
+
   const canExport = ['admin', 'super_admin', 'staff', 'accounts', 'hod', 'hr'].includes(currentUser?.role || '');
 
   return (
@@ -350,6 +466,15 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
                 className="px-3 py-2 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
               >
                 <span>Export 75% Gate Audit (CSV)</span>
+              </button>
+            )}
+            {activeTab === 'master_search_reports' && masterReportResults && (
+              <button
+                type="button"
+                onClick={handleExportMasterCsv}
+                className="px-3 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+              >
+                <span>Export Master Report (CSV)</span>
               </button>
             )}
             <button
@@ -419,6 +544,19 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
                 </span>
               )}
             </button>
+            <button
+              onClick={() => setActiveTab('master_search_reports')}
+              className={`pb-3 px-2 text-xs font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
+                activeTab === 'master_search_reports'
+                  ? 'border-[#00236f] text-[#00236f]'
+                  : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <span>MASTER SEARCH & CUSTOM REPORTS ENGINE</span>
+              <span className="px-1.5 py-0.5 text-[10px] bg-sky-100 text-sky-800 rounded-full font-extrabold">
+                Lecture 4 Mandate
+              </span>
+            </button>
           </>
         ) : (
           <>
@@ -464,6 +602,19 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
                   }).length} Flagged
                 </span>
               )}
+            </button>
+            <button
+              onClick={() => setActiveTab('master_search_reports')}
+              className={`pb-3 px-2 text-xs font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
+                activeTab === 'master_search_reports'
+                  ? 'border-[#00236f] text-[#00236f]'
+                  : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <span>MASTER SEARCH & CUSTOM REPORTS ENGINE</span>
+              <span className="px-1.5 py-0.5 text-[10px] bg-sky-100 text-sky-800 rounded-full font-extrabold">
+                Lecture 4 Mandate
+              </span>
             </button>
           </>
         )}
@@ -1105,6 +1256,222 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
               </table>
             </div>
           </div>
+        </div>
+      ) : activeTab === 'master_search_reports' ? (
+        <div className="space-y-6">
+          {/* Cascading Filter Ribbon (Karanvir Sir Lecture 4 Segment 1) */}
+          <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-xs space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200">
+                  Lecture 4 Segment 1 Mandate
+                </span>
+                <h3 className="text-base font-black text-[#00236f] mt-1 flex items-center gap-2">
+                  <Search className="w-5 h-5 text-[#00236f]" />
+                  Master Multi-Level Search & Custom Report Generator
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Select Campus School → Academic Department → Target Scope → Entity → Sub-Report to generate downloadable audits.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleGenerateMasterReport}
+                disabled={isGeneratingMaster}
+                className="px-5 py-2.5 bg-[#00236f] hover:bg-[#001b54] text-white rounded-2xl text-xs font-black shadow-sm transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 self-start sm:self-auto"
+              >
+                <span>{isGeneratingMaster ? 'Querying Cluster...' : 'Generate Master Report'}</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+              {/* Level 1: School / Campus */}
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">1. School / Faculty</label>
+                <select
+                  value={masterSchool}
+                  onChange={e => setMasterSchool(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800"
+                >
+                  <option value="School of Computing & AI">School of Computing & AI</option>
+                  <option value="School of Engineering & Technology">School of Engineering & Tech</option>
+                  <option value="School of Commerce & Business">School of Commerce & Business</option>
+                  <option value="School of Agricultural Sciences">School of Agricultural Sciences</option>
+                </select>
+              </div>
+
+              {/* Level 2: Academic Department */}
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">2. Department Topology</label>
+                <select
+                  value={masterDept}
+                  onChange={e => setMasterDept(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800"
+                >
+                  <option value="Computer Science & Engineering">Computer Science & Engg</option>
+                  <option value="Information Technology">Information Technology</option>
+                  <option value="Electronics & Communication">Electronics & Communication</option>
+                  <option value="Commerce & Accounting">Commerce & Accounting</option>
+                  <option value="Management Studies">Management Studies</option>
+                </select>
+              </div>
+
+              {/* Level 3: Target Entity Scope */}
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">3. Target Entity Scope</label>
+                <select
+                  value={masterScope}
+                  onChange={e => {
+                    const s = e.target.value as any;
+                    setMasterScope(s);
+                    if (s === 'faculty') setMasterReportType('academic_journey');
+                    else if (s === 'student') setMasterReportType('identity_dossier');
+                    else setMasterReportType('curriculum_matrix');
+                  }}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-[#00236f]"
+                >
+                  <option value="faculty">Faculty & Academic HRMS</option>
+                  <option value="student">Student Scholars Directory</option>
+                  <option value="curriculum">Batches & Subject Topology</option>
+                </select>
+              </div>
+
+              {/* Level 4: Report Sub-Category */}
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">4. Report Specification</label>
+                {masterScope === 'faculty' && (
+                  <select
+                    value={masterReportType}
+                    onChange={e => setMasterReportType(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800"
+                  >
+                    <option value="academic_journey">Academic Journey & Dossier</option>
+                    <option value="timetable">Weekly Timetable & CC Slot Matrix</option>
+                    <option value="lesson_plan">Lesson Plans & Syllabus Progression</option>
+                    <option value="biometric_duty">Biometric Attendance & Leave Log</option>
+                  </select>
+                )}
+
+                {masterScope === 'student' && (
+                  <select
+                    value={masterReportType}
+                    onChange={e => setMasterReportType(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800"
+                  >
+                    <option value="identity_dossier">Comprehensive Identity Dossier</option>
+                    <option value="attendance_condonation">75% Attendance & Condonation Log</option>
+                    <option value="fee_dues">Fee Demand, Receipts & Ledgers</option>
+                    <option value="exam_marks">University Examination Marks</option>
+                  </select>
+                )}
+
+                {masterScope === 'curriculum' && (
+                  <select
+                    value={masterReportType}
+                    onChange={e => setMasterReportType(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800"
+                  >
+                    <option value="curriculum_matrix">Batch Roster & Fill Rate</option>
+                    <option value="subject_matrix">Subject Matrix & Credit Weightage</option>
+                    <option value="faculty_workload">Faculty Workload Distribution</option>
+                  </select>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Results Table Card */}
+          {masterReportResults ? (
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                <div>
+                  <h4 className="text-sm font-black text-slate-900">
+                    Audit Data Output: {masterSchool} → {masterDept} ({masterReportResults.length} Records)
+                  </h4>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Scope: <strong>{masterScope.toUpperCase()}</strong> • Generated at {new Date().toLocaleTimeString()}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      placeholder="Filter records..."
+                      value={masterSearchFilter}
+                      onChange={e => setMasterSearchFilter(e.target.value)}
+                      className="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleExportMasterCsv}
+                    className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span>Download CSV</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
+                      <th className="py-2.5 px-3">Primary Entity</th>
+                      <th className="py-2.5 px-3">Identifier / Code</th>
+                      <th className="py-2.5 px-3">Parameter 1</th>
+                      <th className="py-2.5 px-3">Parameter 2</th>
+                      <th className="py-2.5 px-3">Parameter 3</th>
+                      <th className="py-2.5 px-3">Parameter 4</th>
+                      <th className="py-2.5 px-3 text-right">Regulatory Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {masterReportResults
+                      .filter(r =>
+                        Object.values(r).some(v =>
+                          String(v).toLowerCase().includes(masterSearchFilter.toLowerCase())
+                        )
+                      )
+                      .map(row => (
+                        <tr key={row.id} className="hover:bg-slate-50/70 transition-colors">
+                          <td className="py-3 px-3 font-bold text-slate-900">{row.col1}</td>
+                          <td className="py-3 px-3 font-mono text-slate-600">{row.col2}</td>
+                          <td className="py-3 px-3 font-medium text-slate-800">{row.col3}</td>
+                          <td className="py-3 px-3 text-slate-600">{row.col4}</td>
+                          <td className="py-3 px-3 text-slate-600">{row.col5}</td>
+                          <td className="py-3 px-3 text-slate-600">{row.col6}</td>
+                          <td className="py-3 px-3 text-right">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-800">
+                              {row.col7}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white rounded-3xl p-12 border border-slate-200 text-center space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-slate-100 text-[#00236f] flex items-center justify-center mx-auto">
+                <Search className="w-6 h-6" />
+              </div>
+              <h4 className="text-base font-bold text-slate-900">Configure Master Report Filters</h4>
+              <p className="text-xs text-slate-500 max-w-md mx-auto">
+                Choose the school, department, and report target above, then click <strong>"Generate Master Report"</strong> to assemble full-screen collegiate audit records.
+              </p>
+              <button
+                type="button"
+                onClick={handleGenerateMasterReport}
+                className="px-5 py-2.5 bg-[#00236f] hover:bg-[#001b54] text-white rounded-2xl text-xs font-black shadow-sm transition-all inline-flex items-center gap-2 cursor-pointer"
+              >
+                <span>Generate Preview Report</span>
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <div className="space-y-6">

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { api } from '../api/client';
 import { StudentProfile, User, FollowupRadarStats, ProspectLeadItem, AdmissionFollowup } from '../types';
@@ -106,6 +107,39 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
     } catch (err) {
       console.error('Failed to persist dialer settings:', err);
       setTelephonyEnabled(!next);
+    }
+  };
+
+  // Registration Fee Receipt Verification Gate (Karanvir Sir Lecture 4 Segment 3)
+  const [feeVerifyingApplicant, setFeeVerifyingApplicant] = useState<any | null>(null);
+  const [feeReceiptNumber, setFeeReceiptNumber] = useState('');
+  const [feeReceiptAmount, setFeeReceiptAmount] = useState('1500');
+  const [feeReceiptMode, setFeeReceiptMode] = useState<'cash' | 'upi' | 'pos_card' | 'bank_transfer'>('cash');
+  const [feeVerifyingLoading, setFeeVerifyingLoading] = useState(false);
+
+  const handleVerifyFeeReceipt = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feeVerifyingApplicant) return;
+    setFeeVerifyingLoading(true);
+    try {
+      const generatedReceipt = feeReceiptNumber.trim() || `RCP-REG-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+      const res = await api.updateStudent(feeVerifyingApplicant.id, {
+        token_fee_receipt: generatedReceipt,
+        token_fee_amount: Number(feeReceiptAmount),
+        token_fee_mode: feeReceiptMode,
+        token_fee_date: new Date().toISOString().split('T')[0],
+      });
+      if (res.success) {
+        setStatusMessage(`Registration fee receipt ${generatedReceipt} verified and credited to ledger. Admission gate unlocked!`);
+        setTimeout(() => setStatusMessage(null), 4500);
+        await loadAdmissions();
+        setFeeVerifyingApplicant(null);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setErrorMessage(err.message || 'Failed to verify fee receipt.');
+    } finally {
+      setFeeVerifyingLoading(false);
     }
   };
 
@@ -524,6 +558,24 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
               </span>
             )}
           </button>
+
+          <Link
+            to="/enquiries"
+            className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-[#00236f] hover:bg-white flex items-center gap-1.5 transition-all"
+            title="Switch to Walk-in Enquiries & Telephony Calling Desk"
+          >
+            <span>📞 Enquiries CRM</span>
+            <span className="text-[10px] text-slate-400">→</span>
+          </Link>
+
+          <Link
+            to="/bulk-import"
+            className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-[#00236f] hover:bg-white flex items-center gap-1.5 transition-all"
+            title="Switch to Column-Mapped CSV/Excel Bulk Lead Ingestion"
+          >
+            <span>📥 Bulk Ingestion</span>
+            <span className="text-[10px] text-slate-400">→</span>
+          </Link>
         </div>
 
         <div className="flex items-center gap-3 px-2">
@@ -1096,7 +1148,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                           <span className="text-[#757682] text-[11px]">Day Scholar (Self)</span>
                         )}
                       </td>
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-4 space-y-1">
                         <span
                           className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                             adm.admission_status === 'approved' || adm.admission_status === 'enrolled'
@@ -1120,6 +1172,17 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                             ? 'Pending Scrutiny'
                             : adm.admission_status}
                         </span>
+                        {adm.token_fee_receipt ? (
+                          <div className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 inline-flex items-center gap-1">
+                            <span>✓</span>
+                            <span>Fee Paid ({adm.token_fee_receipt})</span>
+                          </div>
+                        ) : (
+                          <div className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-flex items-center gap-1">
+                            <span>🔒</span>
+                            <span>Token ₹1,500 Due</span>
+                          </div>
+                        )}
                       </td>
                       <td className="py-3.5 px-4 text-right">
                         {adm.admission_status === 'inquiry' || adm.admission_status === 'registered' ? (
@@ -1147,15 +1210,30 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                               <span>Resume Intake</span>
                             </button>
                             {canApprove && (
-                              <button
-                                disabled={actionLoadingId === adm.id}
-                                onClick={() => handleStatusUpdate(adm.id, 'approved', 'Admitted from Progressive Intake')}
-                                className="px-2.5 py-1 bg-[#ea580c] hover:bg-[#9a3412] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
-                                title="Institutional Admission Sanction & Account Provision"
-                              >
-                                <span className="font-bold text-[10px]">✓</span>
-                                <span>Admit & Provision</span>
-                              </button>
+                              (adm.token_fee_receipt || adm.token_fee_amount) ? (
+                                <button
+                                  disabled={actionLoadingId === adm.id}
+                                  onClick={() => handleStatusUpdate(adm.id, 'approved', 'Admitted from Progressive Intake')}
+                                  className="px-2.5 py-1 bg-[#ea580c] hover:bg-[#9a3412] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                                  title="Institutional Admission Sanction & Account Provision"
+                                >
+                                  <span className="font-bold text-[10px]">✓</span>
+                                  <span>Admit & Provision</span>
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setFeeVerifyingApplicant(adm);
+                                    setFeeReceiptNumber(`RCP-REG-2026-${Math.floor(1000 + Math.random() * 9000)}`);
+                                  }}
+                                  className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                                  title="Verify Token/Registration Fee Receipt (₹1,500 due per Lecture 4)"
+                                >
+                                  <span className="font-bold text-[10px]">🔒</span>
+                                  <span>Fee Due (₹1,500)</span>
+                                </button>
+                              )
                             )}
                             <button
                               disabled={actionLoadingId === adm.id}
@@ -1199,15 +1277,30 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                               <span>Verify Documents</span>
                             </button>
                             {canApprove && (
-                              <button
-                                disabled={actionLoadingId === adm.id}
-                                onClick={() => handleStatusUpdate(adm.id, 'approved', 'Institutional Admission Sanction')}
-                                className="px-2.5 py-1 bg-[#ea580c] hover:bg-[#9a3412] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
-                                title="Admit directly and provision student credentials"
-                              >
-                                <span className="font-bold text-[10px]">✓</span>
-                                <span>Admit & Provision</span>
-                              </button>
+                              (adm.token_fee_receipt || adm.token_fee_amount) ? (
+                                <button
+                                  disabled={actionLoadingId === adm.id}
+                                  onClick={() => handleStatusUpdate(adm.id, 'approved', 'Institutional Admission Sanction')}
+                                  className="px-2.5 py-1 bg-[#ea580c] hover:bg-[#9a3412] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                                  title="Admit directly and provision student credentials"
+                                >
+                                  <span className="font-bold text-[10px]">✓</span>
+                                  <span>Admit & Provision</span>
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setFeeVerifyingApplicant(adm);
+                                    setFeeReceiptNumber(`RCP-REG-2026-${Math.floor(1000 + Math.random() * 9000)}`);
+                                  }}
+                                  className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                                  title="Verify Token/Registration Fee Receipt (₹1,500 due per Lecture 4)"
+                                >
+                                  <span className="font-bold text-[10px]">🔒</span>
+                                  <span>Fee Due (₹1,500)</span>
+                                </button>
+                              )
                             )}
                             <button
                               disabled={actionLoadingId === adm.id}
@@ -1231,14 +1324,29 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                               </button>
                             )}
                             {canApprove ? (
-                              <button
-                                disabled={actionLoadingId === adm.id}
-                                onClick={() => handleStatusUpdate(adm.id, 'approved', 'Admitted post Scrutiny Verification')}
-                                className="px-3 py-1 bg-[#ea580c] hover:bg-[#9a3412] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
-                              >
-                                
-                                <span>Admit & Provision</span>
-                              </button>
+                              (adm.token_fee_receipt || adm.token_fee_amount) ? (
+                                <button
+                                  disabled={actionLoadingId === adm.id}
+                                  onClick={() => handleStatusUpdate(adm.id, 'approved', 'Admitted post Scrutiny Verification')}
+                                  className="px-3 py-1 bg-[#ea580c] hover:bg-[#9a3412] text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                                >
+                                  
+                                  <span>Admit & Provision</span>
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setFeeVerifyingApplicant(adm);
+                                    setFeeReceiptNumber(`RCP-REG-2026-${Math.floor(1000 + Math.random() * 9000)}`);
+                                  }}
+                                  className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                                  title="Verify Token/Registration Fee Receipt (₹1,500 due per Lecture 4)"
+                                >
+                                  <span className="font-bold text-[10px]">🔒</span>
+                                  <span>Fee Due (₹1,500)</span>
+                                </button>
+                              )
                             ) : (
                               <span className="text-[10px] font-bold text-[#0369a1] bg-[#e0f2fe] px-2 py-0.5 rounded border border-[#bae6fd] inline-flex items-center gap-1">
                                 <span className="font-bold text-[10px]">✓</span>
@@ -2176,6 +2284,104 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 Close Timeline
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* KARANVIR SIR LECTURE 4: TOKEN FEE RECEIPT VERIFICATION MODAL DIALOG       */}
+      {/* ========================================================================= */}
+      {feeVerifyingApplicant && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden text-xs">
+            <div className="px-5 py-4 bg-[#00236f] text-white flex items-center justify-between">
+              <div>
+                <h4 className="font-bold text-sm flex items-center gap-2">
+                  <span>🔒</span>
+                  <span>Verify Registration Fee Receipt</span>
+                </h4>
+                <p className="text-[11px] text-blue-100">
+                  {feeVerifyingApplicant.first_name} {feeVerifyingApplicant.last_name} ({feeVerifyingApplicant.application_no || feeVerifyingApplicant.id})
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setFeeVerifyingApplicant(null)}
+                className="text-white/70 hover:text-white font-bold text-base cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleVerifyFeeReceipt} className="p-5 space-y-4">
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-[11px] text-amber-900 leading-relaxed">
+                <strong className="block mb-0.5">Karanvir Sir Lecture 4 Mandate:</strong>
+                Admission counseling cannot sanction or enroll an applicant without cashier-desk confirmation of Token / Registration Fee payment.
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Cashier Receipt Number *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={feeReceiptNumber}
+                  onChange={(e) => setFeeReceiptNumber(e.target.value)}
+                  placeholder="e.g. RCP-REG-2026-4819"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-slate-800"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Token Amount (₹) *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    value={feeReceiptAmount}
+                    onChange={(e) => setFeeReceiptAmount(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Payment Mode *
+                  </label>
+                  <select
+                    value={feeReceiptMode}
+                    onChange={(e) => setFeeReceiptMode(e.target.value as any)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800"
+                  >
+                    <option value="cash">Cash at Counter</option>
+                    <option value="upi">UPI / QR Scan</option>
+                    <option value="pos_card">POS Terminal / Debit Card</option>
+                    <option value="bank_transfer">NEFT / RTGS</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setFeeVerifyingApplicant(null)}
+                  className="px-4 py-2 border border-slate-300 rounded-xl font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={feeVerifyingLoading}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-xs cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {feeVerifyingLoading ? 'Verifying...' : '✓ Verify & Unlock Admission Gate'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

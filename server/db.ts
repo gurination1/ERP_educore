@@ -1665,6 +1665,7 @@ export const DEFAULT_MASTER_EMPLOYEE_STATUSES: MasterEmployeeStatus[] = [
   { status_code: 'ACTIVE', status_name: 'Active Staff Member', description: 'Currently on active rolls with assigned academic and administrative load', requires_dates: false },
   { status_code: 'RESIGNED', status_name: 'Resigned & In Notice', description: 'Resignation tendered, serving mandatory notice period', requires_dates: true },
   { status_code: 'TERMINATED', status_name: 'Statutorily Terminated', description: 'Relieved from services by executive directorate order', requires_dates: true },
+  { status_code: 'AWOL', status_name: 'Absent Without Leave (AWOL)', description: 'Unannounced continuous absence without prior sanctioned leave per statutory service ordinance', requires_dates: true },
   { status_code: 'AOL', status_name: 'Absent Out of Leave (AOL)', description: 'Unannounced continuous absence exceeding statutory limit without prior sanctioned leave', requires_dates: true },
   { status_code: 'DEACTIVATED', status_name: 'Deactivated / Relieved', description: 'Past employee with service record archived and portal login disabled', requires_dates: true },
 ];
