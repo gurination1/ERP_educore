@@ -60,6 +60,8 @@ export const Header: React.FC<HeaderProps> = ({
       ? '2001-14-01-03-01'
       : currentUser?.role === 'partner'
       ? '7001-01-01-03-01'
+      : currentUser?.role === 'hostel'
+      ? '10001-01-01-03-01'
       : '1001-88-01-03-01'
   );
   const displayUid = rawUid.replace(/BFGI/g, '01');
@@ -95,6 +97,8 @@ export const Header: React.FC<HeaderProps> = ({
         return user.department ? `Undergraduate Scholar (${user.department})` : 'Undergraduate Scholar';
       case 'partner':
         return 'Corporate Placement Partner';
+      case 'hostel':
+        return user.department ? `Chief Hostel Warden & Residence Officer (${user.department})` : 'Chief Hostel Warden & Campus Residence Officer';
       default:
         return 'Campus Member';
     }
@@ -150,6 +154,8 @@ export const Header: React.FC<HeaderProps> = ({
       ? 'staff-dashboard'
       : userRole === 'partner'
       ? 'partner-portal'
+      : userRole === 'hostel'
+      ? 'hostel-management'
       : userRole === 'accounts'
       ? 'fee-ledger'
       : 'student-dashboard';
@@ -394,6 +400,21 @@ export const Header: React.FC<HeaderProps> = ({
           { id: 'reports' as ActiveScreen, label: 'Institutional MIS Reports', action: () => { onNavigate('reports'); setOpenDrawer(null); } },
         ],
         isActive: ['/user-management', '/field-permissions', '/reports', '/master-architecture', '/audit-logs'].some(p => effectivePath.startsWith(p)),
+      },
+      {
+        id: 'hostel',
+        label: 'Hostel & Residence',
+        defaultScreen: 'hostel-management' as ActiveScreen,
+        items: [
+          { id: 'hostel-management?tab=overview' as any, label: 'Hostel Operations Command', action: () => { onNavigate('hostel-management?tab=overview' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=buildings' as any, label: 'Residence Blocks & Safety Checks', action: () => { onNavigate('hostel-management?tab=buildings' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=rooms' as any, label: 'Room Inventory & Bed Allocation', action: () => { onNavigate('hostel-management?tab=rooms' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=residents' as any, label: 'Resident Scholars Registry', action: () => { onNavigate('hostel-management?tab=residents' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=mess' as any, label: 'Mess & Digital No-Dues Clearance', action: () => { onNavigate('hostel-management?tab=mess' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=maintenance' as any, label: '360-Day Maintenance & Overhaul', action: () => { onNavigate('hostel-management?tab=maintenance' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=transport' as any, label: 'Transport Fleet & Seat Queues', action: () => { onNavigate('hostel-management?tab=transport' as any); setOpenDrawer(null); } },
+        ],
+        isActive: ['/hostel', '/hostel-management'].some(p => effectivePath.startsWith(p)) || activeScreen === 'hostel-management',
       },
     ];
   } else if (userRole === 'hr') {
@@ -791,6 +812,104 @@ export const Header: React.FC<HeaderProps> = ({
           { id: 'staff-academic-journey' as any, label: 'CAS Research Publications & Patents', action: onOpenStaffJourney },
         ],
         isActive: effectivePath.startsWith('/teacher-documents'),
+      },
+      {
+        id: 'grievances',
+        label: 'Grievances',
+        defaultScreen: 'grievances',
+        action: () => {
+          onNavigate('grievances');
+          setOpenDrawer(null);
+        },
+        isActive: effectivePath.startsWith('/grievances'),
+      },
+    ];
+  } else if (userRole === 'hostel') {
+    // Chief Hostel Warden & Campus Residence Officer
+    const isHostel = effectivePath.startsWith('/hostel') || activeScreen === 'hostel-management';
+    menuSections = [
+      {
+        id: 'overview',
+        label: 'Hostel Operations',
+        defaultScreen: 'hostel-management?tab=overview' as any,
+        action: () => {
+          onNavigate('hostel-management?tab=overview' as any);
+          setOpenDrawer(null);
+        },
+        isActive: isHostel && (!currentTab || currentTab === 'overview'),
+      },
+      {
+        id: 'buildings',
+        label: 'Buildings & Blocks',
+        defaultScreen: 'hostel-management?tab=buildings' as any,
+        action: () => {
+          onNavigate('hostel-management?tab=buildings' as any);
+          setOpenDrawer(null);
+        },
+        items: [
+          { id: 'hostel-management?tab=buildings' as any, label: 'Owned vs Leased Blocks Registry', action: () => { onNavigate('hostel-management?tab=buildings' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=maintenance' as any, label: '360-Day Maintenance & Overhaul', action: () => { onNavigate('hostel-management?tab=maintenance' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=maintenance' as any, label: 'Quarterly Electrical Safety Inspections', action: () => { onNavigate('hostel-management?tab=maintenance' as any); setOpenDrawer(null); } },
+        ],
+        isActive: isHostel && currentTab === 'buildings',
+      },
+      {
+        id: 'rooms',
+        label: 'Room Inventory & Beds',
+        defaultScreen: 'hostel-management?tab=rooms' as any,
+        action: () => {
+          onNavigate('hostel-management?tab=rooms' as any);
+          setOpenDrawer(null);
+        },
+        items: [
+          { id: 'hostel-management?tab=rooms' as any, label: 'Visual Room & Bed Layout', action: () => { onNavigate('hostel-management?tab=rooms' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=rooms' as any, label: 'AC vs Non-AC / Almirah Amenities', action: () => { onNavigate('hostel-management?tab=rooms' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=rooms' as any, label: 'Room Deletion Safety Guard', action: () => { onNavigate('hostel-management?tab=rooms' as any); setOpenDrawer(null); } },
+        ],
+        isActive: isHostel && currentTab === 'rooms',
+      },
+      {
+        id: 'residents',
+        label: 'Resident Scholars',
+        defaultScreen: 'hostel-management?tab=residents' as any,
+        action: () => {
+          onNavigate('hostel-management?tab=residents' as any);
+          setOpenDrawer(null);
+        },
+        items: [
+          { id: 'hostel-management?tab=residents' as any, label: 'Hostellers Master Directory', action: () => { onNavigate('hostel-management?tab=residents' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=residents' as any, label: 'Room Shifting & Rent Adjustment', action: () => { onNavigate('hostel-management?tab=residents' as any); setOpenDrawer(null); } },
+        ],
+        isActive: isHostel && currentTab === 'residents',
+      },
+      {
+        id: 'mess',
+        label: 'Mess Dues & Clearance',
+        defaultScreen: 'hostel-management?tab=mess' as any,
+        action: () => {
+          onNavigate('hostel-management?tab=mess' as any);
+          setOpenDrawer(null);
+        },
+        items: [
+          { id: 'hostel-management?tab=mess' as any, label: 'Diet Billing (Monthly vs Semester)', action: () => { onNavigate('hostel-management?tab=mess' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=mess' as any, label: 'Issue Digital No-Dues Certificate', action: () => { onNavigate('hostel-management?tab=mess' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=mess' as any, label: 'Caution Deposit Refund Release', action: () => { onNavigate('hostel-management?tab=mess' as any); setOpenDrawer(null); } },
+        ],
+        isActive: isHostel && currentTab === 'mess',
+      },
+      {
+        id: 'transport',
+        label: 'Transport Fleet',
+        defaultScreen: 'hostel-management?tab=transport' as any,
+        action: () => {
+          onNavigate('hostel-management?tab=transport' as any);
+          setOpenDrawer(null);
+        },
+        items: [
+          { id: 'hostel-management?tab=transport' as any, label: 'Bus Fleet Capacity & Drivers', action: () => { onNavigate('hostel-management?tab=transport' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=transport' as any, label: 'Unallocated Transport Queue', action: () => { onNavigate('hostel-management?tab=transport' as any); setOpenDrawer(null); } },
+        ],
+        isActive: isHostel && currentTab === 'transport',
       },
       {
         id: 'grievances',

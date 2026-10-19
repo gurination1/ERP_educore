@@ -42,6 +42,7 @@ import { TenantsManagementView } from './components/TenantsManagementView';
 import { PaymentGatewaysView } from './components/PaymentGatewaysView';
 import { FieldPermissionsView } from './components/FieldPermissionsView';
 import { SuperAdminDashboardView } from './components/SuperAdminDashboardView';
+import { HostelManagementView } from './components/HostelManagementView';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 interface LayoutProps {
@@ -277,6 +278,9 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
         return { category: 'Cryptographic Forensics', title: 'Universal Immutable Audit Trail' };
       case '/telemetry':
         return { category: 'Database & Telemetry', title: 'High-Throughput PostgreSQL & MariaDB Health' };
+      case '/hostel':
+      case '/hostel-management':
+        return { category: 'Campus Residences', title: 'Hostel Operations, Residence & Logistics Command' };
       default:
         return { category: 'Portal', title: 'Console Module' };
     }
@@ -534,6 +538,8 @@ function MainApp() {
 
     if (pathPart === 'fee-ledger' || pathPart === 'fees') {
       navigate(`/fees${qs}`);
+    } else if (pathPart === 'hostel-management' || pathPart === 'hostel') {
+      navigate(`/hostel${qs}`);
     } else if (
       pathPart === 'student-dashboard' ||
       pathPart === 'admin-dashboard' ||
@@ -645,6 +651,8 @@ function MainApp() {
                   />
                 ) : currentUser.role === 'partner' ? (
                   <PartnerPortalView currentUser={currentUser} />
+                ) : currentUser.role === 'hostel' ? (
+                  <HostelManagementView currentUser={currentUser} />
                 ) : currentUser.role === 'accounts' ? (
                   <FeeLedgerView
                     currentUser={currentUser}
@@ -1148,6 +1156,31 @@ function MainApp() {
               </AuthenticatedLayout>
             )
           }
+        />
+
+        <Route
+          path="/hostel"
+          element={
+            !currentUser ? (
+              <Navigate to="/" replace />
+            ) : !['admin', 'super_admin', 'hostel'].includes(currentUser.role) ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <AuthenticatedLayout
+                currentUser={currentUser}
+                onLogout={handleLogout}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              >
+                <HostelManagementView currentUser={currentUser} />
+              </AuthenticatedLayout>
+            )
+          }
+        />
+
+        <Route
+          path="/hostel-management"
+          element={<Navigate to="/hostel" replace />}
         />
 
         <Route

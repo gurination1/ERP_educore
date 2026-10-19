@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts' | 'super_admin' | 'partner' | 'hr';
+export type UserRole = 'student' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts' | 'super_admin' | 'partner' | 'hr' | 'hostel';
 
 export interface User {
   id: string;
@@ -578,7 +578,110 @@ export type ActiveScreen =
   | 'academic-journey'
   | 'master-tables'
   | 'field-permissions'
-  | 'payment-gateways';
+  | 'payment-gateways'
+  | 'hostel-management';
+
+export interface HostelBuilding {
+  id: string;
+  campus_id: string;
+  campus_name: string;
+  name: string;
+  code: string;
+  address: string;
+  ownership: 'owned' | 'leased';
+  vendor_name?: string;
+  vendor_contact?: string;
+  google_maps_url?: string;
+  total_floors: number;
+  total_rooms: number;
+  maintenance_due_days: number; // 360 days timer alert
+  electrical_check_days: number; // 90 days quarterly inspection
+  last_maintenance_date: string;
+  last_electrical_inspection: string;
+  inspected_by?: string;
+  is_active: boolean;
+}
+
+export interface HostelRoom {
+  id: string;
+  building_id: string;
+  building_name: string;
+  floor_number: number;
+  room_number: string;
+  room_name?: string; // Custom room names like "Guru Mahal", "Baljinder Room"
+  capacity: number; // 1, 2, 3, 4-seater
+  current_occupancy: number;
+  is_ac: boolean;
+  has_almirah: boolean;
+  monthly_rent: number;
+  semester_rent: number;
+  status: 'available' | 'occupied' | 'maintenance';
+}
+
+export interface HostelResident {
+  id: string;
+  student_uid: string;
+  student_name: string;
+  course_name: string;
+  semester: number;
+  building_id: string;
+  building_name: string;
+  room_id: string;
+  room_number: string;
+  room_name?: string;
+  bed_number: number;
+  allotted_date: string;
+  billing_cycle: 'monthly' | 'semester';
+  fee_status: 'paid' | 'pending' | 'due';
+  amount_due: number;
+  mess_enrolled: boolean;
+  mess_status: 'active' | 'cleared' | 'dues_pending';
+  mess_dues_amount: number;
+  has_transport: boolean;
+  guardian_contact: string;
+}
+
+export interface MessClearanceRecord {
+  id: string;
+  student_uid: string;
+  student_name: string;
+  room_number: string;
+  building_name: string;
+  diet_count_monthly: number;
+  outstanding_balance: number;
+  clearance_status: 'cleared' | 'dues_pending' | 'rejected';
+  signed_by_mess_manager: string;
+  clearance_timestamp: string;
+  caution_deposit_refund_eligible: boolean;
+  remarks: string;
+}
+
+export interface TransportVehicle {
+  id: string;
+  vehicle_number: string;
+  seater_capacity: number;
+  is_ac: boolean;
+  ownership: 'college_owned' | 'vendor_leased';
+  vendor_name?: string;
+  driver_name: string;
+  driver_phone: string;
+  route_name: string;
+  stops: string[];
+  total_allocated: number;
+  is_active: boolean;
+}
+
+export interface SupportTicket {
+  id: string;
+  ticket_number: string;
+  user_identifier: string; // 13-digit UID or 8-9 digit Employee ID or email
+  category: 'regarding_username' | 'regarding_password' | 'regarding_others';
+  concern_text: string;
+  status: 'open' | 'in_progress' | 'resolved';
+  created_at: string;
+  assigned_to?: string;
+  resolution_notes?: string;
+}
 
 export interface DocumentRecord {
   id: string;
