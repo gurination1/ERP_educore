@@ -147,6 +147,30 @@ var DEFAULT_STAFF_ACADEMIC_JOURNEY = [
     created_at: "2024-01-10T09:30:00Z"
   }
 ];
+var DEFAULT_CAMPUSES = [
+  {
+    id: "campus_01",
+    tenant_id: "ten-bfgi-01",
+    campus_code: "CMP01",
+    campus_name: "Bathinda Campus 01 (Main)",
+    city: "Bathinda",
+    state_code: "03",
+    is_main: true,
+    is_active: true,
+    created_at: "2025-01-01T00:00:00Z"
+  },
+  {
+    id: "campus_02",
+    tenant_id: "ten-bfgi-01",
+    campus_code: "CMP02",
+    campus_name: "Faridkot Campus 02 (Regional)",
+    city: "Faridkot",
+    state_code: "03",
+    is_main: false,
+    is_active: true,
+    created_at: "2025-01-01T00:00:00Z"
+  }
+];
 var DEFAULT_TENANTS = [
   {
     id: "ten-bfgi-01",
@@ -1609,6 +1633,7 @@ var DatabaseStore = class {
     this.enquiry_interactions = [];
     this.dialer_settings = { id: "default", is_enabled: true, provider: "exotel", api_key_configured: true };
     this.tenants = [];
+    this.campuses = [...DEFAULT_CAMPUSES];
     this.batches = [];
     this.sections = [];
     this.subjects = [];
@@ -4115,6 +4140,12 @@ var DatabaseStore = class {
           }
         } catch {
         }
+        try {
+          this.campuses = readTable("campuses").map((c) => ({ ...c, is_main: Boolean(c.is_main), is_active: Boolean(c.is_active) }));
+          if (this.campuses.length === 0) this.campuses = [...DEFAULT_CAMPUSES];
+        } catch {
+          this.campuses = [...DEFAULT_CAMPUSES];
+        }
         if (this.master_states.length === 0) this.master_states = [...DEFAULT_MASTER_STATES];
         if (this.master_user_types.length === 0) this.master_user_types = [...DEFAULT_MASTER_USER_TYPES];
         if (this.master_degrees.length === 0) this.master_degrees = [...DEFAULT_MASTER_DEGREES];
@@ -4338,6 +4369,7 @@ var DatabaseStore = class {
         "last_followup_at",
         "assigned_counselor_id",
         "assigned_counselor_name",
+        "campus_id",
         "created_at"
       ]);
       clearAndInsert("fee_heads", this.fee_heads, ["id", "code", "title", "description", "is_recurring"]);
@@ -4361,6 +4393,7 @@ var DatabaseStore = class {
       clearAndInsert("master_employee_statuses", this.master_employee_statuses, ["status_code", "status_name", "description", "requires_dates"]);
       clearAndInsert("master_designation_changes", this.master_designation_changes, ["type_code", "name", "category"]);
       clearAndInsert("master_erp_statuses", this.master_erp_statuses, ["status_code", "status_name", "stage"]);
+      clearAndInsert("campuses", this.campuses, ["id", "tenant_id", "campus_code", "campus_name", "city", "state_code", "is_main", "is_active", "created_at"]);
       clearAndInsert("staff_basic_info", this.staff_basic_info, ["id", "staff_id", "employee_id", "full_name", "father_name", "dob", "gender", "date_of_joining", "date_of_resigning", "last_working_date", "category", "primary_designation", "department_id", "employee_status", "login_enabled", "must_change_password", "custom_attr_1", "custom_attr_2", "custom_attr_3", "custom_attr_4", "custom_meta_json"]);
       clearAndInsert("staff_additional_info", this.staff_additional_info, ["id", "staff_id", "emergency_phone", "blood_group", "marital_status", "nationality", "pf_uan", "esi_number", "custom_meta_json"]);
       clearAndInsert("staff_addresses", this.staff_addresses, ["id", "staff_id", "address_type", "address_line", "city", "state_gst", "pincode", "is_default"]);
@@ -4744,8 +4777,53 @@ var DatabaseStore = class {
       states: [...this.master_states],
       userTypes: [...this.master_user_types],
       degrees: [...this.master_degrees],
-      documentTypes: [...this.master_document_types]
+      documentTypes: [...this.master_document_types],
+      departments: [...this.master_departments],
+      institutionTypes: [...this.master_institution_types],
+      employeeStatuses: [...this.master_employee_statuses],
+      designationChanges: [...this.master_designation_changes],
+      erpStatuses: [...this.master_erp_statuses]
     };
+  }
+  async addMasterState(state) {
+    const existingIdx = this.master_states.findIndex((s) => s.gst_code === state.gst_code || s.state_short_code === state.state_short_code);
+    if (existingIdx >= 0) {
+      this.master_states[existingIdx] = state;
+    } else {
+      this.master_states.push(state);
+    }
+    this.save();
+    return state;
+  }
+  async addMasterDegree(degree) {
+    const existingIdx = this.master_degrees.findIndex((d) => d.degree_code === degree.degree_code);
+    if (existingIdx >= 0) {
+      this.master_degrees[existingIdx] = degree;
+    } else {
+      this.master_degrees.push(degree);
+    }
+    this.save();
+    return degree;
+  }
+  async addMasterInstitutionType(inst) {
+    const existingIdx = this.master_institution_types.findIndex((i) => i.code === inst.code);
+    if (existingIdx >= 0) {
+      this.master_institution_types[existingIdx] = inst;
+    } else {
+      this.master_institution_types.push(inst);
+    }
+    this.save();
+    return inst;
+  }
+  async addMasterEmployeeStatus(status) {
+    const existingIdx = this.master_employee_statuses.findIndex((e) => e.status_code === status.status_code);
+    if (existingIdx >= 0) {
+      this.master_employee_statuses[existingIdx] = status;
+    } else {
+      this.master_employee_statuses.push(status);
+    }
+    this.save();
+    return status;
   }
   // --- STAFF ACADEMIC JOURNEY OPERATIONS ---
   async getStaffAcademicJourney(staffId) {
@@ -5606,6 +5684,10 @@ var DatabaseStore = class {
         sql += " AND admission_status = ?";
         params.push(filters.status);
       }
+      if (filters?.campus && filters.campus !== "all") {
+        sql += " AND (campus_id = ? OR campus_id IS NULL)";
+        params.push(filters.campus);
+      }
       if (filters?.search) {
         const s = `%${filters.search.toLowerCase()}%`;
         sql += " AND (LOWER(first_name) LIKE ? OR LOWER(last_name) LIKE ? OR LOWER(student_id) LIKE ? OR LOWER(email) LIKE ?)";
@@ -5623,6 +5705,9 @@ var DatabaseStore = class {
     if (filters?.course_id) result = result.filter((s) => s.course_id === filters.course_id);
     if (filters?.session_id) result = result.filter((s) => s.session_id === filters.session_id);
     if (filters?.status) result = result.filter((s) => s.admission_status === filters.status);
+    if (filters?.campus && filters.campus !== "all") {
+      result = result.filter((s) => (s.campus_id || "campus_01") === filters.campus);
+    }
     if (filters?.search) {
       const q = filters.search.toLowerCase();
       result = result.filter(
@@ -7263,6 +7348,7 @@ var DatabaseStore = class {
     this.enquiries = [...DEFAULT_ENQUIRIES];
     this.enquiry_interactions = [...DEFAULT_ENQUIRY_INTERACTIONS];
     this.tenants = [...DEFAULT_TENANTS];
+    this.campuses = [...DEFAULT_CAMPUSES];
     this.batches = [...DEFAULT_BATCHES];
     this.sections = [...DEFAULT_SECTIONS];
     this.subjects = [...DEFAULT_SUBJECTS];
@@ -7408,6 +7494,30 @@ var DatabaseStore = class {
       severity: "critical"
     });
     return { tenant, adminUser: admin };
+  }
+  async getCampuses(tenantId) {
+    if (tenantId) {
+      return this.campuses.filter((c) => c.tenant_id === tenantId);
+    }
+    return [...this.campuses];
+  }
+  async addCampus(campus) {
+    const newCampus = {
+      id: campus.id || `campus_0${this.campuses.length + 1}`,
+      tenant_id: campus.tenant_id || "ten-bfgi-01",
+      campus_code: (campus.campus_code || `CMP0${this.campuses.length + 1}`).toUpperCase(),
+      campus_name: campus.campus_name || `New Collegiate Campus 0${this.campuses.length + 1}`,
+      city: campus.city || "Punjab",
+      state_code: campus.state_code || "03",
+      is_main: Boolean(campus.is_main),
+      is_active: campus.is_active !== void 0 ? Boolean(campus.is_active) : true,
+      created_at: campus.created_at || (/* @__PURE__ */ new Date()).toISOString()
+    };
+    const idx = this.campuses.findIndex((c) => c.id === newCampus.id);
+    if (idx >= 0) this.campuses[idx] = newCampus;
+    else this.campuses.push(newCampus);
+    this.save();
+    return newCampus;
   }
   // ----------------------------------------------------
   // ACADEMIC TOPOLOGY: BATCHES & SECTIONS (Lecture 3)
@@ -9481,8 +9591,9 @@ function isStudentOwner(student, identifier) {
   return clean === "me" || student.id.toLowerCase() === clean || student.student_id.toLowerCase() === clean || student.user_id && student.user_id.toLowerCase() === clean || student.email.toLowerCase() === clean;
 }
 studentRouter.get("/", authenticateToken, requireRole("admin", "super_admin", "staff", "counselor", "hod", "accounts", "hr"), async (req, res) => {
-  const { search, course, admission_year, fees_status, semester, page = "1", limit = "10", sort_by = "student_id", sort_dir = "asc" } = req.query;
-  const rawStudents = await db.getStudents();
+  const { search, course, admission_year, fees_status, semester, campus, campus_id, page = "1", limit = "10", sort_by = "student_id", sort_dir = "asc" } = req.query;
+  const targetCampus = campus || campus_id;
+  const rawStudents = await db.getStudents(targetCampus && targetCampus !== "all" ? { campus: targetCampus } : void 0);
   const courses = await db.getCourses();
   const sessions = await db.getSessions();
   let list = rawStudents.map((s) => ({
@@ -9490,6 +9601,9 @@ studentRouter.get("/", authenticateToken, requireRole("admin", "super_admin", "s
     course: courses.find((c) => c.id === s.course_id),
     session: sessions.find((ses) => ses.id === s.session_id)
   }));
+  if (targetCampus && targetCampus !== "all") {
+    list = list.filter((s) => (s.campus_id || "campus_01") === targetCampus);
+  }
   if (search && typeof search === "string") {
     const q = search.trim().toLowerCase();
     list = list.filter(
@@ -11104,8 +11218,9 @@ admissionRouter.post("/admin-admit", authenticateToken, requireRole("admin", "su
   });
 });
 admissionRouter.get("/", authenticateToken, requireRole("admin", "super_admin", "staff", "counselor", "hod"), async (req, res) => {
-  const { status } = req.query;
-  const rawStudents = await db.getStudents();
+  const { status, campus, campus_id } = req.query;
+  const targetCampus = campus || campus_id;
+  const rawStudents = await db.getStudents(targetCampus && targetCampus !== "all" ? { campus: targetCampus } : void 0);
   const courses = await db.getCourses();
   const sessions = await db.getSessions();
   let list = rawStudents.map((s) => ({
@@ -11113,10 +11228,13 @@ admissionRouter.get("/", authenticateToken, requireRole("admin", "super_admin", 
     course: courses.find((c) => c.id === s.course_id),
     session: sessions.find((ses) => ses.id === s.session_id)
   }));
+  if (targetCampus && targetCampus !== "all") {
+    list = list.filter((s) => (s.campus_id || "campus_01") === targetCampus);
+  }
   if (status && typeof status === "string" && status !== "all") {
     list = list.filter((s) => s.admission_status === status);
   }
-  res.json({ success: true, count: list.length, admissions: list });
+  res.json({ success: true, count: list.length, admissions: list, selectedCampus: targetCampus || "all" });
 });
 admissionRouter.get("/delegation", authenticateToken, requireRole("admin", "super_admin", "staff", "counselor", "hod"), async (req, res) => {
   res.json({
@@ -11650,12 +11768,14 @@ function formatIndianCurrency(amount) {
   return `\u20B9 ${Math.round(amount).toLocaleString("en-IN")}`;
 }
 feeRouter.get("/kpi", authenticateToken, requireRole("admin", "staff", "accounts", "hod", "hr", "counselor"), async (req, res) => {
+  const campus = req.query.campus;
   const apps = await db.getScholarshipApplications();
   const pendingApprovalsCount = apps.filter((a) => a.status === "under_review" || a.status === "submitted").length;
-  const students = await db.getStudents();
+  const students = await db.getStudents(campus && campus !== "all" ? { campus } : void 0);
+  const studentIds = new Set(students.map((s) => s.id));
   const activeStudents = students.filter((s) => s.admission_status === "approved" || s.admission_status === "enrolled");
   const allFees = await db.getStudentFees();
-  const activeFees = allFees.filter((f) => f.status !== "cancelled");
+  const activeFees = allFees.filter((f) => f.status !== "cancelled" && (!campus || campus === "all" || studentIds.has(f.student_id)));
   const totalCollected = activeFees.reduce((acc, f) => acc + f.paid_amount, 0);
   const totalDue = activeFees.reduce((acc, f) => acc + (f.status !== "paid" ? f.due_amount : 0), 0);
   res.json({
@@ -11715,7 +11835,8 @@ feeRouter.get("/trend", authenticateToken, requireRole("admin", "staff", "accoun
   });
 });
 feeRouter.get("/defaulters", authenticateToken, requireRole("admin", "staff", "accounts", "hod", "hr", "counselor"), async (req, res) => {
-  const students = await db.getStudents();
+  const campus = req.query.campus;
+  const students = await db.getStudents(campus && campus !== "all" ? { campus } : void 0);
   const allFees = await db.getStudentFees();
   const courses = await db.getCourses();
   const defaulters = [];
@@ -14518,13 +14639,17 @@ var enquiryRouter = (0, import_express15.Router)();
 enquiryRouter.use(authenticateToken, requireRole("admin", "super_admin", "staff", "counselor", "hod"));
 enquiryRouter.get("/", async (req, res) => {
   try {
-    const { status, counselor_id, search } = req.query;
+    const { status, counselor_id, search, campus, campus_id } = req.query;
+    const targetCampus = campus || campus_id;
     const filters = {};
     if (status && typeof status === "string" && status !== "all") filters.status = status;
     if (counselor_id && typeof counselor_id === "string" && counselor_id !== "all") filters.counselor_id = counselor_id;
     if (search && typeof search === "string") filters.search = search;
-    const list = await db.getEnquiries(filters);
-    res.json({ success: true, count: list.length, enquiries: list });
+    let list = await db.getEnquiries(filters);
+    if (targetCampus && targetCampus !== "all") {
+      list = list.filter((e) => (e.campus_id || "campus_01") === targetCampus);
+    }
+    res.json({ success: true, count: list.length, enquiries: list, selectedCampus: targetCampus || "all" });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -14873,6 +14998,88 @@ masterRouter.put("/departments/:id", authenticateToken, requireRole("admin", "su
       return;
     }
     res.json({ success: true, message: "Department updated.", department: updated });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+masterRouter.get("/all", async (req, res) => {
+  try {
+    const data = await db.getMasterData();
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+masterRouter.post("/states", authenticateToken, requireRole("admin", "super_admin"), async (req, res) => {
+  try {
+    const { gst_code, state_name, state_short_code, is_union_territory } = req.body;
+    if (!gst_code || !state_name) {
+      res.status(400).json({ success: false, error: "gst_code and state_name are required." });
+      return;
+    }
+    const state = await db.addMasterState({
+      gst_code,
+      state_name,
+      state_short_code: (state_short_code || gst_code).toUpperCase(),
+      is_union_territory: Boolean(is_union_territory)
+    });
+    res.status(201).json({ success: true, message: "GST state master created.", state });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+masterRouter.post("/degrees", authenticateToken, requireRole("admin", "super_admin"), async (req, res) => {
+  try {
+    const { degree_code, degree_name, level, duration_years, total_semesters, statutory_body } = req.body;
+    if (!degree_code || !degree_name) {
+      res.status(400).json({ success: false, error: "degree_code and degree_name are required." });
+      return;
+    }
+    const degree = await db.addMasterDegree({
+      degree_code,
+      degree_name,
+      level: level || "undergraduate",
+      duration_years: Number(duration_years) || 4,
+      total_semesters: Number(total_semesters) || 8,
+      statutory_body: statutory_body || "AICTE"
+    });
+    res.status(201).json({ success: true, message: "Degree master created.", degree });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+masterRouter.post("/institution-types", authenticateToken, requireRole("admin", "super_admin"), async (req, res) => {
+  try {
+    const { code, name, regulatory_authority, description } = req.body;
+    if (!code || !name) {
+      res.status(400).json({ success: false, error: "code and name are required." });
+      return;
+    }
+    const inst = await db.addMasterInstitutionType({
+      code,
+      name,
+      regulatory_authority: regulatory_authority || "AICTE / UGC",
+      description: description || ""
+    });
+    res.status(201).json({ success: true, message: "Institution type master created.", institutionType: inst });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+masterRouter.post("/employee-statuses", authenticateToken, requireRole("admin", "super_admin"), async (req, res) => {
+  try {
+    const { status_code, status_name, description, requires_dates } = req.body;
+    if (!status_code || !status_name) {
+      res.status(400).json({ success: false, error: "status_code and status_name are required." });
+      return;
+    }
+    const empStatus = await db.addMasterEmployeeStatus({
+      status_code: status_code.toUpperCase(),
+      status_name,
+      description: description || "",
+      requires_dates: Boolean(requires_dates)
+    });
+    res.status(201).json({ success: true, message: "Employee status master created.", employeeStatus: empStatus });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -15468,6 +15675,22 @@ examRouter.get("/results/:identifier", authenticateToken, async (req, res) => {
 var import_express18 = require("express");
 var import_zod10 = require("zod");
 var tenantRouter = (0, import_express18.Router)();
+tenantRouter.get("/campuses", async (req, res) => {
+  try {
+    const list = await db.getCampuses();
+    res.json({ success: true, count: list.length, campuses: list });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+tenantRouter.post("/campuses", authenticateToken, requireRole("super_admin", "admin"), async (req, res) => {
+  try {
+    const campus = await db.addCampus(req.body);
+    res.status(201).json({ success: true, message: "Campus registered successfully", campus });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 tenantRouter.get("/", authenticateToken, requireRole("super_admin", "admin"), async (req, res) => {
   try {
     const list = await db.getTenants();
