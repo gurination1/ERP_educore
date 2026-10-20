@@ -206,6 +206,7 @@ export const AcademicsView: React.FC<AcademicsViewProps> = ({ currentUser }) => 
   const [promoteApprovalDean, setPromoteApprovalDean] = useState('Dr. Balwinder Singh (Dean Academics)');
   const [batches, setBatches] = useState<any[]>([]);
   const [isCreatingBatch, setIsCreatingBatch] = useState(false);
+  const [isAddBatchOpen, setIsAddBatchOpen] = useState(false);
   const currentMonthNum = new Date().getMonth() + 1;
   const initialTermType: 'odd' | 'even' = (currentMonthNum >= 8 && currentMonthNum <= 11) ? 'odd' : 'even';
   const [batchTermType, setBatchTermType] = useState<'odd' | 'even'>(initialTermType);

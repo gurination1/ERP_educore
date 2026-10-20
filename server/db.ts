@@ -9,7 +9,7 @@ import type { Database as SqlJsDatabase } from 'sql.js';
 import mysql from 'mysql2/promise';
 import pg from 'pg';
 
-export type EnterpriseUserRole = 'super_admin' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts' | 'student' | 'partner' | 'hr';
+export type EnterpriseUserRole = 'super_admin' | 'admin' | 'staff' | 'counselor' | 'hod' | 'accounts' | 'student' | 'partner' | 'hr' | 'hostel';
 
 export interface User {
   id: string;
@@ -42,7 +42,7 @@ export interface AuditLog {
   actor_role: EnterpriseUserRole | 'system';
   actor_ip?: string;
   action: string;
-  target_type: 'user' | 'student' | 'fee' | 'scholarship' | 'form' | 'attendance' | 'system' | 'staff' | 'partner' | 'enquiry' | 'enquiry_batch';
+  target_type: 'user' | 'student' | 'fee' | 'scholarship' | 'form' | 'attendance' | 'system' | 'staff' | 'partner' | 'enquiry' | 'enquiry_batch' | 'batch';
   target_id: string;
   details: string;
   changes_diff?: string;
@@ -119,6 +119,7 @@ export function generateEnterpriseUID(
     partner: { numeric: '7001', alpha: 'PRT' },
     hr: { numeric: '8001', alpha: 'HRM' },
     super_admin: { numeric: '9001', alpha: 'SUP' },
+    hostel: { numeric: '10001', alpha: 'HST' },
   };
 
   const selected = typeMap[userType] || { numeric: '1001', alpha: 'STU' };
@@ -8538,6 +8539,7 @@ class DatabaseStore {
     const approval_status = batch.approval_status || 'pending_approval';
     const fee_due_date = batch.fee_due_date || '2025-08-31';
     const attendance_lock_date = batch.attendance_lock_date || '2025-11-20';
+    const created_at = (batch as any).created_at || new Date().toISOString();
 
     const record: AcademicBatch = {
       id, course_id, batch_name, start_year, end_year,

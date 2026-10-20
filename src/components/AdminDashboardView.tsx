@@ -55,7 +55,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   const [reportSchool, setReportSchool] = useState('all');
   const [reportEntity, setReportEntity] = useState<'student' | 'teacher'>('student');
   const [reportSubCategory, setReportSubCategory] = useState('admission_details');
-  const [reportPeriod, setReportPeriod] = useState<'current' | 'previous' | 'custom'>('current');
+  const [reportPeriod, setReportPeriod] = useState<'current' | 'previous' | 'last' | 'historical' | 'custom'>('current');
   const [customStartDate, setCustomStartDate] = useState('2025-01-01');
   const [customEndDate, setCustomEndDate] = useState('2025-12-31');
   const [isReportGenerated, setIsReportGenerated] = useState(false);
@@ -856,7 +856,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
               </label>
               <select
                 value={reportPeriod}
-                onChange={e => setReportPeriod(e.target.value)}
+                onChange={e => setReportPeriod(e.target.value as any)}
                 className="w-full h-8 px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-medium text-xs focus:ring-1 focus:ring-[#00236f] outline-none"
               >
                 <option value="current">Current Academic Session (2025-26)</option>

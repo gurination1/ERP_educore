@@ -487,12 +487,13 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
                               type="button"
                               onClick={() => {
                                 setSelectedProgressionStudent(s);
-                                setProgressionForm({
+                                setProgressionForm(prev => ({
+                                  ...prev,
                                   new_status: 'promoted',
                                   new_term: (s.current_semester || 1) + 1,
                                   order_no: `ORD-${Date.now().toString().slice(-6)}`,
                                   reason: 'Passed CBCS ordinance clearance',
-                                });
+                                }));
                                 setIsProgressionModalOpen(true);
                               }}
                               className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded font-semibold text-xs inline-flex items-center gap-1 cursor-pointer"

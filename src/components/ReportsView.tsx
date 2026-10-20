@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { Search } from 'lucide-react';
 import { safeGoBack } from '../utils/navigation';
 import { api, getStoredToken } from '../api/client';
 import { User } from '../types';

@@ -1454,39 +1454,37 @@ export const Header: React.FC<HeaderProps> = ({
                   >
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         if (closeTimerRef.current) {
                           clearTimeout(closeTimerRef.current);
                           closeTimerRef.current = null;
                         }
-                        setOpenDrawer(null);
-                        if (sec.action) {
-                          sec.action();
-                        } else if (sec.defaultScreen) {
-                          onNavigate(sec.defaultScreen);
+                        if (hasChildren) {
+                          // Click toggles the drawer so touch/click users can easily open/close submenus
+                          setOpenDrawer(isDrawerOpen ? null : sec.id);
+                        } else {
+                          setOpenDrawer(null);
+                          if (sec.action) {
+                            sec.action();
+                          } else if (sec.defaultScreen) {
+                            onNavigate(sec.defaultScreen);
+                          }
                         }
                       }}
-                      className={`h-8 sm:h-full px-2.5 sm:px-3 text-xs font-semibold tracking-tight transition-colors flex items-center gap-1 cursor-pointer select-none relative rounded-lg sm:rounded-none shrink-0 ${
+                      className={`h-8 sm:h-full px-2.5 sm:px-3 text-xs font-semibold tracking-tight transition-colors flex items-center gap-1.5 cursor-pointer select-none relative rounded-lg sm:rounded-none shrink-0 ${
                         sec.isActive || isDrawerOpen
                           ? 'text-[#00236f] font-bold bg-slate-100 sm:bg-transparent'
                           : 'text-slate-600 hover:text-[#00236f] hover:bg-slate-50 sm:hover:bg-transparent'
                       }`}
+                      aria-expanded={hasChildren ? isDrawerOpen : undefined}
+                      aria-haspopup={hasChildren ? 'true' : undefined}
                     >
                       <span className="whitespace-nowrap font-medium">{sec.label}</span>
                       {hasChildren && (
                         <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (closeTimerRef.current) {
-                              clearTimeout(closeTimerRef.current);
-                              closeTimerRef.current = null;
-                            }
-                            setOpenDrawer(isDrawerOpen ? null : sec.id);
-                          }}
                           title={`Toggle ${sec.label} menu`}
-                          className={`text-[9px] px-1 py-0.5 rounded-sm hover:bg-slate-200/60 transition-transform duration-200 cursor-pointer ${isDrawerOpen ? 'rotate-180 text-[#00236f]' : 'text-slate-400'}`}
+                          className={`text-[10px] transition-transform duration-200 pointer-events-none ${isDrawerOpen ? 'rotate-180 text-[#00236f] font-bold' : 'text-slate-400'}`}
                         >
                           ▾
                         </span>
@@ -1507,7 +1505,7 @@ export const Header: React.FC<HeaderProps> = ({
                           }
                         }}
                         onMouseLeave={handleMouseLeave}
-                        className={`absolute top-full pt-1.5 z-50 select-none ${
+                        className={`absolute top-full pt-1 z-50 select-none before:absolute before:-top-3 before:left-0 before:right-0 before:h-3 before:content-[''] ${
                           sec.items!.length > 4 ? 'w-[420px] sm:w-[480px]' : 'min-w-[280px] sm:min-w-[320px]'
                         } ${sec.id === 'governance' || sec.id === 'staff' ? 'right-0 left-auto' : 'left-0'}`}
                       >

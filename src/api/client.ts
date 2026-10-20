@@ -126,6 +126,11 @@ export const api = {
       method: 'PATCH',
       body: JSON.stringify({ status, reason }),
     }),
+  updateStudent: (studentId: string, data: any) =>
+    apiRequest(`/api/students/${studentId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
   sendEmailReminders: () => apiRequest('/api/students/send-email-reminders', { method: 'POST' }),
 
   // Admissions

@@ -327,6 +327,9 @@ export interface AuditLogItem {
   actor_name: string;
   actor_role: UserRole | 'system';
   actor_ip?: string;
+  device?: string;
+  ip_address?: string;
+  platform?: string;
   action: string;
   target_type: 'user' | 'student' | 'fee' | 'scholarship' | 'form' | 'attendance' | 'system';
   target_id: string;
