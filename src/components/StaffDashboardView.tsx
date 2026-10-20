@@ -1412,15 +1412,15 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                     <div className="p-3.5 bg-emerald-50/80 border border-emerald-200 rounded-xl space-y-2">
                       <div className="flex justify-between text-xs text-emerald-950">
                         <span>Standard Base Tuition:</span>
-                        <strong className="font-mono">₹{baseTuition.toLocaleString('en-IN')}</strong>
+                        <strong className="font-mono">₹{(baseTuition || 0).toLocaleString('en-IN')}</strong>
                       </div>
                       <div className="flex justify-between text-xs text-emerald-700">
                         <span>Scholarship Concession ({waiverPct}%):</span>
-                        <strong className="font-mono">- ₹{waiverAmount.toLocaleString('en-IN')}</strong>
+                        <strong className="font-mono">- ₹{(waiverAmount || 0).toLocaleString('en-IN')}</strong>
                       </div>
                       <div className="border-t border-emerald-200 pt-2 flex justify-between text-sm font-extrabold text-[#00236f]">
                         <span>Net Tuition per Semester:</span>
-                        <strong className="font-mono text-emerald-800">₹{netPayable.toLocaleString('en-IN')}</strong>
+                        <strong className="font-mono text-emerald-800">₹{(netPayable || 0).toLocaleString('en-IN')}</strong>
                       </div>
                     </div>
                   );

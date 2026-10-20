@@ -1621,7 +1621,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                             </span>
                           </div>
                           <span className="text-[11px] font-mono text-slate-500 font-medium">
-                            {new Date(milestone.timestamp).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                            {milestone.timestamp ? new Date(milestone.timestamp).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '—'}
                           </span>
                         </div>
 
@@ -1666,7 +1666,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                           <div className="flex items-center justify-between gap-2">
                             <span className="font-bold text-[#00236f]">{act.action}</span>
                             <span className="text-[10px] font-mono text-slate-500">
-                              {new Date(act.timestamp).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}
+                              {act.timestamp ? new Date(act.timestamp).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '—'}
                             </span>
                           </div>
                           <p className="text-slate-700 text-[11px]">{act.details}</p>

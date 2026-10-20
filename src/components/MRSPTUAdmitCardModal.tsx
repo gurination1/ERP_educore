@@ -132,7 +132,7 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
                   className="px-6 py-3 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-xl text-xs font-bold transition-all shadow-md inline-flex items-center gap-2 cursor-pointer"
                 >
                   
-                  <span>Pay ₹{data.totalOutstandingDue.toLocaleString('en-IN')} to Clear Accounts Hold</span>
+                  <span>Pay ₹{(data?.totalOutstandingDue || 0).toLocaleString('en-IN')} to Clear Accounts Hold</span>
                 </button>
               </div>
             )}

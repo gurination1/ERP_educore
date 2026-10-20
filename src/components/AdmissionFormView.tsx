@@ -383,7 +383,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
 
             <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
               <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">Token Fee Received</p>
-              <p className="text-lg font-black text-emerald-700 mt-1">₹ {Number(credentialsSlip.tokenFeeAmount).toLocaleString('en-IN')}</p>
+              <p className="text-lg font-black text-emerald-700 mt-1">₹ {(Number(credentialsSlip.tokenFeeAmount) || 0).toLocaleString('en-IN')}</p>
               <p className="text-xs text-emerald-800 mt-0.5">Receipt: {credentialsSlip.tokenFeeReceipt}</p>
             </div>
           </div>

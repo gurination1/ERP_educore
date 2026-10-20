@@ -304,7 +304,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
           </div>
           <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs">
             <span className="text-[10px] uppercase font-bold text-[#00236f]">Total Disbursed Aid</span>
-            <h4 className="text-2xl font-black text-[#00236f] mt-1">₹ {totalDisbursed.toLocaleString('en-IN')}</h4>
+            <h4 className="text-2xl font-black text-[#00236f] mt-1">₹ {(totalDisbursed || 0).toLocaleString('en-IN')}</h4>
             <p className="text-[11px] text-[#757682] mt-0.5">Approved allocations</p>
           </div>
         </div>
@@ -339,7 +339,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                 <div>
                   <span className="text-[10px] uppercase font-bold text-[#757682] block">Award Amount</span>
                   <span className="text-lg font-extrabold text-[#00236f]">
-                    ₹ {scheme.award_amount.toLocaleString('en-IN')}
+                    ₹ {(scheme.award_amount || 0).toLocaleString('en-IN')}
                   </span>
                 </div>
 
@@ -406,7 +406,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                     </td>
                     <td className="py-3.5 px-4 font-bold text-[#00236f]">{app.previous_gpa}</td>
                     <td className="py-3.5 px-4 text-[#444651]">
-                      ₹ {app.annual_family_income.toLocaleString('en-IN')}
+                      ₹ {(app.annual_family_income || 0).toLocaleString('en-IN')}
                     </td>
                     <td className="py-3.5 px-4">
                       <span
@@ -462,7 +462,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
             <p className="text-xs text-[#757682]">
               Award Grant Amount:{' '}
               <strong className="text-[#00236f]">
-                ₹ {selectedScheme.award_amount.toLocaleString('en-IN')}
+                ₹ {(selectedScheme.award_amount || 0).toLocaleString('en-IN')}
               </strong>
             </p>
 
@@ -556,7 +556,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
               </p>
               <p>
                 <strong>CGPA:</strong> {reviewApp.previous_gpa} | <strong>Income:</strong> ₹{' '}
-                {reviewApp.annual_family_income.toLocaleString('en-IN')}
+                {(reviewApp.annual_family_income || 0).toLocaleString('en-IN')}
               </p>
               <p className="text-[#444651] italic">"{reviewApp.reason_for_application}"</p>
             </div>
@@ -760,7 +760,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                   <option value="">Select Scheme</option>
                   {schemes.map(sch => (
                     <option key={sch.id} value={sch.id}>
-                      {sch.title} (₹ {sch.award_amount.toLocaleString('en-IN')})
+                      {sch.title} (₹ {(sch.award_amount || 0).toLocaleString('en-IN')})
                     </option>
                   ))}
                 </select>

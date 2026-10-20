@@ -410,10 +410,10 @@ export const DynamicFormBuilderView: React.FC<DynamicFormBuilderViewProps> = ({ 
                                 <div className="text-[10px] text-[#757682]">{sub.userEmail}</div>
                               </td>
                               <td className="py-3 px-3 text-[#757682]">
-                                {new Date(sub.submitted_at).toLocaleString('en-IN', {
+                                {sub.submitted_at ? new Date(sub.submitted_at).toLocaleString('en-IN', {
                                   dateStyle: 'short',
                                   timeStyle: 'short',
-                                })}
+                                }) : '—'}
                               </td>
                               <td className="py-3 px-3">
                                 <div className="space-y-1">

@@ -755,7 +755,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                     </p>
 
                     <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1.5 border-t border-slate-100">
-                      <span>{new Date(t.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                      <span>{t.created_at ? new Date(t.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Just now'}</span>
                       {t.status !== 'resolved' && (
                         <button
                           onClick={() => handleResolveTicket(t.id)}
@@ -1125,7 +1125,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   </p>
 
                   <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-100">
-                    <span>Submitted: {new Date(t.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                    <span>Submitted: {t.created_at ? new Date(t.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Just now'}</span>
                     {t.status !== 'resolved' && (
                       <button
                         type="button"

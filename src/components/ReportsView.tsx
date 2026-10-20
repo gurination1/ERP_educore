@@ -1585,10 +1585,10 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
                           </span>
                         </td>
                         <td className="p-3.5 text-right font-extrabold text-[#00236f]">
-                          ₹ {item.totalCollected.toLocaleString('en-IN')}
+                          ₹ {(item.totalCollected || 0).toLocaleString('en-IN')}
                         </td>
                         <td className="p-3.5 text-right font-extrabold text-[#ba1a1a]">
-                          ₹ {item.totalDue.toLocaleString('en-IN')}
+                          ₹ {(item.totalDue || 0).toLocaleString('en-IN')}
                         </td>
                       </tr>
                     ))}

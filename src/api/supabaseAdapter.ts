@@ -1712,10 +1712,10 @@ export async function handleSupabaseRequest<T = any>(
         dueDate,
         notice: {
           subject: `Fee Payment Reminder: Pending Dues for Semester ${s.current_semester || 4} - Roll ${s.student_id}`,
-          emailBody: `Dear ${s.first_name} ${s.last_name},\n\nThis is a formal notice from the Accounts Office of EduCore University. As per our records, an outstanding fee balance of ₹${dueAmount.toLocaleString('en-IN')} is currently due on or before ${dueDate}.\n\nPlease remit the balance via the student ERP portal (Online UPI, Net Banking, or Debit Card) to avoid late fee surcharges and maintain uninterrupted course access.\n\nWarm regards,\nFinance & Accounts Department\nEduCore University`,
-          smsText: `EduCore Alert: Dear ${s.first_name}, fee dues of Rs.${dueAmount} are pending for Sem ${s.current_semester || 4}. Pay before ${dueDate} at erp.educore.edu`,
-          whatsappText: `*EduCore University Fee Notice*\n\nHello *${s.first_name}*,\nYour fee payment for *Semester ${s.current_semester || 4}* is pending.\n\n*Amount Due:* ₹${dueAmount.toLocaleString('en-IN')}\n*Due Date:* ${dueDate}\n\nPlease settle your dues via the student portal or contact Accounts at accounts@educore.edu.`,
-          actionRequired: `Pay ₹${dueAmount.toLocaleString('en-IN')} before ${dueDate} via ERP portal.`,
+          emailBody: `Dear ${s.first_name} ${s.last_name},\n\nThis is a formal notice from the Accounts Office of EduCore University. As per our records, an outstanding fee balance of ₹${(dueAmount || 0).toLocaleString('en-IN')} is currently due on or before ${dueDate}.\n\nPlease remit the balance via the student ERP portal (Online UPI, Net Banking, or Debit Card) to avoid late fee surcharges and maintain uninterrupted course access.\n\nWarm regards,\nFinance & Accounts Department\nEduCore University`,
+          smsText: `EduCore Alert: Dear ${s.first_name}, fee dues of Rs.${dueAmount || 0} are pending for Sem ${s.current_semester || 4}. Pay before ${dueDate} at erp.educore.edu`,
+          whatsappText: `*EduCore University Fee Notice*\n\nHello *${s.first_name}*,\nYour fee payment for *Semester ${s.current_semester || 4}* is pending.\n\n*Amount Due:* ₹${(dueAmount || 0).toLocaleString('en-IN')}\n*Due Date:* ${dueDate}\n\nPlease settle your dues via the student portal or contact Accounts at accounts@educore.edu.`,
+          actionRequired: `Pay ₹${(dueAmount || 0).toLocaleString('en-IN')} before ${dueDate} via ERP portal.`,
         },
       };
     }

@@ -92,10 +92,14 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
   const isDetained = attendancePct < 65;
   const isCondonationNeeded = attendancePct >= 65 && attendancePct < 75;
 
-  const totalDue = ledgerData?.summary ? Math.round(ledgerData.summary.totalDue * 100) / 100 : (student.fees_status === 'paid' ? 0 : 0);
-  const totalDiscount = ledgerData ? (ledgerData.ledger || []).reduce((acc: number, f: any) => acc + (f.discount_amount || 0), 0) : 0;
+  const totalDue = (ledgerData?.summary?.totalDue != null)
+    ? Math.round(Number(ledgerData.summary.totalDue) * 100) / 100
+    : (student.fees_status === 'paid' ? 0 : 0);
+  const totalDiscount = ledgerData
+    ? (ledgerData.ledger || []).reduce((acc: number, f: any) => acc + (Number(f.discount_amount) || 0), 0)
+    : 0;
   const isFullyPaid = ledgerData?.summary ? (totalDue <= 0.01) : (student.fees_status === 'paid');
-  const unpaidItems = ledgerData?.ledger?.filter((f: any) => f.due_amount > 0 && f.status !== 'cancelled') || [];
+  const unpaidItems = ledgerData?.ledger?.filter((f: any) => (Number(f.due_amount) || 0) > 0 && f.status !== 'cancelled') || [];
   const nextDueDate = unpaidItems.sort((a: any, b: any) => a.due_date?.localeCompare(b.due_date))[0]?.due_date || (isFullyPaid ? 'All term dues cleared' : 'Assessment pending');
   const latestReceipt = ledgerData?.payments?.[0]?.receipt_no || 'REC-2026-001';
 
@@ -200,7 +204,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                 <span className="text-slate-500 text-[10px] uppercase block font-semibold tracking-wider">Outstanding Semester Due:</span>
                 <div className="flex items-baseline gap-2 mt-0.5">
                   <strong className={`text-2xl font-extrabold tracking-tight ${isFullyPaid ? 'text-emerald-700' : 'text-slate-900'}`}>
-                    {isLedgerLoading ? '₹ ...' : `₹ ${totalDue.toLocaleString('en-IN')}`}
+                    {isLedgerLoading ? '₹ ...' : `₹ ${(totalDue || 0).toLocaleString('en-IN')}`}
                   </strong>
                   <span className="text-[11px] text-slate-500 font-medium">
                     (Due Date: {nextDueDate})
@@ -210,7 +214,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
 
               {totalDiscount > 0 && (
                 <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-2.5 py-1 rounded-lg text-xs font-semibold">
-                  Scholarship Applied: -₹ {totalDiscount.toLocaleString('en-IN')}
+                  Scholarship Applied: -₹ {(totalDiscount || 0).toLocaleString('en-IN')}
                 </div>
               )}
             </div>
@@ -230,7 +234,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                     ? 'No-dues clearance and minimum attendance verified for semester finals.'
                     : isDetained
                     ? `Attendance ${attendancePct}% is below 75% threshold. Contact HOD.`
-                    : `Clear outstanding balance of ₹${totalDue.toLocaleString('en-IN')} to unlock hall ticket.`}
+                    : `Clear outstanding balance of ₹${(totalDue || 0).toLocaleString('en-IN')} to unlock hall ticket.`}
                 </span>
               </div>
               <button
@@ -250,7 +254,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                 onClick={onOpenPayModal}
                 className="flex-1 py-2 px-3 bg-gradient-to-r from-[#ea580c] to-[#c2410c] hover:opacity-95 text-white rounded-lg font-bold text-xs tracking-wide text-center transition cursor-pointer shadow-2xs"
               >
-                Pay Outstanding Due: ₹{totalDue.toLocaleString('en-IN')}
+                Pay Outstanding Due: ₹{(totalDue || 0).toLocaleString('en-IN')}
               </button>
             ) : (
               <button

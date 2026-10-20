@@ -340,16 +340,16 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
                   <div className="truncate">
                     <h4 className="text-xs font-bold text-[#191c1d] truncate">{item.title}</h4>
                     <p className="text-[10px] text-[#757682]">
-                      Assessed: ₹{item.amount.toLocaleString('en-IN')}
-                      {item.discount_amount > 0 ? ` • Concession: -₹${item.discount_amount.toLocaleString('en-IN')}` : ''}
-                      {item.paid_amount > 0 ? ` • Already Paid: ₹${item.paid_amount.toLocaleString('en-IN')}` : ''}
+                      Assessed: ₹{(item.amount || 0).toLocaleString('en-IN')}
+                      {item.discount_amount > 0 ? ` • Concession: -₹${(item.discount_amount || 0).toLocaleString('en-IN')}` : ''}
+                      {item.paid_amount > 0 ? ` • Already Paid: ₹${(item.paid_amount || 0).toLocaleString('en-IN')}` : ''}
                     </p>
                   </div>
                 </div>
 
                 <div className="text-right shrink-0" onClick={e => e.stopPropagation()}>
                   <span className="text-[10px] font-bold text-[#ba1a1a] uppercase block">
-                    Due: ₹{item.due_amount.toLocaleString('en-IN')}
+                    Due: ₹{(item.due_amount || 0).toLocaleString('en-IN')}
                   </span>
                   {item.isSelected ? (
                     <div className="flex items-center gap-1 mt-1 justify-end">
@@ -470,7 +470,7 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
                 Total Payment Amount:
               </span>
               <span className="text-lg font-black text-[#15803d]">
-                ₹ {totalAmount.toLocaleString('en-IN')}
+                ₹ {(totalAmount || 0).toLocaleString('en-IN')}
               </span>
             </div>
             <span className="text-[11px] font-semibold text-[#166534] bg-white px-2.5 py-1 rounded-lg border border-[#bbf7d0]">
@@ -504,7 +504,7 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
               className="px-6 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white font-bold rounded-lg transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
               <span className="font-bold text-[10px]">✓</span>
-              <span>{isProcessing ? 'Processing Transaction...' : `Confirm & Pay ₹ ${totalAmount.toLocaleString('en-IN')}`}</span>
+              <span>{isProcessing ? 'Processing Transaction...' : `Confirm & Pay ₹ ${(totalAmount || 0).toLocaleString('en-IN')}`}</span>
             </button>
           </div>
         </form>

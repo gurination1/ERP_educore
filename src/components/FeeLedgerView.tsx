@@ -357,7 +357,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
     setTimeout(() => {
       setDeskIsSubmitting(false);
       setNoticeFeedback(
-        `✓ [PAYMENT COLLECTED]: ₹${amt.toLocaleString('en-IN')} successfully credited for ${deskSelectedStudent.first_name} ${deskSelectedStudent.last_name}! Official Receipt #${receiptNo} issued.`
+        `✓ [PAYMENT COLLECTED]: ₹${(amt || 0).toLocaleString('en-IN')} successfully credited for ${deskSelectedStudent.first_name} ${deskSelectedStudent.last_name}! Official Receipt #${receiptNo} issued.`
       );
       if (onOpenReceiptModal) {
         onOpenReceiptModal(receiptNo);
@@ -1009,7 +1009,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                     <div className="flex justify-between">
                       <span className="text-slate-500 font-semibold">Concession Value:</span>
                       <strong className="text-emerald-700 font-black">
-                        {pol.discount_percentage ? `${pol.discount_percentage}% Waiver` : `₹ ${pol.discount_amount.toLocaleString('en-IN')}`}
+                        {pol.discount_percentage ? `${pol.discount_percentage}% Waiver` : `₹ ${(pol.discount_amount || 0).toLocaleString('en-IN')}`}
                       </strong>
                     </div>
 
@@ -1104,10 +1104,10 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                       </td>
                       <td className="py-3 px-3 text-slate-800 font-semibold">{ce.description}</td>
                       <td className="py-3 px-3 text-right font-black text-rose-700">
-                        {ce.entry_type === 'contra_negation' ? `₹ ${ce.amount.toLocaleString('en-IN')}` : '—'}
+                        {ce.entry_type === 'contra_negation' ? `₹ ${(ce.amount || 0).toLocaleString('en-IN')}` : '—'}
                       </td>
                       <td className="py-3 px-3 text-right font-black text-emerald-700">
-                        {ce.entry_type !== 'contra_negation' ? `₹ ${ce.amount.toLocaleString('en-IN')}` : '—'}
+                        {ce.entry_type !== 'contra_negation' ? `₹ ${(ce.amount || 0).toLocaleString('en-IN')}` : '—'}
                       </td>
                       <td className="py-3 px-3 text-right text-slate-600 font-semibold">{ce.authorized_by}</td>
                     </tr>

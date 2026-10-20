@@ -1843,12 +1843,12 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                     {credentialsSlip.feeBreakdown.map((f: any, idx: number) => (
                       <div key={idx} className="flex justify-between py-1.5 px-3">
                         <span className="text-[#444651]">{f.title}</span>
-                        <strong className="text-[#191c1d]">₹ {f.amount.toLocaleString('en-IN')}</strong>
+                        <strong className="text-[#191c1d]">₹ {(f.amount || 0).toLocaleString('en-IN')}</strong>
                       </div>
                     ))}
                     <div className="flex justify-between py-1.5 px-3 bg-[#f8f9fa] font-bold">
                       <span>Total Initial Due Amount:</span>
-                      <span className="text-[#00236f]">₹ {credentialsSlip.totalInitialDue?.toLocaleString('en-IN')}</span>
+                      <span className="text-[#00236f]">₹ {(credentialsSlip.totalInitialDue || 0).toLocaleString('en-IN')}</span>
                     </div>
                   </div>
                 </div>

@@ -339,10 +339,10 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                         <td className="py-2.5 px-3 font-semibold text-[#191c1d]">
                           {f.fee_head?.title || 'Academic Fee'}
                         </td>
-                        <td className="py-2.5 px-3 font-semibold">₹ {f.amount.toLocaleString('en-IN')}</td>
-                        <td className="py-2.5 px-3 text-[#00236f]">₹ {f.paid_amount.toLocaleString('en-IN')}</td>
+                        <td className="py-2.5 px-3 font-semibold">₹ {(f.amount || 0).toLocaleString('en-IN')}</td>
+                        <td className="py-2.5 px-3 text-[#00236f]">₹ {(f.paid_amount || 0).toLocaleString('en-IN')}</td>
                         <td className="py-2.5 px-3 text-[#ba1a1a] font-bold">
-                          ₹ {f.due_amount.toLocaleString('en-IN')}
+                          ₹ {(f.due_amount || 0).toLocaleString('en-IN')}
                         </td>
                         <td className="py-2.5 px-3 uppercase font-bold text-xs">
                           {f.status}

@@ -779,7 +779,7 @@ export const TransportManagementView: React.FC<TransportManagementViewProps> = (
                             <td className="py-2 px-3 font-semibold text-slate-900">{stop.stop_name}</td>
                             <td className="py-2 px-3 font-mono text-slate-600">{stop.pickup_time}</td>
                             <td className="py-2 px-3 text-right font-mono font-bold text-slate-900">
-                              {stop.semester_fare === 0 ? 'Destination (Campus)' : `₹ ${stop.semester_fare.toLocaleString('en-IN')}`}
+                              {stop.semester_fare === 0 ? 'Destination (Campus)' : `₹ ${(stop.semester_fare || 0).toLocaleString('en-IN')}`}
                             </td>
                           </tr>
                         ))}
@@ -1176,7 +1176,7 @@ export const TransportManagementView: React.FC<TransportManagementViewProps> = (
                     .find(r => r.id === allocatingRouteId)
                     ?.stops.map(s => (
                       <option key={s.stop_sequence} value={s.stop_name}>
-                        {s.stop_name} (Fare: ₹{s.semester_fare.toLocaleString('en-IN')})
+                        {s.stop_name} (Fare: ₹{(s.semester_fare || 0).toLocaleString('en-IN')})
                       </option>
                     ))}
                 </select>

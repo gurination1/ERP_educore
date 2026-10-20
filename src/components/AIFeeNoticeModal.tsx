@@ -77,7 +77,7 @@ export const AIFeeNoticeModal: React.FC<AIFeeNoticeModalProps> = ({
             <div>
               <h2 className="text-base font-bold leading-tight">AI Fee Recovery Notice Generator</h2>
               <p className="text-xs text-blue-100">
-                Drafting for: <span className="font-semibold text-white">{studentName}</span> (₹{dueAmount.toLocaleString('en-IN')})
+                Drafting for: <span className="font-semibold text-white">{studentName}</span> (₹{(dueAmount || 0).toLocaleString('en-IN')})
               </p>
             </div>
           </div>

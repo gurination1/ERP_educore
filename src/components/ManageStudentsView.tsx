@@ -371,7 +371,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
               </div>
             </div>
             <div className="mt-3">
-              <h3 className="text-3xl font-extrabold text-[#191c1d] tracking-tight">{totalCount.toLocaleString('en-IN')}</h3>
+              <h3 className="text-3xl font-extrabold text-[#191c1d] tracking-tight">{(totalCount || 0).toLocaleString('en-IN')}</h3>
               <p className="text-xs font-semibold text-[#00236f] mt-1 flex items-center gap-1">
                 
                 <span>+12% this semester</span>

@@ -692,7 +692,7 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <span className="text-[11px] text-amber-800 uppercase font-bold block">Total Payable:</span>
-                      <span className="text-lg font-black text-amber-950">₹ {reappearFee.toLocaleString('en-IN')}</span>
+                      <span className="text-lg font-black text-amber-950">₹ {(reappearFee || 0).toLocaleString('en-IN')}</span>
                     </div>
                     <button
                       type="button"

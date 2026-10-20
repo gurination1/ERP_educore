@@ -600,13 +600,13 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
 
     let feeMsg = '';
     if (rentDiff > 0) {
-      feeMsg = ` Additional debit of ₹${rentDiff.toLocaleString()} posted to scholar fee ledger.`;
+      feeMsg = ` Additional debit of ₹${(rentDiff || 0).toLocaleString()} posted to scholar fee ledger.`;
     } else if (rentDiff < 0) {
       const refundAmt = Math.abs(rentDiff);
       feeMsg =
         refundPreference === 'refund'
-          ? ` Refund voucher for ₹${refundAmt.toLocaleString()} generated for accounts approval.`
-          : ` ₹${refundAmt.toLocaleString()} retained as fee ledger credit balance.`;
+          ? ` Refund voucher for ₹${(refundAmt || 0).toLocaleString()} generated for accounts approval.`
+          : ` ₹${(refundAmt || 0).toLocaleString()} retained as fee ledger credit balance.`;
     }
 
     showToast(
@@ -656,7 +656,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
   const totalBeds = rooms.reduce((acc, r) => acc + r.capacity, 0);
   const occupiedBeds = rooms.reduce((acc, r) => acc + r.current_occupancy, 0);
   const occupancyRate = totalBeds > 0 ? ((occupiedBeds / totalBeds) * 100).toFixed(1) : '0';
-  const totalMessDues = residents.reduce((acc, r) => acc + r.mess_dues_amount, 0);
+  const totalMessDues = residents.reduce((acc, r) => acc + (Number(r.mess_dues_amount) || 0), 0);
 
   return (
     <div className="space-y-4">
@@ -784,7 +784,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
               </div>
               <div className="mt-2 text-[11px] text-amber-700 font-semibold flex items-center gap-1">
                 <AlertTriangle className="w-3.5 h-3.5" />
-                <span>₹{totalMessDues.toLocaleString()} pending dues</span>
+                <span>₹{(totalMessDues || 0).toLocaleString()} pending dues</span>
               </div>
             </div>
 
@@ -1115,7 +1115,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
                           </span>
                         </div>
                         <div className="pt-1">
-                          <span className="font-semibold text-slate-700">Rent Structure:</span> ₹{room.monthly_rent.toLocaleString()}/mo • ₹{room.semester_rent.toLocaleString()}/sem
+                          <span className="font-semibold text-slate-700">Rent Structure:</span> ₹{(room.monthly_rent || 0).toLocaleString()}/mo • ₹{(room.semester_rent || 0).toLocaleString()}/sem
                         </div>
                       </div>
                     </div>
@@ -1689,10 +1689,10 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
                 <span className="font-bold text-slate-700">Outstanding Mess Arrears:</span>
                 <span
                   className={`font-black text-sm ${
-                    clearingResident.mess_dues_amount > 0 ? 'text-rose-600' : 'text-emerald-700'
+                    (clearingResident?.mess_dues_amount || 0) > 0 ? 'text-rose-600' : 'text-emerald-700'
                   }`}
                 >
-                  ₹{clearingResident.mess_dues_amount.toLocaleString()}
+                  ₹{(clearingResident?.mess_dues_amount || 0).toLocaleString()}
                 </span>
               </div>
             </div>

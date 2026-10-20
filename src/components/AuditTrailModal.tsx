@@ -207,10 +207,10 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
                     return (
                       <tr key={log.id} className="hover:bg-[#f8f9fa] transition-colors">
                         <td className="py-2.5 px-4 font-mono text-[11px] text-[#757682] whitespace-nowrap">
-                          {new Date(log.timestamp).toLocaleString('en-IN', {
+                          {log.timestamp ? new Date(log.timestamp).toLocaleString('en-IN', {
                             dateStyle: 'short',
                             timeStyle: 'medium',
-                          })}
+                          }) : '—'}
                         </td>
                         <td className="py-2.5 px-4 whitespace-nowrap">
                           <div className="font-bold text-[#191c1d] flex items-center gap-1.5">
