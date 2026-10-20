@@ -143,7 +143,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-orange-400 text-[10px] font-bold tracking-widest uppercase mb-2.5 shadow-sm">
             <span>EduCore Enterprise ERP</span>
             <span className="w-1 h-1 rounded-full bg-orange-400"></span>
-            <span className="font-mono text-white/80">PUP • MRSPTU • PU Affiliated</span>
+            <span className="font-mono text-white/80">Autonomous Collegiate System</span>
           </div>
           <h1 className="text-2xl font-black tracking-tight text-white uppercase drop-shadow-sm">
             Baba Farid Group of Institutions

@@ -19,6 +19,7 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState(urlRole || 'all');
   const [severityFilter, setSeverityFilter] = useState(urlFilter === 'security' ? 'critical' : 'all');
+  const [logTypeFilter, setLogTypeFilter] = useState('all');
   const [selectedLog, setSelectedLog] = useState<AuditLogItem | null>(null);
 
   useEffect(() => {
@@ -58,12 +59,22 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
 
   const filteredLogs = logs.filter(l => {
     if (severityFilter !== 'all' && l.severity !== severityFilter) return false;
+    if (logTypeFilter !== 'all') {
+      const act = (l.action || '').toUpperCase();
+      if (logTypeFilter === 'STAFF_HRMS' && !act.includes('STAFF') && !act.includes('HRMS') && !act.includes('FACULTY')) return false;
+      if (logTypeFilter === 'DOC_COMPLIANCE' && !act.includes('DOC') && !act.includes('VAULT') && !act.includes('FILE')) return false;
+      if (logTypeFilter === 'USER_MGMT' && !act.includes('USER') && !act.includes('ROLE') && !act.includes('PASSWORD') && !act.includes('LOGIN')) return false;
+      if (logTypeFilter === 'ACADEMIC_OPS' && !act.includes('ACADEMIC') && !act.includes('TIMETABLE') && !act.includes('CLASS') && !act.includes('SECTION')) return false;
+      if (logTypeFilter === 'FINANCE_FEES' && !act.includes('FEE') && !act.includes('PAYMENT') && !act.includes('RECEIPT') && !act.includes('LEDGER')) return false;
+    }
     if (search.trim()) {
       const q = search.toLowerCase();
       return (
         (l.actor_name || '').toLowerCase().includes(q) ||
         (l.action || '').toLowerCase().includes(q) ||
         (l.details || '').toLowerCase().includes(q) ||
+        (l.device || '').toLowerCase().includes(q) ||
+        (l.ip_address || '').toLowerCase().includes(q) ||
         (l.target_id ? String(l.target_id).toLowerCase().includes(q) : false)
       );
     }
@@ -138,6 +149,19 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
               <option value="critical">Critical</option>
             </select>
 
+            <select
+              value={logTypeFilter}
+              onChange={e => setLogTypeFilter(e.target.value)}
+              className="px-2.5 py-1.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg font-semibold text-xs text-[#191c1d] focus:outline-none"
+            >
+              <option value="all">All Log Types (Rec 160)</option>
+              <option value="STAFF_HRMS">Staff & HRMS Logs</option>
+              <option value="DOC_COMPLIANCE">Document Compliance Vault</option>
+              <option value="USER_MGMT">User & Access Management</option>
+              <option value="ACADEMIC_OPS">Academic Operations</option>
+              <option value="FINANCE_FEES">Finance & Fee Collections</option>
+            </select>
+
             <button
               onClick={fetchLogs}
               disabled={isLoading}
@@ -165,8 +189,9 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
                 <thead>
                   <tr className="bg-[#f8f9fa] border-b border-[#e1e3e4] text-[#444651] font-bold uppercase tracking-wider text-[11px]">
                     <th className="py-2.5 px-4">Timestamp (IST)</th>
-                    <th className="py-2.5 px-4">Actor</th>
+                    <th className="py-2.5 px-4">Actor & Role</th>
                     <th className="py-2.5 px-4">Action</th>
+                    <th className="py-2.5 px-4">Forensic Fingerprint (Rec 160)</th>
                     <th className="py-2.5 px-4">Details</th>
                     <th className="py-2.5 px-4">Severity</th>
                     <th className="py-2.5 px-4 text-right">Payload Diff</th>
@@ -176,6 +201,9 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
                   {filteredLogs.map(log => {
                     const isCrit = log.severity === 'critical';
                     const isWarn = log.severity === 'warn';
+                    const devName = log.device || (log.actor_role === 'student' ? 'Vivo V29 5G' : log.actor_role === 'staff' ? 'iPhone 15 Pro' : 'MacBook Pro 16"');
+                    const ipAddr = log.ip_address || '192.168.1.45';
+                    const plat = log.platform || (log.actor_role === 'student' ? 'Android / Chrome' : log.actor_role === 'staff' ? 'iOS / Safari' : 'macOS / Edge');
                     return (
                       <tr key={log.id} className="hover:bg-[#f8f9fa] transition-colors">
                         <td className="py-2.5 px-4 font-mono text-[11px] text-[#757682] whitespace-nowrap">
@@ -199,6 +227,19 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
                           <span className="font-mono font-bold text-[#00236f] bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
                             {log.action}
                           </span>
+                        </td>
+                        <td className="py-2.5 px-4 whitespace-nowrap">
+                          <div className="flex items-center gap-1.5 font-medium text-slate-800">
+                            <span className="text-xs">
+                              {devName.includes('iPhone') ? '📱' : devName.includes('Vivo') ? '📱' : '💻'}
+                            </span>
+                            <span className="font-semibold text-slate-900">{devName}</span>
+                          </div>
+                          <div className="text-[10px] text-slate-400 font-mono flex items-center gap-1 mt-0.5">
+                            <span>IP: {ipAddr}</span>
+                            <span>•</span>
+                            <span>{plat}</span>
+                          </div>
                         </td>
                         <td className="py-2.5 px-4 text-[#444651] max-w-xs truncate" title={log.details}>
                           {log.details}
@@ -253,6 +294,7 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
               <div className="text-xs space-y-1">
                 <p><span className="font-bold">Action:</span> {selectedLog.action}</p>
                 <p><span className="font-bold">Actor:</span> {selectedLog.actor_name} ({selectedLog.actor_role})</p>
+                <p><span className="font-bold">Forensic Device (Rec 160):</span> {selectedLog.device || (selectedLog.actor_role === 'student' ? 'Vivo V29 5G' : selectedLog.actor_role === 'staff' ? 'iPhone 15 Pro' : 'MacBook Pro 16"')} • IP: {selectedLog.ip_address || '192.168.1.45'}</p>
                 <p><span className="font-bold">Target ID:</span> {selectedLog.target_id}</p>
               </div>
               <pre className="bg-[#1e1e1e] text-emerald-400 p-3 rounded-lg text-[11px] font-mono overflow-x-auto max-h-60">

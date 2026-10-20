@@ -6,7 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
 
-const TARGET_URL = process.env.BASE_URL || 'http://localhost:3012';
+const TARGET_URL = process.env.BASE_URL || 'http://127.0.0.1:3012';
 const SCREENSHOT_DIR = path.resolve('screenshots_audit/roles');
 
 if (!fs.existsSync(SCREENSHOT_DIR)) {
@@ -264,9 +264,6 @@ async function runLiveUITest() {
     ],
   });
 
-  const page = await browser.newPage();
-  await page.setViewport({ width: 1440, height: 900, deviceScaleFactor: 2 });
-
   let passedAssertions = 0;
   let failedAssertions = 0;
 
@@ -285,6 +282,9 @@ async function runLiveUITest() {
       console.log(`\n----------------------------------------------------------------------`);
       console.log(`  TESTING ROLE: [${roleDef.role.toUpperCase()}] - ${roleDef.label}`);
       console.log(`----------------------------------------------------------------------`);
+
+      const page = await browser.newPage();
+      await page.setViewport({ width: 1440, height: 900, deviceScaleFactor: 2 });
 
       try {
         // 1. Navigate to target URL and guarantee completely fresh session
@@ -394,7 +394,7 @@ async function runLiveUITest() {
         // 7. Clean Sign Out & Session Storage
         await page.evaluate(() => {
           try {
-            const btn = Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('Sign Out'));
+            const btn = Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('Sign Out') || b.textContent.includes('Logout'));
             if (btn) btn.click();
             localStorage.clear();
             sessionStorage.clear();
@@ -404,6 +404,8 @@ async function runLiveUITest() {
 
       } catch (err) {
         assert(false, `Browser UI testing failed for ${roleDef.role}: ${err.message}`);
+      } finally {
+        await page.close().catch(() => {});
       }
     }
   } finally {

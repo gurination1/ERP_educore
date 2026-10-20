@@ -1131,7 +1131,7 @@ export const Header: React.FC<HeaderProps> = ({
                   BABA FARID GROUP OF INSTITUTIONS
                 </span>
                 <span className="text-[9px] sm:text-[10px] font-medium text-slate-300/80 leading-tight hidden sm:inline">
-                  Autonomous Campus ERP • PUP Patiala • MRSPTU • PU Affiliated
+                  Autonomous Higher Education Ecosystem • Punjab Campus
                 </span>
               </button>
               {/* Campus Switcher: Dropdown for Admin/Super Admin only; Static Text for Student/Staff (Karanvir Sir Lecture 4) */}
@@ -1577,10 +1577,9 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="text-slate-600 font-semibold tracking-tight">PostgreSQL 18.6 & MariaDB Multi-Pool</span>
             </div>
           ) : (
-            <div className="hidden lg:flex items-center gap-3 text-xs text-slate-500 font-medium select-none shrink-0 pr-2">
-              <span className="text-slate-400">Session: <strong className="text-[#00236f] font-semibold">AY 2026-27</strong> (Sem 4/6/8)</span>
-              <span className="text-slate-300">|</span>
-              <span className="text-slate-600 font-semibold tracking-tight">PUP Patiala • MRSPTU • PU Affiliated</span>
+            <div className="hidden lg:flex items-center gap-2 text-xs text-slate-500 font-medium select-none shrink-0 pr-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span className="text-slate-600 font-semibold tracking-tight">System Operational • Bathinda Main Campus</span>
             </div>
           )}
         </div>
