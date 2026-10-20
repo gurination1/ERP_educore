@@ -2052,7 +2052,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
                   Statutory No-Dues & Security Caution Deposit Release Certificate
                 </p>
                 <div className="inline-block mt-2 px-3 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-900 font-mono text-[10px] font-bold">
-                  REF NO: NOC/BFGI/HST/2026/{selectedNocRecord.id.toUpperCase()}
+                  REF NO: NOC/EDU/HST/2026/{selectedNocRecord.id.toUpperCase()}
                 </div>
               </div>
 

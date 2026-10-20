@@ -848,8 +848,8 @@ export async function handleSupabaseRequest<T = any>(
             { code: 'PU', name: 'Panjab University Chandigarh', type: 'Apex Regional University' },
           ],
           examCenters: [
-            { code: 'BFGI-104', name: 'Center 104 - Main Science Block, BFGI Campus', capacity: 350 },
-            { code: 'BFGI-108', name: 'Center 108 - Academic Block B (Management & IT Wing), BFGI Campus', capacity: 250 },
+            { code: 'CTR-104', name: 'Center 104 - Main Science Block', capacity: 350 },
+            { code: 'CTR-108', name: 'Center 108 - Academic Block B (Management & IT Wing)', capacity: 250 },
           ],
           feeSchedule: {
             regularFormFee: 1200,
@@ -1007,11 +1007,11 @@ export async function handleSupabaseRequest<T = any>(
 
     if (pathname.includes('/api/examination/datesheets')) {
       const datesheets = [
-        { university: 'MRSPTU', courseCode: 'B.Tech CS', semester: 4, paperCode: 'BTCS-401-18', paperTitle: 'Database Management Systems', examDate: '2026-05-18', session: 'Morning (09:30 AM - 12:30 PM)', centerCode: 'BFGI-104' },
-        { university: 'MRSPTU', courseCode: 'B.Tech CS', semester: 4, paperCode: 'BTCS-402-18', paperTitle: 'Operating Systems & System Programming', examDate: '2026-05-21', session: 'Morning (09:30 AM - 12:30 PM)', centerCode: 'BFGI-104' },
-        { university: 'MRSPTU', courseCode: 'B.Tech CS', semester: 4, paperCode: 'BTCS-403-18', paperTitle: 'Design & Analysis of Algorithms', examDate: '2026-05-25', session: 'Morning (09:30 AM - 12:30 PM)', centerCode: 'BFGI-104' },
-        { university: 'PUP', courseCode: 'MBA Finance', semester: 2, paperCode: 'MBA-201', paperTitle: 'Corporate Financial Management', examDate: '2026-05-19', session: 'Evening (01:30 PM - 04:30 PM)', centerCode: 'BFGI-108' },
-        { university: 'PU', courseCode: 'B.Sc Physics', semester: 6, paperCode: 'PHY-601', paperTitle: 'Quantum Mechanics & Nuclear Physics', examDate: '2026-05-20', session: 'Morning (09:30 AM - 12:30 PM)', centerCode: 'BFGI-104' },
+        { university: 'MRSPTU', courseCode: 'B.Tech CS', semester: 4, paperCode: 'BTCS-401-18', paperTitle: 'Database Management Systems', examDate: '2026-05-18', session: 'Morning (09:30 AM - 12:30 PM)', centerCode: 'CTR-104' },
+        { university: 'MRSPTU', courseCode: 'B.Tech CS', semester: 4, paperCode: 'BTCS-402-18', paperTitle: 'Operating Systems & System Programming', examDate: '2026-05-21', session: 'Morning (09:30 AM - 12:30 PM)', centerCode: 'CTR-104' },
+        { university: 'MRSPTU', courseCode: 'B.Tech CS', semester: 4, paperCode: 'BTCS-403-18', paperTitle: 'Design & Analysis of Algorithms', examDate: '2026-05-25', session: 'Morning (09:30 AM - 12:30 PM)', centerCode: 'CTR-104' },
+        { university: 'PUP', courseCode: 'MBA Finance', semester: 2, paperCode: 'MBA-201', paperTitle: 'Corporate Financial Management', examDate: '2026-05-19', session: 'Evening (01:30 PM - 04:30 PM)', centerCode: 'CTR-108' },
+        { university: 'PU', courseCode: 'B.Sc Physics', semester: 6, paperCode: 'PHY-601', paperTitle: 'Quantum Mechanics & Nuclear Physics', examDate: '2026-05-20', session: 'Morning (09:30 AM - 12:30 PM)', centerCode: 'CTR-104' },
       ];
       return { success: true, count: datesheets.length, datesheets, data: datesheets };
     }

@@ -582,7 +582,7 @@ function MainApp() {
             EDUCORE ENTERPRISE ERP
           </p>
           <p className="text-[10px] font-mono text-[#ea580c] uppercase mt-0.5">
-            [BFGI CAMPUS PORTAL • INITIALIZING CANONICAL SESSION]
+            [CAMPUS MANAGEMENT SUITE • INITIALIZING SECURE SESSION]
           </p>
         </div>
       </div>

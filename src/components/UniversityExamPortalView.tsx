@@ -171,7 +171,7 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
         studentId: studentProfile.student.id,
         semester: studentProfile.student.current_semester,
         selectedPapers: selectedRegularPapers,
-        centerAllotted: 'Center 104 (BFGI Main Campus, Bathinda)',
+        centerAllotted: 'Center 104 (Main Campus Examination Center)',
       });
       if (res.success) {
         setActionSuccessMsg('Regular Examination Form submitted successfully! Verification hash recorded.');
@@ -580,7 +580,7 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
               <div>
                 <span className="text-slate-500 font-bold">Designated Center:</span>{' '}
-                <span className="font-extrabold text-slate-900">Center 104 - Main Science & Engineering Block (BFGI Campus)</span>
+                <span className="font-extrabold text-slate-900">Center 104 - Main Science & Engineering Block</span>
               </div>
               <div>
                 <span className="text-slate-500 font-bold">Statutory Fee:</span>{' '}
@@ -808,7 +808,7 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
                 <div className="border-2 border-[#00236f] rounded-2xl p-6 sm:p-8 space-y-6 bg-white relative overflow-hidden print:border-2 print:p-6">
                   {/* Watermark in background */}
                   <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none">
-                    <span className="text-8xl font-black text-[#00236f] uppercase rotate-[-25deg]">BFGI EXAM CELL</span>
+                    <span className="text-8xl font-black text-[#00236f] uppercase rotate-[-25deg]">EDUCORE EXAM CELL</span>
                   </div>
 
                   {/* Header */}
@@ -861,7 +861,7 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
                       </div>
                       <div>
                         <span className="text-slate-500 font-semibold block text-[11px]">Allotted Center:</span>
-                        <span className="font-bold text-slate-900">Center 104 (BFGI Main Campus)</span>
+                        <span className="font-bold text-slate-900">Center 104 (Main Campus Examination Center)</span>
                       </div>
                     </div>
 

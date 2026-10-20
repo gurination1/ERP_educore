@@ -1440,7 +1440,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
             <div className="lg:col-span-2 bg-white p-5 rounded-2xl border border-[#e1e3e4] shadow-xs space-y-4">
               <div>
                 <h4 className="text-sm font-bold text-[#191c1d]">Statutory Scholarships & Government Mandates</h4>
-                <p className="text-xs text-[#757682] mt-0.5">Authoritative criteria for BFGI counseling directorate</p>
+                <p className="text-xs text-[#757682] mt-0.5">Authoritative criteria for institutional counseling directorate</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

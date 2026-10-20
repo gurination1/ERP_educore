@@ -449,7 +449,7 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
                 <div>• <strong className="text-[#00236f]">1001</strong>: Enrolled College Student</div>
               </div>
               <div className="pt-2 border-t border-slate-200/80 text-[10px] text-slate-500">
-                Example: <strong className="text-slate-800">4001-01-01-03-01</strong> = Principal of BFGI (Client 01, State 03 Punjab)
+                Example: <strong className="text-slate-800">4001-01-01-03-01</strong> = Principal of Main Institution (Campus 01, State 03)
               </div>
             </div>
 

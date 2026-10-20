@@ -479,7 +479,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                   </div>
                   <div>
                     <span className="text-slate-400 block text-[9px] uppercase">Registration No</span>
-                    <strong className="font-mono text-slate-900 font-bold">{examResultsData?.registrationNumber || 'MRSPTU-BFGI-2023-088'}</strong>
+                    <strong className="font-mono text-slate-900 font-bold">{examResultsData?.registrationNumber || 'MRSPTU-2023-088'}</strong>
                   </div>
                   <div>
                     <span className="text-slate-400 block text-[9px] uppercase">Examination Session</span>

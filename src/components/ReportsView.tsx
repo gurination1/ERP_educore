@@ -315,7 +315,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
       if (masterScope === 'faculty') {
         if (masterReportType === 'academic_journey') {
           data = [
-            { id: '1', col1: 'Dr. Gurpreet Singh', col2: 'EMP-CSE-001', col3: 'Professor & HOD', col4: 'Ph.D. Computer Vision (IITD)', col5: '14 Years (7 Yrs Adesh + 7 Yrs BFGI)', col6: '18 Scopus Papers, 2 Patents', col7: 'Active Standing' },
+            { id: '1', col1: 'Dr. Gurpreet Singh', col2: 'EMP-CSE-001', col3: 'Professor & HOD', col4: 'Ph.D. Computer Vision (IITD)', col5: '14 Years Collegiate Teaching', col6: '18 Scopus Papers, 2 Patents', col7: 'Active Standing' },
             { id: '2', col1: 'Prof. Harmeet Kaur', col2: 'EMP-CSE-004', col3: 'Associate Professor', col4: 'M.Tech CSE, Ph.D. Pursuing', col5: '9 Years Collegiate Teaching', col6: '8 IEEE Publications', col7: 'Active Standing' },
             { id: '3', col1: 'Er. Maninder Singh', col2: 'EMP-CSE-009', col3: 'Assistant Professor', col4: 'M.Tech Software Engineering', col5: '4 Years (Joined 2022)', col6: 'AWS Certified Solutions Architect', col7: 'Active Standing' },
             { id: '4', col1: 'Ms. Navneet Batra', col2: 'EMP-CSE-012', col3: 'Assistant Professor', col4: 'MCA, UGC-NET Qualified', col5: '3 Years Full-Time Faculty', col6: 'Cloud Computing Specialization', col7: 'Active Standing' },
