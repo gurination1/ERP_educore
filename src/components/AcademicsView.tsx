@@ -7,6 +7,7 @@ import { ShieldCheck } from 'lucide-react';
 
 interface AcademicsViewProps {
   currentUser: User | null;
+  onOpenMasterTables?: (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents' | 'hostel' | 'fees' | 'employee') => void;
 }
 
 interface SyllabusUnit {
@@ -158,7 +159,7 @@ type AcademicTab =
   | 'timetable'
   | 'attendance';
 
-export const AcademicsView: React.FC<AcademicsViewProps> = ({ currentUser }) => {
+export const AcademicsView: React.FC<AcademicsViewProps> = ({ currentUser, onOpenMasterTables }) => {
   const [searchParams] = useSearchParams();
   const rawTab = searchParams.get('tab');
   const urlTab = (rawTab === 'cbcs' ? 'syllabus' : rawTab) as AcademicTab | null;
@@ -593,6 +594,15 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
         </div>
 
         <div className="flex items-center gap-2">
+          {onOpenMasterTables && (
+            <button
+              type="button"
+              onClick={() => onOpenMasterTables('degrees')}
+              className="px-3 py-1 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            >
+              <span>Master Degrees & Ordinances</span>
+            </button>
+          )}
           <span className="text-[10px] font-bold px-2.5 py-0.5 bg-[#ffedd5] text-[#00236f] rounded-full border border-[#ea580c]">
             Session 2025-26
           </span>

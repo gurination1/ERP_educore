@@ -31,6 +31,7 @@ interface FeeLedgerViewProps {
   onOpenPayModal: (feeId?: string, studentObj?: any) => void;
   onOpenReceiptModal: (receiptNo?: string) => void;
   selectedCampus?: 'campus_01' | 'campus_02' | 'all';
+  onOpenMasterTables?: (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents' | 'hostel' | 'fees' | 'employee') => void;
 }
 
 const DEFAULT_FEE_POLICIES: FeePolicy[] = [
@@ -122,6 +123,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
   onOpenPayModal,
   onOpenReceiptModal,
   selectedCampus,
+  onOpenMasterTables,
 }) => {
   const [searchParams] = useSearchParams();
   const isActualAdmin = currentUser ? ['admin', 'super_admin', 'accounts'].includes(currentUser.role) : !currentStudent;
@@ -484,6 +486,16 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
         <div className="flex flex-wrap items-center gap-2">
           {isActualAdmin ? (
             <>
+              {onOpenMasterTables && (
+                <button
+                  type="button"
+                  onClick={() => onOpenMasterTables('fees')}
+                  className="px-3.5 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 flex items-center gap-1.5 shadow-2xs cursor-pointer transition-colors"
+                >
+                  <Building2 className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Master Fee Heads & Rules</span>
+                </button>
+              )}
               <button
                 onClick={() => { setIsAssignModalOpen(true); setAssignError(null); }}
                 className="px-4 py-2 bg-[#00236f] text-white rounded-lg text-xs font-bold hover:bg-[#1e3a8a] flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"

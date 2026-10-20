@@ -18,7 +18,7 @@ interface HeaderProps {
   onToggleTelephony?: () => void;
   isTelephonyOpen?: boolean;
   onOpenAuditLogs?: () => void;
-  onOpenMasterTables?: (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents') => void;
+  onOpenMasterTables?: (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents' | 'hostel' | 'fees' | 'employee') => void;
   onOpenStaffJourney?: () => void;
   onOpenAdmitCard?: () => void;
   onOpenPayModal?: () => void;

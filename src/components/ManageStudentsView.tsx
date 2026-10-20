@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { api, getStoredToken } from '../api/client';
 import { StudentProfile, User } from '../types';
-import { Download } from 'lucide-react';
+import { Download, Search, Users, GraduationCap } from 'lucide-react';
 
 interface ManageStudentsViewProps {
   currentUser?: User | null;
   onSelectStudent: (student: StudentProfile) => void;
   onOpenEmailReminders: () => void;
   selectedCampus?: 'campus_01' | 'campus_02' | 'all';
+  onOpenMasterTables?: (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents' | 'hostel' | 'fees' | 'employee') => void;
 }
 
 export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
@@ -17,6 +18,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
   onSelectStudent,
   onOpenEmailReminders,
   selectedCampus,
+  onOpenMasterTables,
 }) => {
   const navigate = useNavigate();
   const isHOD = currentUser?.role === 'hod';
@@ -264,131 +266,105 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
         </div>
       </div>
 
-      {/* Main Grid: Left Filters Sidebar + Right Table */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Advanced Filters & Total Enrolled Card (4 cols) */}
-        <div className="lg:col-span-4 space-y-6">
-          {/* Advanced Filters Form Box */}
-          <div className="bg-white rounded-xl p-6 border border-[#e1e3e4] shadow-xs">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-bold text-[#191c1d]">Advanced Filters</h3>
-              <button
-                type="button"
-                onClick={handleResetFilters}
-                className="text-xs font-semibold text-[#00236f] hover:underline"
-              >
-                Reset
-              </button>
-            </div>
-
-            <form onSubmit={handleApplyFilters} className="space-y-4">
-              {/* Search query */}
-              <div>
-                <label className="block text-xs font-bold text-[#191c1d] uppercase tracking-wider mb-1.5">
-                  Search Name or ID
-                </label>
-                <div className="relative">
-                  
-                  <input
-                    type="text"
-                    id="filter-search-input"
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="e.g. Alice or 1001-88-03-01"
-                    className="w-full pl-9 pr-3.5 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
-                  />
-                </div>
-              </div>
-
-              {/* Course */}
-              <div>
-                <label className="block text-xs font-bold text-[#191c1d] uppercase tracking-wider mb-1.5">
-                  Course
-                </label>
-                <select
-                  id="filter-course-select"
-                  value={courseFilter}
-                  onChange={e => setCourseFilter(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-medium text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
-                >
-                  <option value="All Courses">All Courses</option>
-                  <option value="B.Tech CS">B.Tech CS</option>
-                  <option value="B.Tech ME">B.Tech ME</option>
-                  <option value="MBA Finance">MBA Finance</option>
-                  <option value="B.Sc Physics">B.Sc Physics</option>
-                </select>
-              </div>
-
-              {/* Admission Year */}
-              <div>
-                <label className="block text-xs font-bold text-[#191c1d] uppercase tracking-wider mb-1.5">
-                  Admission Year
-                </label>
-                <select
-                  id="filter-year-select"
-                  value={yearFilter}
-                  onChange={e => setYearFilter(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-medium text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
-                >
-                  <option value="All Years">All Years</option>
-                  <option value="2025">2025</option>
-                  <option value="2024">2024</option>
-                  <option value="2023">2023</option>
-                  <option value="2022">2022</option>
-                  <option value="2021">2021</option>
-                </select>
-              </div>
-
-              {/* Fees Status */}
-              <div>
-                <label className="block text-xs font-bold text-[#191c1d] uppercase tracking-wider mb-1.5">
-                  Fees Status
-                </label>
-                <select
-                  id="filter-fees-select"
-                  value={statusFilter}
-                  onChange={e => setStatusFilter(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-medium text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
-                >
-                  <option value="All Statuses">All Statuses</option>
-                  <option value="paid">Paid</option>
-                  <option value="due">Due</option>
-                  <option value="overdue">Overdue</option>
-                </select>
-              </div>
-
-              <button
-                type="submit"
-                id="apply-filters-btn"
-                className="w-full py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-colors shadow-xs cursor-pointer mt-2"
-              >
-                Apply Filters
-              </button>
-            </form>
+      {/* Sleek Horizontal Filter Bar & Quick Actions Strip */}
+      <div className="bg-white rounded-2xl p-3.5 border border-[#e1e3e4] shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
+        <form onSubmit={handleApplyFilters} className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+          {/* Search */}
+          <div className="relative min-w-[200px] flex-1 max-w-xs">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              id="filter-search-input"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search scholar name or UID..."
+              className="w-full pl-8 pr-3 py-1.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl text-xs text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/20 font-medium"
+            />
           </div>
 
-          {/* Total Enrolled Metric Box */}
-          <div className="bg-white rounded-xl p-6 border border-[#e1e3e4] shadow-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#757682]">
-                Total Enrolled
-              </span>
-              <div className="w-8 h-8 rounded-lg bg-[#dce1ff] text-[#00236f] flex items-center justify-center">
-                
-              </div>
-            </div>
-            <div className="mt-3">
-              <h3 className="text-3xl font-extrabold text-[#191c1d] tracking-tight">{(totalCount || 0).toLocaleString('en-IN')}</h3>
-              <p className="text-xs font-semibold text-[#00236f] mt-1 flex items-center gap-1">
-                
-                <span>+12% this semester</span>
-              </p>
-            </div>
+          {/* Course select pill */}
+          <select
+            id="filter-course-select"
+            value={courseFilter}
+            onChange={e => setCourseFilter(e.target.value)}
+            className="px-3 py-1.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl text-xs font-semibold text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/20 cursor-pointer"
+          >
+            <option value="All Courses">All Courses</option>
+            <option value="B.Tech CS">B.Tech CS</option>
+            <option value="B.Tech ME">B.Tech ME</option>
+            <option value="MBA Finance">MBA Finance</option>
+            <option value="B.Sc Physics">B.Sc Physics</option>
+          </select>
+
+          {/* Admission Year select pill */}
+          <select
+            id="filter-year-select"
+            value={yearFilter}
+            onChange={e => setYearFilter(e.target.value)}
+            className="px-3 py-1.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl text-xs font-semibold text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/20 cursor-pointer"
+          >
+            <option value="All Years">All Years</option>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+            <option value="2022">2022</option>
+            <option value="2021">2021</option>
+          </select>
+
+          {/* Fees Status select pill */}
+          <select
+            id="filter-fees-select"
+            value={statusFilter}
+            onChange={e => setStatusFilter(e.target.value)}
+            className="px-3 py-1.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl text-xs font-semibold text-[#191c1d] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00236f]/20 cursor-pointer"
+          >
+            <option value="All Statuses">All Fee Statuses</option>
+            <option value="paid">Paid</option>
+            <option value="due">Due</option>
+            <option value="overdue">Overdue</option>
+          </select>
+
+          <button
+            type="submit"
+            id="apply-filters-btn"
+            className="px-3 py-1.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-xl text-xs font-bold transition-colors shadow-2xs cursor-pointer"
+          >
+            Filter
+          </button>
+
+          {(searchQuery || courseFilter !== hodCourseDefault || yearFilter !== 'All Years' || statusFilter !== 'All Statuses') && (
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="text-xs font-semibold text-slate-500 hover:text-slate-800 underline px-1 cursor-pointer"
+            >
+              Reset
+            </button>
+          )}
+        </form>
+
+        <div className="flex items-center gap-2">
+          {onOpenMasterTables && (
+            <button
+              type="button"
+              onClick={() => onOpenMasterTables('degrees')}
+              className="px-3 py-1.5 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+              title="Open Master Degrees, Ordinances & Branch Codes"
+            >
+              <GraduationCap className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Master Degrees & Ordinances</span>
+            </button>
+          )}
+
+          <div className="px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-[11px] font-bold text-[#00236f] flex items-center gap-1.5">
+            <Users className="w-3.5 h-3.5 text-slate-500" />
+            <span>{(totalCount || 0).toLocaleString('en-IN')} Enrolled Scholars</span>
           </div>
         </div>
+      </div>
 
-        {/* Right Column: Student Master Table (8 cols) */}
-        <div className="lg:col-span-8 bg-white rounded-xl border border-[#e1e3e4] shadow-xs flex flex-col justify-between overflow-hidden">
+      {/* Student Master Table (Full Width 12-cols) */}
+      <div className="w-full bg-white rounded-xl border border-[#e1e3e4] shadow-xs flex flex-col justify-between overflow-hidden">
           {/* Table Container */}
           <div className="overflow-x-auto">
             <table id="student-master-table" className="w-full text-left border-collapse">
@@ -580,7 +556,6 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
             </div>
           </div>
         </div>
-      </div>
 
       {/* Progression Toast Notification */}
       {progressionMsg && (

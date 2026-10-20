@@ -6,12 +6,15 @@ import { X, Download, Users, CheckCircle2, AlertTriangle, ArrowRight, Building2,
 interface AdminDashboardViewProps {
   onNavigate: (screen: ActiveScreen) => void;
   onOpenEmailReminders?: () => void;
+  onOpenMasterTables?: (tab?: any) => void;
   selectedCampus?: 'campus_01' | 'campus_02' | 'all';
   onSelectCampus?: (campus: 'campus_01' | 'campus_02' | 'all') => void;
 }
 
 export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   onNavigate,
+  onOpenEmailReminders,
+  onOpenMasterTables,
   selectedCampus = 'campus_01',
   onSelectCampus,
 }) => {
@@ -211,22 +214,22 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       }
     }).catch(console.warn);
 
-    // Load Real Students Count & Progression (Full cohort)
-    api.getStudents({ limit: 1000 }).then(res => {
+    // Load Real Students Count & Progression (Scoped to Campus)
+    api.getStudents({ limit: 1000, campus: selectedCampus && selectedCampus !== 'all' ? selectedCampus : undefined }).then(res => {
       if (res.success && (res.total || Array.isArray(res.students))) {
         const studentList = Array.isArray(res.students) ? res.students : [];
-        const total = res.total ?? (studentList.length > 0 ? studentList.length : 67);
+        const total = res.total ?? (studentList.length > 0 ? studentList.length : (selectedCampus === 'campus_02' ? 22 : 45));
         const active = studentList.filter((s: any) => s.progression_status === 'active' || !s.progression_status).length;
         const promoted = studentList.filter((s: any) => s.progression_status === 'promoted').length;
         const demoted = studentList.filter((s: any) => s.progression_status === 'demoted').length;
         const struckOff = studentList.filter((s: any) => s.progression_status === 'struck_off').length;
         const deactivated = studentList.filter((s: any) => s.progression_status === 'deactivated').length;
         setProgressionStats({
-          active: active > 0 ? active : 49,
-          promoted: promoted > 0 ? promoted : 6,
-          demoted: demoted > 0 ? demoted : 4,
-          struck_off: struckOff > 0 ? struckOff : 4,
-          deactivated: deactivated > 0 ? deactivated : 4,
+          active: active > 0 ? active : (selectedCampus === 'campus_02' ? 18 : 34),
+          promoted: promoted > 0 ? promoted : (selectedCampus === 'campus_02' ? 2 : 5),
+          demoted: demoted > 0 ? demoted : (selectedCampus === 'campus_02' ? 1 : 3),
+          struck_off: struckOff > 0 ? struckOff : (selectedCampus === 'campus_02' ? 1 : 3),
+          deactivated: deactivated > 0 ? deactivated : 0,
         });
         setKpiData((prev: any) => ({
           ...prev,
@@ -235,8 +238,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       }
     }).catch(console.warn);
 
-    // Load Macro Fees
-    api.getFeeKPIs().then(res => {
+    // Load Macro Fees Scoped to Campus
+    api.getFeeKPIs(selectedCampus).then(res => {
       if (res.success && res.kpi) {
         setKpiData((prev: any) => ({
           ...prev,
@@ -245,7 +248,13 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         }));
       }
     }).catch(console.warn);
-  }, []);
+  }, [selectedCampus]);
+
+  const staffCadre = selectedCampus === 'campus_01'
+    ? { admin: 6, teaching: 34, nonTeaching: 20, total: 60 }
+    : selectedCampus === 'campus_02'
+    ? { admin: 4, teaching: 16, nonTeaching: 20, total: 40 }
+    : { admin: 10, teaching: 50, nonTeaching: 40, total: 100 };
 
   const filteredDepartmentRows = departmentRows.filter(d => {
     if (selectedCluster === 'All Departments') return true;
@@ -283,6 +292,18 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
 
         {/* Quick Filter Selectors - Cupertino Style */}
         <div className="flex items-center gap-2">
+          {onOpenMasterTables && (
+            <button
+              type="button"
+              onClick={() => onOpenMasterTables('departments')}
+              className="h-8 px-3 bg-white hover:bg-slate-50 border border-slate-200/90 text-[#00236f] rounded-lg font-bold text-xs cursor-pointer shadow-2xs transition-all flex items-center gap-1.5"
+              title="Configure Master Architecture Tables"
+            >
+              <Building2 className="w-3.5 h-3.5 text-blue-600" />
+              <span>Master Data</span>
+            </button>
+          )}
+
           <select
             id="admin-filter-cluster"
             value={selectedCluster}
@@ -398,15 +419,15 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
               <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
                 <span>Total Staff</span>
                 <span className="text-[#00236f] bg-blue-50 border border-blue-200/80 px-2 py-0.5 rounded-full text-[10px] font-bold group-hover:bg-[#00236f] group-hover:text-white transition-colors">
-                  100 CADRE
+                  {staffCadre.total} CADRE
                 </span>
               </div>
               <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-2xl font-black text-[#00236f] tracking-tight">100</span>
+                <span className="text-2xl font-black text-[#00236f] tracking-tight">{staffCadre.total}</span>
                 <span className="text-xs font-semibold text-emerald-600">Cadre Strength</span>
               </div>
               <div className="mt-2 text-[11px] text-slate-600 font-mono">
-                <strong className="text-slate-800">10 Admin</strong> + <strong className="text-emerald-700">50 Teaching</strong> + <strong className="text-blue-700">40 Non-Teaching</strong> = <strong className="text-[#00236f]">100</strong>
+                <strong className="text-slate-800">{staffCadre.admin} Admin</strong> + <strong className="text-emerald-700">{staffCadre.teaching} Teaching</strong> + <strong className="text-blue-700">{staffCadre.nonTeaching} Non-Teaching</strong> = <strong className="text-[#00236f]">{staffCadre.total}</strong>
               </div>
               <div className="mt-1.5 pt-1.5 border-t border-slate-100 text-[10px] text-slate-500">
                 Administration &bull; Teaching &bull; Non-Teaching (Cadre Complete)
@@ -478,15 +499,15 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                 </span>
               </div>
               <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-2xl font-black text-amber-700 tracking-tight">₹ 17.23 L</span>
+                <span className="text-2xl font-black text-amber-700 tracking-tight">{kpiData.pendingDuesFormatted || '₹ 17.23 L'}</span>
                 <span className="text-xs font-semibold text-rose-600">Pending Dues</span>
               </div>
               <div className="mt-2 text-[11px] text-slate-500">
-                <span>Cohort Fee Inflow: <strong className="text-slate-800">₹ 17,23,450</strong></span>
+                <span>Cohort Fee Inflow: <strong className="text-slate-800">{kpiData.pendingDuesFormatted || '₹ 17,23,450'}</strong></span>
               </div>
               <div className="mt-1.5 pt-1.5 border-t border-slate-100 text-[10px] text-slate-400 flex items-center justify-between">
                 <span>Receivable Dues Projection</span>
-                <span className="font-mono text-slate-500 font-semibold">Realized: ₹ 39.63 L</span>
+                <span className="font-mono text-slate-500 font-semibold">Realized: {kpiData.totalCollectedFormatted || '₹ 39.63 L'}</span>
               </div>
             </div>
           </div>

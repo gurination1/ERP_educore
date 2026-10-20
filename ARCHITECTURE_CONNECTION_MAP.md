@@ -62,10 +62,22 @@ Hardcoded dropdowns and fixed string arrays are completely prohibited. Master ta
 | `master_states` | `gst_code`, `state_name`, `state_short_code`, `is_ut` | `SuperAdminDashboardView` (Onboarding), `AdmissionsAdminView`, `StudentProfileModal` | Defines GST state code for canonical UID (`[Type]-[Seq]-[State]-[Inst]`). Prevents invalid state entries. |
 | `master_institution_types` | `code`, `name`, `regulatory_authority`, `description` | `SuperAdminDashboardView`, `AdminDashboardView` | Defines statutory authority (AICTE, UGC, PCI, BCI) for new institutions and accreditation limits. |
 | `master_departments` | `dept_code`, `dept_name`, `tags`, `head_of_dept`, `established_year` | `AcademicsView`, `StaffManagementView`, `SuperAdminDashboardView`, `ManageStudentsView` | Dynamically populates department filters, subject offerings, faculty allocation, and batch creation. |
-| `master_degrees` | `degree_code`, `degree_name`, `level`, `duration_years`, `total_semesters` | `AcademicsView`, `AdmissionsAdminView`, `UniversityExamPortalView` | Determines standard semester count (8 for B.Tech, 4 for MBA), grade cards, and degree certificates. |
+| `master_degrees` | `degree_code`, `degree_name`, `level`, `duration_years`, `total_semesters` | `AcademicsView`, `AdmissionsAdminView`, `UniversityExamPortalView`, `ManageStudentsView` | Determines standard semester count (8 for B.Tech, 4 for MBA), grade cards, and degree certificates. |
 | `master_user_types` | `type_code`, `alpha_prefix`, `role_key`, `display_title` | `UserManagementView`, `SuperAdminDashboardView`, `Header.tsx` | Enforces canonical UID structure (e.g., `4001` for Admin, `1001` for Student, `2001` for Faculty). |
 | `master_employee_statuses` | `status_code`, `status_name`, `description`, `requires_dates` | `StaffManagementView`, `UserManagementView` | Governs formal HR status transitions (Active, Resigned, Terminated, AWOL) with mandatory exit dates. |
 | `master_document_types` | `doc_type_code`, `title`, `mandatory_for`, `max_file_size_mb` | `StudentDocumentsView`, `AdmissionFormView` | Dictates mandatory document verification checklist before admission sanction. |
+| `master_hostel` | `block_code`, `ownership`, `washroom_typology`, `safety_timer_days`, `mess_policy` | `HostelManagementView`, `MasterTablesModal` | Governs residence blocks, ARW (Attached) vs FCW (Floor Common) washrooms, 360-day overhaul, 90-day electrical inspection, and mess billing policies. |
+| `master_fees` | `head_code`, `head_name`, `statutory_category`, `is_refundable`, `concession_tiers` | `FeeLedgerView`, `MasterTablesModal` | Itemized tuition, caution deposit, exam, hostel, and mess fee heads; merit and sibling waiver tiers; contra-ledger demotion adjustments. |
+
+### 2.1 Direct Master Table Access in Operational Views
+Per mentor Karanvir Sir's architectural directive (*"Har setting ke andar ek button hoga master table / master data"*):
+- **Super Admin Dashboard** (`SuperAdminDashboardView.tsx`): Dedicated "Master Tables & Architecture" button in top command strip (`onOpenMasterTables('institutions')`). Client onboarding modal includes inline "+ Master" drawers.
+- **Admin Operations Dashboard** (`AdminDashboardView.tsx`): Prominent "Master Data" button in quick filter toolbar (`onOpenMasterTables()`).
+- **Hostel Operations** (`HostelManagementView.tsx`): "Master Residence Data" button in header toolbar, "Master Residence Settings" in Tab 2, and "Master Typologies" in Tab 3 (`onOpenMasterTables('hostel')`), plus "+ Add Residence Block" interactive modal.
+- **Tuition & Fee Ledgers** (`FeeLedgerView.tsx`): "Master Fee Heads & Rules" button in collections action bar (`onOpenMasterTables('fees')`).
+- **Student Registry** (`ManageStudentsView.tsx`): "+ Master Degrees & Ordinances" button in horizontal filter strip (`onOpenMasterTables('degrees')`).
+- **Faculty & HRMS** (`StaffManagementView.tsx`): "Master Employee Statuses" button in top toolbar (`onOpenMasterTables('employee')`).
+- **Academic Topology & Curriculum** (`AcademicsView.tsx`): "Master Degrees & Ordinances" button in curriculum header (`onOpenMasterTables('degrees')`).
 
 ---
 

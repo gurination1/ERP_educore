@@ -54,7 +54,7 @@ interface LayoutProps {
   searchQuery: string;
   onSearchChange: (q: string) => void;
   onOpenAuditLogs?: () => void;
-  onOpenMasterTables?: (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents') => void;
+  onOpenMasterTables?: (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents' | 'hostel' | 'fees' | 'employee') => void;
   onOpenPayModal?: () => void;
   onOpenAdmitCard?: () => void;
   selectedCampus?: 'campus_01' | 'campus_02' | 'all';
@@ -83,7 +83,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
   const [showCopilot, setShowCopilot] = useState(false);
   const [internalShowAuditLogs, setInternalShowAuditLogs] = useState(false);
   const [internalShowMasterTables, setInternalShowMasterTables] = useState(false);
-  const [internalMasterTablesTab, setInternalMasterTablesTab] = useState<'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents'>('states');
+  const [internalMasterTablesTab, setInternalMasterTablesTab] = useState<'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents' | 'hostel' | 'fees' | 'employee'>('states');
   const [showStaffJourney, setShowStaffJourney] = useState(false);
   const [showAdmitCard, setShowAdmitCard] = useState(false);
   const [isTelephonyOpen, setIsTelephonyOpen] = useState(false);
@@ -96,7 +96,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
   });
 
   const handleAudit = propOnOpenAuditLogs || (() => setInternalShowAuditLogs(true));
-  const handleMaster = (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents') => {
+  const handleMaster = (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents' | 'hostel' | 'fees' | 'employee') => {
     if (propOnOpenMasterTables) {
       propOnOpenMasterTables(tab);
     } else {
@@ -464,9 +464,9 @@ function MainApp() {
   // Master Architecture & Cryptographic Forensics Global Modals
   const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [showMasterTables, setShowMasterTables] = useState(false);
-  const [masterTablesTab, setMasterTablesTab] = useState<'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents'>('states');
+  const [masterTablesTab, setMasterTablesTab] = useState<'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents' | 'hostel' | 'fees' | 'employee'>('states');
 
-  const handleOpenMasterTables = (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents') => {
+  const handleOpenMasterTables = (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents' | 'hostel' | 'fees' | 'employee') => {
     if (tab) setMasterTablesTab(tab);
     setShowMasterTables(true);
   };
@@ -477,7 +477,7 @@ function MainApp() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab') as any;
-    if (tab && ['states', 'departments', 'institutions', 'userTypes', 'degrees', 'documents'].includes(tab)) {
+    if (tab && ['states', 'departments', 'institutions', 'userTypes', 'degrees', 'documents', 'hostel', 'fees', 'employee'].includes(tab)) {
       setMasterTablesTab(tab);
     }
   }, [location.search]);
@@ -681,12 +681,18 @@ function MainApp() {
                     onSelectCampus={setSelectedCampus}
                     onNavigate={handleScreenNavigate}
                     onOpenEmailReminders={() => setIsEmailRemindersOpen(true)}
+                    onOpenMasterTables={handleOpenMasterTables}
                   />
                 ) : currentUser.role === 'hr' ? (
-                  <StaffManagementView currentUser={currentUser} />
+                  <StaffManagementView
+                    currentUser={currentUser}
+                    selectedCampus={selectedCampus}
+                    onOpenMasterTables={handleOpenMasterTables}
+                  />
                 ) : currentUser.role === 'counselor' ? (
                   <EnquiriesView
                     currentUser={currentUser}
+                    selectedCampus={selectedCampus}
                     onNavigateToBulkImport={() => navigate('/bulk-import')}
                     onNavigateToManageStudents={() => navigate('/manage-students')}
                   />
@@ -698,10 +704,17 @@ function MainApp() {
                 ) : currentUser.role === 'partner' ? (
                   <PartnerPortalView currentUser={currentUser} />
                 ) : currentUser.role === 'hostel' ? (
-                  <HostelManagementView currentUser={currentUser} />
+                  <HostelManagementView
+                    currentUser={currentUser}
+                    selectedCampus={selectedCampus}
+                    onOpenMasterTables={handleOpenMasterTables}
+                    onNavigate={handleScreenNavigate}
+                  />
                 ) : currentUser.role === 'accounts' ? (
                   <FeeLedgerView
                     currentUser={currentUser}
+                    selectedCampus={selectedCampus}
+                    onOpenMasterTables={handleOpenMasterTables}
                     onOpenReceiptModal={receiptNo => {
                       setActiveReceiptNo(receiptNo);
                       setIsReceiptOpen(true);
@@ -760,6 +773,7 @@ function MainApp() {
                   currentUser={currentUser}
                   currentStudent={currentStudent}
                   selectedCampus={selectedCampus}
+                  onOpenMasterTables={handleOpenMasterTables}
                   onOpenPayModal={(feeId, studentObj) => {
                     setTargetPayFeeId(feeId);
                     setTargetPayStudent(studentObj || currentStudent);
@@ -830,6 +844,7 @@ function MainApp() {
                 <ManageStudentsView
                   currentUser={currentUser}
                   selectedCampus={selectedCampus}
+                  onOpenMasterTables={handleOpenMasterTables}
                   onSelectStudent={student => setViewingStudent(student)}
                   onOpenEmailReminders={() => setIsEmailRemindersOpen(true)}
                 />
@@ -887,8 +902,15 @@ function MainApp() {
                 onLogout={handleLogout}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
+                onOpenMasterTables={handleOpenMasterTables}
+                onOpenAuditLogs={handleOpenAuditLogs}
+                selectedCampus={selectedCampus}
+                onCampusChange={setSelectedCampus}
               >
-                <AcademicsView currentUser={currentUser} />
+                <AcademicsView
+                  currentUser={currentUser}
+                  onOpenMasterTables={handleOpenMasterTables}
+                />
               </AuthenticatedLayout>
             )
           }
@@ -1203,7 +1225,11 @@ function MainApp() {
                 selectedCampus={selectedCampus}
                 onCampusChange={setSelectedCampus}
               >
-                <StaffManagementView currentUser={currentUser} selectedCampus={selectedCampus} />
+                <StaffManagementView
+                  currentUser={currentUser}
+                  selectedCampus={selectedCampus}
+                  onOpenMasterTables={handleOpenMasterTables}
+                />
               </AuthenticatedLayout>
             )
           }
@@ -1251,7 +1277,12 @@ function MainApp() {
                 selectedCampus={selectedCampus}
                 onCampusChange={setSelectedCampus}
               >
-                <HostelManagementView currentUser={currentUser} selectedCampus={selectedCampus} />
+                <HostelManagementView
+                  currentUser={currentUser}
+                  selectedCampus={selectedCampus}
+                  onOpenMasterTables={handleOpenMasterTables}
+                  onNavigate={handleScreenNavigate}
+                />
               </AuthenticatedLayout>
             )
           }

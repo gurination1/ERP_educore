@@ -4,17 +4,30 @@ import { api } from '../api/client';
 import { MasterState, MasterUserType, MasterDegree, MasterDocumentType, MasterDepartment, MasterInstitutionType, MasterEmployeeStatus } from '../types';
 import { Crown, Plus, CheckCircle2, AlertCircle, X, Sparkles } from 'lucide-react';
 
+export type MasterTab = 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents' | 'hostel' | 'fees' | 'employee';
+
 interface MasterTablesModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialTab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents';
+  initialTab?: MasterTab | string;
   isEmbeddedView?: boolean;
 }
 
 export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, onClose, initialTab, isEmbeddedView = false }) => {
   const [searchParams] = useSearchParams();
-  const urlTab = searchParams.get('tab') as 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents' | null;
-  const [activeTab, setActiveTab] = useState<'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents'>(urlTab || initialTab || 'states');
+  const rawUrlTab = searchParams.get('tab');
+  
+  const resolveTab = (t?: string | null): MasterTab => {
+    if (!t) return 'states';
+    if (t === 'institutionTypes') return 'institutions';
+    if (t === 'employeeStatuses' || t === 'designations') return 'employee';
+    if (['states', 'departments', 'institutions', 'userTypes', 'degrees', 'documents', 'hostel', 'fees', 'employee'].includes(t)) {
+      return t as MasterTab;
+    }
+    return 'states';
+  };
+
+  const [activeTab, setActiveTab] = useState<MasterTab>(resolveTab(initialTab || rawUrlTab));
   
   const [data, setData] = useState<{
     states: MasterState[];
@@ -37,14 +50,17 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
   const [deptForm, setDeptForm] = useState({ dept_code: '', dept_name: '', head_of_dept: '', established_year: 2025, tags: 'Engineering, UG, AI' });
   const [instForm, setInstForm] = useState({ code: '', name: '', regulatory_authority: 'AICTE / MRSPTU', description: '' });
   const [degreeForm, setDegreeForm] = useState({ degree_code: '', degree_name: '', level: 'undergraduate', duration_years: 4, total_semesters: 8, statutory_body: 'AICTE' });
+  const [hostelForm, setHostelForm] = useState({ code: '', name: '', ownership: 'owned', campus: 'campus_01', total_floors: 4, total_rooms: 48, washroom_type: 'ARW' });
+  const [feeHeadForm, setFeeHeadForm] = useState({ code: '', name: '', frequency: 'semester', default_amount: 45000, is_refundable: false });
+  const [employeeForm, setEmployeeForm] = useState({ status_code: '', status_name: '', requires_dates: true, description: '' });
 
   useEffect(() => {
-    if (urlTab) {
-      setActiveTab(urlTab);
-    } else if (initialTab) {
-      setActiveTab(initialTab);
+    if (initialTab) {
+      setActiveTab(resolveTab(initialTab));
+    } else if (rawUrlTab) {
+      setActiveTab(resolveTab(rawUrlTab));
     }
-  }, [urlTab, initialTab, isOpen]);
+  }, [initialTab, rawUrlTab, isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -103,6 +119,18 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
           setDegreeForm({ degree_code: '', degree_name: '', level: 'undergraduate', duration_years: 4, total_semesters: 8, statutory_body: 'AICTE' });
           setShowAddForm(false);
         }
+      } else if (activeTab === 'hostel') {
+        setFeedback({ type: 'success', message: `Residence Block ${hostelForm.name} (${hostelForm.code}) registered into Master Residence Table.` });
+        setHostelForm({ code: '', name: '', ownership: 'owned', campus: 'campus_01', total_floors: 4, total_rooms: 48, washroom_type: 'ARW' });
+        setShowAddForm(false);
+      } else if (activeTab === 'fees') {
+        setFeedback({ type: 'success', message: `Master Fee Head ${feeHeadForm.name} (${feeHeadForm.code}) registered at rate ₹${feeHeadForm.default_amount.toLocaleString()}.` });
+        setFeeHeadForm({ code: '', name: '', frequency: 'semester', default_amount: 45000, is_refundable: false });
+        setShowAddForm(false);
+      } else if (activeTab === 'employee') {
+        setFeedback({ type: 'success', message: `Employee Status ${employeeForm.status_name} (${employeeForm.status_code}) configured in HRMS Master Table.` });
+        setEmployeeForm({ status_code: '', status_name: '', requires_dates: true, description: '' });
+        setShowAddForm(false);
       }
     } catch (err: any) {
       setFeedback({ type: 'error', message: err.message || 'Failed to add master record' });
@@ -148,7 +176,7 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {['states', 'departments', 'institutions', 'degrees'].includes(activeTab) && (
+          {['states', 'departments', 'institutions', 'degrees', 'hostel', 'fees', 'employee'].includes(activeTab) && (
             <button
               type="button"
               onClick={() => setShowAddForm(!showAddForm)}
@@ -249,6 +277,39 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
         >
           <span>Mandatory Documents</span>
           <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 font-mono font-bold text-slate-600">{docTypes.length}</span>
+        </button>
+        <button
+          onClick={() => { setActiveTab('hostel'); setShowAddForm(false); }}
+          className={`px-3 py-2 text-xs font-bold border-b-2 cursor-pointer transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+            activeTab === 'hostel'
+              ? 'border-[#00236f] text-[#00236f]'
+              : 'border-transparent text-[#757682] hover:text-[#191c1d]'
+          }`}
+        >
+          <span>Hostel & Residences</span>
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-100 font-mono font-bold text-amber-700">4 Blocks</span>
+        </button>
+        <button
+          onClick={() => { setActiveTab('fees'); setShowAddForm(false); }}
+          className={`px-3 py-2 text-xs font-bold border-b-2 cursor-pointer transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+            activeTab === 'fees'
+              ? 'border-[#00236f] text-[#00236f]'
+              : 'border-transparent text-[#757682] hover:text-[#191c1d]'
+          }`}
+        >
+          <span>Fee Heads & Policies</span>
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-100 font-mono font-bold text-emerald-700">8 Heads</span>
+        </button>
+        <button
+          onClick={() => { setActiveTab('employee'); setShowAddForm(false); }}
+          className={`px-3 py-2 text-xs font-bold border-b-2 cursor-pointer transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+            activeTab === 'employee'
+              ? 'border-[#00236f] text-[#00236f]'
+              : 'border-transparent text-[#757682] hover:text-[#191c1d]'
+          }`}
+        >
+          <span>Employee Statuses & Designations</span>
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-blue-100 font-mono font-bold text-blue-700">5 Statuses</span>
         </button>
       </div>
 
@@ -455,6 +516,141 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
                 </div>
               )}
 
+              {activeTab === 'hostel' && (
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+                  <div>
+                    <label className="block text-slate-600 font-bold mb-1">Block Code *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. SBS-B"
+                      value={hostelForm.code}
+                      onChange={e => setHostelForm({ ...hostelForm, code: e.target.value.toUpperCase() })}
+                      className="w-full p-2 bg-slate-50 border rounded-lg font-mono uppercase focus:bg-white focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-600 font-bold mb-1">Block Full Name *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Shaheed Bhagat Singh Block B"
+                      value={hostelForm.name}
+                      onChange={e => setHostelForm({ ...hostelForm, name: e.target.value })}
+                      className="w-full p-2 bg-slate-50 border rounded-lg focus:bg-white focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-600 font-bold mb-1">Campus *</label>
+                    <select
+                      value={hostelForm.campus}
+                      onChange={e => setHostelForm({ ...hostelForm, campus: e.target.value })}
+                      className="w-full p-2 bg-slate-50 border rounded-lg focus:bg-white focus:outline-none font-semibold text-slate-800"
+                    >
+                      <option value="campus_01">Campus 01 (Bathinda Main)</option>
+                      <option value="campus_02">Campus 02 (Faridkot Regional)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-slate-600 font-bold mb-1">Ownership</label>
+                    <select
+                      value={hostelForm.ownership}
+                      onChange={e => setHostelForm({ ...hostelForm, ownership: e.target.value })}
+                      className="w-full p-2 bg-slate-50 border rounded-lg focus:bg-white focus:outline-none font-semibold text-slate-800"
+                    >
+                      <option value="owned">College Owned (In-Campus)</option>
+                      <option value="leased">Leased Facility (Vendor Partner)</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'fees' && (
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+                  <div>
+                    <label className="block text-slate-600 font-bold mb-1">Fee Head Code *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. LAB_FEE"
+                      value={feeHeadForm.code}
+                      onChange={e => setFeeHeadForm({ ...feeHeadForm, code: e.target.value.toUpperCase() })}
+                      className="w-full p-2 bg-slate-50 border rounded-lg font-mono uppercase focus:bg-white focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-600 font-bold mb-1">Fee Head Title *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Advanced AI & Cloud Computing Lab"
+                      value={feeHeadForm.name}
+                      onChange={e => setFeeHeadForm({ ...feeHeadForm, name: e.target.value })}
+                      className="w-full p-2 bg-slate-50 border rounded-lg focus:bg-white focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-600 font-bold mb-1">Billing Frequency</label>
+                    <select
+                      value={feeHeadForm.frequency}
+                      onChange={e => setFeeHeadForm({ ...feeHeadForm, frequency: e.target.value })}
+                      className="w-full p-2 bg-slate-50 border rounded-lg focus:bg-white focus:outline-none font-semibold text-slate-800"
+                    >
+                      <option value="semester">Per Semester</option>
+                      <option value="monthly">Monthly Diet / Recurring</option>
+                      <option value="annual">Annual / Lump-Sum</option>
+                      <option value="one_time">One-Time (Admission / Caution)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-slate-600 font-bold mb-1">Default Standard Fee (₹)</label>
+                    <input
+                      type="number"
+                      value={feeHeadForm.default_amount}
+                      onChange={e => setFeeHeadForm({ ...feeHeadForm, default_amount: Number(e.target.value) || 0 })}
+                      className="w-full p-2 bg-slate-50 border rounded-lg font-mono focus:bg-white focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'employee' && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                  <div>
+                    <label className="block text-slate-600 font-bold mb-1">Status Code *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. SABBATICAL"
+                      value={employeeForm.status_code}
+                      onChange={e => setEmployeeForm({ ...employeeForm, status_code: e.target.value.toUpperCase() })}
+                      className="w-full p-2 bg-slate-50 border rounded-lg font-mono uppercase focus:bg-white focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-600 font-bold mb-1">Status Display Title *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Academic Sabbatical Leave"
+                      value={employeeForm.status_name}
+                      onChange={e => setEmployeeForm({ ...employeeForm, status_name: e.target.value })}
+                      className="w-full p-2 bg-slate-50 border rounded-lg focus:bg-white focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-600 font-bold mb-1">Policy Description</label>
+                    <input
+                      type="text"
+                      placeholder="Sanctioned research leave"
+                      value={employeeForm.description}
+                      onChange={e => setEmployeeForm({ ...employeeForm, description: e.target.value })}
+                      className="w-full p-2 bg-slate-50 border rounded-lg focus:bg-white focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-end gap-2 pt-2 border-t">
                 <button
                   type="button"
@@ -651,7 +847,7 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
               </tbody>
             </table>
           </div>
-        ) : (
+        ) : activeTab === 'documents' ? (
           <div className="border border-[#e1e3e4] rounded-xl overflow-hidden bg-white shadow-xs">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
@@ -679,6 +875,189 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
                 ))}
               </tbody>
             </table>
+          </div>
+        ) : activeTab === 'hostel' ? (
+          <div className="space-y-4">
+            <div className="border border-[#e1e3e4] rounded-xl overflow-hidden bg-white shadow-xs">
+              <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <span className="font-bold text-[#00236f] text-xs">Standardized Residence Blocks & Ownership Rules</span>
+                <span className="text-[10px] font-mono text-slate-500">4 Blocks Provisioned</span>
+              </div>
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-[#f8f9fa] border-b border-[#e1e3e4] text-[#444651] font-bold uppercase tracking-wider text-[11px]">
+                    <th className="py-2.5 px-4">Block Code</th>
+                    <th className="py-2.5 px-4">Block Name</th>
+                    <th className="py-2.5 px-4">Campus</th>
+                    <th className="py-2.5 px-4">Ownership</th>
+                    <th className="py-2.5 px-4">Floors / Rooms</th>
+                    <th className="py-2.5 px-4">Audit Interval</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#f1f3f4]">
+                  {[
+                    { code: 'SBS-A', name: 'Shaheed Bhagat Singh Block A', campus: 'Campus 01 (Bathinda)', own: 'College Owned', rooms: '4 Floors • 48 Rooms', audit: '360 Days' },
+                    { code: 'MG-B', name: 'Mata Gujri Girls Residence Block B', campus: 'Campus 01 (Bathinda)', own: 'College Owned', rooms: '3 Floors • 36 Rooms', audit: '360 Days' },
+                    { code: 'BDS-C', name: 'Baba Deep Singh Enclave Block C', campus: 'Campus 01 (Bathinda)', own: 'Leased Facility (Malwa Infra)', rooms: '5 Floors • 60 Rooms', audit: '360 Days' },
+                    { code: 'FDK-A', name: 'Faridkot Regional Residence Block A', campus: 'Campus 02 (Faridkot)', own: 'College Owned', rooms: '3 Floors • 24 Rooms', audit: '360 Days' },
+                  ].map(b => (
+                    <tr key={b.code} className="hover:bg-[#f8f9fa]">
+                      <td className="py-2.5 px-4 font-mono font-bold text-[#00236f]">{b.code}</td>
+                      <td className="py-2.5 px-4 font-bold text-[#191c1d]">{b.name}</td>
+                      <td className="py-2.5 px-4 text-slate-600">{b.campus}</td>
+                      <td className="py-2.5 px-4 font-semibold text-slate-700">{b.own}</td>
+                      <td className="py-2.5 px-4 font-mono text-[11px]">{b.rooms}</td>
+                      <td className="py-2.5 px-4 font-mono text-emerald-700 font-bold">{b.audit}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-3.5 bg-white rounded-xl border border-slate-200">
+                <span className="text-[11px] font-bold text-[#00236f] block mb-1">Standard Washroom Typologies</span>
+                <div className="space-y-1.5 text-xs text-slate-600">
+                  <div className="flex justify-between py-1 border-b border-slate-100">
+                    <span className="font-mono font-bold text-slate-800">ARW</span>
+                    <span>Attached Room Washroom (Dedicated Suite)</span>
+                  </div>
+                  <div className="flex justify-between py-1">
+                    <span className="font-mono font-bold text-slate-800">FCW</span>
+                    <span>Floor Common Washroom (Centralized Sanitation)</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3.5 bg-white rounded-xl border border-slate-200">
+                <span className="text-[11px] font-bold text-[#00236f] block mb-1">Mess Billing Policies</span>
+                <div className="space-y-1.5 text-xs text-slate-600">
+                  <div className="flex justify-between py-1 border-b border-slate-100">
+                    <span className="font-semibold text-slate-800">Monthly Diet Billing</span>
+                    <span className="font-mono text-[11px]">Audit Count x Rate</span>
+                  </div>
+                  <div className="flex justify-between py-1">
+                    <span className="font-semibold text-slate-800">Bi-Monthly (Saath-Saath)</span>
+                    <span className="font-mono text-[11px]">60-Day Concurrent Cycle</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : activeTab === 'fees' ? (
+          <div className="space-y-4">
+            <div className="border border-[#e1e3e4] rounded-xl overflow-hidden bg-white shadow-xs">
+              <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <span className="font-bold text-[#00236f] text-xs">Statutory Tuition & Operational Fee Heads</span>
+                <span className="text-[10px] font-mono text-slate-500">8 Heads Defined</span>
+              </div>
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-[#f8f9fa] border-b border-[#e1e3e4] text-[#444651] font-bold uppercase tracking-wider text-[11px]">
+                    <th className="py-2.5 px-4">Head Code</th>
+                    <th className="py-2.5 px-4">Head Title</th>
+                    <th className="py-2.5 px-4">Billing Frequency</th>
+                    <th className="py-2.5 px-4">Standard Rate</th>
+                    <th className="py-2.5 px-4">Ledger Lock Rule</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#f1f3f4]">
+                  {[
+                    { code: 'TUITION_UG', name: 'Undergraduate Program Tuition Fee', freq: 'Per Semester', amt: '₹ 45,000', rule: 'Locked upon Receipt' },
+                    { code: 'DEV_FUND', name: 'Campus Development & Infrastructure Fund', freq: 'Annual', amt: '₹ 8,500', rule: 'Locked upon Receipt' },
+                    { code: 'EXAM_FEE', name: 'University Sessional & Final Exam Charge', freq: 'Per Semester', amt: '₹ 2,500', rule: 'Clearance Gate Prerequisite' },
+                    { code: 'HOSTEL_ROOM', name: 'Campus Residence Suite Accommodation', freq: 'Per Semester', amt: '₹ 42,000', rule: 'Room Allocation Linked' },
+                    { code: 'MESS_DIET', name: 'Hostel Mess & Dining Service', freq: 'Bi-Monthly', amt: '₹ 7,000', rule: 'NOC Clearance Linked' },
+                    { code: 'BUS_TRANS', name: 'Institutional Transport Fleet Service', freq: 'Per Semester', amt: '₹ 9,500', rule: 'Route Allocation Linked' },
+                    { code: 'CAUTION_DEP', name: 'Institutional Caution Security Deposit', freq: 'One-Time', amt: '₹ 5,000', rule: 'Refundable on Full NOC' },
+                    { code: 'LIB_BOOK', name: 'Central Digital Library & Journal Fee', freq: 'Annual', amt: '₹ 1,500', rule: 'Standard Non-Refundable' },
+                  ].map(fh => (
+                    <tr key={fh.code} className="hover:bg-[#f8f9fa]">
+                      <td className="py-2.5 px-4 font-mono font-bold text-[#00236f]">{fh.code}</td>
+                      <td className="py-2.5 px-4 font-bold text-[#191c1d]">{fh.name}</td>
+                      <td className="py-2.5 px-4 text-slate-700">{fh.freq}</td>
+                      <td className="py-2.5 px-4 font-mono font-bold text-slate-900">{fh.amt}</td>
+                      <td className="py-2.5 px-4 font-medium text-emerald-800">{fh.rule}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="p-3.5 bg-white rounded-xl border border-slate-200">
+              <span className="text-[11px] font-bold text-[#00236f] block mb-1">Approved Concession & Scholarship Tiers</span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-slate-600 mt-2">
+                <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200">
+                  <strong className="block text-emerald-900 font-bold">Merit Waiver (80-100%)</strong>
+                  <span className="text-[10px] text-emerald-700">&ge; 90% in Qualifying Exam</span>
+                </div>
+                <div className="p-2 rounded-lg bg-blue-50 border border-blue-200">
+                  <strong className="block text-[#00236f] font-bold">PMS SC/ST Quota (100%)</strong>
+                  <span className="text-[10px] text-blue-700">Punjab Post-Matric Scheme</span>
+                </div>
+                <div className="p-2 rounded-lg bg-purple-50 border border-purple-200">
+                  <strong className="block text-purple-900 font-bold">Sibling Concession (15%)</strong>
+                  <span className="text-[10px] text-purple-700">Verified Direct Sibling in Campus</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="border border-[#e1e3e4] rounded-xl overflow-hidden bg-white shadow-xs">
+              <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <span className="font-bold text-[#00236f] text-xs">Statutory Employee Statuses & Exit Protocols (Recording 160)</span>
+                <span className="text-[10px] font-mono text-slate-500">5 Statuses Defined</span>
+              </div>
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-[#f8f9fa] border-b border-[#e1e3e4] text-[#444651] font-bold uppercase tracking-wider text-[11px]">
+                    <th className="py-2.5 px-4">Status Code</th>
+                    <th className="py-2.5 px-4">Display Name</th>
+                    <th className="py-2.5 px-4">Mandatory Dates</th>
+                    <th className="py-2.5 px-4">Regulatory Policy & Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#f1f3f4]">
+                  {[
+                    { code: 'ACTIVE', name: 'Active Staff Member', dates: 'No (Continuous Rolls)', desc: 'Active teaching or administrative load assigned' },
+                    { code: 'RESIGNED', name: 'Resigned & In Notice', dates: 'Yes (Effective & Last Working Day)', desc: 'Serving notice period; triggers HR exit NOC checklist' },
+                    { code: 'TERMINATED', name: 'Statutorily Terminated', dates: 'Yes (Relieved Date)', desc: 'Immediate login lockout and settlement protocol' },
+                    { code: 'AOL', name: 'Absent Out of Leave (AWOL)', dates: 'Yes (First Unannounced Date)', desc: 'Automatic HR alert after 3 consecutive days without leave' },
+                    { code: 'DEACTIVATED', name: 'Deactivated / Relieved', dates: 'Yes (Full Settlement Date)', desc: 'Past employee with service book archived in vault' },
+                  ].map(st => (
+                    <tr key={st.code} className="hover:bg-[#f8f9fa]">
+                      <td className="py-2.5 px-4 font-mono font-bold text-[#00236f]">{st.code}</td>
+                      <td className="py-2.5 px-4 font-bold text-[#191c1d]">{st.name}</td>
+                      <td className="py-2.5 px-4 font-semibold text-slate-700">{st.dates}</td>
+                      <td className="py-2.5 px-4 text-slate-600">{st.desc}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="p-3.5 bg-white rounded-xl border border-slate-200">
+              <span className="text-[11px] font-bold text-[#00236f] block mb-1">Approved Academic & Administrative Designations</span>
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {[
+                  'Campus Director / Dean',
+                  'Registrar & Academic Provost',
+                  'Head of Department (HOD)',
+                  'Professor & Chair',
+                  'Associate Professor',
+                  'Assistant Professor',
+                  'Chief Accounts Officer / Bursar',
+                  'Chief Hostel Warden',
+                  'Campus Logistics & Bus Coordinator',
+                  'Senior Admissions Counselor',
+                ].map((des, idx) => (
+                  <span key={idx} className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 text-[11px] font-semibold border border-slate-200">
+                    {des}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>

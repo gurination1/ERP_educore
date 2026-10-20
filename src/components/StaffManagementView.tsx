@@ -10,12 +10,14 @@ interface StaffManagementViewProps {
   currentUser: User | null;
   initialTab?: StaffTab;
   selectedCampus?: 'campus_01' | 'campus_02' | 'all';
+  onOpenMasterTables?: (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents' | 'hostel' | 'fees' | 'employee') => void;
 }
 
 export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
   currentUser,
   initialTab,
   selectedCampus,
+  onOpenMasterTables,
 }) => {
   const [searchParams] = useSearchParams();
   const urlTab = searchParams.get('tab') as StaffTab | null;
@@ -755,6 +757,16 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
               </span>
             </button>
           </div>
+
+          {onOpenMasterTables && (
+            <button
+              type="button"
+              onClick={() => onOpenMasterTables('employee')}
+              className="bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 font-bold px-3 py-1.5 rounded text-[11px] transition cursor-pointer shadow-2xs flex items-center gap-1"
+            >
+              <span>Master Employee Statuses</span>
+            </button>
+          )}
 
           <button
             onClick={() => setShowCreateModal(true)}

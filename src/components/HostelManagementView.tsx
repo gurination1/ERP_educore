@@ -40,9 +40,16 @@ import {
 interface HostelManagementViewProps {
   currentUser: User | null;
   selectedCampus?: 'campus_01' | 'campus_02' | 'all';
+  onOpenMasterTables?: (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents' | 'hostel' | 'fees' | 'employee') => void;
+  onNavigate?: (screen: string) => void;
 }
 
-export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ currentUser, selectedCampus }) => {
+export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
+  currentUser,
+  selectedCampus,
+  onOpenMasterTables,
+  onNavigate,
+}) => {
   const [searchParams] = useSearchParams();
   const urlTab = searchParams.get('tab');
 
@@ -493,6 +500,71 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
   const [isVacateModalOpen, setIsVacateModalOpen] = useState(false);
   const [vacatingResident, setVacatingResident] = useState<HostelResident | null>(null);
 
+  // Add Residence Block Modal State (Karanvir Sir Lecture 4)
+  const [isAddBuildingModalOpen, setIsAddBuildingModalOpen] = useState(false);
+  const [newBuildingForm, setNewBuildingForm] = useState({
+    name: '',
+    code: '',
+    campus_id: selectedCampus === 'campus_02' ? 'campus_02' : 'campus_01',
+    campus_name: selectedCampus === 'campus_02' ? 'Faridkot Campus 02 (Regional)' : 'Bathinda Campus 01 (Main)',
+    address: '',
+    location_type: 'in_campus' as 'in_campus' | 'off_campus',
+    ownership: 'owned' as 'owned' | 'leased',
+    vendor_name: '',
+    vendor_contact: '',
+    total_floors: 3,
+    total_rooms: 24,
+    inspected_by: 'Er. Harminder Singh (Chief Structural Auditor)',
+    google_maps_url: '',
+  });
+
+  const handleAddBuilding = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBuildingForm.name.trim() || !newBuildingForm.code.trim()) {
+      showToast('Please provide Building Name and Block Code.', 'error');
+      return;
+    }
+    const newBld: HostelBuilding = {
+      id: `bld-${Date.now()}`,
+      campus_id: newBuildingForm.campus_id,
+      campus_name: newBuildingForm.campus_name,
+      name: newBuildingForm.name.trim(),
+      code: newBuildingForm.code.trim().toUpperCase(),
+      address: newBuildingForm.address.trim() || 'Campus Residential Enclave, Bathinda, Punjab',
+      location_type: newBuildingForm.location_type,
+      ownership: newBuildingForm.ownership,
+      vendor_name: newBuildingForm.ownership === 'leased' ? newBuildingForm.vendor_name.trim() : undefined,
+      vendor_contact: newBuildingForm.ownership === 'leased' ? newBuildingForm.vendor_contact.trim() : undefined,
+      total_floors: Number(newBuildingForm.total_floors) || 1,
+      total_rooms: Number(newBuildingForm.total_rooms) || 12,
+      maintenance_due_days: 360,
+      electrical_check_days: 90,
+      last_maintenance_date: new Date().toISOString().split('T')[0],
+      last_electrical_inspection: new Date().toISOString().split('T')[0],
+      inspected_by: newBuildingForm.inspected_by.trim() || 'Chief Estate Officer',
+      google_maps_url: newBuildingForm.google_maps_url.trim() || undefined,
+      is_active: true,
+    };
+    setBuildings((prev) => [newBld, ...prev]);
+    setIsAddBuildingModalOpen(false);
+    setNewBuildingForm({
+      name: '',
+      code: '',
+      campus_id: selectedCampus === 'campus_02' ? 'campus_02' : 'campus_01',
+      campus_name: selectedCampus === 'campus_02' ? 'Faridkot Campus 02 (Regional)' : 'Bathinda Campus 01 (Main)',
+      address: '',
+      location_type: 'in_campus',
+      ownership: 'owned',
+      vendor_name: '',
+      vendor_contact: '',
+      total_floors: 3,
+      total_rooms: 24,
+      inspected_by: 'Er. Harminder Singh (Chief Structural Auditor)',
+      google_maps_url: '',
+    });
+    showToast(`Residence Block ${newBld.code} (${newBld.name}) created and added to active inventory!`);
+  };
+
   // Add New Room Handler (Karanvir Sir Lecture 4)
   const handleCreateRoom = (e: React.FormEvent) => {
     e.preventDefault();
@@ -783,6 +855,30 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
     .filter(r => visibleBuildingIds.has(r.building_id))
     .reduce((acc, r) => acc + (Number(r.mess_dues_amount) || 0), 0);
 
+  // Student Personal Allotment Resolution
+  const studentResident = currentUser?.role === 'student'
+    ? residents.find(r =>
+        (currentUser.enterprise_uid && (
+          r.student_uid === currentUser.enterprise_uid ||
+          r.student_uid === currentUser.enterprise_uid.replace(/BFGI/g, '01') ||
+          r.student_uid.replace(/[^0-9]/g, '') === currentUser.enterprise_uid.replace(/[^0-9]/g, '')
+        )) ||
+        (currentUser.full_name && r.student_name.toLowerCase().trim() === currentUser.full_name.toLowerCase().trim())
+      )
+    : null;
+
+  const studentRoommates = studentResident
+    ? residents.filter(r => r.room_id === studentResident.room_id && r.id !== studentResident.id)
+    : [];
+
+  const studentRoom = studentResident
+    ? rooms.find(r => r.id === studentResident.room_id)
+    : null;
+
+  const studentBuilding = studentResident
+    ? buildings.find(b => b.id === studentResident.building_id || b.code === studentResident.building_name)
+    : null;
+
   return (
     <div className="space-y-4">
       {/* Toast Notification */}
@@ -805,71 +901,110 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
 
       {/* Student Personal Residence View vs Administrative Command Console */}
       {currentUser?.role === 'student' ? (
-        <div className="space-y-4">
-          <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)]">
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
-              <div>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[10px] uppercase border border-emerald-200">
-                  Residence Allotment Active
-                </span>
-                <h1 className="text-xl font-black text-[#00236f] tracking-tight mt-1">
-                  Shaheed Bhagat Singh Residence (Block SBS-A)
-                </h1>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Room 102 • Floor 1 • AC 2-Sharing Suite with Attached Washroom (ARW)
-                </p>
+        studentResident ? (
+          <div className="space-y-4">
+            <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)]">
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                <div>
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[10px] uppercase border border-emerald-200">
+                    Residence Allotment Active
+                  </span>
+                  <h1 className="text-xl font-black text-[#00236f] tracking-tight mt-1">
+                    {studentBuilding?.name || `Residence Block ${studentResident.building_name}`}
+                  </h1>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Room {studentResident.room_number} {studentResident.room_name ? `("${studentResident.room_name}")` : ''} • Floor {studentRoom?.floor_number || 1} • {studentRoom?.is_ac ? 'AC' : 'Non-AC'} {studentRoom?.capacity || 2}-Sharing Suite ({studentRoom?.washroom_type === 'ARW' ? 'Attached Washroom' : 'Common Washroom'})
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const noc = messClearances.find(m => m.student_uid === studentResident.student_uid) || messClearances[0];
+                    setSelectedNocRecord(noc);
+                    setIsNocModalOpen(true);
+                  }}
+                  className="px-4 py-2 bg-[#00236f] hover:bg-[#001744] text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+                >
+                  <Printer className="w-3.5 h-3.5 text-amber-300" />
+                  <span>View Digital Mess NOC Certificate</span>
+                </button>
               </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 text-xs">
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                  <span className="text-slate-400 font-bold text-[10px] uppercase block">Assigned Bed</span>
+                  <div className="text-lg font-black text-[#00236f] mt-1">Bed #{studentResident.bed_number}</div>
+                  <span className="text-emerald-700 font-semibold text-[11px]">Occupancy: {studentRoom?.current_occupancy || 2}/{studentRoom?.capacity || 2} Allotted</span>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                  <span className="text-slate-400 font-bold text-[10px] uppercase block">Assigned Roommate(s)</span>
+                  <div className="text-sm font-black text-slate-900 mt-1 truncate" title={studentRoommates.map(m => m.student_name).join(', ') || 'No roommates'}>
+                    {studentRoommates.map(m => m.student_name).join(', ') || 'Single Occupant / No Roommate'}
+                  </div>
+                  <span className="text-slate-500 font-mono text-[11px] block mt-0.5">
+                    {studentRoommates[0] ? `${studentRoommates[0].course_name} • Sem ${studentRoommates[0].semester}` : 'Independent Room'}
+                  </span>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                  <span className="text-slate-400 font-bold text-[10px] uppercase block">Semester Rent Structure</span>
+                  <div className="text-lg font-black text-emerald-700 mt-1">₹{(studentRoom?.semester_rent || 42000).toLocaleString('en-IN')} / Sem</div>
+                  <span className="text-emerald-700 font-semibold text-[11px]">Status: {studentResident.fee_status === 'paid' ? 'Cleared & Paid' : 'Fee Due'}</span>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                  <span className="text-slate-400 font-bold text-[10px] uppercase block">Mess Clearance</span>
+                  <div className="text-lg font-black text-emerald-700 mt-1">
+                    {studentResident.mess_dues_amount === 0 ? 'No-Dues Certified' : `₹${studentResident.mess_dues_amount} Due`}
+                  </div>
+                  <span className="text-slate-500 text-[11px]">Caution Deposit: Refund Eligible</span>
+                </div>
+              </div>
+
+              <div className="mt-4 p-4 rounded-2xl bg-blue-50/60 border border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="space-y-0.5">
+                  <div className="font-bold text-[#00236f]">Chief Warden Desk & Emergency Assistance</div>
+                  <div className="text-slate-600">Dr. Gurdial Singh (Warden Office, Block A Ground Floor) • Hotline: +91 98140 12345</div>
+                </div>
+                <span className="px-3 py-1 bg-white rounded-full font-mono text-[11px] font-bold text-[#00236f] border border-blue-200 shadow-2xs self-start sm:self-auto">
+                  Night Gate Curfew: 10:00 PM
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] text-center max-w-2xl mx-auto space-y-4 my-6">
+            <div className="w-14 h-14 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center mx-auto text-slate-500">
+              <Building2 className="w-7 h-7 text-[#00236f]" />
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-600 font-bold text-xs uppercase border border-slate-200">
+              Day Scholar • Non-Resident Record
+            </div>
+            <h2 className="text-xl font-black text-[#00236f]">
+              No Active Hostel Accommodation Assigned
+            </h2>
+            <p className="text-xs text-slate-600 leading-relaxed max-w-lg mx-auto">
+              Your profile is registered as a <span className="font-semibold text-slate-900">Day Scholar</span> at {selectedCampus === 'campus_02' ? 'Faridkot Campus 02' : 'Bathinda Main Campus'}. You currently do not have a reserved bed or residence room allotment on file.
+            </p>
+            <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
               <button
                 type="button"
                 onClick={() => {
-                  setSelectedNocRecord(messClearances[0]);
-                  setIsNocModalOpen(true);
+                  showToast('Hostel boarding request dispatched to Chief Warden office. Application reference: REQ-HST-' + Date.now().toString().slice(-6));
                 }}
-                className="px-4 py-2 bg-[#00236f] hover:bg-[#001744] text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+                className="px-5 py-2.5 rounded-xl bg-[#00236f] hover:bg-[#001744] text-white font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-2"
               >
-                <Printer className="w-3.5 h-3.5 text-amber-300" />
-                <span>View Digital Mess NOC Certificate</span>
+                <Bed className="w-4 h-4 text-amber-300" />
+                <span>Submit Hostel Accommodation Request</span>
               </button>
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 text-xs">
-              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-                <span className="text-slate-400 font-bold text-[10px] uppercase block">Assigned Bed</span>
-                <div className="text-lg font-black text-[#00236f] mt-1">Bed #1 (Window View)</div>
-                <span className="text-emerald-700 font-semibold text-[11px]">Occupancy: 2/2 Allotted</span>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-                <span className="text-slate-400 font-bold text-[10px] uppercase block">Assigned Roommate</span>
-                <div className="text-lg font-black text-slate-900 mt-1">Aryan Sharma</div>
-                <span className="text-slate-500 font-mono text-[11px]">B.Tech CSE • Sem 4</span>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-                <span className="text-slate-400 font-bold text-[10px] uppercase block">Semester Rent Structure</span>
-                <div className="text-lg font-black text-emerald-700 mt-1">₹42,000 / Sem</div>
-                <span className="text-emerald-700 font-semibold text-[11px]">Status: Cleared & Paid</span>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-                <span className="text-slate-400 font-bold text-[10px] uppercase block">Mess Clearance</span>
-                <div className="text-lg font-black text-emerald-700 mt-1">No-Dues Certified</div>
-                <span className="text-slate-500 text-[11px]">Caution Deposit: Refund Eligible</span>
-              </div>
-            </div>
-
-            <div className="mt-4 p-4 rounded-2xl bg-blue-50/60 border border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-              <div className="space-y-0.5">
-                <div className="font-bold text-[#00236f]">Chief Warden Desk & Emergency Assistance</div>
-                <div className="text-slate-600">Dr. Gurdial Singh (Warden Office, Block A Ground Floor) • Hotline: +91 98140 12345</div>
-              </div>
-              <span className="px-3 py-1 bg-white rounded-full font-mono text-[11px] font-bold text-[#00236f] border border-blue-200 shadow-2xs self-start sm:self-auto">
-                Night Gate Curfew: 10:00 PM
-              </span>
+            <div className="mt-4 p-3 rounded-xl bg-blue-50/60 border border-blue-100 text-[11px] text-blue-900 max-w-md mx-auto">
+              <span className="font-bold">Chief Warden Helpdesk:</span> Warden Office Ground Floor • Phone: +91 98140 12345 • Night Curfew 10:00 PM
             </div>
           </div>
-        </div>
+        )
       ) : (
         <>
           {/* Header Context Banner */}
@@ -894,6 +1029,16 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
 
             {/* Action Controls */}
             <div className="flex items-center gap-2">
+              {onOpenMasterTables && (
+                <button
+                  type="button"
+                  onClick={() => onOpenMasterTables('hostel')}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-bold transition-all shadow-xs cursor-pointer"
+                >
+                  <Building2 className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Master Residence Data</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => {
@@ -1180,7 +1325,37 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
 
       {/* TAB 2: BUILDINGS & BLOCKS */}
       {activeTab === 'buildings' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="space-y-4">
+          <div className="bg-white rounded-2xl p-3.5 border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div>
+              <h3 className="font-bold text-[#00236f] text-sm">Residence Blocks & Structural Inventory</h3>
+              <p className="text-slate-500 text-[11px]">
+                {visibleBuildings.length} residence blocks registered • 360-Day structural overhaul & 90-day electrical audit timers
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {onOpenMasterTables && (
+                <button
+                  type="button"
+                  onClick={() => onOpenMasterTables('hostel')}
+                  className="px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                >
+                  <Building2 className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Master Residence Settings</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsAddBuildingModalOpen(true)}
+                className="px-3.5 py-1.5 rounded-xl bg-[#00236f] hover:bg-[#001744] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5 text-amber-300" />
+                <span>+ Add Residence Block</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {visibleBuildings.map((b) => (
             <div key={b.id} className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
               <div>
@@ -1272,6 +1447,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
               </div>
             </div>
           ))}
+          </div>
         </div>
       )}
 
@@ -1318,8 +1494,18 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
 
             <div className="flex items-center gap-2">
               <span className="text-[11px] text-slate-500 font-semibold hidden sm:inline">
-                Showing {visibleRooms.length} registered rooms • Strict Room Deletion Safety Active
+                Showing {visibleRooms.length} rooms
               </span>
+              {onOpenMasterTables && (
+                <button
+                  type="button"
+                  onClick={() => onOpenMasterTables('hostel')}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-bold transition-all shadow-2xs cursor-pointer"
+                >
+                  <Bed className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Master Typologies</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setIsAddRoomModalOpen(true)}
@@ -2144,15 +2330,213 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
                 <button
                   type="button"
                   onClick={() => setIsAddRoomModalOpen(false)}
-                  className="px-4 py-2 rounded-xl font-bold text-slate-600 hover:bg-slate-100"
+                  className="px-4 py-2 rounded-xl font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl font-bold bg-[#00236f] text-white hover:bg-[#001744] shadow-sm"
+                  className="px-5 py-2 rounded-xl font-bold bg-[#00236f] text-white hover:bg-[#001744] shadow-sm cursor-pointer"
                 >
                   Create Room & Register Beds
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3B: ADD RESIDENCE BLOCK (Karanvir Sir Lecture 4) */}
+      {isAddBuildingModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-slate-100 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-base font-black text-[#00236f] flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-[#ea580c]" />
+                  <span>Register New Residence Block</span>
+                </h3>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Structural 360-day maintenance and 90-day electrical audit timers start upon creation.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddBuildingModalOpen(false)}
+                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 font-bold cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddBuilding} className="space-y-3 text-xs">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-2">
+                  <label className="font-bold text-slate-700 block mb-1">Residence Block Name:</label>
+                  <input
+                    type="text"
+                    value={newBuildingForm.name}
+                    onChange={(e) => setNewBuildingForm({ ...newBuildingForm, name: e.target.value })}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none"
+                    placeholder="e.g. Shaheed Udham Singh Enclave"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Block Code:</label>
+                  <input
+                    type="text"
+                    value={newBuildingForm.code}
+                    onChange={(e) => setNewBuildingForm({ ...newBuildingForm, code: e.target.value.toUpperCase() })}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-semibold font-mono text-slate-800 uppercase focus:outline-none"
+                    placeholder="e.g. SUS-D"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Campus Allocation:</label>
+                  <select
+                    value={newBuildingForm.campus_id}
+                    onChange={(e) => {
+                      const cid = e.target.value as 'campus_01' | 'campus_02';
+                      setNewBuildingForm({
+                        ...newBuildingForm,
+                        campus_id: cid,
+                        campus_name: cid === 'campus_02' ? 'Faridkot Campus 02 (Regional)' : 'Bathinda Campus 01 (Main)',
+                      });
+                    }}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-white focus:outline-none"
+                  >
+                    <option value="campus_01">Bathinda Campus 01 (Main)</option>
+                    <option value="campus_02">Faridkot Campus 02 (Regional)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Location Typology:</label>
+                  <select
+                    value={newBuildingForm.location_type}
+                    onChange={(e) => setNewBuildingForm({ ...newBuildingForm, location_type: e.target.value as any })}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-white focus:outline-none"
+                  >
+                    <option value="in_campus">In-Campus (Within Boundary)</option>
+                    <option value="off_campus">Off-Campus (External Enclave)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Ownership Model:</label>
+                  <select
+                    value={newBuildingForm.ownership}
+                    onChange={(e) => setNewBuildingForm({ ...newBuildingForm, ownership: e.target.value as any })}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-white focus:outline-none"
+                  >
+                    <option value="owned">College Owned (Self Capital)</option>
+                    <option value="leased">Vendor Leased Facility</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Floors:</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={15}
+                      value={newBuildingForm.total_floors}
+                      onChange={(e) => setNewBuildingForm({ ...newBuildingForm, total_floors: Number(e.target.value) })}
+                      className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Rooms:</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={200}
+                      value={newBuildingForm.total_rooms}
+                      onChange={(e) => setNewBuildingForm({ ...newBuildingForm, total_rooms: Number(e.target.value) })}
+                      className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {newBuildingForm.ownership === 'leased' && (
+                <div className="p-3 bg-purple-50/70 border border-purple-200 rounded-2xl space-y-2">
+                  <div className="font-bold text-purple-900 text-[11px]">Leasing Partner Details:</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      placeholder="Vendor Company Name"
+                      value={newBuildingForm.vendor_name}
+                      onChange={(e) => setNewBuildingForm({ ...newBuildingForm, vendor_name: e.target.value })}
+                      className="p-2 rounded-xl border border-purple-200 bg-white text-xs text-slate-800 focus:outline-none"
+                      required={newBuildingForm.ownership === 'leased'}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Contact / Phone"
+                      value={newBuildingForm.vendor_contact}
+                      onChange={(e) => setNewBuildingForm({ ...newBuildingForm, vendor_contact: e.target.value })}
+                      className="p-2 rounded-xl border border-purple-200 bg-white text-xs text-slate-800 focus:outline-none"
+                      required={newBuildingForm.ownership === 'leased'}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Address & Location:</label>
+                <input
+                  type="text"
+                  value={newBuildingForm.address}
+                  onChange={(e) => setNewBuildingForm({ ...newBuildingForm, address: e.target.value })}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none"
+                  placeholder="e.g. Sector 4, North Enclave, Campus Perimeter Road"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Safety & Structural Auditor:</label>
+                  <input
+                    type="text"
+                    value={newBuildingForm.inspected_by}
+                    onChange={(e) => setNewBuildingForm({ ...newBuildingForm, inspected_by: e.target.value })}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Google Maps URL (Optional):</label>
+                  <input
+                    type="url"
+                    value={newBuildingForm.google_maps_url}
+                    onChange={(e) => setNewBuildingForm({ ...newBuildingForm, google_maps_url: e.target.value })}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none"
+                    placeholder="https://maps.google.com/?q=..."
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsAddBuildingModalOpen(false)}
+                  className="px-4 py-2 rounded-xl font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl font-bold bg-[#00236f] text-white hover:bg-[#001744] shadow-sm cursor-pointer"
+                >
+                  Deploy Residence Block
                 </button>
               </div>
             </form>
