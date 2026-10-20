@@ -20,6 +20,18 @@ export const getStoredUser = (): any => {
 };
 export const setStoredUser = (user: any): void => localStorage.setItem(USER_KEY, JSON.stringify(user));
 
+export const toQueryString = (params?: Record<string, any>): string => {
+  if (!params) return '';
+  const searchParams = new URLSearchParams();
+  for (const [key, val] of Object.entries(params)) {
+    if (val !== undefined && val !== null && val !== '') {
+      searchParams.append(key, String(val));
+    }
+  }
+  const str = searchParams.toString();
+  return str ? `?${str}` : '';
+};
+
 import { handleSupabaseRequest } from './supabaseAdapter';
 import { isGitHubPages } from './supabaseClient';
 
@@ -95,8 +107,7 @@ export const api = {
 
   // Students & Dashboard
   getStudents: (params: Record<string, any> = {}) => {
-    const query = new URLSearchParams(params).toString();
-    return apiRequest(`/api/students?${query}`);
+    return apiRequest(`/api/students${toQueryString(params)}`);
   },
   getStudentDashboard: (studentId: string) => apiRequest(`/api/students/${studentId}/dashboard`),
   getStudentProfile: (studentId: string) => apiRequest(`/api/students/${studentId}`),
@@ -220,8 +231,7 @@ export const api = {
 
   // UGC Grievance Redressal Cell
   getGrievances: (params: Record<string, any> = {}) => {
-    const query = new URLSearchParams(params).toString();
-    return apiRequest(`/api/grievances?${query}`);
+    return apiRequest(`/api/grievances${toQueryString(params)}`);
   },
   getGrievanceById: (id: string) => apiRequest(`/api/grievances/${id}`),
   submitGrievance: (data: { category: string; subject: string; description: string; priority?: string; studentId?: string }) =>
@@ -261,8 +271,7 @@ export const api = {
 
   // Admin Extreme Powers: User & Staff Role Management
   getUsers: (params: Record<string, any> = {}) => {
-    const query = new URLSearchParams(params).toString();
-    return apiRequest(`/api/users?${query}`);
+    return apiRequest(`/api/users${toQueryString(params)}`);
   },
   createUser: (userData: any) =>
     apiRequest('/api/users', { method: 'POST', body: JSON.stringify(userData) }),
@@ -286,8 +295,7 @@ export const api = {
 
   // Immutable Audit Logs & Master Tables
   getAuditLogs: (params: Record<string, any> = {}) => {
-    const query = new URLSearchParams(params).toString();
-    return apiRequest(`/api/audit-logs?${query}`);
+    return apiRequest(`/api/audit-logs${toQueryString(params)}`);
   },
   getMasterData: () => apiRequest('/api/master-data'),
   getStaffAcademicJourney: (staffId?: string) =>
@@ -376,8 +384,7 @@ export const api = {
 
   // Pre-Admission CRM, Auto-Dialer & Bulk Column Importer
   getEnquiries: (params: Record<string, any> = {}) => {
-    const query = new URLSearchParams(params).toString();
-    return apiRequest(`/api/enquiries?${query}`);
+    return apiRequest(`/api/enquiries${toQueryString(params)}`);
   },
   getEnquiry: (id: string) => apiRequest(`/api/enquiries/${id}`),
   createEnquiry: (data: any) =>

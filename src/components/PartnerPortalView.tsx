@@ -815,6 +815,7 @@ This transcript is digitally generated and certified by EduCore Academic ERP.`;
                   className="w-full border p-1.5 rounded"
                 >
                   <option value="Sole Proprietorship">Sole Proprietorship</option>
+                  <option value="Limited Liability Partnership (LLP)">Limited Liability Partnership (LLP)</option>
                   <option value="Partnership Firm">Partnership Firm</option>
                   <option value="Private Limited">Private Limited</option>
                   <option value="Public Limited">Public Limited</option>

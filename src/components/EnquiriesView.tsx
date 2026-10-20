@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { safeGoBack } from '../utils/navigation';
 import { User } from '../types';
 import { api } from '../api/client';
+import { TelephonyCallDock, TelephonyCandidate } from './TelephonyCallDock';
 import {
   Search,
   Filter,
@@ -44,6 +45,8 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
   const [isCalling, setIsCalling] = useState(false);
   const [callSession, setCallSession] = useState<any | null>(null);
   const [callDuration, setCallDuration] = useState(0);
+  const [isTelephonyDockOpen, setIsTelephonyDockOpen] = useState(false);
+  const [activeCallCandidate, setActiveCallCandidate] = useState<TelephonyCandidate | null>(null);
 
   // New Interaction Form (Karanvir Sir Lecture 4)
   const [stageName, setStageName] = useState('Telephonic Academic Counseling');
@@ -182,14 +185,42 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
 
   const handleStartDial = async () => {
     if (!enquiryDetails) return;
+    setActiveCallCandidate({
+      id: enquiryDetails.id,
+      name: enquiryDetails.student_name,
+      phone: enquiryDetails.mobile,
+      course: enquiryDetails.selected_course,
+      studentId: enquiryDetails.enquiry_no,
+    });
+    setIsTelephonyDockOpen(true);
+    setIsCalling(true);
     const res = await api.dialEnquiry(enquiryDetails.id);
     if (res.success) {
-      setIsCalling(true);
       setCallSession(res);
       setFeedbackMsg(`Auto-Dialer active: Connected via ${String(res?.provider || 'EXOTEL').toUpperCase()} telephony gateway.`);
-    } else {
-      alert(res.error || 'Failed to start dialer');
     }
+  };
+
+  const handleQuickCall = (candidate: { id: string; name: string; mobile: string; course?: string; enquiry_no?: string }) => {
+    setActiveCallCandidate({
+      id: candidate.id,
+      name: candidate.name,
+      phone: candidate.mobile,
+      course: candidate.course,
+      studentId: candidate.enquiry_no,
+    });
+    setIsTelephonyDockOpen(true);
+  };
+
+  const handleTelephonyDisposition = () => {
+    setIsTelephonyDockOpen(false);
+    setIsCalling(false);
+    setFeedbackMsg(`Telephonic counseling interaction successfully recorded in candidate activity timeline.`);
+    if (selectedEnquiryId) {
+      fetchEnquiryDetails(selectedEnquiryId);
+    }
+    fetchEnquiries();
+    setTimeout(() => setFeedbackMsg(null), 4000);
   };
 
   const handleEndCall = () => {
@@ -508,7 +539,26 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
 
                     <div className="flex justify-between items-center text-[10px] text-gray-600 mt-1">
                       <span>{e.selected_course}</span>
-                      <span className="font-mono text-gray-800">{e.mobile}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono text-gray-800">{e.mobile}</span>
+                        <button
+                          type="button"
+                          title={`Call ${e.student_name}`}
+                          onClick={(ev) => {
+                            ev.stopPropagation();
+                            handleQuickCall({
+                              id: e.id,
+                              name: e.student_name,
+                              mobile: e.mobile,
+                              course: e.selected_course,
+                              enquiry_no: e.enquiry_no,
+                            });
+                          }}
+                          className="p-1 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 cursor-pointer border border-emerald-200 transition"
+                        >
+                          <PhoneCall className="w-3 h-3" />
+                        </button>
+                      </div>
                     </div>
 
                     <div className="flex justify-between items-center text-[9px] text-gray-400 mt-1 pt-1 border-t">
@@ -1473,6 +1523,17 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* FLOATING TELEPHONY VOIP CALL DOCK (Recording 161 & Lecture 4 Segment 3) */}
+      <TelephonyCallDock
+        isOpen={isTelephonyDockOpen}
+        onClose={() => {
+          setIsTelephonyDockOpen(false);
+          setIsCalling(false);
+        }}
+        activeCandidate={activeCallCandidate}
+        onDispositionSaved={handleTelephonyDisposition}
+      />
     </div>
   );
 };

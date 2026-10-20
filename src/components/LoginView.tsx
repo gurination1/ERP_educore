@@ -131,7 +131,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
   return (
     <div
       id="educore-login-screen"
-      className="min-h-screen relative flex items-center justify-center p-4 bg-[#020b22] text-slate-900 font-sans text-xs antialiased overflow-hidden"
+      className="min-h-screen relative flex items-center justify-center p-4 bg-[#020b22] text-slate-900 font-sans text-xs antialiased"
     >
       {/* Ambient Radial Lighting Accents */}
       <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-gradient-to-b from-blue-600/25 to-transparent rounded-full blur-3xl pointer-events-none"></div>
@@ -178,68 +178,6 @@ export const LoginView: React.FC<LoginViewProps> = ({
               <p className="text-[11px] text-slate-500 mt-1 font-medium">
                 Sign In via Pure-Digit UID • 13 Digits (Student) / 8-10 Digits (Staff & Admin)
               </p>
-            </div>
-
-            {/* Instant Demo Credentials Matrix (Quick Evaluator Shortcuts) */}
-            <div className="mb-4 p-3 bg-slate-50/80 border border-slate-200/70 rounded-2xl text-[10px]">
-              <div className="flex items-center justify-between font-bold text-slate-700 mb-2">
-                <span className="text-[10px] tracking-tight uppercase text-slate-500 font-extrabold">Instant Demo Accounts</span>
-                <span className="font-mono text-[9px] text-[#ea580c] font-bold">Pure Digits • Punjab 03</span>
-              </div>
-              <div className="grid grid-cols-2 gap-1.5 font-mono">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedRole('admin');
-                    setUsername('4001-01-03-01');
-                    setPassword('admin123');
-                    setValidationWarning(null);
-                  }}
-                  className="p-2 text-left bg-white hover:bg-blue-50/60 border border-slate-200/90 rounded-xl text-[#00236f] flex items-center justify-between cursor-pointer transition shadow-2xs hover:border-blue-300"
-                >
-                  <span className="font-bold text-[10px]">[ADMIN]</span>
-                  <span className="text-slate-500 text-[10px]">4001-01-03-01</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedRole('hostel');
-                    setUsername('10001-01-03-01');
-                    setPassword('warden123');
-                    setValidationWarning(null);
-                  }}
-                  className="p-2 text-left bg-white hover:bg-orange-50/60 border border-slate-200/90 rounded-xl text-[#ea580c] flex items-center justify-between cursor-pointer transition shadow-2xs hover:border-orange-300"
-                >
-                  <span className="font-bold text-[10px]">[HOSTEL WARDEN]</span>
-                  <span className="text-slate-500 text-[10px]">10001-01-03-01</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedRole('student');
-                    setUsername('1001-88-03-01');
-                    setPassword('student123');
-                    setValidationWarning(null);
-                  }}
-                  className="p-2 text-left bg-white hover:bg-blue-50/60 border border-slate-200/90 rounded-xl text-[#00236f] flex items-center justify-between cursor-pointer transition shadow-2xs hover:border-blue-300"
-                >
-                  <span className="font-bold text-[10px]">[STUDENT]</span>
-                  <span className="text-slate-500 text-[10px]">1001-88-03-01</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedRole('staff');
-                    setUsername('2001-14-03-01');
-                    setPassword('staff123');
-                    setValidationWarning(null);
-                  }}
-                  className="p-2 text-left bg-white hover:bg-blue-50/60 border border-slate-200/90 rounded-xl text-[#00236f] flex items-center justify-between cursor-pointer transition shadow-2xs hover:border-blue-300"
-                >
-                  <span className="font-bold text-[10px]">[FACULTY]</span>
-                  <span className="text-slate-500 text-[10px]">2001-14-03-01</span>
-                </button>
-              </div>
             </div>
 
             {/* Support Ticket Dispatched Badge */}
