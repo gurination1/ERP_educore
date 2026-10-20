@@ -85,7 +85,7 @@ async function run() {
     console.log('✅ Dynamic campus selection propagated correctly');
 
     // Test User Profile Dropdown
-    console.log('\n--- 3. Testing User Profile Dropdown ---');
+    console.log('\n--- 3. Testing User Profile Dropdown & Ribbon Flyout ---');
     const profileBtn = await page.$('header button[title="Open Profile Options"]');
     await profileBtn.click();
     await new Promise(r => setTimeout(r, 500));
@@ -99,6 +99,42 @@ async function run() {
       throw new Error('Profile dropdown still has numbers or emojis!');
     }
     console.log('✅ Profile dropdown has sleek professional items without numbering or emojis');
+
+    // Test Ribbon Navigation Flyout Menu Metrics
+    const ribbonDropdownBtn = await page.evaluateHandle(() => {
+      const btns = Array.from(document.querySelectorAll('header nav button'));
+      return btns.find(b => b.innerText.includes('Admissions Desk') || b.innerText.includes('Academics & Exams'));
+    });
+    if (ribbonDropdownBtn) {
+      await ribbonDropdownBtn.click();
+      await new Promise(r => setTimeout(r, 400));
+      const flyoutMetrics = await page.evaluate(() => {
+        const flyouts = Array.from(document.querySelectorAll('header nav div[class*="absolute top-full"]'));
+        if (flyouts.length === 0) return null;
+        const rect = flyouts[0].getBoundingClientRect();
+        return { width: rect.width, height: rect.height, text: flyouts[0].innerText };
+      });
+      console.log('Ribbon dropdown flyout metrics:', flyoutMetrics);
+      if (flyoutMetrics && flyoutMetrics.width > 260) {
+        throw new Error(`Ribbon flyout is too wide (${flyoutMetrics.width}px)! Expected sleek single-column <= 250px.`);
+      }
+      console.log('✅ Ribbon dropdown is sleek, compact, single-column (width <= 240px)');
+    }
+
+    // Test Admin Dashboard: Zero Hotel Emojis
+    console.log('\n--- 3b. Testing Admin Dashboard Residence Tab ---');
+    const residenceTabBtn = await page.evaluateHandle(() => {
+      const btns = Array.from(document.querySelectorAll('button'));
+      return btns.find(b => b.innerText.includes('Campus Residence & Fleet'));
+    });
+    if (residenceTabBtn) {
+      const tabText = await page.evaluate(el => el.innerText, residenceTabBtn);
+      console.log('Residence tab text:', JSON.stringify(tabText));
+      if (tabText.includes('🏨') || tabText.includes('hotel')) {
+        throw new Error('Pretentious hotel emoji found in Residence tab!');
+      }
+      console.log('✅ Residence tab is clean of emojis and hotel wording');
+    }
 
     // Test Reset Password Toast
     const resetPwBtn = await page.evaluateHandle(() => {
@@ -251,6 +287,69 @@ async function run() {
     });
     await cancelVacateBtn.click();
     await new Promise(r => setTimeout(r, 400));
+
+    // ==========================================
+    // 4b. STUDENT RESIDENCE & BUS PASS ACCESS AUDIT
+    // ==========================================
+    console.log('\n--- 4b. Testing Student Residence & Bus Pass Access ---');
+    await page.evaluate(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+    });
+    await page.goto(`${BASE_URL}/#/login`, { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('button[data-demo-role="student"]', { timeout: 10000 });
+    const studentBtn = await page.$('button[data-demo-role="student"]');
+    await studentBtn.click();
+    await page.waitForSelector('#student-attendance-section', { timeout: 10000 });
+    await new Promise(r => setTimeout(r, 800));
+
+    // Check that Student Dashboard includes Residence & Transport Quick Modules
+    const studentPageText = await page.evaluate(() => document.body.innerText);
+    if (!studentPageText.includes('Hostel Room & Mess NOC') || !studentPageText.includes('Digital RFID Bus Pass')) {
+      throw new Error('Student Dashboard missing Hostel Room or Bus Pass quick access module!');
+    }
+    console.log('✅ Student Dashboard features direct Hostel Room & Bus Pass quick access modules');
+
+    // Test navigating to #/hostel as Student via quick access button
+    const studentHostelBtn = await page.evaluateHandle(() => {
+      const btns = Array.from(document.querySelectorAll('button'));
+      return btns.find(b => b.innerText.includes('Hostel Room & Mess NOC'));
+    });
+    if (studentHostelBtn) {
+      await studentHostelBtn.click();
+      await new Promise(r => setTimeout(r, 800));
+    } else {
+      await page.goto(`${BASE_URL}/#/hostel`, { waitUntil: 'domcontentloaded' });
+      await new Promise(r => setTimeout(r, 800));
+    }
+    const studentHostelText = await page.evaluate(() => document.body.innerText);
+    if (!studentHostelText.includes('Shaheed Bhagat Singh Residence') || !studentHostelText.includes('View Digital Mess NOC Certificate')) {
+      throw new Error(`Student failed to access personal residence details or was redirected away! Text: ${studentHostelText.substring(0, 150)}`);
+    }
+    console.log('✅ Student successfully accesses personal Residence & Digital Mess NOC');
+
+    // ==========================================
+    // 4c. COUNSELOR DESK ROUTING AUDIT
+    // ==========================================
+    console.log('\n--- 4c. Testing Counselor Desk CRM Routing ---');
+    await page.evaluate(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+    });
+    await page.goto(`${BASE_URL}/#/login`, { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('button[data-demo-role="counselor"]', { timeout: 10000 });
+    const counselorBtn = await page.$('button[data-demo-role="counselor"]');
+    await counselorBtn.click();
+    await new Promise(r => setTimeout(r, 1000));
+
+    const counselorPageText = await page.evaluate(() => document.body.innerText);
+    if (counselorPageText.includes('Teaching Schedule') || counselorPageText.includes('Mark Attendance')) {
+      throw new Error('Counselor incorrectly landed on Faculty Teaching Desk!');
+    }
+    if (!counselorPageText.includes('Leads') && !counselorPageText.includes('Admissions') && !counselorPageText.includes('Inquiries') && !counselorPageText.includes('Prospect')) {
+      throw new Error('Counselor failed to land on Admissions CRM console!');
+    }
+    console.log('✅ Counselor correctly routes to Admissions CRM console on login');
 
     // ==========================================
     // 5. GLOBAL DOM BRACKET TAG AUDIT

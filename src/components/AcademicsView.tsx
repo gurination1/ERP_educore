@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { api } from '../api/client';
 import { User } from '../types';
+import { ShieldCheck } from 'lucide-react';
 
 interface AcademicsViewProps {
   currentUser: User | null;
@@ -1204,8 +1205,9 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
 
                 {/* Footer Controls */}
                 <div className="flex items-center justify-between pt-4 border-t border-slate-200">
-                  <span className="text-[11px] text-slate-500">
-                    🛡️ Batch will be provisioned in Master Architecture and linked with Fee Policies.
+                  <span className="text-[11px] text-slate-500 flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span>Batch will be provisioned in Master Architecture and linked with Fee Policies.</span>
                   </span>
 
                   <div className="flex gap-2">
@@ -1585,8 +1587,9 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
               <button onClick={() => setIsTransferModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
             </div>
             <form onSubmit={handleSectionTransfer} className="p-5 space-y-3">
-              <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-[11px]">
-                🛡️ All historical attendance percentages and fee accounts remain intact without destructive wipes.
+              <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-[11px] flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>All historical attendance percentages and fee accounts remain intact without destructive wipes.</span>
               </div>
               <div>
                 <label className="block text-[11px] font-semibold text-slate-700 mb-1">Student ID / Roll No *</label>

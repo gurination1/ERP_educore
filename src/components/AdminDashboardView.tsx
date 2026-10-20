@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import { ActiveScreen } from '../types';
-import { X, Download, Users, CheckCircle2, AlertTriangle, ArrowRight } from 'lucide-react';
+import { X, Download, Users, CheckCircle2, AlertTriangle, ArrowRight, Building2, Bus, LifeBuoy, Search } from 'lucide-react';
 
 interface AdminDashboardViewProps {
   onNavigate: (screen: ActiveScreen) => void;
@@ -322,7 +322,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
             }`}
           >
-            <span>🏛️</span>
+            <Building2 className="w-3.5 h-3.5" />
             <span>Operations & Topology</span>
           </button>
 
@@ -335,7 +335,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
             }`}
           >
-            <span>🔍</span>
+            <Search className="w-3.5 h-3.5" />
             <span>Master Search & Reports</span>
           </button>
 
@@ -348,7 +348,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
             }`}
           >
-            <span>🏨</span>
+            <Building2 className="w-3.5 h-3.5" />
             <span>Campus Residence & Fleet</span>
           </button>
 
@@ -361,7 +361,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
             }`}
           >
-            <span>🎫</span>
+            <LifeBuoy className="w-3.5 h-3.5" />
             <span>Live Support Tickets</span>
             {supportTickets.filter(t => t.status !== 'resolved').length > 0 && (
               <span className="px-1.5 py-0.2 rounded-full text-[9px] font-mono font-black bg-blue-100 text-[#00236f]">
@@ -962,7 +962,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-[#00236f] text-white flex items-center justify-center font-bold text-xs shadow-sm">
-                🏨
+                <Building2 className="w-4 h-4 text-white" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
@@ -985,7 +985,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                 onClick={() => onNavigate('transport' as any)}
                 className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer border border-slate-200"
               >
-                <span>🚌 Launch Transport Fleet</span>
+                <Bus className="w-3.5 h-3.5 text-slate-600" />
+                <span>Launch Transport Fleet</span>
               </button>
               <button
                 type="button"
@@ -1088,7 +1089,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           <div className="space-y-2.5">
             {supportTickets.length === 0 ? (
               <div className="text-center py-12 text-slate-400 text-xs bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
-                <span className="text-2xl block mb-1">🎉</span>
+                <CheckCircle2 className="w-6 h-6 mx-auto mb-1 text-emerald-500" />
                 No pending support tickets in queue.
               </div>
             ) : (

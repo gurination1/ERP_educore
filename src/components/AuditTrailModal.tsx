@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { AuditLogItem } from '../types';
+import { Crown, Smartphone, Laptop } from 'lucide-react';
 
 interface AuditTrailModalProps {
   isOpen: boolean;
@@ -215,7 +216,7 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
                         <td className="py-2.5 px-4 whitespace-nowrap">
                           <div className="font-bold text-[#191c1d] flex items-center gap-1.5">
                             {log.actor_role === 'super_admin' && (
-                              <span className="text-amber-500 text-xs" title="Super Admin universal lens">👑</span>
+                              <span title="Super Admin universal lens"><Crown className="w-3.5 h-3.5 text-amber-500 shrink-0" /></span>
                             )}
                             {log.actor_name}
                           </div>
@@ -230,9 +231,11 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
                         </td>
                         <td className="py-2.5 px-4 whitespace-nowrap">
                           <div className="flex items-center gap-1.5 font-medium text-slate-800">
-                            <span className="text-xs">
-                              {devName.includes('iPhone') ? '📱' : devName.includes('Vivo') ? '📱' : '💻'}
-                            </span>
+                            {devName.includes('iPhone') || devName.includes('Vivo') ? (
+                              <Smartphone className="w-3.5 h-3.5 text-slate-500" />
+                            ) : (
+                              <Laptop className="w-3.5 h-3.5 text-slate-500" />
+                            )}
                             <span className="font-semibold text-slate-900">{devName}</span>
                           </div>
                           <div className="text-[10px] text-slate-400 font-mono flex items-center gap-1 mt-0.5">

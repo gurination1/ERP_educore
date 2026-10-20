@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { api } from '../api/client';
 import { User, UserRole } from '../types';
-import { RefreshCw, Printer, Edit, Trash2, Shield, UserCheck } from 'lucide-react';
+import { RefreshCw, Printer, Edit, Trash2, Shield, UserCheck, KeyRound, History, FileText, Building2, Smartphone, Globe, Laptop, Info, Settings } from 'lucide-react';
 
 interface UserManagementViewProps {
   currentUser?: User | null;
@@ -746,7 +746,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                             className="px-2 py-1 bg-teal-50 hover:bg-teal-100 text-[#00236f] rounded border border-teal-200 font-bold text-[10px] cursor-pointer flex items-center gap-1 shadow-2xs transition-colors"
                             title="Override & Reset Password"
                           >
-                            <span>🔑</span>
+                            <KeyRound className="w-3 h-3 text-[#00236f]" />
                             <span>RESET PWD</span>
                           </button>
                           <button
@@ -755,7 +755,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                             className="px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-800 rounded border border-purple-200 font-bold text-[10px] cursor-pointer flex items-center gap-1 shadow-2xs transition-colors"
                             title="Open Formal HR / Account Status Governance Modal"
                           >
-                            <span>⚙</span>
+                            <Settings className="w-3 h-3 text-purple-700" />
                             <span>GOVERN</span>
                           </button>
                           <button
@@ -764,7 +764,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                             className="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-[#00236f] rounded border border-blue-300 font-bold text-[10px] cursor-pointer flex items-center gap-1 shadow-2xs transition-colors"
                             title="View User Software Journey & Forensic Activity Trail (Recording 160)"
                           >
-                            <span>📜</span>
+                            <History className="w-3 h-3 text-blue-700" />
                             <span>JOURNEY</span>
                           </button>
                           <button
@@ -1545,36 +1545,39 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                 <button
                   type="button"
                   onClick={() => setJourneyTab('journey')}
-                  className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                     journeyTab === 'journey'
                       ? 'bg-[#00236f] text-white shadow-2xs'
                       : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
                   }`}
                 >
-                  📜 Software Journey ({journeyData?.softwareJourney.length || 0})
+                  <History className="w-3.5 h-3.5" />
+                  <span>Software Journey ({journeyData?.softwareJourney.length || 0})</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setJourneyTab('activity')}
-                  className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                     journeyTab === 'activity'
                       ? 'bg-[#00236f] text-white shadow-2xs'
                       : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
                   }`}
                 >
-                  🔍 Forensic Activity Logs ({journeyData?.activityLogs.length || 0})
+                  <Shield className="w-3.5 h-3.5" />
+                  <span>Forensic Activity Logs ({journeyData?.activityLogs.length || 0})</span>
                 </button>
                 {journeyData?.linkedStaffJourney && journeyData.linkedStaffJourney.length > 0 && (
                   <button
                     type="button"
                     onClick={() => setJourneyTab('staff')}
-                    className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                       journeyTab === 'staff'
                         ? 'bg-[#00236f] text-white shadow-2xs'
                         : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
                     }`}
                   >
-                    🏢 Staff Promotions & Career ({journeyData.linkedStaffJourney.length})
+                    <Building2 className="w-3.5 h-3.5" />
+                    <span>Staff Promotions & Career ({journeyData.linkedStaffJourney.length})</span>
                   </button>
                 )}
               </div>
@@ -1594,7 +1597,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                 /* Software Journey Timeline */
                 <div className="space-y-3">
                   <div className="bg-blue-50/70 border border-blue-200/80 rounded-xl p-3 text-xs text-blue-900 flex items-start gap-2">
-                    <span className="text-base shrink-0">ℹ️</span>
+                    <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
                     <div>
                       <strong className="font-bold">Historical Software Journey Protection:</strong> As dictated in Lecture Recording 160, user role mutations, administrative promotions, or status changes never erase historical logs. Every transition records actor identity, timestamp, device fingerprint, and authorization details.
                     </div>
@@ -1638,9 +1641,9 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
 
                         <div className="pt-1 flex flex-wrap items-center justify-between gap-2 text-[10px] text-slate-500 font-mono">
                           <div className="flex items-center gap-3">
-                            <span>📱 Device: <strong>{milestone.device}</strong></span>
-                            <span>🌐 IP: <strong>{milestone.ip_address}</strong></span>
-                            <span>💻 OS: <strong>{milestone.platform}</strong></span>
+                            <span className="flex items-center gap-1"><Smartphone className="w-3 h-3 text-slate-400" /> Device: <strong>{milestone.device}</strong></span>
+                            <span className="flex items-center gap-1"><Globe className="w-3 h-3 text-slate-400" /> IP: <strong>{milestone.ip_address}</strong></span>
+                            <span className="flex items-center gap-1"><Laptop className="w-3 h-3 text-slate-400" /> Platform: <strong>{milestone.platform}</strong></span>
                           </div>
                           <span className="font-sans font-bold uppercase text-[9px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
                             Severity: {milestone.severity}
@@ -1688,7 +1691,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                 /* Linked Staff Org Journey */
                 <div className="space-y-3">
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 flex items-start gap-2">
-                    <span className="text-base shrink-0">🏛️</span>
+                    <Building2 className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                     <div>
                       <strong className="font-bold">Organizational Career Transitions:</strong> Tracking promotions, demotions, additional roles, and role switches within institution departments.
                     </div>

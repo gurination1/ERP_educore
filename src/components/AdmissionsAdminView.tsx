@@ -5,7 +5,7 @@ import { api } from '../api/client';
 import { StudentProfile, User, FollowupRadarStats, ProspectLeadItem, AdmissionFollowup } from '../types';
 import { AdmissionFormView } from './AdmissionFormView';
 import { TelephonyCallDock, TelephonyCandidate } from './TelephonyCallDock';
-import { RefreshCw, Printer } from 'lucide-react';
+import { RefreshCw, Printer, PhoneCall, UploadCloud, Lock, Check } from 'lucide-react';
 
 interface AdmissionsAdminViewProps {
   currentUser?: User | null;
@@ -565,7 +565,8 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
             className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-[#00236f] hover:bg-white flex items-center gap-1.5 transition-all"
             title="Switch to Walk-in Enquiries & Telephony Calling Desk"
           >
-            <span>📞 Enquiries CRM</span>
+            <PhoneCall className="w-3.5 h-3.5 text-blue-600" />
+            <span>Enquiries CRM</span>
             <span className="text-[10px] text-slate-400">→</span>
           </Link>
 
@@ -574,7 +575,8 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
             className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-[#00236f] hover:bg-white flex items-center gap-1.5 transition-all"
             title="Switch to Column-Mapped CSV/Excel Bulk Lead Ingestion"
           >
-            <span>📥 Bulk Ingestion</span>
+            <UploadCloud className="w-3.5 h-3.5 text-indigo-600" />
+            <span>Bulk Ingestion</span>
             <span className="text-[10px] text-slate-400">→</span>
           </Link>
         </div>
@@ -1180,7 +1182,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                           </div>
                         ) : (
                           <div className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-flex items-center gap-1">
-                            <span>🔒</span>
+                            <Lock className="w-3 h-3 text-amber-700" />
                             <span>Token ₹1,500 Due</span>
                           </div>
                         )}
@@ -1231,7 +1233,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                                   className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
                                   title="Verify Token/Registration Fee Receipt (₹1,500 due per Lecture 4)"
                                 >
-                                  <span className="font-bold text-[10px]">🔒</span>
+                                  <Lock className="w-3 h-3 text-amber-200" />
                                   <span>Fee Due (₹1,500)</span>
                                 </button>
                               )
@@ -1298,7 +1300,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                                   className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
                                   title="Verify Token/Registration Fee Receipt (₹1,500 due per Lecture 4)"
                                 >
-                                  <span className="font-bold text-[10px]">🔒</span>
+                                  <Lock className="w-3 h-3 text-amber-200" />
                                   <span>Fee Due (₹1,500)</span>
                                 </button>
                               )
@@ -1344,7 +1346,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                                   className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
                                   title="Verify Token/Registration Fee Receipt (₹1,500 due per Lecture 4)"
                                 >
-                                  <span className="font-bold text-[10px]">🔒</span>
+                                  <Lock className="w-3 h-3 text-amber-200" />
                                   <span>Fee Due (₹1,500)</span>
                                 </button>
                               )
@@ -2298,7 +2300,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
             <div className="px-5 py-4 bg-[#00236f] text-white flex items-center justify-between">
               <div>
                 <h4 className="font-bold text-sm flex items-center gap-2">
-                  <span>🔒</span>
+                  <Lock className="w-4 h-4 text-blue-200" />
                   <span>Verify Registration Fee Receipt</span>
                 </h4>
                 <p className="text-[11px] text-blue-100">

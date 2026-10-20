@@ -45,8 +45,8 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
   const [searchParams] = useSearchParams();
   const urlTab = searchParams.get('tab');
 
-  const getInitialTab = (): 'overview' | 'unassigned' | 'buildings' | 'rooms' | 'residents' | 'mess' | 'maintenance' | 'transport' => {
-    if (urlTab && ['overview', 'unassigned', 'buildings', 'rooms', 'residents', 'mess', 'maintenance', 'transport'].includes(urlTab)) {
+  const getInitialTab = (): 'overview' | 'unassigned' | 'buildings' | 'rooms' | 'residents' | 'mess' | 'maintenance' => {
+    if (urlTab && ['overview', 'unassigned', 'buildings', 'rooms', 'residents', 'mess', 'maintenance'].includes(urlTab)) {
       return urlTab as any;
     }
     return 'overview';
@@ -55,7 +55,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
   const [activeTab, setActiveTab] = useState(getInitialTab());
 
   useEffect(() => {
-    if (urlTab && ['overview', 'unassigned', 'buildings', 'rooms', 'residents', 'mess', 'maintenance', 'transport'].includes(urlTab)) {
+    if (urlTab && ['overview', 'unassigned', 'buildings', 'rooms', 'residents', 'mess', 'maintenance'].includes(urlTab)) {
       setActiveTab(urlTab as any);
     }
   }, [urlTab]);
@@ -757,47 +757,116 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
         </div>
       )}
 
-      {/* Header Context Banner */}
-      <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full bg-orange-100 text-[#ea580c] font-black text-[10px] uppercase tracking-wider">
-              Role: Campus Residences & Hostel Administration
-            </span>
-            <span className="text-slate-300">•</span>
-            <span className="text-xs text-slate-500 font-semibold">
-              Accessible by Chief Warden & Institutional Admin
-            </span>
-          </div>
-          <h1 className="text-xl font-black text-[#00236f] tracking-tight">
-            Hostel Operations, Residence & Logistics Command
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Real-time Room Allocation • Mess No-Dues Clearance • Building 360-Day Maintenance Timers • Transport Fleet
-          </p>
-        </div>
+      {/* Student Personal Residence View vs Administrative Command Console */}
+      {currentUser?.role === 'student' ? (
+        <div className="space-y-4">
+          <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)]">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
+              <div>
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[10px] uppercase border border-emerald-200">
+                  Residence Allotment Active
+                </span>
+                <h1 className="text-xl font-black text-[#00236f] tracking-tight mt-1">
+                  Shaheed Bhagat Singh Residence (Block SBS-A)
+                </h1>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Room 102 • Floor 1 • AC 2-Sharing Suite with Attached Washroom (ARW)
+                </p>
+              </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              if (unallocatedHostelScholars.length > 0) {
-                setAllocatingScholar(unallocatedHostelScholars[0]);
-                setSelectedRoomForScholar('');
-                setIsAllocatingModalOpen(true);
-              } else {
-                setActiveTab('unassigned');
-                showToast('All scholar applications currently have beds allocated.');
-              }
-            }}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#00236f] hover:bg-[#001744] text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Allot Bed / Room</span>
-          </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedNocRecord(messClearances[0]);
+                  setIsNocModalOpen(true);
+                }}
+                className="px-4 py-2 bg-[#00236f] hover:bg-[#001744] text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+              >
+                <Printer className="w-3.5 h-3.5 text-amber-300" />
+                <span>View Digital Mess NOC Certificate</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 text-xs">
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                <span className="text-slate-400 font-bold text-[10px] uppercase block">Assigned Bed</span>
+                <div className="text-lg font-black text-[#00236f] mt-1">Bed #1 (Window View)</div>
+                <span className="text-emerald-700 font-semibold text-[11px]">Occupancy: 2/2 Allotted</span>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                <span className="text-slate-400 font-bold text-[10px] uppercase block">Assigned Roommate</span>
+                <div className="text-lg font-black text-slate-900 mt-1">Aryan Sharma</div>
+                <span className="text-slate-500 font-mono text-[11px]">B.Tech CSE • Sem 4</span>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                <span className="text-slate-400 font-bold text-[10px] uppercase block">Semester Rent Structure</span>
+                <div className="text-lg font-black text-emerald-700 mt-1">₹42,000 / Sem</div>
+                <span className="text-emerald-700 font-semibold text-[11px]">Status: Cleared & Paid</span>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                <span className="text-slate-400 font-bold text-[10px] uppercase block">Mess Clearance</span>
+                <div className="text-lg font-black text-emerald-700 mt-1">No-Dues Certified</div>
+                <span className="text-slate-500 text-[11px]">Caution Deposit: Refund Eligible</span>
+              </div>
+            </div>
+
+            <div className="mt-4 p-4 rounded-2xl bg-blue-50/60 border border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="space-y-0.5">
+                <div className="font-bold text-[#00236f]">Chief Warden Desk & Emergency Assistance</div>
+                <div className="text-slate-600">Dr. Gurdial Singh (Warden Office, Block A Ground Floor) • Hotline: +91 98140 12345</div>
+              </div>
+              <span className="px-3 py-1 bg-white rounded-full font-mono text-[11px] font-bold text-[#00236f] border border-blue-200 shadow-2xs self-start sm:self-auto">
+                Night Gate Curfew: 10:00 PM
+              </span>
+            </div>
+          </div>
         </div>
-      </div>
+      ) : (
+        <>
+          {/* Header Context Banner */}
+          <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2.5 py-0.5 rounded-full bg-orange-100 text-[#ea580c] font-black text-[10px] uppercase tracking-wider">
+                  Role: Campus Residences & Hostel Administration
+                </span>
+                <span className="text-slate-300">•</span>
+                <span className="text-xs text-slate-500 font-semibold">
+                  Accessible by Chief Warden & Institutional Admin
+                </span>
+              </div>
+              <h1 className="text-xl font-black text-[#00236f] tracking-tight">
+                Hostel Operations, Residence & Logistics Command
+              </h1>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Real-time Room Allocation • Mess No-Dues Clearance • Building 360-Day Maintenance Timers
+              </p>
+            </div>
+
+            {/* Action Controls */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (unallocatedHostelScholars.length > 0) {
+                    setAllocatingScholar(unallocatedHostelScholars[0]);
+                    setSelectedRoomForScholar('');
+                    setIsAllocatingModalOpen(true);
+                  } else {
+                    setActiveTab('unassigned');
+                    showToast('All scholar applications currently have beds allocated.');
+                  }
+                }}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#00236f] hover:bg-[#001744] text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Allot Bed / Room</span>
+              </button>
+            </div>
+          </div>
 
       {/* Navigation Sub-Tabs */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-slate-200 text-xs font-bold text-slate-600">
@@ -809,7 +878,6 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
           { id: 'residents', label: 'Resident Scholars', icon: Users },
           { id: 'mess', label: 'Mess & No-Dues Clearance', icon: UtensilsCrossed },
           { id: 'maintenance', label: 'Maintenance & Safety Timers', icon: Wrench },
-          { id: 'transport', label: 'Transport Fleet & Seats', icon: Bus },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -1658,115 +1726,8 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
           </div>
         </div>
       )}
-
-      {/* TAB 7: TRANSPORT FLEET & QUEUES */}
-      {activeTab === 'transport' && (
-        <div className="space-y-4">
-          <div className="p-4 bg-sky-50 border border-sky-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <Bus className="w-6 h-6 text-[#00236f] shrink-0" />
-              <div>
-                <h4 className="text-xs font-black text-[#00236f]">Dedicated Fleet Operations & RFID Bus Pass Console</h4>
-                <p className="text-[11px] text-slate-600">
-                  Manage commercial driver KYC, stop-wise fares, RFID passes, and 90/360-day RTO fitness checks in the standalone Fleet module.
-                </p>
-              </div>
-            </div>
-            <a
-              href="/transport"
-              className="px-4 py-2 bg-[#00236f] hover:bg-[#001b54] text-white rounded-xl text-xs font-black self-start sm:self-auto shrink-0 shadow-2xs flex items-center gap-1.5 transition-all"
-            >
-              <span>Launch Fleet Console</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Bus Fleet */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-3">
-              <h2 className="text-base font-black text-[#00236f] flex items-center gap-2">
-                <Bus className="w-5 h-5 text-[#ea580c]" />
-                <span>Collegiate Bus Fleet & Capacity</span>
-              </h2>
-
-              <div className="space-y-3">
-                {vehicles.map((v) => (
-                  <div key={v.id} className="p-3.5 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-mono font-black text-[#00236f]">{v.vehicle_number}</span>
-                      <div className="flex items-center gap-1.5">
-                        {v.is_ac && (
-                          <span className="px-1.5 py-0.5 rounded-md bg-sky-50 text-sky-700 font-black text-[9px] border border-sky-200">
-                            AC
-                          </span>
-                        )}
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            v.total_allocated >= v.seater_capacity
-                              ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          }`}
-                        >
-                          {v.total_allocated} / {v.seater_capacity} Seats
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="text-xs text-slate-800 font-semibold">{v.route_name}</div>
-                    <div className="text-[11px] text-slate-500">
-                      <span className="font-bold">Driver:</span> {v.driver_name} ({v.driver_phone}) •{' '}
-                      <span className="capitalize">{v.ownership.replace('_', ' ')}</span>
-                    </div>
-
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {v.stops.map((s, idx) => (
-                        <span key={idx} className="px-1.5 py-0.5 rounded-md bg-white border border-slate-200 text-[10px] text-slate-600">
-                          {s}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Unallocated Transport Scholars Queue */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-3">
-              <div className="flex items-center justify-between">
-                <h2 className="text-base font-black text-[#00236f] flex items-center gap-2">
-                  <Users className="w-5 h-5 text-[#ea580c]" />
-                  <span>Unallocated Transport Queue</span>
-                </h2>
-                <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-bold text-[10px] border border-amber-200">
-                  {unallocatedTransportScholars.length} Pending
-                </span>
-              </div>
-              <p className="text-xs text-slate-500">
-                Scholars who opted for collegiate transport during admission intake but are awaiting bus/seat assignment.
-              </p>
-
-              <div className="space-y-2">
-                {unallocatedTransportScholars.map((s) => (
-                  <div key={s.uid} className="p-3 rounded-2xl border border-slate-200 bg-white flex items-center justify-between text-xs">
-                    <div>
-                      <div className="font-bold text-[#00236f]">{s.name}</div>
-                      <div className="text-[11px] text-slate-500 font-mono">{s.uid} • {s.course}</div>
-                      <div className="text-[10px] text-[#ea580c] font-bold mt-0.5">Stop Requested: {s.stopRequested}</div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => showToast(`Seat assigned to ${s.name} on Route 1.`)}
-                      className="px-3 py-1.5 rounded-xl bg-[#00236f] hover:bg-[#001744] text-white text-[11px] font-bold transition-all cursor-pointer"
-                    >
-                      Assign Seat
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+    </>
+  )}
 
       {/* MODAL 1: ROOM SHIFTING WIZARD */}
       {isRoomShiftModalOpen && shiftingResident && (

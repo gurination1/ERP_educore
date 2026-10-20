@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
+import { CheckCircle2 } from 'lucide-react';
 
 interface FeeHeadItem {
   id: string;
@@ -313,8 +314,9 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
           {isLoading ? (
             <div className="p-6 text-center text-xs text-[#757682]">Loading student fee breakdown...</div>
           ) : feeItems.length === 0 ? (
-            <div className="p-6 text-center text-xs text-[#00236f] bg-[#ffedd5] rounded-xl border border-[#ea580c]">
-              🎉 No pending fee dues! All fee heads for this student are fully settled.
+            <div className="p-6 text-center text-xs text-[#00236f] bg-emerald-50 rounded-xl border border-emerald-200 flex items-center justify-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>No pending fee dues. All fee heads for this scholar are fully settled.</span>
             </div>
           ) : (
             feeItems.map(item => (

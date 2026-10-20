@@ -608,7 +608,10 @@ export type ActiveScreen =
   | 'master-tables'
   | 'field-permissions'
   | 'payment-gateways'
-  | 'hostel-management';
+  | 'hostel-management'
+  | 'hostel'
+  | 'transport'
+  | 'transport-management';
 
 export interface HostelBuilding {
   id: string;

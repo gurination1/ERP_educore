@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { User } from '../types';
 import { api } from '../api/client';
+import { Printer, CheckCircle2 } from 'lucide-react';
 
 interface UniversityExamPortalViewProps {
   currentUser: User | null;
@@ -707,7 +708,7 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
               </div>
             ) : (
               <div className="p-8 text-center bg-slate-50 rounded-2xl border border-slate-200 text-slate-500">
-                <span className="text-2xl block mb-2">🎉</span>
+                <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
                 <p className="text-xs font-bold text-slate-700">No Backlogs or Reappear Papers Detected!</p>
                 <p className="text-xs text-slate-400 mt-1">
                   Candidate has maintained 100% pass record across all preceding academic semesters.
@@ -799,7 +800,7 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
                     onClick={handlePrint}
                     className="px-4 py-2 bg-[#00236f] hover:bg-[#001744] text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-md"
                   >
-                    <span>🖨️</span>
+                    <Printer className="w-3.5 h-3.5" />
                     <span>Print Official Roll Number Slip</span>
                   </button>
                 </div>
@@ -952,7 +953,7 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
                 onClick={handlePrint}
                 className="px-4 py-2 bg-[#00236f] text-white rounded-xl text-xs font-bold hover:bg-[#001744] cursor-pointer shadow-xs flex items-center gap-1.5"
               >
-                <span>🖨️</span>
+                <Printer className="w-3.5 h-3.5" />
                 <span>Print Official Datesheet</span>
               </button>
             </div>
@@ -1057,7 +1058,7 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
                 onClick={handlePrint}
                 className="px-4 py-2 bg-[#00236f] text-white rounded-xl text-xs font-bold hover:bg-[#001744] cursor-pointer shadow-xs flex items-center gap-1.5"
               >
-                <span>🖨️</span>
+                <Printer className="w-3.5 h-3.5" />
                 <span>Print Official Grade Card</span>
               </button>
             </div>

@@ -475,15 +475,8 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
           {isActualAdmin ? (
             <>
               <button
-                onClick={() => setViewMode('desk')}
-                className="px-4 py-2 bg-[#00236f] text-white rounded-lg text-xs font-bold hover:bg-[#1e3a8a] flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
-              >
-                <Receipt className="w-3.5 h-3.5 text-amber-300" />
-                <span>Quick Fee Collection Desk</span>
-              </button>
-              <button
                 onClick={() => { setIsAssignModalOpen(true); setAssignError(null); }}
-                className="px-4 py-2 bg-white border border-[#e1e3e4] text-[#191c1d] rounded-lg text-xs font-bold hover:bg-[#f8f9fa] flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                className="px-4 py-2 bg-[#00236f] text-white rounded-lg text-xs font-bold hover:bg-[#1e3a8a] flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Assign Fee Head</span>

@@ -537,12 +537,12 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { key: 'campus_visit_scheduled', label: '🏫 Campus Visit Scheduled' },
-                    { key: 'callback_requested', label: '📞 Callback Requested' },
-                    { key: 'punjab_quota_concession', label: '🎓 Quota / Fee Discussion' },
-                    { key: 'documents_pending', label: '📄 Documents Pending' },
-                    { key: 'busy_callback', label: '⏳ Busy / Callback Later' },
-                    { key: 'not_interested', label: '❌ Not Interested' },
+                    { key: 'campus_visit_scheduled', label: 'Campus Visit Scheduled' },
+                    { key: 'callback_requested', label: 'Callback Requested' },
+                    { key: 'punjab_quota_concession', label: 'Quota / Fee Discussion' },
+                    { key: 'documents_pending', label: 'Documents Pending' },
+                    { key: 'busy_callback', label: 'Busy / Callback Later' },
+                    { key: 'not_interested', label: 'Not Interested' },
                   ].map(outcome => (
                     <button
                       key={outcome.key}
@@ -571,9 +571,9 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
                     onChange={e => setDispositionPriority(e.target.value)}
                     className="w-full p-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-semibold text-[#191c1d] focus:bg-white focus:border-[#00236f] outline-none"
                   >
-                    <option value="p1_high">🔥 P1 High (Hot Lead)</option>
-                    <option value="p2_medium">⚡ P2 Medium (Follow-up)</option>
-                    <option value="p3_low">💤 P3 Standard (Warm)</option>
+                    <option value="p1_high">P1 High (Hot Lead)</option>
+                    <option value="p2_medium">P2 Medium (Follow-up)</option>
+                    <option value="p3_low">P3 Standard (Warm)</option>
                   </select>
                 </div>
 

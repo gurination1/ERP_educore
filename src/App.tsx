@@ -678,7 +678,13 @@ function MainApp() {
                   />
                 ) : currentUser.role === 'hr' ? (
                   <StaffManagementView currentUser={currentUser} />
-                ) : (currentUser.role === 'staff' || currentUser.role === 'counselor' || currentUser.role === 'hod') ? (
+                ) : currentUser.role === 'counselor' ? (
+                  <EnquiriesView
+                    currentUser={currentUser}
+                    onNavigateToBulkImport={() => navigate('/bulk-import')}
+                    onNavigateToManageStudents={() => navigate('/manage-students')}
+                  />
+                ) : (currentUser.role === 'staff' || currentUser.role === 'hod') ? (
                   <StaffDashboardView
                     currentUser={currentUser}
                     onNavigate={handleScreenNavigate}
@@ -1197,7 +1203,7 @@ function MainApp() {
           element={
             !currentUser ? (
               <Navigate to="/" replace />
-            ) : !['admin', 'super_admin', 'hostel'].includes(currentUser.role) ? (
+            ) : !['admin', 'super_admin', 'hostel', 'student'].includes(currentUser.role) ? (
               <Navigate to="/dashboard" replace />
             ) : (
               <AuthenticatedLayout
@@ -1222,7 +1228,7 @@ function MainApp() {
           element={
             !currentUser ? (
               <Navigate to="/" replace />
-            ) : !['admin', 'super_admin', 'accounts', 'counselor', 'staff', 'student'].includes(currentUser.role) ? (
+            ) : !['admin', 'super_admin', 'accounts', 'counselor', 'staff', 'student', 'hostel', 'hr'].includes(currentUser.role) ? (
               <Navigate to="/dashboard" replace />
             ) : (
               <AuthenticatedLayout

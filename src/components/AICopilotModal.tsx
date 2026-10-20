@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { api } from '../api/client';
 import { User } from '../types';
+import { GraduationCap, Zap, BarChart2 } from 'lucide-react';
 
 interface AICopilotModalProps {
   isOpen: boolean;
@@ -106,13 +107,14 @@ export const AICopilotModal: React.FC<AICopilotModalProps> = ({
                     setQuery(p);
                     handleAsk(p);
                   }}
-                  className={`px-2.5 py-1 rounded-lg text-xs transition-colors text-left font-medium ${
+                  className={`px-2.5 py-1 rounded-lg text-xs transition-colors text-left font-medium flex items-center gap-1.5 ${
                     isStudent
                       ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200/60'
                       : 'bg-[#f3f4f5] hover:bg-[#e1e3e4] text-[#191c1d]'
                   }`}
                 >
-                  {isStudent ? '🎓' : '⚡'} {p}
+                  {isStudent ? <GraduationCap className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> : <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
+                  <span>{p}</span>
                 </button>
               ))}
             </div>
@@ -165,12 +167,13 @@ export const AICopilotModal: React.FC<AICopilotModalProps> = ({
             <div className="space-y-4 pt-2">
               {/* Highlight Metric if any */}
               {copilotResponse.relevantMetric && (
-                <div className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
+                <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
                   isStudent
                     ? 'bg-emerald-50 border border-emerald-200 text-emerald-900'
                     : 'bg-amber-50 border border-amber-200 text-amber-900'
                 }`}>
-                  {isStudent ? '📌' : '📊'} {copilotResponse.relevantMetric}
+                  <BarChart2 className="w-3.5 h-3.5 shrink-0" />
+                  <span>{copilotResponse.relevantMetric}</span>
                 </div>
               )}
 

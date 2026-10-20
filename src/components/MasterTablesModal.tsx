@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { MasterState, MasterUserType, MasterDegree, MasterDocumentType } from '../types';
+import { Crown } from 'lucide-react';
 
 interface MasterTablesModalProps {
   isOpen: boolean;
@@ -281,7 +282,10 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
                       <td className="py-2.5 px-4 font-bold text-[#191c1d]">
                         {u.display_title}
                         {u.role_key === 'super_admin' && (
-                          <span className="ml-2 text-amber-500">👑 APEX AUTHORITY</span>
+                          <span className="ml-2 inline-flex items-center gap-1 text-amber-700 font-bold text-[10px] bg-amber-100/80 px-2 py-0.5 rounded-full border border-amber-300">
+                            <Crown className="w-3 h-3 text-amber-600" />
+                            <span>APEX AUTHORITY</span>
+                          </span>
                         )}
                       </td>
                       <td className="py-2.5 px-4 font-mono text-[11px] text-[#00236f]">

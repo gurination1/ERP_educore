@@ -688,12 +688,12 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'dashboard',
         label: 'Counselor Desk',
-        defaultScreen: 'staff-dashboard',
+        defaultScreen: 'enquiries',
         action: () => {
-          onNavigate('staff-dashboard');
+          onNavigate('enquiries');
           setOpenDrawer(null);
         },
-        isActive: effectivePath === '/dashboard' || activeScreen === 'staff-dashboard',
+        isActive: effectivePath === '/dashboard' || activeScreen === 'enquiries' || effectivePath.startsWith('/enquiries'),
       },
       {
         id: 'crm',
@@ -1125,6 +1125,20 @@ export const Header: React.FC<HeaderProps> = ({
           { id: 'grievances' as ActiveScreen, label: 'Statutory Grievance Redressal', action: () => { onNavigate('grievances'); setOpenDrawer(null); } },
         ],
         isActive: ['student-documents', 'grievances'].includes(activeScreen as any) || effectivePath.startsWith('/student-documents') || effectivePath.startsWith('/grievances'),
+      },
+      {
+        id: 'residence',
+        label: 'Hostel & Transit',
+        defaultScreen: 'hostel' as any,
+        action: () => {
+          onNavigate('hostel' as any);
+          setOpenDrawer(null);
+        },
+        items: [
+          { id: 'hostel' as any, label: 'Hostel Room & Mess Clearance NOC', action: () => { onNavigate('hostel' as any); setOpenDrawer(null); } },
+          { id: 'transport' as any, label: 'Digital RFID Bus Pass & Route', action: () => { onNavigate('transport' as any); setOpenDrawer(null); } },
+        ],
+        isActive: effectivePath.startsWith('/hostel') || effectivePath.startsWith('/transport'),
       },
     ];
   }
@@ -1575,7 +1589,7 @@ export const Header: React.FC<HeaderProps> = ({
                       )}
                     </button>
 
-                    {/* Apple-Grade Multi-Column Frosted Flyout Card (Opens Under Hovered/Clicked Item) */}
+                    {/* Sleek Minimalist Single-Column Apple/macOS Dropdown Card */}
                     {hasChildren && isDrawerOpen && (
                       <div
                         onMouseEnter={() => {
@@ -1585,54 +1599,50 @@ export const Header: React.FC<HeaderProps> = ({
                           }
                         }}
                         onMouseLeave={handleMouseLeave}
-                        className={`absolute top-full pt-1 z-50 select-none before:absolute before:-top-3 before:left-0 before:right-0 before:h-3 before:content-[''] ${
-                          sec.items!.length > 4 ? 'w-[340px] sm:w-[380px]' : 'w-60 sm:w-64'
-                        } ${sec.id === 'governance' || sec.id === 'staff' ? 'right-0 left-auto' : 'left-0'}`}
+                        className={`absolute top-full pt-1.5 z-50 select-none before:absolute before:-top-3 before:left-0 before:right-0 before:h-3 before:content-[''] w-56 sm:w-60 ${
+                          sec.id === 'governance' || sec.id === 'staff' || sec.id === 'hostel' ? 'right-0 left-auto' : 'left-0'
+                        }`}
                       >
-                        <div className="bg-white/98 backdrop-blur-2xl border border-slate-200/90 shadow-[0_16px_36px_-8px_rgba(0,35,111,0.15),0_0_0_1px_rgba(0,35,111,0.04)] rounded-xl p-2.5 animate-flyout">
-                          {/* Section Header with Clean Branding */}
-                          <div className="px-2.5 pt-1 pb-1.5 text-[11px] font-bold text-slate-500 tracking-wider uppercase border-b border-slate-100 flex items-center justify-between">
-                            <span className="flex items-center gap-1.5 text-[#00236f] font-black">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#ea580c]" />
-                              {sec.label}
-                            </span>
-                            <span className="text-[9px] font-mono text-slate-400 font-semibold">
-                              EduCore ERP
-                            </span>
+                        <div className="bg-white/98 backdrop-blur-2xl border border-slate-200/90 shadow-[0_12px_32px_-6px_rgba(0,35,111,0.12),0_0_0_1px_rgba(0,35,111,0.04)] rounded-xl p-1.5 animate-in fade-in zoom-in-95 duration-150">
+                          {/* Minimalist Section Header */}
+                          <div className="px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100/80 mb-1 flex items-center justify-between">
+                            <span className="truncate">{sec.label}</span>
                           </div>
 
-                          {/* Interactive Action Grid (Pure Text Hierarchy) */}
-                          <div className={`py-1 ${sec.items!.length > 4 ? 'grid grid-cols-1 sm:grid-cols-2 gap-1' : 'space-y-0.5'}`}>
-                            {sec.items!.map((item: any, itemIdx: number) => (
-                              <button
-                                key={`${sec.id}-${item.id || itemIdx}-${item.label}`}
-                                type="button"
-                                onClick={() => {
-                                  if (closeTimerRef.current) {
-                                    clearTimeout(closeTimerRef.current);
-                                    closeTimerRef.current = null;
-                                  }
-                                  setOpenDrawer(null);
-                                  if (item.action) {
-                                    item.action();
-                                  } else if (item.id) {
-                                    onNavigate(item.id);
-                                  }
-                                }}
-                                className={`w-full px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all text-left flex items-center justify-between cursor-pointer group ${
-                                  activeScreen === item.id
-                                    ? 'bg-[#00236f] text-white shadow-2xs font-bold'
-                                    : 'text-slate-700 hover:bg-slate-100 hover:text-[#00236f]'
-                                }`}
-                              >
-                                <span className="truncate">{item.label}</span>
-                                {activeScreen === item.id && (
-                                  <span className="text-[9px] uppercase tracking-wider font-extrabold text-amber-300 ml-1.5">Active</span>
-                                )}
-                              </button>
-                            ))}
+                          {/* Interactive Action List (Single-Column, Zero Empty Space) */}
+                          <div className="space-y-0.5">
+                            {sec.items!.map((item: any, itemIdx: number) => {
+                              const isItemActive = activeScreen === item.id;
+                              return (
+                                <button
+                                  key={`${sec.id}-${item.id || itemIdx}-${item.label}`}
+                                  type="button"
+                                  onClick={() => {
+                                    if (closeTimerRef.current) {
+                                      clearTimeout(closeTimerRef.current);
+                                      closeTimerRef.current = null;
+                                    }
+                                    setOpenDrawer(null);
+                                    if (item.action) {
+                                      item.action();
+                                    } else if (item.id) {
+                                      onNavigate(item.id);
+                                    }
+                                  }}
+                                  className={`w-full px-2.5 py-1.5 rounded-lg text-xs transition-all text-left flex items-center justify-between cursor-pointer group ${
+                                    isItemActive
+                                      ? 'bg-blue-50 text-[#00236f] font-bold'
+                                      : 'text-slate-700 hover:bg-slate-100 hover:text-[#00236f] font-medium'
+                                  }`}
+                                >
+                                  <span className="truncate">{item.label}</span>
+                                  {isItemActive && (
+                                    <span className="w-1.5 h-1.5 rounded-full bg-[#00236f] shrink-0 ml-1.5" />
+                                  )}
+                                </button>
+                              );
+                            })}
                           </div>
-
                         </div>
                       </div>
                     )}

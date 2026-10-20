@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { User, StudentProfile, ActiveScreen } from '../types';
-import { Lock, Unlock, AlertOctagon, CheckCircle2 } from 'lucide-react';
+import { Lock, Unlock, AlertOctagon, CheckCircle2, Phone } from 'lucide-react';
 
 interface StaffDashboardViewProps {
   currentUser: User | null;
@@ -707,7 +707,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <button
             type="button"
-            onClick={() => onNavigate('admissions')}
+            onClick={() => onNavigate('enquiries')}
             className="p-3.5 bg-white hover:bg-slate-50 border border-[#e1e3e4] hover:border-[#00236f]/40 rounded-xl text-left flex items-center justify-between group transition-all shadow-2xs cursor-pointer"
           >
             <div>
@@ -1104,8 +1104,9 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                         >
                           {isOverdue ? 'Overdue Callback' : isDueToday ? 'Callback Due Today' : 'Scheduled'}
                         </span>
-                        <span className="font-mono text-xs text-slate-500 font-semibold">
-                          📞 {p.phone || p.mobile}
+                        <span className="font-mono text-xs text-slate-500 font-semibold flex items-center gap-1">
+                          <Phone className="w-3 h-3 text-slate-400" />
+                          <span>{p.phone || p.mobile}</span>
                         </span>
                       </div>
                       <div className="flex flex-wrap items-center gap-3 text-xs">
@@ -1217,7 +1218,10 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                         {enq.father_name && <span className="text-[10px] text-slate-500">S/D of {enq.father_name}</span>}
                       </td>
                       <td className="p-3.5">
-                        <span className="font-mono text-slate-800 block">📞 {enq.mobile}</span>
+                        <span className="font-mono text-slate-800 flex items-center gap-1">
+                          <Phone className="w-3 h-3 text-slate-400" />
+                          <span>{enq.mobile}</span>
+                        </span>
                         {enq.email && <span className="text-[10px] text-slate-500">{enq.email}</span>}
                       </td>
                       <td className="p-3.5 font-semibold text-[#00236f]">{enq.selected_course || 'B.Tech CSE'}</td>
