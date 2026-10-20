@@ -26,12 +26,14 @@ interface EnquiriesViewProps {
   currentUser: User | null;
   onNavigateToManageStudents?: () => void;
   onNavigateToBulkImport?: () => void;
+  selectedCampus?: 'campus_01' | 'campus_02' | 'all';
 }
 
 export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
   currentUser,
   onNavigateToManageStudents,
   onNavigateToBulkImport,
+  selectedCampus,
 }) => {
   const [enquiries, setEnquiries] = useState<any[]>([]);
   const [selectedEnquiryId, setSelectedEnquiryId] = useState<string | null>(null);
@@ -134,6 +136,7 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
     const res = await api.getEnquiries({
       status: statusFilter !== 'all' ? statusFilter : undefined,
       search: searchQuery || undefined,
+      campus: selectedCampus && selectedCampus !== 'all' ? selectedCampus : undefined,
     });
     if (res.success && res.enquiries) {
       setEnquiries(res.enquiries);
@@ -162,7 +165,7 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
   useEffect(() => {
     fetchEnquiries();
     fetchDialer();
-  }, [statusFilter]);
+  }, [statusFilter, selectedCampus]);
 
   useEffect(() => {
     if (selectedEnquiryId) {

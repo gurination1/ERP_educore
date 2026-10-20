@@ -46,6 +46,7 @@ import { HostelManagementView } from './components/HostelManagementView';
 import { TransportManagementView } from './components/TransportManagementView';
 import { MandatoryPasswordChangeModal } from './components/MandatoryPasswordChangeModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { CampusProvider, useCampus } from './context/CampusContext';
 
 interface LayoutProps {
   currentUser: User | null;
@@ -70,10 +71,13 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
   onOpenMasterTables: propOnOpenMasterTables,
   onOpenPayModal: propOnOpenPayModal,
   onOpenAdmitCard: propOnOpenAdmitCard,
-  selectedCampus = 'campus_01',
-  onCampusChange,
+  selectedCampus: propSelectedCampus,
+  onCampusChange: propOnCampusChange,
   children,
 }) => {
+  const { selectedCampus: ctxCampus, setSelectedCampus: ctxSetCampus } = useCampus();
+  const selectedCampus = propSelectedCampus || ctxCampus || 'campus_01';
+  const onCampusChange = propOnCampusChange || ctxSetCampus;
   const navigate = useNavigate();
   const location = useLocation();
   const [showCopilot, setShowCopilot] = useState(false);
@@ -426,7 +430,9 @@ export default function App() {
   const RouterComponent = isGitHubPages ? HashRouter : BrowserRouter;
   return (
     <RouterComponent>
-      <MainApp />
+      <CampusProvider>
+        <MainApp />
+      </CampusProvider>
     </RouterComponent>
   );
 }
@@ -436,7 +442,7 @@ function MainApp() {
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentStudent, setCurrentStudent] = useState<StudentProfile | null>(null);
-  const [selectedCampus, setSelectedCampus] = useState<'campus_01' | 'campus_02' | 'all'>('campus_01');
+  const { selectedCampus, setSelectedCampus } = useCampus();
   const [isInitializing, setIsInitializing] = useState(true);
   const [notices, setNotices] = useState<NoticeItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -739,6 +745,10 @@ function MainApp() {
                 onLogout={handleLogout}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
+                onOpenMasterTables={handleOpenMasterTables}
+                onOpenAuditLogs={handleOpenAuditLogs}
+                selectedCampus={selectedCampus}
+                onCampusChange={setSelectedCampus}
                 onOpenPayModal={() => {
                   setTargetPayFeeId(undefined);
                   setTargetPayStudent(currentStudent);
@@ -749,6 +759,7 @@ function MainApp() {
                 <FeeLedgerView
                   currentUser={currentUser}
                   currentStudent={currentStudent}
+                  selectedCampus={selectedCampus}
                   onOpenPayModal={(feeId, studentObj) => {
                     setTargetPayFeeId(feeId);
                     setTargetPayStudent(studentObj || currentStudent);
@@ -775,10 +786,15 @@ function MainApp() {
                 onLogout={handleLogout}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
+                onOpenMasterTables={handleOpenMasterTables}
+                onOpenAuditLogs={handleOpenAuditLogs}
+                selectedCampus={selectedCampus}
+                onCampusChange={setSelectedCampus}
               >
                 {['admin', 'super_admin', 'staff', 'counselor', 'hod'].includes(currentUser.role) ? (
                   <AdmissionsAdminView
                     currentUser={currentUser}
+                    selectedCampus={selectedCampus}
                     onSelectStudent={student => setViewingStudent(student)}
                   />
                 ) : (
@@ -806,9 +822,14 @@ function MainApp() {
                 onLogout={handleLogout}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
+                onOpenMasterTables={handleOpenMasterTables}
+                onOpenAuditLogs={handleOpenAuditLogs}
+                selectedCampus={selectedCampus}
+                onCampusChange={setSelectedCampus}
               >
                 <ManageStudentsView
                   currentUser={currentUser}
+                  selectedCampus={selectedCampus}
                   onSelectStudent={student => setViewingStudent(student)}
                   onOpenEmailReminders={() => setIsEmailRemindersOpen(true)}
                 />
@@ -922,8 +943,12 @@ function MainApp() {
                 onLogout={handleLogout}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
+                onOpenMasterTables={handleOpenMasterTables}
+                onOpenAuditLogs={handleOpenAuditLogs}
+                selectedCampus={selectedCampus}
+                onCampusChange={setSelectedCampus}
               >
-                <ReportsView currentUser={currentUser} />
+                <ReportsView currentUser={currentUser} selectedCampus={selectedCampus} />
               </AuthenticatedLayout>
             )
           }
@@ -944,8 +969,10 @@ function MainApp() {
                 onSearchChange={setSearchQuery}
                 onOpenMasterTables={handleOpenMasterTables}
                 onOpenAuditLogs={handleOpenAuditLogs}
+                selectedCampus={selectedCampus}
+                onCampusChange={setSelectedCampus}
               >
-                <ReportsView currentUser={currentUser} />
+                <ReportsView currentUser={currentUser} selectedCampus={selectedCampus} />
               </AuthenticatedLayout>
             )
           }
@@ -1171,8 +1198,12 @@ function MainApp() {
                 onLogout={handleLogout}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
+                onOpenMasterTables={handleOpenMasterTables}
+                onOpenAuditLogs={handleOpenAuditLogs}
+                selectedCampus={selectedCampus}
+                onCampusChange={setSelectedCampus}
               >
-                <StaffManagementView currentUser={currentUser} />
+                <StaffManagementView currentUser={currentUser} selectedCampus={selectedCampus} />
               </AuthenticatedLayout>
             )
           }
@@ -1191,6 +1222,10 @@ function MainApp() {
                 onLogout={handleLogout}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
+                onOpenMasterTables={handleOpenMasterTables}
+                onOpenAuditLogs={handleOpenAuditLogs}
+                selectedCampus={selectedCampus}
+                onCampusChange={setSelectedCampus}
               >
                 <PartnerPortalView currentUser={currentUser} />
               </AuthenticatedLayout>
@@ -1211,8 +1246,12 @@ function MainApp() {
                 onLogout={handleLogout}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
+                onOpenMasterTables={handleOpenMasterTables}
+                onOpenAuditLogs={handleOpenAuditLogs}
+                selectedCampus={selectedCampus}
+                onCampusChange={setSelectedCampus}
               >
-                <HostelManagementView currentUser={currentUser} />
+                <HostelManagementView currentUser={currentUser} selectedCampus={selectedCampus} />
               </AuthenticatedLayout>
             )
           }
@@ -1236,8 +1275,12 @@ function MainApp() {
                 onLogout={handleLogout}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
+                onOpenMasterTables={handleOpenMasterTables}
+                onOpenAuditLogs={handleOpenAuditLogs}
+                selectedCampus={selectedCampus}
+                onCampusChange={setSelectedCampus}
               >
-                <TransportManagementView currentUser={currentUser} />
+                <TransportManagementView currentUser={currentUser} selectedCampus={selectedCampus} />
               </AuthenticatedLayout>
             )
           }
@@ -1261,6 +1304,10 @@ function MainApp() {
                 onLogout={handleLogout}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
+                onOpenMasterTables={handleOpenMasterTables}
+                onOpenAuditLogs={handleOpenAuditLogs}
+                selectedCampus={selectedCampus}
+                onCampusChange={setSelectedCampus}
               >
                 <BulkImportView currentUser={currentUser} onNavigateToCRM={() => navigate('/enquiries')} />
               </AuthenticatedLayout>
@@ -1281,9 +1328,14 @@ function MainApp() {
                 onLogout={handleLogout}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
+                onOpenMasterTables={handleOpenMasterTables}
+                onOpenAuditLogs={handleOpenAuditLogs}
+                selectedCampus={selectedCampus}
+                onCampusChange={setSelectedCampus}
               >
                 <EnquiriesView
                   currentUser={currentUser}
+                  selectedCampus={selectedCampus}
                   onNavigateToBulkImport={() => navigate('/bulk-import')}
                   onNavigateToManageStudents={() => navigate('/manage-students')}
                 />

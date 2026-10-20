@@ -39,9 +39,10 @@ import {
 
 interface HostelManagementViewProps {
   currentUser: User | null;
+  selectedCampus?: 'campus_01' | 'campus_02' | 'all';
 }
 
-export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ currentUser }) => {
+export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ currentUser, selectedCampus }) => {
   const [searchParams] = useSearchParams();
   const urlTab = searchParams.get('tab');
 
@@ -90,8 +91,8 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
   const [buildings, setBuildings] = useState<HostelBuilding[]>([
     {
       id: 'bld-01',
-      campus_id: 'cmp-01',
-      campus_name: 'Campus One (Bathinda Main)',
+      campus_id: 'campus_01',
+      campus_name: 'Bathinda Campus 01 (Main)',
       name: 'Shaheed Bhagat Singh Residence Block A',
       code: 'SBS-A',
       address: 'Main Campus, Muktsar Road, Bathinda, Punjab',
@@ -109,8 +110,8 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
     },
     {
       id: 'bld-02',
-      campus_id: 'cmp-01',
-      campus_name: 'Campus One (Bathinda Main)',
+      campus_id: 'campus_01',
+      campus_name: 'Bathinda Campus 01 (Main)',
       name: 'Mata Gujri Girls Hostel Block B',
       code: 'MG-B',
       address: 'North Enclave, Main Campus, Bathinda, Punjab',
@@ -128,8 +129,8 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
     },
     {
       id: 'bld-03',
-      campus_id: 'cmp-01',
-      campus_name: 'Campus One (Bathinda Main)',
+      campus_id: 'campus_01',
+      campus_name: 'Bathinda Campus 01 (Main)',
       name: 'Baba Deep Singh Scholar Enclave Block C',
       code: 'BDS-C',
       address: 'Ring Road Campus Extension, Bathinda, Punjab',
@@ -145,6 +146,25 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
       last_electrical_inspection: '2026-09-02',
       inspected_by: 'Vendor Authorized Inspector - Er. R. Verma',
       google_maps_url: 'https://maps.google.com/?q=30.2150,74.9480',
+      is_active: true,
+    },
+    {
+      id: 'bld-04',
+      campus_id: 'campus_02',
+      campus_name: 'Faridkot Campus 02 (Regional)',
+      name: 'Faridkot Regional Residence Block A',
+      code: 'FDK-A',
+      address: 'Talwandi Road, Faridkot, Punjab',
+      location_type: 'in_campus',
+      ownership: 'owned',
+      total_floors: 3,
+      total_rooms: 24,
+      maintenance_due_days: 90,
+      electrical_check_days: 20,
+      last_maintenance_date: '2026-04-12',
+      last_electrical_inspection: '2026-08-10',
+      inspected_by: 'Er. Jaswant Singh (Faridkot Site Lead)',
+      google_maps_url: 'https://maps.google.com/?q=30.6769,74.7583',
       is_active: true,
     },
   ]);
@@ -167,6 +187,23 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
       monthly_rent: 7500,
       semester_rent: 42000,
       status: 'occupied',
+    },
+    {
+      id: 'rm-401',
+      building_id: 'bld-04',
+      building_name: 'FDK-A',
+      floor_number: 1,
+      room_number: '101',
+      room_name: 'Faridkot Scholars Suite',
+      capacity: 2,
+      current_occupancy: 1,
+      washroom_type: 'ARW',
+      is_ac: true,
+      has_window: true,
+      has_almirah: true,
+      monthly_rent: 6500,
+      semester_rent: 38000,
+      status: 'available',
     },
     {
       id: 'rm-102',
@@ -731,11 +768,20 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
     setVacatingResident(null);
   };
 
-  // Overview KPIs
-  const totalBeds = rooms.reduce((acc, r) => acc + r.capacity, 0);
-  const occupiedBeds = rooms.reduce((acc, r) => acc + r.current_occupancy, 0);
+  // Campus scoping
+  const visibleBuildings = buildings.filter(b =>
+    !selectedCampus || selectedCampus === 'all' || b.campus_id === selectedCampus || (selectedCampus === 'campus_01' && b.campus_id === 'cmp-01')
+  );
+  const visibleBuildingIds = new Set(visibleBuildings.map(b => b.id));
+  const visibleRooms = rooms.filter(r => visibleBuildingIds.has(r.building_id));
+
+  // Overview KPIs (Scoped to visible buildings/rooms)
+  const totalBeds = visibleRooms.reduce((acc, r) => acc + r.capacity, 0);
+  const occupiedBeds = visibleRooms.reduce((acc, r) => acc + r.current_occupancy, 0);
   const occupancyRate = totalBeds > 0 ? ((occupiedBeds / totalBeds) * 100).toFixed(1) : '0';
-  const totalMessDues = residents.reduce((acc, r) => acc + (Number(r.mess_dues_amount) || 0), 0);
+  const totalMessDues = residents
+    .filter(r => visibleBuildingIds.has(r.building_id))
+    .reduce((acc, r) => acc + (Number(r.mess_dues_amount) || 0), 0);
 
   return (
     <div className="space-y-4">
@@ -873,7 +919,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
         {[
           { id: 'overview', label: 'Operations Overview', icon: Building2 },
           { id: 'unassigned', label: `Unallocated Scholars (${unallocatedHostelScholars.length})`, icon: Users },
-          { id: 'buildings', label: 'Buildings & Blocks (3)', icon: Building2 },
+          { id: 'buildings', label: `Buildings & Blocks (${visibleBuildings.length})`, icon: Building2 },
           { id: 'rooms', label: 'Room Inventory & Typology', icon: Bed },
           { id: 'residents', label: 'Resident Scholars', icon: Users },
           { id: 'mess', label: 'Mess & No-Dues Clearance', icon: UtensilsCrossed },
@@ -976,7 +1022,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium">
-                  {buildings.map((b) => (
+                  {visibleBuildings.map((b) => (
                     <tr key={b.id} className="hover:bg-slate-50/70 transition-colors">
                       <td className="py-3 px-3">
                         <div className="font-bold text-[#00236f]">{b.name}</div>
@@ -1135,7 +1181,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
       {/* TAB 2: BUILDINGS & BLOCKS */}
       {activeTab === 'buildings' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {buildings.map((b) => (
+          {visibleBuildings.map((b) => (
             <div key={b.id} className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between gap-2 mb-2">
@@ -1252,9 +1298,11 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
                 className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-[#00236f] bg-white font-semibold text-slate-700"
               >
                 <option value="ALL">All Residence Blocks</option>
-                <option value="SBS-A">SBS-A (Shaheed Bhagat Singh)</option>
-                <option value="MG-B">MG-B (Mata Gujri)</option>
-                <option value="BDS-C">BDS-C (Baba Deep Singh)</option>
+                {visibleBuildings.map((b) => (
+                  <option key={b.id} value={b.code}>
+                    {b.code} ({b.name})
+                  </option>
+                ))}
               </select>
 
               <select
@@ -1270,7 +1318,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
 
             <div className="flex items-center gap-2">
               <span className="text-[11px] text-slate-500 font-semibold hidden sm:inline">
-                Showing {rooms.length} registered rooms • Strict Room Deletion Safety Active
+                Showing {visibleRooms.length} registered rooms • Strict Room Deletion Safety Active
               </span>
               <button
                 type="button"
@@ -1285,7 +1333,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
 
           {/* Rooms Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {rooms
+            {visibleRooms
               .filter((r) => {
                 if (selectedBuildingFilter !== 'ALL' && r.building_name !== selectedBuildingFilter) return false;
                 if (selectedRoomStatusFilter !== 'ALL' && r.status !== selectedRoomStatusFilter) return false;

@@ -64,3 +64,95 @@ masterRouter.put('/departments/:id', authenticateToken, requireRole('admin', 'su
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
+// 3. Get all canonical master data
+masterRouter.get('/all', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const data = await db.getMasterData();
+    res.json({ success: true, data });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 4. Add State to GST State Master
+masterRouter.post('/states', authenticateToken, requireRole('admin', 'super_admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { gst_code, state_name, state_short_code, is_union_territory } = req.body;
+    if (!gst_code || !state_name) {
+      res.status(400).json({ success: false, error: 'gst_code and state_name are required.' });
+      return;
+    }
+    const state = await db.addMasterState({
+      gst_code,
+      state_name,
+      state_short_code: (state_short_code || gst_code).toUpperCase(),
+      is_union_territory: Boolean(is_union_territory),
+    });
+    res.status(201).json({ success: true, message: 'GST state master created.', state });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 5. Add Degree to Master Degrees
+masterRouter.post('/degrees', authenticateToken, requireRole('admin', 'super_admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { degree_code, degree_name, level, duration_years, total_semesters, statutory_body } = req.body;
+    if (!degree_code || !degree_name) {
+      res.status(400).json({ success: false, error: 'degree_code and degree_name are required.' });
+      return;
+    }
+    const degree = await db.addMasterDegree({
+      degree_code,
+      degree_name,
+      level: level || 'undergraduate',
+      duration_years: Number(duration_years) || 4,
+      total_semesters: Number(total_semesters) || 8,
+      statutory_body: statutory_body || 'AICTE',
+    });
+    res.status(201).json({ success: true, message: 'Degree master created.', degree });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 6. Add Institution Type
+masterRouter.post('/institution-types', authenticateToken, requireRole('admin', 'super_admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { code, name, regulatory_authority, description } = req.body;
+    if (!code || !name) {
+      res.status(400).json({ success: false, error: 'code and name are required.' });
+      return;
+    }
+    const inst = await db.addMasterInstitutionType({
+      code,
+      name,
+      regulatory_authority: regulatory_authority || 'AICTE / UGC',
+      description: description || '',
+    });
+    res.status(201).json({ success: true, message: 'Institution type master created.', institutionType: inst });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 7. Add Employee Status
+masterRouter.post('/employee-statuses', authenticateToken, requireRole('admin', 'super_admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { status_code, status_name, description, requires_dates } = req.body;
+    if (!status_code || !status_name) {
+      res.status(400).json({ success: false, error: 'status_code and status_name are required.' });
+      return;
+    }
+    const empStatus = await db.addMasterEmployeeStatus({
+      status_code: status_code.toUpperCase(),
+      status_name,
+      description: description || '',
+      requires_dates: Boolean(requires_dates),
+    });
+    res.status(201).json({ success: true, message: 'Employee status master created.', employeeStatus: empStatus });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});

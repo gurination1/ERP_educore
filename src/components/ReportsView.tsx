@@ -7,6 +7,7 @@ import { User } from '../types';
 
 interface ReportsViewProps {
   currentUser: User | null;
+  selectedCampus?: 'campus_01' | 'campus_02' | 'all';
 }
 
 interface CourseDistributionItem {
@@ -21,7 +22,7 @@ interface CourseDistributionItem {
   totalDue: number;
 }
 
-export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
+export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser, selectedCampus }) => {
   const [searchParams] = useSearchParams();
   const urlTab = searchParams.get('tab');
   const isSuperAdmin = currentUser?.role === 'super_admin';

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { api, setStoredToken, setStoredUser } from '../api/client';
-import { User, ActiveScreen } from '../types';
+import { User, ActiveScreen, MasterData } from '../types';
+import { Settings, Sparkles, Building2, CheckCircle2 } from 'lucide-react';
 
 interface SuperAdminDashboardViewProps {
   currentUser?: User | null;
   onNavigate: (screen: ActiveScreen) => void;
-  onOpenMasterTables?: () => void;
+  onOpenMasterTables?: (tab?: any) => void;
   onOpenAuditLogs?: () => void;
+  selectedCampus?: 'campus_01' | 'campus_02' | 'all';
 }
 
 interface Tenant {
@@ -32,8 +34,10 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
   onNavigate,
   onOpenMasterTables,
   onOpenAuditLogs,
+  selectedCampus,
 }) => {
   const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [masterData, setMasterData] = useState<MasterData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [impersonatingId, setImpersonatingId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -45,12 +49,16 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
     client_name: '',
     short_code: '',
     entity_type: 'college' as 'college' | 'school' | 'department' | 'university',
+    state_code: '03',
+    institution_type_code: 'ENG_COLLEGE',
+    city: 'Bathinda',
     subdomain: '',
     admin_username: '',
     admin_email: '',
     contact_person: '',
     contact_phone: '',
     subscription_tier: 'enterprise' as 'standard' | 'premium' | 'enterprise',
+    selected_departments: ['CSE', 'ME', 'CE'],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -61,14 +69,18 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [tenantsRes, healthRes] = await Promise.all([
+      const [tenantsRes, healthRes, masterRes] = await Promise.all([
         api.getTenants().catch(() => ({ success: false, tenants: [] })),
         fetch('/api/health').then(r => r.json()).catch(() => null),
+        api.getMasterData().catch(() => ({ success: false, data: null })),
       ]);
       if (tenantsRes.success && Array.isArray(tenantsRes.tenants)) {
         setTenants(tenantsRes.tenants);
       }
       setDbHealth(healthRes);
+      if (masterRes && (masterRes.data || masterRes.states)) {
+        setMasterData((masterRes.data || masterRes) as MasterData);
+      }
     } catch (err: any) {
       console.warn('Super Admin dashboard load error:', err.message);
     } finally {
@@ -144,21 +156,35 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
         admin_email: newTenant.admin_email || `admin@${newTenant.short_code.toLowerCase()}.edu`,
       });
       if (res.success) {
+        // Register newly provisioned institution's primary campus into campuses catalog
+        await api.createCampus({
+          tenant_id: res.tenant?.id || `ten-${Date.now()}`,
+          campus_code: `${newTenant.short_code}01`,
+          campus_name: `${newTenant.client_name} (Main Campus)`,
+          city: newTenant.city || 'Punjab',
+          state_code: newTenant.state_code || '03',
+          is_main: true,
+        }).catch(() => null);
+
         setFeedback({
           type: 'success',
-          message: `Client ${newTenant.client_name} successfully provisioned! Isolated schema db_${newTenant.short_code.toLowerCase()} generated.`,
+          message: `Client ${newTenant.client_name} successfully provisioned! Linked to GST State ${newTenant.state_code} with isolated database db_${newTenant.short_code.toLowerCase()}.`,
         });
         setIsAddModalOpen(false);
         setNewTenant({
           client_name: '',
           short_code: '',
           entity_type: 'college',
+          state_code: '03',
+          institution_type_code: 'ENG_COLLEGE',
+          city: 'Bathinda',
           subdomain: '',
           admin_username: '',
           admin_email: '',
           contact_person: '',
           contact_phone: '',
           subscription_tier: 'enterprise',
+          selected_departments: ['CSE', 'ME', 'CE'],
         });
         loadData();
       } else {
@@ -519,15 +545,119 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Entity Type</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Entity Category</label>
                   <select
                     value={newTenant.entity_type}
                     onChange={e => setNewTenant({ ...newTenant, entity_type: e.target.value as any })}
-                    className="w-full h-9 px-3 bg-slate-50 border rounded-lg text-xs focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                    className="w-full h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:ring-1 focus:ring-[#00236f] focus:outline-none"
                   >
                     <option value="college">College / Institute</option>
-                    <option value="university">University</option>
-                    <option value="school">School / Academy</option>
+                    <option value="university">University Campus</option>
+                    <option value="school">School / Polytechnic</option>
+                    <option value="department">Autonomous Faculty</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-slate-700">GST State Code</label>
+                    {onOpenMasterTables && (
+                      <button
+                        type="button"
+                        onClick={() => onOpenMasterTables('states')}
+                        className="text-[10px] text-blue-600 hover:underline font-bold"
+                      >
+                        + Master
+                      </button>
+                    )}
+                  </div>
+                  <select
+                    value={newTenant.state_code}
+                    onChange={e => setNewTenant({ ...newTenant, state_code: e.target.value })}
+                    className="w-full h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                  >
+                    {masterData?.states && masterData.states.length > 0 ? (
+                      masterData.states.map(s => (
+                        <option key={s.code} value={s.code}>
+                          {s.code} - {s.name} ({s.zone})
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="03">03 - Punjab (North)</option>
+                        <option value="06">06 - Haryana (North)</option>
+                        <option value="07">07 - Delhi (North)</option>
+                        <option value="08">08 - Rajasthan (North)</option>
+                        <option value="02">02 - Himachal Pradesh (North)</option>
+                        <option value="01">01 - Jammu & Kashmir (North)</option>
+                        <option value="09">09 - Uttar Pradesh (North)</option>
+                        <option value="27">27 - Maharashtra (West)</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-slate-700">Institution Type</label>
+                    {onOpenMasterTables && (
+                      <button
+                        type="button"
+                        onClick={() => onOpenMasterTables('institutionTypes')}
+                        className="text-[10px] text-blue-600 hover:underline font-bold"
+                      >
+                        + Master
+                      </button>
+                    )}
+                  </div>
+                  <select
+                    value={newTenant.institution_type_code}
+                    onChange={e => setNewTenant({ ...newTenant, institution_type_code: e.target.value })}
+                    className="w-full h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                  >
+                    {masterData?.institutionTypes && masterData.institutionTypes.length > 0 ? (
+                      masterData.institutionTypes.map(it => (
+                        <option key={it.code} value={it.code}>
+                          {it.name} ({it.regulatory_body})
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="ENG_COLLEGE">Engineering College (AICTE / PTU)</option>
+                        <option value="MED_COLLEGE">Medical & Allied Sciences (NMC)</option>
+                        <option value="PHARMACY_INST">Pharmacy Institute (PCI)</option>
+                        <option value="MGMT_INST">Management Institute (AICTE)</option>
+                        <option value="POLYTECHNIC">Polytechnic / Diploma (PSBTE)</option>
+                        <option value="UNIV_CAMPUS">University Main Campus (UGC)</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">City / Location</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Bathinda"
+                    value={newTenant.city}
+                    onChange={e => setNewTenant({ ...newTenant, city: e.target.value })}
+                    className="w-full h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Subscription Tier</label>
+                  <select
+                    value={newTenant.subscription_tier}
+                    onChange={e => setNewTenant({ ...newTenant, subscription_tier: e.target.value as any })}
+                    className="w-full h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                  >
+                    <option value="standard">Standard (Single Campus)</option>
+                    <option value="premium">Premium (Multi-Campus)</option>
+                    <option value="enterprise">Enterprise (Unlimited + Forensics)</option>
                   </select>
                 </div>
               </div>
@@ -539,8 +669,56 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
                   placeholder="e.g. gndec.gurudotcom"
                   value={newTenant.subdomain}
                   onChange={e => setNewTenant({ ...newTenant, subdomain: e.target.value })}
-                  className="w-full h-9 px-3 bg-slate-50 border rounded-lg text-xs font-mono focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                  className="w-full h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono focus:ring-1 focus:ring-[#00236f] focus:outline-none"
                 />
+              </div>
+
+              {/* Master Departments Selector */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold text-slate-700">Initial Academic Departments</label>
+                  {onOpenMasterTables && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenMasterTables('departments')}
+                      className="text-[10px] text-blue-600 hover:underline font-bold"
+                    >
+                      Configure Master Departments
+                    </button>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1.5 p-2 bg-slate-50 border border-slate-200 rounded-lg">
+                  {(masterData?.departments || [
+                    { code: 'CSE', name: 'Computer Science' },
+                    { code: 'ME', name: 'Mechanical' },
+                    { code: 'CE', name: 'Civil' },
+                    { code: 'ECE', name: 'Electronics' },
+                    { code: 'EE', name: 'Electrical' },
+                    { code: 'MBA', name: 'Business Admin' },
+                  ]).map(dept => {
+                    const isSelected = newTenant.selected_departments?.includes(dept.code);
+                    return (
+                      <button
+                        type="button"
+                        key={dept.code}
+                        onClick={() => {
+                          const current = newTenant.selected_departments || [];
+                          const updated = isSelected
+                            ? current.filter(c => c !== dept.code)
+                            : [...current, dept.code];
+                          setNewTenant({ ...newTenant, selected_departments: updated });
+                        }}
+                        className={`px-2 py-1 rounded text-[11px] font-bold transition-all ${
+                          isSelected
+                            ? 'bg-[#00236f] text-white shadow-xs'
+                            : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        {dept.code}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">

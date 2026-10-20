@@ -978,8 +978,9 @@ admissionRouter.post('/admin-admit', authenticateToken, requireRole('admin', 'su
 
 // Admin, Super Admin, Faculty, Counselor & HOD: List admissions
 admissionRouter.get('/', authenticateToken, requireRole('admin', 'super_admin', 'staff', 'counselor', 'hod'), async (req: AuthRequest, res: Response): Promise<void> => {
-  const { status } = req.query;
-  const rawStudents = await db.getStudents();
+  const { status, campus, campus_id } = req.query;
+  const targetCampus = (campus || campus_id) as string | undefined;
+  const rawStudents = await db.getStudents(targetCampus && targetCampus !== 'all' ? { campus: targetCampus } : undefined);
   const courses = await db.getCourses();
   const sessions = await db.getSessions();
 
@@ -989,11 +990,15 @@ admissionRouter.get('/', authenticateToken, requireRole('admin', 'super_admin', 
     session: sessions.find(ses => ses.id === s.session_id),
   }));
 
+  if (targetCampus && targetCampus !== 'all') {
+    list = list.filter(s => (s.campus_id || 'campus_01') === targetCampus);
+  }
+
   if (status && typeof status === 'string' && status !== 'all') {
     list = list.filter(s => s.admission_status === status);
   }
 
-  res.json({ success: true, count: list.length, admissions: list });
+  res.json({ success: true, count: list.length, admissions: list, selectedCampus: targetCampus || 'all' });
 });
 
 // Power Delegation Status

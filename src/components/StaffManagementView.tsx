@@ -9,9 +9,14 @@ export type StaffTab = 'overview' | 'payroll' | 'exit-noc' | 'addresses' | 'bank
 interface StaffManagementViewProps {
   currentUser: User | null;
   initialTab?: StaffTab;
+  selectedCampus?: 'campus_01' | 'campus_02' | 'all';
 }
 
-export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ currentUser, initialTab }) => {
+export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
+  currentUser,
+  initialTab,
+  selectedCampus,
+}) => {
   const [searchParams] = useSearchParams();
   const urlTab = searchParams.get('tab') as StaffTab | null;
   const [staffList, setStaffList] = useState<any[]>([]);
@@ -279,6 +284,7 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
       department: departmentFilter !== 'all' ? departmentFilter : undefined,
       status: statusFilter !== 'all' ? statusFilter : undefined,
       search: searchQuery || undefined,
+      campus: selectedCampus && selectedCampus !== 'all' ? selectedCampus : undefined,
     });
     if (res.success && res.staff) {
       setStaffList(res.staff);
@@ -338,7 +344,7 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({ curren
 
   useEffect(() => {
     fetchStaff();
-  }, [departmentFilter, statusFilter]);
+  }, [departmentFilter, statusFilter, selectedCampus]);
 
   useEffect(() => {
     if (urlTab) {

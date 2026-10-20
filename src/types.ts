@@ -13,7 +13,34 @@ export interface User {
   employee_id?: string;
   enterprise_uid?: string;
   must_change_password?: boolean;
+  campus_id?: 'campus_01' | 'campus_02' | string;
   created_at?: string;
+}
+
+export interface Campus {
+  id: string;
+  tenant_id: string;
+  campus_code: string;
+  campus_name: string;
+  city: string;
+  state_code: string;
+  is_main: boolean;
+  is_active: boolean;
+  created_at?: string;
+}
+
+export interface MasterData {
+  states: MasterState[];
+  userTypes: MasterUserType[];
+  degrees: MasterDegree[];
+  documentTypes: MasterDocumentType[];
+  departments: MasterDepartment[];
+  institutionTypes: MasterInstitutionType[];
+  employeeStatuses: MasterEmployeeStatus[];
+  designationChanges?: MasterDesignationChange[];
+  erpStatuses?: MasterERPStatus[];
+  universityStandard?: string;
+  institutionGstCode?: string;
 }
 
 export interface MasterState {
@@ -101,6 +128,7 @@ export interface StaffBasicInfo {
   employee_status: 'ACTIVE' | 'RESIGNED' | 'TERMINATED' | 'AOL' | 'DEACTIVATED';
   login_enabled: boolean;
   must_change_password: boolean;
+  campus_id?: 'campus_01' | 'campus_02' | string;
   custom_attr_1?: string;
   custom_attr_2?: string;
   custom_attr_3?: string;
@@ -280,6 +308,7 @@ export interface EnquiryRecord {
   assigned_counselor_id?: string;
   assigned_counselor_name?: string;
   batch_id?: string;
+  campus_id?: 'campus_01' | 'campus_02' | string;
   created_at: string;
   custom_meta_json?: string;
 }
@@ -343,6 +372,7 @@ export interface StudentProfile {
   student_id: string;
   first_name: string;
   last_name: string;
+  campus_id?: 'campus_01' | 'campus_02' | string;
   gender: 'male' | 'female' | 'nonbinary' | 'prefer_not_to_say';
   dob: string;
   email: string;

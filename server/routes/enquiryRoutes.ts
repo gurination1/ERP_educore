@@ -10,14 +10,18 @@ enquiryRouter.use(authenticateToken, requireRole('admin', 'super_admin', 'staff'
 // 1. List all pre-admission enquiries
 enquiryRouter.get('/', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { status, counselor_id, search } = req.query;
+    const { status, counselor_id, search, campus, campus_id } = req.query;
+    const targetCampus = (campus || campus_id) as string | undefined;
     const filters: { status?: string; counselor_id?: string; search?: string } = {};
     if (status && typeof status === 'string' && status !== 'all') filters.status = status;
     if (counselor_id && typeof counselor_id === 'string' && counselor_id !== 'all') filters.counselor_id = counselor_id;
     if (search && typeof search === 'string') filters.search = search;
 
-    const list = await db.getEnquiries(filters);
-    res.json({ success: true, count: list.length, enquiries: list });
+    let list = await db.getEnquiries(filters);
+    if (targetCampus && targetCampus !== 'all') {
+      list = list.filter((e: any) => (e.campus_id || 'campus_01') === targetCampus);
+    }
+    res.json({ success: true, count: list.length, enquiries: list, selectedCampus: targetCampus || 'all' });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }

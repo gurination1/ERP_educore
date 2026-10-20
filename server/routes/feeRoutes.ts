@@ -108,13 +108,15 @@ function formatIndianCurrency(amount: number): string {
 
 // Admin Dashboard KPI Summary
 feeRouter.get('/kpi', authenticateToken, requireRole('admin', 'staff', 'accounts', 'hod', 'hr', 'counselor'), async (req: AuthRequest, res: Response): Promise<void> => {
+  const campus = req.query.campus as string | undefined;
   const apps = await db.getScholarshipApplications();
   const pendingApprovalsCount = apps.filter(a => a.status === 'under_review' || a.status === 'submitted').length;
-  const students = await db.getStudents();
+  const students = await db.getStudents(campus && campus !== 'all' ? { campus } : undefined);
+  const studentIds = new Set(students.map(s => s.id));
   const activeStudents = students.filter(s => s.admission_status === 'approved' || s.admission_status === 'enrolled');
 
   const allFees = await db.getStudentFees();
-  const activeFees = allFees.filter(f => f.status !== 'cancelled');
+  const activeFees = allFees.filter(f => f.status !== 'cancelled' && (!campus || campus === 'all' || studentIds.has(f.student_id)));
   const totalCollected = activeFees.reduce((acc, f) => acc + f.paid_amount, 0);
   const totalDue = activeFees.reduce((acc, f) => acc + (f.status !== 'paid' ? f.due_amount : 0), 0);
 
@@ -184,7 +186,8 @@ feeRouter.get('/trend', authenticateToken, requireRole('admin', 'staff', 'accoun
 
 // Defaulters List for Admin & Accounts Screen
 feeRouter.get('/defaulters', authenticateToken, requireRole('admin', 'staff', 'accounts', 'hod', 'hr', 'counselor'), async (req: AuthRequest, res: Response): Promise<void> => {
-  const students = await db.getStudents();
+  const campus = req.query.campus as string | undefined;
+  const students = await db.getStudents(campus && campus !== 'all' ? { campus } : undefined);
   const allFees = await db.getStudentFees();
   const courses = await db.getCourses();
 

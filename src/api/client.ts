@@ -153,7 +153,13 @@ export const api = {
     apiRequest('/api/admissions/submit', { method: 'POST', body: JSON.stringify(data) }),
   adminAdmitStudent: (data: any) =>
     apiRequest('/api/admissions/admin-admit', { method: 'POST', body: JSON.stringify(data) }),
-  getAdmissions: (status?: string) => apiRequest(`/api/admissions?status=${status || 'all'}`),
+  getAdmissions: (status?: string, campus?: string) => {
+    const query = new URLSearchParams();
+    if (status) query.append('status', status);
+    if (campus && campus !== 'all') query.append('campus', campus);
+    const qs = query.toString();
+    return apiRequest(`/api/admissions${qs ? `?${qs}` : ''}`);
+  },
   updateAdmissionStatus: (id: string, status: string, remarks?: string) =>
     apiRequest(`/api/admissions/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status, remarks }) }),
   getFollowupRadar: (params?: { counselor_id?: string; priority?: string; timeframe?: string; search?: string }) => {
@@ -175,9 +181,11 @@ export const api = {
   getFeeHeads: () => apiRequest('/api/fees/heads'),
   assignFeeHead: (data: { studentId: string; feeHeadId: string; amount: number; dueDate?: string; semester?: number }) =>
     apiRequest('/api/fees/assign', { method: 'POST', body: JSON.stringify(data) }),
-  getFeeKPIs: () => apiRequest('/api/fees/kpi'),
+  getFeeKPIs: (campus?: string) =>
+    apiRequest(`/api/fees/kpi${campus && campus !== 'all' ? `?campus=${encodeURIComponent(campus)}` : ''}`),
   getFeeTrend: () => apiRequest('/api/fees/trend'),
-  getDefaulters: () => apiRequest('/api/fees/defaulters'),
+  getDefaulters: (campus?: string) =>
+    apiRequest(`/api/fees/defaulters${campus && campus !== 'all' ? `?campus=${encodeURIComponent(campus)}` : ''}`),
   getFeeLedger: (studentId: string) => apiRequest(`/api/fees/ledger/${studentId}`),
   payFee: (paymentData: {
     studentId: string;
@@ -298,6 +306,11 @@ export const api = {
     return apiRequest(`/api/audit-logs${toQueryString(params)}`);
   },
   getMasterData: () => apiRequest('/api/master-data'),
+  addMasterState: (data: any) => apiRequest('/api/master/states', { method: 'POST', body: JSON.stringify(data) }),
+  addMasterDegree: (data: any) => apiRequest('/api/master/degrees', { method: 'POST', body: JSON.stringify(data) }),
+  addMasterInstitutionType: (data: any) => apiRequest('/api/master/institution-types', { method: 'POST', body: JSON.stringify(data) }),
+  addMasterDepartment: (data: any) => apiRequest('/api/master/departments', { method: 'POST', body: JSON.stringify(data) }),
+  addMasterEmployeeStatus: (data: any) => apiRequest('/api/master/employee-statuses', { method: 'POST', body: JSON.stringify(data) }),
   getStaffAcademicJourney: (staffId?: string) =>
     apiRequest(staffId ? `/api/staff/${staffId}/academic-journey` : '/api/staff/academic-journey'),
   addStaffAcademicJourney: (staffId: string, data: any) =>
@@ -408,8 +421,6 @@ export const api = {
 
   // Enterprise Master Tables
   getEnterpriseMaster: () => apiRequest('/api/master/enterprise'),
-  addMasterDepartment: (dept: any) =>
-    apiRequest('/api/master/departments', { method: 'POST', body: JSON.stringify(dept) }),
   updateMasterDepartment: (id: string, updates: any) =>
     apiRequest(`/api/master/departments/${id}`, { method: 'PUT', body: JSON.stringify(updates) }),
 
@@ -419,6 +430,8 @@ export const api = {
   toggleTenantFunctional: (id: string, is_functional: boolean) =>
     apiRequest(`/api/tenants/${id}/toggle-functional`, { method: 'POST', body: JSON.stringify({ is_functional }) }),
   impersonateTenant: (id: string) => apiRequest(`/api/tenants/${id}/impersonate`, { method: 'POST' }),
+  getCampuses: () => apiRequest('/api/tenants/campuses'),
+  createCampus: (data: any) => apiRequest('/api/tenants/campuses', { method: 'POST', body: JSON.stringify(data) }),
 
   // Academic Topology (Batches, Sections, Curriculum, Allocations, Timetable)
   getBatches: (courseId?: string) => apiRequest(`/api/academics/batches${courseId ? `?courseId=${courseId}` : ''}`),

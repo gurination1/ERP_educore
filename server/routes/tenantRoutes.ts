@@ -5,6 +5,26 @@ import { authenticateToken, requireRole, generateToken, AuthRequest } from '../m
 
 export const tenantRouter = Router();
 
+// 0. List all campuses
+tenantRouter.get('/campuses', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const list = await db.getCampuses();
+    res.json({ success: true, count: list.length, campuses: list });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 0b. Create new campus
+tenantRouter.post('/campuses', authenticateToken, requireRole('super_admin', 'admin'), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const campus = await db.addCampus(req.body);
+    res.status(201).json({ success: true, message: 'Campus registered successfully', campus });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // 1. List all tenants / campuses (Super Admin & Admin)
 tenantRouter.get('/', authenticateToken, requireRole('super_admin', 'admin'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {

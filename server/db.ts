@@ -727,6 +727,43 @@ export interface StaffExitNoc {
   updated_at: string;
 }
 
+export interface CampusRecord {
+  id: string;
+  tenant_id: string;
+  campus_code: string;
+  campus_name: string;
+  city: string;
+  state_code: string;
+  is_main: boolean;
+  is_active: boolean;
+  created_at: string;
+}
+
+export const DEFAULT_CAMPUSES: CampusRecord[] = [
+  {
+    id: 'campus_01',
+    tenant_id: 'ten-bfgi-01',
+    campus_code: 'CMP01',
+    campus_name: 'Bathinda Campus 01 (Main)',
+    city: 'Bathinda',
+    state_code: '03',
+    is_main: true,
+    is_active: true,
+    created_at: '2025-01-01T00:00:00Z',
+  },
+  {
+    id: 'campus_02',
+    tenant_id: 'ten-bfgi-01',
+    campus_code: 'CMP02',
+    campus_name: 'Faridkot Campus 02 (Regional)',
+    city: 'Faridkot',
+    state_code: '03',
+    is_main: false,
+    is_active: true,
+    created_at: '2025-01-01T00:00:00Z',
+  },
+];
+
 export const DEFAULT_TENANTS: TenantRecord[] = [
   {
     id: 'ten-bfgi-01',
@@ -2172,6 +2209,7 @@ export interface Student {
   student_id: string;
   first_name: string;
   last_name: string;
+  campus_id?: 'campus_01' | 'campus_02' | string;
   gender: 'male' | 'female' | 'nonbinary' | 'prefer_not_to_say';
   dob: string;
   email: string;
@@ -2509,6 +2547,7 @@ class DatabaseStore {
   public dialer_settings: DialerSettings = { id: 'default', is_enabled: true, provider: 'exotel', api_key_configured: true };
 
   public tenants: TenantRecord[] = [];
+  public campuses: CampusRecord[] = [...DEFAULT_CAMPUSES];
   public batches: AcademicBatch[] = [];
   public sections: AcademicSection[] = [];
   public subjects: AcademicSubject[] = [];
@@ -4974,6 +5013,10 @@ class DatabaseStore {
             this.dialer_settings = { ...ds[0], is_enabled: Boolean(ds[0].is_enabled), api_key_configured: Boolean(ds[0].api_key_configured) };
           }
         } catch {}
+        try {
+          this.campuses = readTable('campuses').map(c => ({ ...c, is_main: Boolean(c.is_main), is_active: Boolean(c.is_active) }));
+          if (this.campuses.length === 0) this.campuses = [...DEFAULT_CAMPUSES];
+        } catch { this.campuses = [...DEFAULT_CAMPUSES]; }
 
         if (this.master_states.length === 0) this.master_states = [...DEFAULT_MASTER_STATES];
         if (this.master_user_types.length === 0) this.master_user_types = [...DEFAULT_MASTER_USER_TYPES];
@@ -5171,7 +5214,7 @@ class DatabaseStore {
         'is_hosteller', 'is_transport_user', 'transport_route', 'hostel_room_no', 'category', 'quota', 'tenth_percentage', 'twelfth_percentage', 'tenth_roll_no', 'twelfth_roll_no', 'board_name', 'aadhaar_no',
         'tenth_doc_verified', 'twelfth_doc_verified', 'aadhaar_doc_verified', 'token_fee_receipt', 'token_fee_amount', 'token_fee_mode', 'token_fee_date', 'intake_step', 'counseling_notes', 'admitted_by',
         'condonation_granted', 'condonation_order_no', 'condonation_remarks', 'admission_remarks',
-        'followup_status', 'followup_priority', 'next_followup_date', 'last_followup_at', 'assigned_counselor_id', 'assigned_counselor_name', 'created_at',
+        'followup_status', 'followup_priority', 'next_followup_date', 'last_followup_at', 'assigned_counselor_id', 'assigned_counselor_name', 'campus_id', 'created_at',
       ]);
       clearAndInsert('fee_heads', this.fee_heads, ['id', 'code', 'title', 'description', 'is_recurring']);
       clearAndInsert('student_fees', this.student_fees, ['id', 'student_id', 'fee_head_id', 'session_id', 'semester', 'amount', 'discount_amount', 'paid_amount', 'due_amount', 'due_date', 'status']);
@@ -5194,6 +5237,7 @@ class DatabaseStore {
       clearAndInsert('master_employee_statuses', this.master_employee_statuses, ['status_code', 'status_name', 'description', 'requires_dates']);
       clearAndInsert('master_designation_changes', this.master_designation_changes, ['type_code', 'name', 'category']);
       clearAndInsert('master_erp_statuses', this.master_erp_statuses, ['status_code', 'status_name', 'stage']);
+      clearAndInsert('campuses', this.campuses, ['id', 'tenant_id', 'campus_code', 'campus_name', 'city', 'state_code', 'is_main', 'is_active', 'created_at']);
       clearAndInsert('staff_basic_info', this.staff_basic_info, ['id', 'staff_id', 'employee_id', 'full_name', 'father_name', 'dob', 'gender', 'date_of_joining', 'date_of_resigning', 'last_working_date', 'category', 'primary_designation', 'department_id', 'employee_status', 'login_enabled', 'must_change_password', 'custom_attr_1', 'custom_attr_2', 'custom_attr_3', 'custom_attr_4', 'custom_meta_json']);
       clearAndInsert('staff_additional_info', this.staff_additional_info, ['id', 'staff_id', 'emergency_phone', 'blood_group', 'marital_status', 'nationality', 'pf_uan', 'esi_number', 'custom_meta_json']);
       clearAndInsert('staff_addresses', this.staff_addresses, ['id', 'staff_id', 'address_type', 'address_line', 'city', 'state_gst', 'pincode', 'is_default']);
@@ -5605,6 +5649,11 @@ class DatabaseStore {
     userTypes: MasterUserType[];
     degrees: MasterDegree[];
     documentTypes: MasterDocumentType[];
+    departments: MasterDepartment[];
+    institutionTypes: MasterInstitutionType[];
+    employeeStatuses: MasterEmployeeStatus[];
+    designationChanges?: MasterDesignationChange[];
+    erpStatuses?: MasterERPStatus[];
   }> {
     if (this.mode === 'mariadb' && this.mariaPool) {
       try {
@@ -5627,7 +5676,56 @@ class DatabaseStore {
       userTypes: [...this.master_user_types],
       degrees: [...this.master_degrees],
       documentTypes: [...this.master_document_types],
+      departments: [...this.master_departments],
+      institutionTypes: [...this.master_institution_types],
+      employeeStatuses: [...this.master_employee_statuses],
+      designationChanges: [...this.master_designation_changes],
+      erpStatuses: [...this.master_erp_statuses],
     };
+  }
+
+  public async addMasterState(state: MasterState): Promise<MasterState> {
+    const existingIdx = this.master_states.findIndex(s => s.gst_code === state.gst_code || s.state_short_code === state.state_short_code);
+    if (existingIdx >= 0) {
+      this.master_states[existingIdx] = state;
+    } else {
+      this.master_states.push(state);
+    }
+    this.save();
+    return state;
+  }
+
+  public async addMasterDegree(degree: MasterDegree): Promise<MasterDegree> {
+    const existingIdx = this.master_degrees.findIndex(d => d.degree_code === degree.degree_code);
+    if (existingIdx >= 0) {
+      this.master_degrees[existingIdx] = degree;
+    } else {
+      this.master_degrees.push(degree);
+    }
+    this.save();
+    return degree;
+  }
+
+  public async addMasterInstitutionType(inst: MasterInstitutionType): Promise<MasterInstitutionType> {
+    const existingIdx = this.master_institution_types.findIndex(i => i.code === inst.code);
+    if (existingIdx >= 0) {
+      this.master_institution_types[existingIdx] = inst;
+    } else {
+      this.master_institution_types.push(inst);
+    }
+    this.save();
+    return inst;
+  }
+
+  public async addMasterEmployeeStatus(status: MasterEmployeeStatus): Promise<MasterEmployeeStatus> {
+    const existingIdx = this.master_employee_statuses.findIndex(e => e.status_code === status.status_code);
+    if (existingIdx >= 0) {
+      this.master_employee_statuses[existingIdx] = status;
+    } else {
+      this.master_employee_statuses.push(status);
+    }
+    this.save();
+    return status;
   }
 
   // --- STAFF ACADEMIC JOURNEY OPERATIONS ---
@@ -6644,7 +6742,7 @@ class DatabaseStore {
   }
 
   // --- STUDENT OPERATIONS ---
-  public async getStudents(filters?: { course_id?: string; session_id?: string; status?: string; search?: string }): Promise<Student[]> {
+  public async getStudents(filters?: { course_id?: string; session_id?: string; status?: string; search?: string; campus?: string }): Promise<Student[]> {
     if (this.mode === 'mariadb' && this.mariaPool) {
       let sql = 'SELECT * FROM students WHERE 1=1';
       const params: any[] = [];
@@ -6659,6 +6757,10 @@ class DatabaseStore {
       if (filters?.status) {
         sql += ' AND admission_status = ?';
         params.push(filters.status);
+      }
+      if (filters?.campus && filters.campus !== 'all') {
+        sql += ' AND (campus_id = ? OR campus_id IS NULL)';
+        params.push(filters.campus);
       }
       if (filters?.search) {
         const s = `%${filters.search.toLowerCase()}%`;
@@ -6678,6 +6780,9 @@ class DatabaseStore {
     if (filters?.course_id) result = result.filter(s => s.course_id === filters.course_id);
     if (filters?.session_id) result = result.filter(s => s.session_id === filters.session_id);
     if (filters?.status) result = result.filter(s => s.admission_status === filters.status);
+    if (filters?.campus && filters.campus !== 'all') {
+      result = result.filter(s => (s.campus_id || 'campus_01') === filters.campus);
+    }
     if (filters?.search) {
       const q = filters.search.toLowerCase();
       result = result.filter(
@@ -8354,6 +8459,7 @@ class DatabaseStore {
     this.enquiry_interactions = [...DEFAULT_ENQUIRY_INTERACTIONS];
 
     this.tenants = [...DEFAULT_TENANTS];
+    this.campuses = [...DEFAULT_CAMPUSES];
     this.batches = [...DEFAULT_BATCHES];
     this.sections = [...DEFAULT_SECTIONS];
     this.subjects = [...DEFAULT_SUBJECTS];
@@ -8508,6 +8614,32 @@ class DatabaseStore {
     });
 
     return { tenant, adminUser: admin };
+  }
+
+  public async getCampuses(tenantId?: string): Promise<CampusRecord[]> {
+    if (tenantId) {
+      return this.campuses.filter(c => c.tenant_id === tenantId);
+    }
+    return [...this.campuses];
+  }
+
+  public async addCampus(campus: Partial<CampusRecord>): Promise<CampusRecord> {
+    const newCampus: CampusRecord = {
+      id: campus.id || `campus_0${this.campuses.length + 1}`,
+      tenant_id: campus.tenant_id || 'ten-bfgi-01',
+      campus_code: (campus.campus_code || `CMP0${this.campuses.length + 1}`).toUpperCase(),
+      campus_name: campus.campus_name || `New Collegiate Campus 0${this.campuses.length + 1}`,
+      city: campus.city || 'Punjab',
+      state_code: campus.state_code || '03',
+      is_main: Boolean(campus.is_main),
+      is_active: campus.is_active !== undefined ? Boolean(campus.is_active) : true,
+      created_at: campus.created_at || new Date().toISOString(),
+    };
+    const idx = this.campuses.findIndex(c => c.id === newCampus.id);
+    if (idx >= 0) this.campuses[idx] = newCampus;
+    else this.campuses.push(newCampus);
+    this.save();
+    return newCampus;
   }
 
   // ----------------------------------------------------

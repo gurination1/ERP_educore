@@ -10,11 +10,13 @@ import { RefreshCw, Printer, PhoneCall, UploadCloud, Lock, Check } from 'lucide-
 interface AdmissionsAdminViewProps {
   currentUser?: User | null;
   onSelectStudent?: (student: StudentProfile) => void;
+  selectedCampus?: 'campus_01' | 'campus_02' | 'all';
 }
 
 export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
   currentUser,
   onSelectStudent,
+  selectedCampus,
 }) => {
   const [admissions, setAdmissions] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'inquiries' | 'registered' | 'submitted' | 'verified' | 'approved' | 'rejected' | 'all'>('submitted');
@@ -167,7 +169,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
     setIsLoading(true);
     try {
       const [resAdm, resFup] = await Promise.all([
-        api.getAdmissions(),
+        api.getAdmissions(undefined, selectedCampus && selectedCampus !== 'all' ? selectedCampus : undefined),
         api.getFollowupRadar({
           timeframe: timeframeFilter !== 'all' ? timeframeFilter : undefined,
           search: crmSearch || undefined,
@@ -213,7 +215,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
         setTelephonyEnabled(res.settings.is_enabled);
       }
     }).catch(console.warn);
-  }, []);
+  }, [selectedCampus]);
 
   useEffect(() => {
     if (viewMode === 'crm') {

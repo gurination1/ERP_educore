@@ -9,12 +9,14 @@ interface ManageStudentsViewProps {
   currentUser?: User | null;
   onSelectStudent: (student: StudentProfile) => void;
   onOpenEmailReminders: () => void;
+  selectedCampus?: 'campus_01' | 'campus_02' | 'all';
 }
 
 export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
   currentUser,
   onSelectStudent,
   onOpenEmailReminders,
+  selectedCampus,
 }) => {
   const navigate = useNavigate();
   const isHOD = currentUser?.role === 'hod';
@@ -109,6 +111,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
     setIsLoading(true);
     const queryParams: any = { page: currentPage, limit: 5 };
     if (courseFilter !== 'All Courses') queryParams.course = courseFilter;
+    if (selectedCampus && selectedCampus !== 'all') queryParams.campus = selectedCampus;
     api.getStudents(queryParams).then(res => {
       if (res.success && res.students) {
         setStudents(res.students);
@@ -117,7 +120,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
       }
       setIsLoading(false);
     });
-  }, [currentPage]);
+  }, [currentPage, selectedCampus]);
 
   // Handle Search & Filter Submission
   const handleApplyFilters = (e?: React.FormEvent) => {
@@ -134,6 +137,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
     if (courseFilter !== 'All Courses') queryParams.course = courseFilter;
     if (yearFilter !== 'All Years') queryParams.year = yearFilter;
     if (statusFilter !== 'All Statuses') queryParams.feesStatus = statusFilter;
+    if (selectedCampus && selectedCampus !== 'all') queryParams.campus = selectedCampus;
 
     api.getStudents(queryParams).then(res => {
       if (res.success && res.students) {
@@ -152,7 +156,9 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
     setStatusFilter('All Statuses');
     setCurrentPage(1);
     setTimeout(() => {
-      api.getStudents({ page: 1, limit: 5 }).then(res => {
+      const queryParams: any = { page: 1, limit: 5 };
+      if (selectedCampus && selectedCampus !== 'all') queryParams.campus = selectedCampus;
+      api.getStudents(queryParams).then(res => {
         if (res.success && res.students) {
           setStudents(res.students);
           setTotalCount(res.total);

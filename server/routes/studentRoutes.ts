@@ -44,9 +44,10 @@ export function isStudentOwner(student: Student, identifier: string): boolean {
 
 // Master list of students (Admin, Super Admin, Faculty Staff, Counselors, HOD, Accounts, HR)
 studentRouter.get('/', authenticateToken, requireRole('admin', 'super_admin', 'staff', 'counselor', 'hod', 'accounts', 'hr'), async (req: AuthRequest, res: Response): Promise<void> => {
-  const { search, course, admission_year, fees_status, semester, page = '1', limit = '10', sort_by = 'student_id', sort_dir = 'asc' } = req.query;
+  const { search, course, admission_year, fees_status, semester, campus, campus_id, page = '1', limit = '10', sort_by = 'student_id', sort_dir = 'asc' } = req.query;
 
-  const rawStudents = await db.getStudents();
+  const targetCampus = (campus || campus_id) as string | undefined;
+  const rawStudents = await db.getStudents(targetCampus && targetCampus !== 'all' ? { campus: targetCampus } : undefined);
   const courses = await db.getCourses();
   const sessions = await db.getSessions();
 
@@ -55,6 +56,11 @@ studentRouter.get('/', authenticateToken, requireRole('admin', 'super_admin', 's
     course: courses.find(c => c.id === s.course_id),
     session: sessions.find(ses => ses.id === s.session_id),
   }));
+
+  // Filter by campus if requested
+  if (targetCampus && targetCampus !== 'all') {
+    list = list.filter(s => (s.campus_id || 'campus_01') === targetCampus);
+  }
 
   // Filter by search query (Name or ID or Email)
   if (search && typeof search === 'string') {

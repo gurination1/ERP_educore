@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { User, ActiveScreen } from '../types';
+import { useCampus } from '../context/CampusContext';
 import { Shield, Building2, ChevronDown, Check, User as UserIcon, KeyRound, LogOut } from 'lucide-react';
 
 interface HeaderProps {
@@ -52,7 +53,10 @@ export const Header: React.FC<HeaderProps> = ({
   const [copiedUid, setCopiedUid] = useState(false);
   const [openDrawer, setOpenDrawer] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [internalSelectedCampus, setInternalSelectedCampus] = useState<'campus_01' | 'campus_02' | 'all'>(externalSelectedCampus);
+  const { selectedCampus: ctxCampus, setSelectedCampus: ctxSetCampus } = useCampus();
+  const [internalSelectedCampus, setInternalSelectedCampus] = useState<'campus_01' | 'campus_02' | 'all'>(
+    externalSelectedCampus || ctxCampus || 'campus_01'
+  );
   const [isCampusMenuOpen, setIsCampusMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [headerToast, setHeaderToast] = useState<string | null>(null);
@@ -60,13 +64,15 @@ export const Header: React.FC<HeaderProps> = ({
   const campusDropdownRef = useRef<HTMLDivElement>(null);
   const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const effectiveCampus = externalSelectedCampus || internalSelectedCampus;
+  const effectiveCampus = externalSelectedCampus || ctxCampus || internalSelectedCampus || 'campus_01';
 
   useEffect(() => {
     if (externalSelectedCampus) {
       setInternalSelectedCampus(externalSelectedCampus);
+    } else if (ctxCampus) {
+      setInternalSelectedCampus(ctxCampus);
     }
-  }, [externalSelectedCampus]);
+  }, [externalSelectedCampus, ctxCampus]);
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -84,6 +90,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   const handleCampusSelect = (c: 'campus_01' | 'campus_02' | 'all') => {
     setInternalSelectedCampus(c);
+    ctxSetCampus(c);
     onCampusChange?.(c);
     setIsCampusMenuOpen(false);
   };

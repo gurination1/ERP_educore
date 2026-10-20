@@ -30,6 +30,7 @@ interface FeeLedgerViewProps {
   currentStudent?: StudentProfile | null;
   onOpenPayModal: (feeId?: string, studentObj?: any) => void;
   onOpenReceiptModal: (receiptNo?: string) => void;
+  selectedCampus?: 'campus_01' | 'campus_02' | 'all';
 }
 
 const DEFAULT_FEE_POLICIES: FeePolicy[] = [
@@ -120,6 +121,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
   currentStudent,
   onOpenPayModal,
   onOpenReceiptModal,
+  selectedCampus,
 }) => {
   const [searchParams] = useSearchParams();
   const isActualAdmin = currentUser ? ['admin', 'super_admin', 'accounts'].includes(currentUser.role) : !currentStudent;
@@ -156,16 +158,24 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
 
   useEffect(() => {
     if (canSearchStudents) {
-      api.getStudents({ limit: 100 }).then(res => {
+      const queryParams: any = { limit: 100 };
+      if (selectedCampus && selectedCampus !== 'all') {
+        queryParams.campus = selectedCampus;
+      }
+      api.getStudents(queryParams).then(res => {
         if (res.success && res.students && res.students.length > 0) {
           setStudentList(res.students);
-          if (!currentStudent && !searchParams.get('studentId') && (!selectedStudentId || selectedStudentId === 'stu-rec-aryan')) {
+          // If current selection is not in filtered list, select first available student
+          const exists = res.students.some((s: any) => s.id === selectedStudentId);
+          if (!currentStudent && !searchParams.get('studentId') && (!exists || !selectedStudentId || selectedStudentId === 'stu-rec-aryan')) {
             setSelectedStudentId(res.students[0].id);
           }
+        } else if (res.success && res.students && res.students.length === 0) {
+          setStudentList([]);
         }
       });
     }
-  }, [canSearchStudents]);
+  }, [canSearchStudents, selectedCampus]);
 
   const activeStudentId = isStudent
     ? 'me'
@@ -255,7 +265,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
 
   const fetchDefaulters = () => {
     setIsDefaultersLoading(true);
-    api.getDefaulters()
+    api.getDefaulters(selectedCampus && selectedCampus !== 'all' ? selectedCampus : undefined)
       .then(res => {
         if (res.success && Array.isArray(res.defaulters)) {
           setDefaultersList(res.defaulters);
@@ -277,7 +287,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
         }
       });
     }
-  }, [isActualAdmin]);
+  }, [isActualAdmin, selectedCampus]);
 
   // Set default student for Desk when student list loads
   useEffect(() => {

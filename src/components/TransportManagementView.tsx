@@ -25,9 +25,10 @@ import { User, TransportVehicle, TransportRoute, StudentBusPass } from '../types
 
 interface TransportManagementViewProps {
   currentUser: User | null;
+  selectedCampus?: 'campus_01' | 'campus_02' | 'all';
 }
 
-export const TransportManagementView: React.FC<TransportManagementViewProps> = ({ currentUser }) => {
+export const TransportManagementView: React.FC<TransportManagementViewProps> = ({ currentUser, selectedCampus }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'fleet' | 'routes' | 'passes' | 'maintenance'>('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRouteFilter, setSelectedRouteFilter] = useState('ALL');
