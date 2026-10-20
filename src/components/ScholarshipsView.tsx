@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { safeGoBack } from '../utils/navigation';
 import { api } from '../api/client';
 import { ScholarshipScheme, ScholarshipApp, User } from '../types';
+import { RefreshCw } from 'lucide-react';
 
 interface ScholarshipsViewProps {
   currentUser: User | null;
@@ -792,8 +793,8 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
               </div>
 
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-[11px] text-[#00236f] space-y-1">
-                <span className="font-bold block flex items-center gap-1">
-                  <span className="font-bold text-[10px]">[SYNC]</span>
+                <span className="font-bold flex items-center gap-1.5">
+                  <RefreshCw className="w-3.5 h-3.5 text-blue-700" />
                   <span>Instant Ledger Disbursal:</span>
                 </span>
                 <p>

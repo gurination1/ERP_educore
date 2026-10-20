@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { User, StudentProfile, ActiveScreen } from '../types';
+import { Lock, Unlock, AlertOctagon, CheckCircle2 } from 'lucide-react';
 
 interface StaffDashboardViewProps {
   currentUser: User | null;
@@ -1553,7 +1554,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
             <div className="flex items-center gap-2">
               {isLocked ? (
                 <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#00236f] bg-[#ffedd5] px-3 py-1.5 rounded-lg border border-[#ea580c]">
-                  <span className="font-bold text-[10px]">[LOCKED]</span>
+                  <Lock className="w-3.5 h-3.5 text-amber-700" />
                   <span>Register Locked ({lockedRecord?.lockedAt})</span>
                 </span>
               ) : (
@@ -1599,9 +1600,9 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsEditingLocked(true)}
-                    className="px-3 py-1.5 bg-white border border-[#ea580c] hover:bg-[#ffedd5] text-[#00236f] rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-2xs flex items-center gap-1"
+                    className="px-3 py-1.5 bg-white border border-[#ea580c] hover:bg-[#ffedd5] text-[#00236f] rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-2xs flex items-center gap-1.5"
                   >
-                    <span className="font-bold text-[10px]">[UNLOCKED]</span>
+                    <Unlock className="w-3.5 h-3.5 text-amber-700" />
                     <span>Unlock Register to Edit</span>
                   </button>
                 ) : (
@@ -1756,18 +1757,18 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                           </td>
                           <td className="p-3.5">
                             {isStrictlyDetained ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#ba1a1a] bg-[#ffdad6] px-2 py-0.5 rounded">
-                                <span className="font-bold text-[10px]">[BLOCKED]</span>
+                              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#ba1a1a] bg-[#ffdad6] px-2 py-0.5 rounded">
+                                <AlertOctagon className="w-3.5 h-3.5" />
                                 <span>Detained (&lt;65%)</span>
                               </span>
                             ) : isDetained ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#755b00] bg-[#fae29f] px-2 py-0.5 rounded">
-                                <span className="font-bold text-[10px]">[!]</span>
+                              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#755b00] bg-[#fae29f] px-2 py-0.5 rounded">
+                                <AlertOctagon className="w-3.5 h-3.5" />
                                 <span>Condonation Needed (65-74%)</span>
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#00236f] bg-[#ffedd5] px-2 py-0.5 rounded">
-                                <span className="font-bold text-[10px]">✓</span>
+                              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#00236f] bg-[#ffedd5] px-2 py-0.5 rounded">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                                 <span>Exam Admit Cleared</span>
                               </span>
                             )}
@@ -1801,7 +1802,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
                     onClick={() => setIsEditingLocked(true)}
                     className="px-5 py-2.5 bg-white border border-[#ea580c] text-[#00236f] hover:bg-[#ffedd5] rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-2xs"
                   >
-                    <span className="font-bold text-[10px]">[UNLOCKED]</span>
+                    <Unlock className="w-3.5 h-3.5 text-amber-700" />
                     <span>Unlock to Amend Register</span>
                   </button>
                 ) : (

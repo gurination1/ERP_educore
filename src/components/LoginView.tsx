@@ -41,6 +41,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
   { role: 'accounts', label: 'Finance', badge: 'Bursar', uid: '5001-05-03-01', pass: 'accounts123', desc: 'Fee Ledgers & Cash' },
   { role: 'counselor', label: 'Counselor', badge: 'Admissions', uid: '6001-02-03-01', pass: 'counselor123', desc: 'CRM & Pipeline' },
   { role: 'hostel', label: 'Hostel', badge: 'Warden', uid: '10001-01-03-01', pass: 'warden123', desc: 'Residence & Mess' },
+  { role: 'hr', label: 'HR Officer', badge: 'Personnel', uid: '8001-01-03-01', pass: 'hr123', desc: 'Faculty & HRMS' },
   { role: 'partner', label: 'Partner', badge: 'Recruiter', uid: '7001-01-03-01', pass: 'partner123', desc: 'Corporate Placement' },
 ];
 
@@ -141,7 +142,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
             EduCore
           </h1>
           <p className="text-xs text-slate-400 font-medium">
-            Enterprise Higher Education Operating System
+            Collegiate Enterprise Resource Planning
           </p>
         </div>
 
@@ -300,11 +301,11 @@ export const LoginView: React.FC<LoginViewProps> = ({
                       Fast Demo Login (1-Click Role Access)
                     </span>
                     <span className="text-[9px] font-mono text-slate-400">
-                      9 Roles Active
+                      {DEMO_ACCOUNTS.length} Roles Active
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-1.5 text-left">
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 text-left">
                     {DEMO_ACCOUNTS.map((acc) => (
                       <button
                         key={acc.role}

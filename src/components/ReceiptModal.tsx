@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
+import { Printer } from 'lucide-react';
 
 interface ReceiptModalProps {
   receiptNo?: string;
@@ -56,7 +57,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptNo, onClose }
               onClick={handlePrint}
               className="px-3.5 py-1.5 bg-[#00236f] text-white text-xs font-bold rounded-lg hover:bg-[#1e3a8a] transition-colors flex items-center gap-1.5 shadow-xs"
             >
-              <span className="font-bold text-[10px]">[PRINT]</span>
+              <Printer className="w-3.5 h-3.5" />
               <span>Print / PDF</span>
             </button>
             <button

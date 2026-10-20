@@ -155,6 +155,12 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
         return 'audit-logs' as any;
       case '/telemetry':
         return 'telemetry' as any;
+      case '/hostel':
+      case '/hostel-management':
+        return 'hostel-management' as any;
+      case '/transport':
+      case '/transport-management':
+        return 'transport-management' as any;
       case '/dashboard':
       default:
         return currentUser?.role === 'super_admin'
@@ -163,6 +169,8 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
           ? 'admin-dashboard'
           : currentUser?.role === 'hr'
           ? 'staff-management'
+          : currentUser?.role === 'hostel'
+          ? ('hostel-management' as any)
           : (currentUser?.role === 'staff' || currentUser?.role === 'counselor' || currentUser?.role === 'hod')
           ? 'staff-dashboard'
           : currentUser?.role === 'partner'
@@ -178,7 +186,11 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
     const [pathPart, queryPart] = screenStr.split('?');
     const qs = queryPart ? `?${queryPart}` : '';
 
-    if (pathPart === 'fee-ledger' || pathPart === 'fees') {
+    if (pathPart === 'hostel-management' || pathPart === 'hostel') {
+      navigate(`/hostel${qs}`);
+    } else if (pathPart === 'transport-management' || pathPart === 'transport') {
+      navigate(`/transport${qs}`);
+    } else if (pathPart === 'fee-ledger' || pathPart === 'fees') {
       navigate(`/fees${qs}`);
     } else if (
       pathPart === 'student-dashboard' ||

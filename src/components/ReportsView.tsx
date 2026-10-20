@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search } from 'lucide-react';
+import { Search, RefreshCw } from 'lucide-react';
 import { safeGoBack } from '../utils/navigation';
 import { api, getStoredToken } from '../api/client';
 import { User } from '../types';
@@ -881,9 +881,10 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
                 </select>
                 <button
                   onClick={loadReportsData}
-                  className="text-xs font-bold text-[#00236f] hover:underline"
+                  className="text-xs font-bold text-[#00236f] hover:underline flex items-center gap-1 cursor-pointer"
                 >
-                  [REFRESH]
+                  <RefreshCw className="w-3 h-3" />
+                  <span>Refresh</span>
                 </button>
               </div>
             </div>
@@ -1133,9 +1134,10 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
 
                 <button
                   onClick={loadReportsData}
-                  className="text-xs font-bold text-[#00236f] hover:underline cursor-pointer"
+                  className="text-xs font-bold text-[#00236f] hover:underline cursor-pointer flex items-center gap-1"
                 >
-                  [REFRESH]
+                  <RefreshCw className="w-3 h-3" />
+                  <span>Refresh</span>
                 </button>
               </div>
             </div>
@@ -1542,7 +1544,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser }) => {
                 onClick={loadReportsData}
                 className="text-xs font-bold text-[#00236f] hover:underline flex items-center gap-1 cursor-pointer"
               >
-                <span className="font-bold text-[10px]">[REFRESH]</span>
+                <RefreshCw className="w-3 h-3" />
                 <span>Refresh Table</span>
               </button>
             </div>

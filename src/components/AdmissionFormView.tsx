@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { safeGoBack } from '../utils/navigation';
 import { api } from '../api/client';
 import { AIAssistantModal } from './AIAssistantModal';
+import { Printer } from 'lucide-react';
 
 interface AdmissionFormViewProps {
   initialStudent?: any | null;
@@ -399,8 +400,8 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
               onClick={() => window.print()}
               className="px-3.5 py-1.5 bg-[#00236f] text-white text-xs font-bold rounded-lg hover:bg-[#1a388a] flex items-center gap-1.5 cursor-pointer"
             >
-              <span className="font-bold text-[10px]">[PRINT]</span>
-              Print Slip
+              <Printer className="w-3.5 h-3.5" />
+              <span>Print Slip</span>
             </button>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { api } from '../api/client';
 import { GrievanceItem, User } from '../types';
+import { RefreshCw } from 'lucide-react';
 
 interface GrievanceViewProps {
   currentUser: User | null;
@@ -257,7 +258,7 @@ export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => 
             className="p-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg text-[#444651]"
             title="Refresh Grievance Records"
           >
-            <span className="font-bold text-[10px]">[REFRESH]</span>
+            <RefreshCw className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>

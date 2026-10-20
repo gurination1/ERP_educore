@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { safeGoBack } from '../utils/navigation';
 import { User, LMSQuiz } from '../types';
 import { api } from '../api/client';
+import { Download } from 'lucide-react';
 
 interface StudentQuizLMSViewProps {
   currentUser: User | null;
@@ -610,9 +611,9 @@ Unit 4: Real-World Case Studies & Industry Benchmark Applications
 
                 <button
                   onClick={() => handleDownloadResource(res)}
-                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1"
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5"
                 >
-                  <span className="font-bold text-[10px]">[DL]</span>
+                  <Download className="w-3.5 h-3.5" />
                   <span>Get PDF</span>
                 </button>
               </div>

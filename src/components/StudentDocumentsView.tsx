@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { safeGoBack } from '../utils/navigation';
 import { User, DocumentRecord } from '../types';
 import { api } from '../api/client';
+import { Download } from 'lucide-react';
 
 interface StudentDocumentsViewProps {
   currentUser: User | null;
@@ -539,9 +540,9 @@ Generated at ${new Date().toISOString()} via EduCore Document Vault Engine`;
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 onClick={() => handleDownloadDoc(selectedDoc)}
-                className="px-4 py-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg text-xs font-bold text-[#444651] flex items-center gap-1 cursor-pointer"
+                className="px-4 py-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg text-xs font-bold text-[#444651] flex items-center gap-1.5 cursor-pointer"
               >
-                <span className="font-bold text-[10px]">[DL]</span>
+                <Download className="w-3.5 h-3.5" />
                 <span>Download Vault Copy</span>
               </button>
               <button

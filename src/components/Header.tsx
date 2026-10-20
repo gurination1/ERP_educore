@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { User, ActiveScreen } from '../types';
-import { Shield, Building2, ChevronDown, Check } from 'lucide-react';
+import { Shield, Building2, ChevronDown, Check, User as UserIcon, KeyRound, LogOut } from 'lucide-react';
 
 interface HeaderProps {
   currentUser: User | null;
@@ -55,6 +55,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [internalSelectedCampus, setInternalSelectedCampus] = useState<'campus_01' | 'campus_02' | 'all'>(externalSelectedCampus);
   const [isCampusMenuOpen, setIsCampusMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [headerToast, setHeaderToast] = useState<string | null>(null);
   const navRef = useRef<HTMLDivElement>(null);
   const campusDropdownRef = useRef<HTMLDivElement>(null);
   const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -925,6 +926,16 @@ export const Header: React.FC<HeaderProps> = ({
         isActive: isHostel && currentTab === 'rooms',
       },
       {
+        id: 'unassigned',
+        label: 'Unallocated Queue',
+        defaultScreen: 'hostel-management?tab=unassigned' as any,
+        action: () => {
+          onNavigate('hostel-management?tab=unassigned' as any);
+          setOpenDrawer(null);
+        },
+        isActive: isHostel && currentTab === 'unassigned',
+      },
+      {
         id: 'residents',
         label: 'Resident Scholars',
         defaultScreen: 'hostel-management?tab=residents' as any,
@@ -934,6 +945,7 @@ export const Header: React.FC<HeaderProps> = ({
         },
         items: [
           { id: 'hostel-management?tab=residents' as any, label: 'Hostellers Master Directory', action: () => { onNavigate('hostel-management?tab=residents' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=unassigned' as any, label: 'Pending Scholar Bed Queue', action: () => { onNavigate('hostel-management?tab=unassigned' as any); setOpenDrawer(null); } },
           { id: 'hostel-management?tab=residents' as any, label: 'Room Shifting & Rent Adjustment', action: () => { onNavigate('hostel-management?tab=residents' as any); setOpenDrawer(null); } },
         ],
         isActive: isHostel && currentTab === 'residents',
@@ -1119,6 +1131,11 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-50 select-none font-sans" ref={navRef}>
+      {headerToast && (
+        <div id="header-action-toast" className="bg-emerald-600 text-white px-4 py-1.5 text-center text-xs font-semibold animate-fadeIn shadow-md">
+          {headerToast}
+        </div>
+      )}
       {/* TIER 1: Prestigious Institutional Identity Banner (Cupertino Frosted Navy #00236f) */}
       <div className="bg-[#00236f]/95 backdrop-blur-2xl text-white px-3 sm:px-6 py-2 border-b border-white/10 flex items-center justify-between gap-3 text-xs relative z-50 overflow-visible">
         {/* Left: EduCore Brand + Dedicated Campus Switcher Dropdown */}
@@ -1141,27 +1158,27 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
               </div>
               <span className="text-[10px] font-medium text-slate-300/80 leading-tight mt-0.5 hidden sm:inline">
-                {isSuperAdmin ? 'Cloud SaaS Orchestrator' : 'Enterprise Academic Operating System'}
+                {isSuperAdmin ? 'Platform Management' : 'Collegiate Academic Suite'}
               </span>
             </div>
           </button>
 
-          {/* DEDICATED CAMPUS SWITCHER DROPDOWN (Clickable Popover, High Z-Index, Unclipped) */}
+          {/* DEDICATED CAMPUS SWITCHER DROPDOWN (Clickable Popover, Minimalist, High Z-Index, Unclipped) */}
           <div className="relative shrink-0" ref={campusDropdownRef}>
             <button
               type="button"
               id="header-campus-switcher"
               onClick={() => setIsCampusMenuOpen(!isCampusMenuOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl text-xs font-semibold backdrop-blur-md transition-all shadow-xs cursor-pointer select-none"
+              className="flex items-center gap-2 px-2.5 py-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl text-xs font-semibold backdrop-blur-md transition-all shadow-xs cursor-pointer select-none"
               title="Select Campus View"
             >
               <Building2 className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-              <span className="font-semibold text-white text-xs truncate max-w-[150px] sm:max-w-none">
+              <span className="font-semibold text-white text-xs truncate max-w-[140px] sm:max-w-none">
                 {effectiveCampus === 'campus_01'
-                  ? 'Bathinda Campus 01 (Main)'
+                  ? 'Bathinda (Main)'
                   : effectiveCampus === 'campus_02'
-                  ? 'Faridkot Campus 02 (Regional)'
-                  : 'All Campuses (Consolidated)'}
+                  ? 'Faridkot (Regional)'
+                  : 'All Campuses'}
               </span>
               <ChevronDown className={`w-3.5 h-3.5 text-slate-300 transition-transform ${isCampusMenuOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -1169,44 +1186,38 @@ export const Header: React.FC<HeaderProps> = ({
             {isCampusMenuOpen && (
               <div
                 id="header-campus-dropdown-menu"
-                className="absolute left-0 top-full mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200/90 py-2 text-slate-800 z-[9999] animate-fadeIn"
+                className="absolute left-0 top-full mt-1.5 w-56 bg-white/98 backdrop-blur-xl rounded-xl shadow-xl border border-slate-200/90 py-1 text-slate-800 z-[9999] animate-fadeIn"
               >
-                <div className="px-3.5 py-1.5 border-b border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  Select Institutional Campus
+                <div className="px-3 py-1 border-b border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Select Campus
                 </div>
                 <div className="p-1 space-y-0.5">
                   <button
                     type="button"
                     data-campus="campus_01"
                     onClick={() => handleCampusSelect('campus_01')}
-                    className={`w-full px-3 py-2 text-left rounded-xl text-xs flex items-center justify-between transition cursor-pointer ${
+                    className={`w-full px-2.5 py-1.5 text-left rounded-lg text-xs flex items-center justify-between transition cursor-pointer ${
                       effectiveCampus === 'campus_01'
                         ? 'bg-blue-50 text-blue-900 font-bold'
                         : 'hover:bg-slate-50 text-slate-700 font-medium'
                     }`}
                   >
-                    <div>
-                      <div className="font-bold">Bathinda Campus 01 (Main)</div>
-                      <div className="text-[10px] text-slate-400">Headquarters, Engineering & Sciences</div>
-                    </div>
-                    {effectiveCampus === 'campus_01' && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
+                    <span className="truncate">Bathinda Campus 01 (Main)</span>
+                    {effectiveCampus === 'campus_01' && <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
                   </button>
 
                   <button
                     type="button"
                     data-campus="campus_02"
                     onClick={() => handleCampusSelect('campus_02')}
-                    className={`w-full px-3 py-2 text-left rounded-xl text-xs flex items-center justify-between transition cursor-pointer ${
+                    className={`w-full px-2.5 py-1.5 text-left rounded-lg text-xs flex items-center justify-between transition cursor-pointer ${
                       effectiveCampus === 'campus_02'
                         ? 'bg-blue-50 text-blue-900 font-bold'
                         : 'hover:bg-slate-50 text-slate-700 font-medium'
                     }`}
                   >
-                    <div>
-                      <div className="font-bold">Faridkot Campus 02 (Regional)</div>
-                      <div className="text-[10px] text-slate-400">Regional Studies & Management</div>
-                    </div>
-                    {effectiveCampus === 'campus_02' && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
+                    <span className="truncate">Faridkot Campus 02 (Regional)</span>
+                    {effectiveCampus === 'campus_02' && <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
                   </button>
 
                   <div className="my-1 border-t border-slate-100" />
@@ -1215,17 +1226,14 @@ export const Header: React.FC<HeaderProps> = ({
                     type="button"
                     data-campus="all"
                     onClick={() => handleCampusSelect('all')}
-                    className={`w-full px-3 py-2 text-left rounded-xl text-xs flex items-center justify-between transition cursor-pointer ${
+                    className={`w-full px-2.5 py-1.5 text-left rounded-lg text-xs flex items-center justify-between transition cursor-pointer ${
                       effectiveCampus === 'all'
                         ? 'bg-blue-50 text-blue-900 font-bold'
                         : 'hover:bg-slate-50 text-slate-700 font-medium'
                     }`}
                   >
-                    <div>
-                      <div className="font-bold">All Campuses (Consolidated)</div>
-                      <div className="text-[10px] text-slate-400">Aggregated Multi-Campus Governance</div>
-                    </div>
-                    {effectiveCampus === 'all' && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
+                    <span className="truncate">All Campuses (Consolidated)</span>
+                    {effectiveCampus === 'all' && <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
                   </button>
                 </div>
               </div>
@@ -1392,17 +1400,17 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="text-xs text-amber-300 font-bold ml-0.5">▾</span>
               </button>
 
-              {/* Profile Popover: Exactly 3 Items (Profile Information, Reset Password, Logout) */}
+              {/* Profile Popover: Sleek Minimalist Menu (Profile, Reset Password, Sign Out) */}
               {isProfileMenuOpen && (
                 <div
                   onMouseLeave={() => setIsProfileMenuOpen(false)}
-                  className="absolute right-0 top-full mt-2 w-56 bg-white/98 backdrop-blur-2xl rounded-2xl shadow-2xl border border-slate-200/90 py-1.5 z-50 text-slate-800 animate-in fade-in"
+                  className="absolute right-0 top-full mt-1.5 w-52 bg-white/98 backdrop-blur-xl rounded-xl shadow-xl border border-slate-200/90 py-1 z-50 text-slate-800 animate-in fade-in"
                 >
-                  <div className="px-3.5 py-2 border-b border-slate-100">
+                  <div className="px-3 py-2 border-b border-slate-100">
                     <span className="block font-bold text-xs text-[#00236f]">
                       {(currentUser.full_name || currentUser.username).replace(/\s*\(\d+\)\s*$/, '')}
                     </span>
-                    <span className="block font-mono text-[10px] text-slate-400">
+                    <span className="block font-mono text-[10px] text-slate-400 truncate">
                       {currentUser.email || displayUid}
                     </span>
                   </div>
@@ -1418,22 +1426,23 @@ export const Header: React.FC<HeaderProps> = ({
                           onNavigate('staff-management');
                         }
                       }}
-                      className="w-full px-3.5 py-2 text-left text-xs font-semibold hover:bg-slate-100 flex items-center justify-between text-slate-700 cursor-pointer"
+                      className="w-full px-3 py-1.5 text-left text-xs font-semibold hover:bg-slate-50 flex items-center gap-2 text-slate-700 cursor-pointer"
                     >
-                      <span>1. Profile Information</span>
-                      <span className="text-slate-400 text-xs">👤</span>
+                      <UserIcon className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Profile & Dossier</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => {
                         setIsProfileMenuOpen(false);
-                        alert(`Password reset link dispatched to ${currentUser.email || 'your registered phone/email'}.`);
+                        setHeaderToast(`Password recovery link dispatched to ${currentUser.email || 'registered address'}.`);
+                        setTimeout(() => setHeaderToast(null), 4000);
                       }}
-                      className="w-full px-3.5 py-2 text-left text-xs font-semibold hover:bg-slate-100 flex items-center justify-between text-slate-700 cursor-pointer"
+                      className="w-full px-3 py-1.5 text-left text-xs font-semibold hover:bg-slate-50 flex items-center gap-2 text-slate-700 cursor-pointer"
                     >
-                      <span>2. Reset Password</span>
-                      <span className="text-slate-400 text-xs">🔑</span>
+                      <KeyRound className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Reset Password</span>
                     </button>
 
                     <div className="my-1 border-t border-slate-100" />
@@ -1444,10 +1453,10 @@ export const Header: React.FC<HeaderProps> = ({
                         setIsProfileMenuOpen(false);
                         onLogout?.();
                       }}
-                      className="w-full px-3.5 py-2 text-left text-xs font-bold hover:bg-rose-50 text-rose-600 flex items-center justify-between cursor-pointer"
+                      className="w-full px-3 py-1.5 text-left text-xs font-bold hover:bg-rose-50 text-rose-600 flex items-center gap-2 cursor-pointer"
                     >
-                      <span>3. Logout</span>
-                      <span className="text-rose-500 text-xs">🚪</span>
+                      <LogOut className="w-3.5 h-3.5 text-rose-500" />
+                      <span>Sign Out</span>
                     </button>
                   </div>
                 </div>
@@ -1577,23 +1586,23 @@ export const Header: React.FC<HeaderProps> = ({
                         }}
                         onMouseLeave={handleMouseLeave}
                         className={`absolute top-full pt-1 z-50 select-none before:absolute before:-top-3 before:left-0 before:right-0 before:h-3 before:content-[''] ${
-                          sec.items!.length > 4 ? 'w-[420px] sm:w-[480px]' : 'min-w-[280px] sm:min-w-[320px]'
+                          sec.items!.length > 4 ? 'w-[340px] sm:w-[380px]' : 'w-60 sm:w-64'
                         } ${sec.id === 'governance' || sec.id === 'staff' ? 'right-0 left-auto' : 'left-0'}`}
                       >
-                        <div className="bg-white/98 backdrop-blur-2xl border border-slate-200/90 shadow-[0_20px_45px_-10px_rgba(0,35,111,0.18),0_0_0_1px_rgba(0,35,111,0.04)] rounded-2xl p-3 animate-flyout">
-                          {/* Section Header with Tripartite Branding */}
-                          <div className="px-3 pt-1.5 pb-2 text-[11px] font-bold text-slate-500 tracking-wider uppercase border-b border-slate-100 flex items-center justify-between">
+                        <div className="bg-white/98 backdrop-blur-2xl border border-slate-200/90 shadow-[0_16px_36px_-8px_rgba(0,35,111,0.15),0_0_0_1px_rgba(0,35,111,0.04)] rounded-xl p-2.5 animate-flyout">
+                          {/* Section Header with Clean Branding */}
+                          <div className="px-2.5 pt-1 pb-1.5 text-[11px] font-bold text-slate-500 tracking-wider uppercase border-b border-slate-100 flex items-center justify-between">
                             <span className="flex items-center gap-1.5 text-[#00236f] font-black">
-                              <span className="w-2 h-2 rounded-full bg-[#ea580c]" />
-                              {sec.label} Console
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#ea580c]" />
+                              {sec.label}
                             </span>
-                            <span className="text-[10px] font-mono text-slate-400 font-semibold">
-                              EduCore OS
+                            <span className="text-[9px] font-mono text-slate-400 font-semibold">
+                              EduCore ERP
                             </span>
                           </div>
 
-                          {/* Interactive Action Grid (Pure Text Hierarchy, Zero Icons) */}
-                          <div className={`py-1.5 ${sec.items!.length > 4 ? 'grid grid-cols-1 sm:grid-cols-2 gap-1' : 'space-y-0.5'}`}>
+                          {/* Interactive Action Grid (Pure Text Hierarchy) */}
+                          <div className={`py-1 ${sec.items!.length > 4 ? 'grid grid-cols-1 sm:grid-cols-2 gap-1' : 'space-y-0.5'}`}>
                             {sec.items!.map((item: any, itemIdx: number) => (
                               <button
                                 key={`${sec.id}-${item.id || itemIdx}-${item.label}`}
@@ -1610,25 +1619,20 @@ export const Header: React.FC<HeaderProps> = ({
                                     onNavigate(item.id);
                                   }
                                 }}
-                                className={`w-full px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all text-left flex items-center justify-between cursor-pointer group ${
+                                className={`w-full px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all text-left flex items-center justify-between cursor-pointer group ${
                                   activeScreen === item.id
                                     ? 'bg-[#00236f] text-white shadow-2xs font-bold'
-                                    : 'text-slate-700 hover:bg-slate-100/90 hover:text-[#00236f]'
+                                    : 'text-slate-700 hover:bg-slate-100 hover:text-[#00236f]'
                                 }`}
                               >
                                 <span className="truncate">{item.label}</span>
                                 {activeScreen === item.id && (
-                                  <span className="text-[9px] uppercase tracking-wider font-extrabold text-amber-300 ml-2">Active</span>
+                                  <span className="text-[9px] uppercase tracking-wider font-extrabold text-amber-300 ml-1.5">Active</span>
                                 )}
                               </button>
                             ))}
                           </div>
 
-                          {/* Card Footer Quick Note */}
-                          <div className="pt-2 mt-1 border-t border-slate-100 px-3 flex items-center justify-between text-[10px] text-slate-400">
-                            <span>Statutory Regulation Active</span>
-                            <span className="font-semibold text-slate-500">Autonomous Campus</span>
-                          </div>
                         </div>
                       </div>
                     )}

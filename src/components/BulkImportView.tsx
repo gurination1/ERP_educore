@@ -375,7 +375,7 @@ Navkiran Gill,9872011223,navkiran.gill@gmail.com,B.Tech CSE,S. Harnek Singh,fema
                 <div key={f.key} className="border p-2 rounded bg-gray-50 flex items-center justify-between text-[10px]">
                   <div>
                     <span className="font-bold text-gray-800">{f.label}</span>
-                    {f.required && <span className="text-rose-600 font-bold ml-1">[MANDATORY]</span>}
+                    {f.required && <span className="text-rose-600 font-bold ml-1">* Required</span>}
                   </div>
                   <select
                     value={columnMapping[f.key] || ''}

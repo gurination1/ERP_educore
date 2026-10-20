@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../api/client';
+import { Phone, PhoneOff } from 'lucide-react';
 
 export interface TelephonyCandidate {
   id: string;
@@ -313,7 +314,7 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
 
               {callState === 'ringing' && (
                 <div className="flex items-center gap-1.5 text-sky-400 text-xs font-medium">
-                  <span className="font-bold text-[10px]">[CALL]</span>
+                  <Phone className="w-3.5 h-3.5 text-sky-400 animate-pulse" />
                   <span>Ringing Candidate...</span>
                 </div>
               )}
@@ -425,7 +426,7 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
                 className="w-12 h-12 rounded-full bg-rose-600 hover:bg-rose-500 active:scale-95 text-white flex items-center justify-center shadow-lg shadow-rose-900/50 transition-all cursor-pointer ml-1"
                 title="End Telephony Call"
               >
-                <span className="font-bold text-[10px]">[END]</span>
+                <PhoneOff className="w-5 h-5 text-white" />
               </button>
             </div>
           </div>
@@ -479,7 +480,7 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
             className="w-7 h-7 rounded-full bg-rose-600 hover:bg-rose-500 flex items-center justify-center text-white"
             title="Hang Up"
           >
-            <span className="font-bold text-[10px]">[END]</span>
+            <PhoneOff className="w-3.5 h-3.5 text-white" />
           </button>
         </div>
       )}

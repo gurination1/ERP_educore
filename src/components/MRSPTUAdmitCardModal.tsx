@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
+import { AlertOctagon } from 'lucide-react';
 
 interface MRSPTUAdmitCardModalProps {
   studentId?: string;
@@ -97,7 +98,7 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
           <div className="py-6 space-y-6">
             <div className="p-5 rounded-2xl bg-[#ffdad6]/40 border-2 border-[#ba1a1a] space-y-3 text-center">
               <div className="w-12 h-12 bg-[#ba1a1a] text-white rounded-full flex items-center justify-center mx-auto shadow-xs">
-                <span className="font-bold text-[10px]">[BLOCKED]</span>
+                <AlertOctagon className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-lg font-extrabold text-[#ba1a1a] tracking-tight">
                 EXAMINATION ADMIT CARD WITHHELD

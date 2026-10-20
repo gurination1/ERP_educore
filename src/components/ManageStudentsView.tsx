@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { api, getStoredToken } from '../api/client';
 import { StudentProfile, User } from '../types';
+import { Download } from 'lucide-react';
 
 interface ManageStudentsViewProps {
   currentUser?: User | null;
@@ -251,7 +252,7 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
             onClick={handleExportCsv}
             className="px-4 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
           >
-            <span className="font-bold text-[10px]">[DL]</span>
+            <Download className="w-3.5 h-3.5" />
             <span>Export CSV</span>
           </button>
         </div>

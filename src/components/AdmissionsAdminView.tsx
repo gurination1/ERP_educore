@@ -5,6 +5,7 @@ import { api } from '../api/client';
 import { StudentProfile, User, FollowupRadarStats, ProspectLeadItem, AdmissionFollowup } from '../types';
 import { AdmissionFormView } from './AdmissionFormView';
 import { TelephonyCallDock, TelephonyCandidate } from './TelephonyCallDock';
+import { RefreshCw, Printer } from 'lucide-react';
 
 interface AdmissionsAdminViewProps {
   currentUser?: User | null;
@@ -490,7 +491,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
             className="p-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg text-[#444651]"
             title="Refresh Admissions Roster"
           >
-            <span className="font-bold text-[10px]">[REFRESH]</span>
+            <RefreshCw className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
@@ -803,7 +804,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 className="p-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg text-[#444651] cursor-pointer"
                 title="Refresh Lead Queue"
               >
-                <span className="font-bold text-[10px]">[REFRESH]</span>
+                <RefreshCw className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -1860,7 +1861,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                   onClick={() => window.print()}
                   className="px-4 py-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg font-bold flex items-center gap-1.5 cursor-pointer text-[#444651]"
                 >
-                  <span className="font-bold text-[10px]">[PRINT]</span>
+                  <Printer className="w-3.5 h-3.5" />
                   <span>Print Slip</span>
                 </button>
                 <button

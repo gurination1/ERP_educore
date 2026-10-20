@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { safeGoBack } from '../utils/navigation';
 import { api } from '../api/client';
 import { DynamicFormItem, DynamicFormFieldDef, User } from '../types';
+import { Trash2 } from 'lucide-react';
 
 interface DynamicFormBuilderViewProps {
   currentUser: User | null;
@@ -267,9 +268,10 @@ export const DynamicFormBuilderView: React.FC<DynamicFormBuilderViewProps> = ({ 
                   <button
                     type="button"
                     onClick={() => handleRemoveField(idx)}
-                    className="text-[#ba1a1a] hover:text-[#900000] p-1"
+                    className="text-[#ba1a1a] hover:text-[#900000] p-1.5 rounded-lg hover:bg-rose-50 transition"
+                    title="Remove Field"
                   >
-                    <span className="font-bold text-[10px]">[DEL]</span>
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               ))}

@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { User } from '../types';
 import { api } from '../api/client';
+import { Download } from 'lucide-react';
 
 interface PartnerPortalViewProps {
   currentUser: User | null;
@@ -488,9 +489,9 @@ This transcript is digitally generated and certified by EduCore Academic ERP.`;
                         setSelectedJobId(job.id);
                         setActiveSection('applications');
                       }}
-                      className="border border-[#00236f] text-[#00236f] px-2 py-0.5 rounded font-bold hover:bg-[#00236f]/5"
+                      className="border border-[#00236f] text-[#00236f] px-2.5 py-1 rounded-lg font-bold hover:bg-[#00236f]/5 transition"
                     >
-                      [VIEW APPLICANTS]
+                      View Applicants
                     </button>
                     {currentUser?.role === 'student' && (
                       <button
@@ -502,9 +503,9 @@ This transcript is digitally generated and certified by EduCore Academic ERP.`;
                             setTimeout(() => setFeedbackMsg(null), 5000);
                           }
                         }}
-                        className="bg-[#00236f] text-white px-2 py-0.5 rounded font-bold hover:bg-[#00236f]/90"
+                        className="bg-[#00236f] text-white px-2.5 py-1 rounded-lg font-bold hover:bg-[#00236f]/90 transition"
                       >
-                        [APPLY NOW]
+                        Apply Now
                       </button>
                     )}
                   </div>
@@ -1039,7 +1040,7 @@ This transcript is digitally generated and certified by EduCore Academic ERP.`;
                 onClick={() => handleDownloadTranscript(selectedStudentForTranscript)}
                 className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold text-xs flex items-center gap-1.5 transition"
               >
-                <span>[DL]</span>
+                <Download className="w-3.5 h-3.5" />
                 <span>Download Dossier</span>
               </button>
 

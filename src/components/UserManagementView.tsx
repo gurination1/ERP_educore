@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { api } from '../api/client';
 import { User, UserRole } from '../types';
+import { RefreshCw, Printer, Edit, Trash2, Shield, UserCheck } from 'lucide-react';
 
 interface UserManagementViewProps {
   currentUser?: User | null;
@@ -501,7 +502,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
               </h2>
             </div>
             <p className="text-sm text-[#444651] mt-1">
-              Admin Super-Powers: Provision, hire, and govern institutional personnel across Punjab engineering college departments.
+              Administrative Governance: Provision, hire, and govern institutional personnel across campus departments.
             </p>
           </div>
         </div>
@@ -519,7 +520,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
             className="p-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg text-[#444651]"
             title="Refresh Staff Roster"
           >
-            <span className="font-bold text-[10px]">[REFRESH]</span>
+            <RefreshCw className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
@@ -824,7 +825,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                       { role: 'counselor', label: 'Head Counselor', desc: 'Intake, Inquiries, Admit' },
                       { role: 'hod', label: 'HOD', desc: 'Department Head, Admit' },
                       { role: 'accounts', label: 'Chief Accounts', desc: 'Ledger, Fees, Waivers' },
-                      { role: 'admin', label: 'Provost / Admin', desc: 'Super Extreme Powers' },
+                      { role: 'admin', label: 'Provost / Admin', desc: 'Institutional Governance' },
                     ] as const
                   ).map(r => (
                     <button
@@ -981,7 +982,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
           <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-[#f8f9fa]">
               <div className="flex items-center gap-2">
-                <span className="font-bold text-[10px]">[EDIT]</span>
+                <Edit className="w-3.5 h-3.5 text-[#00236f]" />
                 <h3 className="text-sm font-bold text-[#191c1d]">Edit Employee Profile</h3>
               </div>
               <button
@@ -1220,7 +1221,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                   onClick={() => window.print()}
                   className="px-3 py-2 border border-[#e1e3e4] rounded-lg text-xs font-bold text-[#444651] hover:bg-[#f8f9fa] flex items-center gap-1 cursor-pointer"
                 >
-                  <span className="font-bold text-[10px]">[PRINT]</span>
+                  <Printer className="w-3.5 h-3.5" />
                   <span>Print Slip</span>
                 </button>
                 <button
@@ -1653,9 +1654,9 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                 /* Activity Logs Performed By User */
                 <div className="space-y-3">
                   <div className="bg-slate-100 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 flex items-start gap-2">
-                    <span className="text-base shrink-0">🕵️</span>
+                    <Shield className="w-4 h-4 text-[#00236f] shrink-0 mt-0.5" />
                     <div>
-                      <strong className="font-bold">CBI Forensic Activity Audit:</strong> Full append-only log of operations executed by this user account across EduCore panels (attendance entry, grade submission, fee collections, user updates).
+                      <strong className="font-bold">Immutable System Activity Audit:</strong> Full append-only log of operations executed by this user account across EduCore panels (attendance entry, grade submission, fee collections, user updates).
                     </div>
                   </div>
 

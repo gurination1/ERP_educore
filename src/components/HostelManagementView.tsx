@@ -26,6 +26,7 @@ import {
   ExternalLink,
   Zap,
   Printer,
+  LogOut,
 } from 'lucide-react';
 import {
   User,
@@ -451,6 +452,10 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
   const [allocatingScholar, setAllocatingScholar] = useState<any | null>(null);
   const [selectedRoomForScholar, setSelectedRoomForScholar] = useState('');
 
+  // Vacate Bed Modal State
+  const [isVacateModalOpen, setIsVacateModalOpen] = useState(false);
+  const [vacatingResident, setVacatingResident] = useState<HostelResident | null>(null);
+
   // Add New Room Handler (Karanvir Sir Lecture 4)
   const handleCreateRoom = (e: React.FormEvent) => {
     e.preventDefault();
@@ -652,6 +657,80 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
     setClearingResident(null);
   };
 
+  const handleSettleAndIssueMessClearance = () => {
+    if (!clearingResident) return;
+    const newCert: MessClearanceRecord = {
+      id: `mc-${Date.now()}`,
+      student_uid: clearingResident.student_uid,
+      student_name: clearingResident.student_name,
+      room_number: clearingResident.room_number,
+      building_name: clearingResident.building_name,
+      diet_count_monthly: 62,
+      outstanding_balance: 0,
+      clearance_status: 'cleared',
+      signed_by_mess_manager: `${currentUser?.full_name || 'Chief Warden'} (Residence Authority)`,
+      clearance_timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19) + ' IST',
+      caution_deposit_refund_eligible: true,
+      remarks: 'Diet arrears settled at desk. Digital clearance certified.',
+    };
+
+    setMessClearances([newCert, ...messClearances]);
+    setResidents((prev) =>
+      prev.map((r) => (r.id === clearingResident.id ? { ...r, mess_status: 'cleared', mess_dues_amount: 0 } : r))
+    );
+
+    showToast(`Arrears settled & Mess No-Dues Certificate issued for ${clearingResident.student_name}!`);
+    setIsMessClearanceModalOpen(false);
+    setClearingResident(null);
+  };
+
+  const handleExecuteVacateBed = () => {
+    if (!vacatingResident) return;
+    if ((Number(vacatingResident.mess_dues_amount) || 0) > 0 || (Number(vacatingResident.amount_due) || 0) > 0) {
+      showToast(
+        `FORBIDDEN: Resident ${vacatingResident.student_name} has pending arrears. Clear dues before vacate!`,
+        'error'
+      );
+      return;
+    }
+    // Decrement room occupancy
+    setRooms((prev) =>
+      prev.map((r) =>
+        r.id === vacatingResident.room_id
+          ? {
+              ...r,
+              current_occupancy: Math.max(0, r.current_occupancy - 1),
+              status: 'available',
+            }
+          : r
+      )
+    );
+    setResidents((prev) => prev.filter((r) => r.id !== vacatingResident.id));
+    showToast(`Bed vacated for ${vacatingResident.student_name}. Room ${vacatingResident.room_number} vacancy restored.`);
+    setIsVacateModalOpen(false);
+    setVacatingResident(null);
+  };
+
+  const handleSettleAndVacateBed = () => {
+    if (!vacatingResident) return;
+    // Decrement room occupancy
+    setRooms((prev) =>
+      prev.map((r) =>
+        r.id === vacatingResident.room_id
+          ? {
+              ...r,
+              current_occupancy: Math.max(0, r.current_occupancy - 1),
+              status: 'available',
+            }
+          : r
+      )
+    );
+    setResidents((prev) => prev.filter((r) => r.id !== vacatingResident.id));
+    showToast(`Arrears settled and bed vacated for ${vacatingResident.student_name}. Room ${vacatingResident.room_number} is now vacant.`);
+    setIsVacateModalOpen(false);
+    setVacatingResident(null);
+  };
+
   // Overview KPIs
   const totalBeds = rooms.reduce((acc, r) => acc + r.capacity, 0);
   const occupiedBeds = rooms.reduce((acc, r) => acc + r.current_occupancy, 0);
@@ -703,13 +782,19 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
           <button
             type="button"
             onClick={() => {
-              setActiveTab('rooms');
-              showToast('Select a room or scholar below to initiate allocation/shift.');
+              if (unallocatedHostelScholars.length > 0) {
+                setAllocatingScholar(unallocatedHostelScholars[0]);
+                setSelectedRoomForScholar('');
+                setIsAllocatingModalOpen(true);
+              } else {
+                setActiveTab('unassigned');
+                showToast('All scholar applications currently have beds allocated.');
+              }
             }}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#00236f] hover:bg-[#001744] text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Allocate Room</span>
+            <span>Allot Bed / Room</span>
           </button>
         </div>
       </div>
@@ -732,6 +817,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
             <button
               key={tab.id}
               type="button"
+              data-hostel-tab={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all cursor-pointer shrink-0 ${
                 isActive
@@ -889,6 +975,92 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
               </table>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* TAB: UNALLOCATED SCHOLARS QUEUE */}
+      {activeTab === 'unassigned' && (
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-black text-[#00236f] flex items-center gap-2">
+                <Users className="w-4 h-4 text-[#ea580c]" />
+                <span>Unallocated Scholars Queue ({unallocatedHostelScholars.length})</span>
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Students who have requested collegiate residence awaiting room & bed assignment.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-slate-500">
+                {rooms.reduce((acc, r) => acc + (r.capacity - r.current_occupancy), 0)} Vacant Beds Available
+              </span>
+            </div>
+          </div>
+
+          {unallocatedHostelScholars.length === 0 ? (
+            <div className="py-12 text-center text-slate-400 text-xs">
+              All scholar residence applications have been allocated rooms.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-500 font-bold">
+                    <th className="py-2.5 px-3">Scholar & UID</th>
+                    <th className="py-2.5 px-3">Course / Sem</th>
+                    <th className="py-2.5 px-3">Gender</th>
+                    <th className="py-2.5 px-3">Preferred Typology</th>
+                    <th className="py-2.5 px-3">Application Date</th>
+                    <th className="py-2.5 px-3">Contact</th>
+                    <th className="py-2.5 px-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-medium">
+                  {unallocatedHostelScholars.map((scholar) => (
+                    <tr key={scholar.uid} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="py-3 px-3">
+                        <div className="font-bold text-[#00236f]">{scholar.name}</div>
+                        <div className="font-mono text-[11px] text-slate-500">{scholar.uid}</div>
+                      </td>
+                      <td className="py-3 px-3">
+                        <div className="text-slate-800 font-semibold">{scholar.course}</div>
+                        <div className="text-[11px] text-slate-500">Semester {scholar.semester}</div>
+                      </td>
+                      <td className="py-3 px-3 capitalize font-semibold text-slate-700">
+                        {scholar.gender}
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-semibold text-[10px] border border-blue-200">
+                          {scholar.preferredRoomType}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 font-mono text-[11px] text-slate-500">
+                        {scholar.appliedDate}
+                      </td>
+                      <td className="py-3 px-3 font-mono text-[11px] text-slate-600">
+                        {scholar.contact}
+                      </td>
+                      <td className="py-3 px-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAllocatingScholar(scholar);
+                            setSelectedRoomForScholar('');
+                            setIsAllocatingModalOpen(true);
+                          }}
+                          className="px-3 py-1.5 rounded-lg bg-[#00236f] hover:bg-[#001744] text-white font-bold text-xs cursor-pointer inline-flex items-center gap-1.5 shadow-xs transition-all"
+                        >
+                          <Bed className="w-3.5 h-3.5 text-amber-300" />
+                          <span>Allot Bed</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 
@@ -1125,25 +1297,44 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
                         {room.status === 'occupied' ? 'Occupancy Full' : `${room.capacity - room.current_occupancy} Bed(s) Free`}
                       </span>
 
-                      {/* Karanvir Sir Lecture 4 Rule: Cannot delete room if student is occupied! */}
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteRoom(room.id)}
-                        disabled={room.current_occupancy > 0}
-                        title={
-                          room.current_occupancy > 0
-                            ? 'Cannot delete room with active residents'
-                            : 'Delete empty room'
-                        }
-                        className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                          room.current_occupancy > 0
-                            ? 'opacity-40 cursor-not-allowed bg-slate-100 text-slate-400'
-                            : 'cursor-pointer bg-rose-50 hover:bg-rose-100 text-rose-700'
-                        }`}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>Delete</span>
-                      </button>
+                      {/* Action buttons: Allot Bed if space exists, Delete if empty */}
+                      <div className="flex items-center gap-1.5">
+                        {room.current_occupancy < room.capacity && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedRoomForScholar(room.id);
+                              if (unallocatedHostelScholars.length > 0) {
+                                setAllocatingScholar(unallocatedHostelScholars[0]);
+                              }
+                              setIsAllocatingModalOpen(true);
+                            }}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer bg-blue-50 hover:bg-blue-100 text-[#00236f] border border-blue-200"
+                          >
+                            <Bed className="w-3.5 h-3.5 text-blue-700" />
+                            <span>Allot Bed</span>
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteRoom(room.id)}
+                          disabled={room.current_occupancy > 0}
+                          title={
+                            room.current_occupancy > 0
+                              ? 'Cannot delete room with active residents'
+                              : 'Delete empty room'
+                          }
+                          className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                            room.current_occupancy > 0
+                              ? 'opacity-40 cursor-not-allowed bg-slate-100 text-slate-400'
+                              : 'cursor-pointer bg-rose-50 hover:bg-rose-100 text-rose-700'
+                          }`}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Delete</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -1222,7 +1413,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
                       ) : res.mess_status === 'dues_pending' ? (
                         <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-bold text-[10px] border border-amber-200 flex items-center gap-1 w-fit">
                           <AlertTriangle className="w-3 h-3" />
-                          <span>₹{res.mess_dues_amount} Mess Arrears</span>
+                          <span>₹{(res.mess_dues_amount || 0).toLocaleString()} Mess Arrears</span>
                         </span>
                       ) : (
                         <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold text-[10px] border border-blue-200">
@@ -1263,6 +1454,18 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
                         >
                           <FileCheck className="w-3 h-3" />
                           <span>No-Dues</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setVacatingResident(res);
+                            setIsVacateModalOpen(true);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-bold transition-all cursor-pointer inline-flex items-center gap-1"
+                        >
+                          <LogOut className="w-3 h-3" />
+                          <span>Vacate</span>
                         </button>
                       </div>
                     </td>
@@ -1721,14 +1924,23 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
               >
                 Close
               </button>
-              <button
-                type="button"
-                onClick={handleIssueMessClearance}
-                disabled={clearingResident.mess_dues_amount > 0}
-                className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm cursor-pointer disabled:opacity-40"
-              >
-                Sign & Issue Digital Clearance
-              </button>
+              {clearingResident.mess_dues_amount > 0 ? (
+                <button
+                  type="button"
+                  onClick={handleSettleAndIssueMessClearance}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-[#ea580c] hover:bg-[#c2410c] text-white shadow-sm cursor-pointer"
+                >
+                  Settle Arrears & Sign Clearance
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleIssueMessClearance}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm cursor-pointer"
+                >
+                  Sign & Issue Digital Clearance
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -1940,7 +2152,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
       )}
 
       {/* MODAL 4: ALLOT ROOM TO UNALLOCATED SCHOLAR */}
-      {isAllocatingModalOpen && allocatingScholar && (
+      {isAllocatingModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 space-y-4 text-xs">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -1957,15 +2169,48 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
               </button>
             </div>
 
-            <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-2xl space-y-1">
-              <div className="font-black text-[#00236f] text-sm">{allocatingScholar.name}</div>
-              <div className="text-[11px] text-slate-600 font-mono">
-                UID: {allocatingScholar.uid} • {allocatingScholar.course} (Sem {allocatingScholar.semester})
+            {/* Scholar Selection */}
+            {allocatingScholar ? (
+              <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-2xl space-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="font-black text-[#00236f] text-sm">{allocatingScholar.name}</div>
+                  {unallocatedHostelScholars.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => setAllocatingScholar(null)}
+                      className="text-[10px] text-blue-600 font-bold hover:underline"
+                    >
+                      Change Scholar
+                    </button>
+                  )}
+                </div>
+                <div className="text-[11px] text-slate-600 font-mono">
+                  UID: {allocatingScholar.uid} • {allocatingScholar.course} (Sem {allocatingScholar.semester})
+                </div>
+                <div className="text-[11px] text-[#ea580c] font-bold">
+                  Requested Typology: {allocatingScholar.preferredRoomType}
+                </div>
               </div>
-              <div className="text-[11px] text-[#ea580c] font-bold">
-                Requested Typology: {allocatingScholar.preferredRoomType}
+            ) : (
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Select Pending Scholar Application:</label>
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const sch = unallocatedHostelScholars.find(s => s.uid === e.target.value);
+                    if (sch) setAllocatingScholar(sch);
+                  }}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 text-xs bg-white font-semibold text-slate-800 focus:outline-none"
+                >
+                  <option value="">-- Choose Pending Scholar ({unallocatedHostelScholars.length}) --</option>
+                  {unallocatedHostelScholars.map((s) => (
+                    <option key={s.uid} value={s.uid}>
+                      {s.name} ({s.uid} • {s.course} • {s.preferredRoomType})
+                    </option>
+                  ))}
+                </select>
               </div>
-            </div>
+            )}
 
             <div>
               <label className="font-bold text-slate-700 block mb-1">Select Available Vacant Room:</label>
@@ -1979,7 +2224,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
                   .filter((r) => r.current_occupancy < r.capacity)
                   .map((r) => (
                     <option key={r.id} value={r.id}>
-                      Room {r.room_number} ({r.building_name} • {r.room_name || `${r.capacity}-Seater`} • {r.washroom_type} • {r.capacity - r.current_occupancy} Bed(s) Free • ₹{r.semester_rent}/sem)
+                      Room {r.room_number} ({r.building_name} • {r.room_name || `${r.capacity}-Seater`} • {r.washroom_type} • {r.capacity - r.current_occupancy} Bed(s) Free • ₹{(r.semester_rent || 0).toLocaleString()}/sem)
                     </option>
                   ))}
               </select>
@@ -1999,12 +2244,89 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
               </button>
               <button
                 type="button"
-                disabled={!selectedRoomForScholar}
+                disabled={!allocatingScholar || !selectedRoomForScholar}
                 onClick={handleExecuteScholarAllotment}
                 className="px-5 py-2 rounded-xl font-bold bg-[#00236f] text-white hover:bg-[#001744] shadow-sm disabled:opacity-40"
               >
                 Confirm Allotment & Generate Token
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: VACATE RESIDENCE BED */}
+      {isVacateModalOpen && vacatingResident && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 space-y-4 text-xs">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-black text-[#00236f] flex items-center gap-2">
+                <LogOut className="w-5 h-5 text-rose-600" />
+                <span>Vacate Residence Bed & Release Room</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsVacateModalOpen(false)}
+                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 font-bold"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-1.5">
+              <div className="font-black text-[#00236f] text-sm">{vacatingResident.student_name}</div>
+              <div className="text-[11px] text-slate-600 font-mono">
+                UID: {vacatingResident.student_uid} • Room {vacatingResident.room_number} ({vacatingResident.building_name})
+              </div>
+              <div className="pt-2 border-t border-slate-200 flex items-center justify-between">
+                <span className="font-bold text-slate-700">Hostel Dues:</span>
+                <span className={`font-black ${(vacatingResident.amount_due || 0) > 0 ? 'text-rose-600' : 'text-emerald-700'}`}>
+                  ₹{(vacatingResident.amount_due || 0).toLocaleString()}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-slate-700">Mess Arrears:</span>
+                <span className={`font-black ${(vacatingResident.mess_dues_amount || 0) > 0 ? 'text-rose-600' : 'text-emerald-700'}`}>
+                  ₹{(vacatingResident.mess_dues_amount || 0).toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            {(vacatingResident.mess_dues_amount || 0) > 0 || (vacatingResident.amount_due || 0) > 0 ? (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-2xl text-[11px] text-rose-900 leading-relaxed font-semibold">
+                Outstanding arrears detected. Settle arrears at the warden desk or clear ledger dues before completing checkout.
+              </div>
+            ) : (
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-[11px] text-emerald-900 leading-relaxed font-semibold">
+                Zero arrears verified. Confirming checkout will decrement room occupancy and restore 1 bed to the vacancy pool.
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setIsVacateModalOpen(false)}
+                className="px-4 py-2 rounded-xl font-bold text-slate-600 hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+              {(vacatingResident.mess_dues_amount || 0) > 0 || (vacatingResident.amount_due || 0) > 0 ? (
+                <button
+                  type="button"
+                  onClick={handleSettleAndVacateBed}
+                  className="px-4 py-2 rounded-xl font-bold bg-[#ea580c] text-white hover:bg-[#c2410c] shadow-sm"
+                >
+                  Settle Arrears & Complete Vacate
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleExecuteVacateBed}
+                  className="px-4 py-2 rounded-xl font-bold bg-rose-600 text-white hover:bg-rose-700 shadow-sm"
+                >
+                  Confirm Vacate & Release Bed
+                </button>
+              )}
             </div>
           </div>
         </div>
