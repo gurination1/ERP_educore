@@ -541,4 +541,17 @@ export const api = {
   },
   saveSessionalMarks: (marks: any[]) =>
     apiRequest('/api/academics/sessional-marks', { method: 'POST', body: JSON.stringify({ marks }) }),
+
+  // Hostel & Residences (Karanvir Sir Lecture 4)
+  getHostelBuildings: (campus?: string) => apiRequest(`/api/hostel/buildings${toQueryString({ campus })}`),
+  createHostelBuilding: (data: any) => apiRequest('/api/hostel/buildings', { method: 'POST', body: JSON.stringify(data) }),
+  getHostelRooms: (buildingId?: string, campus?: string) => apiRequest(`/api/hostel/rooms${toQueryString({ building_id: buildingId, campus })}`),
+  createHostelRoom: (data: any) => apiRequest('/api/hostel/rooms', { method: 'POST', body: JSON.stringify(data) }),
+  deleteHostelRoom: (roomId: string) => apiRequest(`/api/hostel/rooms/${roomId}`, { method: 'DELETE' }),
+  getHostelResidents: (campus?: string) => apiRequest(`/api/hostel/residents${toQueryString({ campus })}`),
+  allotHostelResident: (data: any) => apiRequest('/api/hostel/allot', { method: 'POST', body: JSON.stringify(data) }),
+  shiftHostelResident: (data: { resident_id: string; target_room_id: string; refund_preference: 'refund' | 'credit' }) =>
+    apiRequest('/api/hostel/shift', { method: 'POST', body: JSON.stringify(data) }),
+  getHostelMessClearances: () => apiRequest('/api/hostel/mess-clearances'),
+  issueHostelMessClearance: (data: any) => apiRequest('/api/hostel/mess-clearance', { method: 'POST', body: JSON.stringify(data) }),
 };

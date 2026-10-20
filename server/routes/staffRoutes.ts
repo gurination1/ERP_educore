@@ -8,8 +8,8 @@ export const staffRouter = Router();
 // 1. List all staff members with multi-table summaries
 staffRouter.get('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { department, status, search } = req.query;
-    const filters: { department?: string; status?: string; search?: string } = {};
+    const { department, status, search, campus, campus_id } = req.query;
+    const filters: { department?: string; status?: string; search?: string; campus?: string } = {};
     if (department && typeof department === 'string' && department !== 'all' && department !== 'undefined' && department.trim() !== '') {
       filters.department = department.trim();
     }
@@ -19,9 +19,13 @@ staffRouter.get('/', authenticateToken, async (req: AuthRequest, res: Response):
     if (search && typeof search === 'string' && search !== 'undefined' && search.trim() !== '') {
       filters.search = search.trim();
     }
+    const targetCampus = (campus || campus_id) as string | undefined;
+    if (targetCampus && targetCampus !== 'all' && targetCampus !== 'undefined') {
+      filters.campus = targetCampus;
+    }
 
     const list = await db.getStaffList(filters);
-    res.json({ success: true, count: list.length, staff: list });
+    res.json({ success: true, count: list.length, staff: list, selectedCampus: targetCampus || 'all' });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }

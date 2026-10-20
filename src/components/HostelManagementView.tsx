@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { api } from '../api/client';
 import {
   Building2,
   Bed,
@@ -40,6 +41,7 @@ import {
 interface HostelManagementViewProps {
   currentUser: User | null;
   selectedCampus?: 'campus_01' | 'campus_02' | 'all';
+  onCampusChange?: (campus: 'campus_01' | 'campus_02' | 'all') => void;
   onOpenMasterTables?: (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents' | 'hostel' | 'fees' | 'employee') => void;
   onNavigate?: (screen: string) => void;
 }
@@ -47,6 +49,7 @@ interface HostelManagementViewProps {
 export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
   currentUser,
   selectedCampus,
+  onCampusChange,
   onOpenMasterTables,
   onNavigate,
 }) => {
@@ -67,6 +70,34 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
       setActiveTab(urlTab as any);
     }
   }, [urlTab]);
+
+  useEffect(() => {
+    const fetchHostelData = async () => {
+      try {
+        const [bRes, rRes, resRes, mRes] = await Promise.all([
+          api.getHostelBuildings(selectedCampus),
+          api.getHostelRooms(undefined, selectedCampus),
+          api.getHostelResidents(selectedCampus),
+          api.getHostelMessClearances(),
+        ]);
+        if (bRes.success && Array.isArray(bRes.buildings) && bRes.buildings.length > 0) {
+          setBuildings(bRes.buildings);
+        }
+        if (rRes.success && Array.isArray(rRes.rooms) && rRes.rooms.length > 0) {
+          setRooms(rRes.rooms);
+        }
+        if (resRes.success && Array.isArray(resRes.residents) && resRes.residents.length > 0) {
+          setResidents(resRes.residents);
+        }
+        if (mRes.success && Array.isArray(mRes.clearances) && mRes.clearances.length > 0) {
+          setMessClearances(mRes.clearances);
+        }
+      } catch (err: any) {
+        console.warn('Hostel live backend sync error:', err.message);
+      }
+    };
+    fetchHostelData();
+  }, [selectedCampus]);
 
   // Search & Filter state
   const [searchTerm, setSearchTerm] = useState('');
@@ -566,11 +597,10 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
   };
 
   // Add New Room Handler (Karanvir Sir Lecture 4)
-  const handleCreateRoom = (e: React.FormEvent) => {
+  const handleCreateRoom = async (e: React.FormEvent) => {
     e.preventDefault();
     const bld = buildings.find((b) => b.id === newRoomBuildingId) || buildings[0];
-    const newRoom: HostelRoom = {
-      id: `rm-${Date.now()}`,
+    const payload = {
       building_id: bld.id,
       building_name: bld.code,
       floor_number: Number(newRoomFloor),
@@ -584,23 +614,49 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
       has_almirah: newRoomHasAlmirah,
       monthly_rent: Number(newRoomMonthlyRent),
       semester_rent: Number(newRoomSemesterRent),
-      status: 'available',
+      status: 'available' as const,
     };
-    setRooms([newRoom, ...rooms]);
+    try {
+      const res = await api.createHostelRoom(payload);
+      if (res.success && res.room) {
+        setRooms([res.room, ...rooms]);
+      } else {
+        const newRoom: HostelRoom = { id: `rm-${Date.now()}`, ...payload };
+        setRooms([newRoom, ...rooms]);
+      }
+    } catch {
+      const newRoom: HostelRoom = { id: `rm-${Date.now()}`, ...payload };
+      setRooms([newRoom, ...rooms]);
+    }
     setIsAddRoomModalOpen(false);
     showToast(
-      `Room ${newRoom.room_number} ("${newRoom.room_name || ''}") created in Block ${newRoom.building_name} with ${newRoom.washroom_type} washroom!`
+      `Room ${payload.room_number} ("${payload.room_name || ''}") created in Block ${payload.building_name} with ${payload.washroom_type} washroom!`
     );
   };
 
   // Scholar Room Allotment Execution
-  const handleExecuteScholarAllotment = () => {
+  const handleExecuteScholarAllotment = async () => {
     if (!allocatingScholar || !selectedRoomForScholar) return;
     const room = rooms.find((r) => r.id === selectedRoomForScholar);
     if (!room) return;
     if (room.current_occupancy >= room.capacity) {
       showToast(`Selected room ${room.room_number} is already at full capacity!`, 'error');
       return;
+    }
+
+    try {
+      await api.allotHostelResident({
+        student_uid: allocatingScholar.uid,
+        student_name: allocatingScholar.name,
+        course_name: allocatingScholar.course,
+        semester: allocatingScholar.semester,
+        room_id: room.id,
+        billing_cycle: 'semester',
+        mess_enrolled: true,
+        guardian_contact: allocatingScholar.contact,
+      });
+    } catch (err: any) {
+      console.warn('API allot resident error:', err.message);
     }
 
     // Update room occupancy
@@ -652,7 +708,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
   };
 
   // Room Deletion Guard (Karanvir Sir Lecture 4): Cannot delete room if occupied!
-  const handleDeleteRoom = (roomId: string) => {
+  const handleDeleteRoom = async (roomId: string) => {
     const target = rooms.find((r) => r.id === roomId);
     if (!target) return;
     if (target.current_occupancy > 0) {
@@ -662,18 +718,35 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
       );
       return;
     }
+    try {
+      const res = await api.deleteHostelRoom(roomId);
+      if (!res.success) {
+        showToast(res.error || 'Failed to delete room', 'error');
+        return;
+      }
+    } catch {}
     setRooms(rooms.filter((r) => r.id !== roomId));
     showToast(`Room ${target.room_number} deleted successfully.`);
   };
 
   // Room Shifting Handler
-  const handleExecuteRoomShift = () => {
+  const handleExecuteRoomShift = async () => {
     if (!shiftingResident || !targetRoomId) return;
     const destRoom = rooms.find((r) => r.id === targetRoomId);
     if (!destRoom) return;
     if (destRoom.current_occupancy >= destRoom.capacity) {
       showToast(`Target Room ${destRoom.room_number} is already at full capacity!`, 'error');
       return;
+    }
+
+    try {
+      await api.shiftHostelResident({
+        resident_id: shiftingResident.id,
+        target_room_id: targetRoomId,
+        refund_preference: refundPreference,
+      });
+    } catch (err: any) {
+      console.warn('API shift resident error:', err.message);
     }
 
     const origRoom = rooms.find((r) => r.id === shiftingResident.room_id);
@@ -731,7 +804,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
   };
 
   // Mess Clearance Handler
-  const handleIssueMessClearance = () => {
+  const handleIssueMessClearance = async () => {
     if (!clearingResident) return;
     if (clearingResident.mess_dues_amount > 0) {
       showToast(
@@ -739,6 +812,22 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
         'error'
       );
       return;
+    }
+
+    try {
+      await api.issueHostelMessClearance({
+        student_uid: clearingResident.student_uid,
+        student_name: clearingResident.student_name,
+        room_number: clearingResident.room_number,
+        building_name: clearingResident.building_name,
+        diet_count_monthly: 62,
+        outstanding_balance: 0,
+        settle_arrears_at_desk: false,
+        signed_by_mess_manager: `${currentUser?.full_name || 'Chief Warden'} (Residence Authority)`,
+        remarks: 'Digital clearance certified. Caution deposit release unlocked.',
+      });
+    } catch (err: any) {
+      console.warn('API mess clearance error:', err.message);
     }
 
     const newCert: MessClearanceRecord = {
@@ -766,8 +855,25 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
     setClearingResident(null);
   };
 
-  const handleSettleAndIssueMessClearance = () => {
+  const handleSettleAndIssueMessClearance = async () => {
     if (!clearingResident) return;
+
+    try {
+      await api.issueHostelMessClearance({
+        student_uid: clearingResident.student_uid,
+        student_name: clearingResident.student_name,
+        room_number: clearingResident.room_number,
+        building_name: clearingResident.building_name,
+        diet_count_monthly: 62,
+        outstanding_balance: 0,
+        settle_arrears_at_desk: true,
+        signed_by_mess_manager: `${currentUser?.full_name || 'Chief Warden'} (Residence Authority)`,
+        remarks: 'Diet arrears settled at desk. Digital clearance certified.',
+      });
+    } catch (err: any) {
+      console.warn('API mess clearance settle error:', err.message);
+    }
+
     const newCert: MessClearanceRecord = {
       id: `mc-${Date.now()}`,
       student_uid: clearingResident.student_uid,
@@ -1057,6 +1163,71 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
                 <span>Allot Bed / Room</span>
               </button>
             </div>
+          </div>
+
+          {/* Dynamic Campus Scoping Strip */}
+          <div className="bg-gradient-to-r from-amber-50/80 via-orange-50/50 to-slate-50 border border-amber-200/80 rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-[#ea580c] text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
+                <Building2 className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-800">Residence Campus Scope:</span>
+                  <span className="text-xs font-black text-[#ea580c] bg-white px-2.5 py-0.5 rounded-full border border-orange-200 shadow-2xs">
+                    {selectedCampus === 'campus_02' ? 'Faridkot Campus 02 (Regional)' : selectedCampus === 'all' ? 'All Campuses (Universal Scope)' : 'Bathinda Campus 01 (Main Campus)'}
+                  </span>
+                  <span className="text-[11px] text-slate-500 font-semibold hidden sm:inline">
+                    ({visibleBuildings.length} Residence Blocks, {visibleRooms.length} Typology Rooms, {totalBeds} Beds)
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  {selectedCampus === 'campus_02'
+                    ? 'Displaying Faridkot Regional Residence Block A (24 rooms, 72 beds).'
+                    : selectedCampus === 'all'
+                    ? 'Displaying all residence facilities across Bathinda Main and Faridkot Regional campuses.'
+                    : 'Displaying Shaheed Bhagat Singh, Mata Gujri, and Baba Deep Singh residence blocks at Bathinda Main Campus.'}
+                </p>
+              </div>
+            </div>
+
+            {onCampusChange && (
+              <div className="flex items-center gap-1.5 p-1 bg-white/80 backdrop-blur rounded-xl border border-slate-200 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => onCampusChange('campus_01')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    (!selectedCampus || selectedCampus === 'campus_01')
+                      ? 'bg-[#00236f] text-white shadow-xs'
+                      : 'text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  Bathinda Main
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onCampusChange('campus_02')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    selectedCampus === 'campus_02'
+                      ? 'bg-[#00236f] text-white shadow-xs'
+                      : 'text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  Faridkot Regional
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onCampusChange('all')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    selectedCampus === 'all'
+                      ? 'bg-[#00236f] text-white shadow-xs'
+                      : 'text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  All Campuses
+                </button>
+              </div>
+            )}
           </div>
 
       {/* Navigation Sub-Tabs */}

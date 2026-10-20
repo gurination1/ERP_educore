@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api, setStoredToken, setStoredUser } from '../api/client';
-import { User, ActiveScreen, MasterData } from '../types';
-import { Settings, Sparkles, Building2, CheckCircle2 } from 'lucide-react';
+import { User, ActiveScreen, MasterData, MasterDepartment, MasterDegree, MasterState } from '../types';
+import { Settings, Sparkles, Building2, CheckCircle2, Plus, Check, ChevronDown, Layers, GraduationCap, X, AlertCircle } from 'lucide-react';
 
 interface SuperAdminDashboardViewProps {
   currentUser?: User | null;
@@ -55,12 +55,24 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
     subdomain: '',
     admin_username: '',
     admin_email: '',
+    admin_password: 'admin123',
     contact_person: '',
     contact_phone: '',
     subscription_tier: 'enterprise' as 'standard' | 'premium' | 'enterprise',
-    selected_departments: ['CSE', 'ME', 'CE'],
+    selected_departments: ['CSE', 'ME', 'CE', 'ECE'],
+    selected_degrees: ['B.Tech', 'M.Tech', 'MBA'],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Inline Master Table Quick Add in Onboarding Modal (Senior Mentor Karanvir Sir Lecture 3 & 4)
+  const [showAddDeptInline, setShowAddDeptInline] = useState(false);
+  const [newDeptForm, setNewDeptForm] = useState({ dept_code: '', dept_name: '', head_of_dept: '' });
+
+  const [showAddDegreeInline, setShowAddDegreeInline] = useState(false);
+  const [newDegreeForm, setNewDegreeForm] = useState({ degree_code: '', degree_name: '', total_semesters: 8, statutory_body: 'AICTE' });
+
+  const [showAddStateInline, setShowAddStateInline] = useState(false);
+  const [newStateForm, setNewStateForm] = useState({ gst_code: '', state_name: '', state_short_code: '' });
 
   useEffect(() => {
     loadData();
@@ -78,7 +90,7 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
         setTenants(tenantsRes.tenants);
       }
       setDbHealth(healthRes);
-      if (masterRes && (masterRes.data || masterRes.states)) {
+      if (masterRes && (masterRes.data || (masterRes as any).states)) {
         setMasterData((masterRes.data || masterRes) as MasterData);
       }
     } catch (err: any) {
@@ -141,6 +153,110 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
     }
   };
 
+  const handleInlineAddDepartment = async () => {
+    if (!newDeptForm.dept_code.trim() || !newDeptForm.dept_name.trim()) return;
+    try {
+      const res = await api.addMasterDepartment({
+        dept_code: newDeptForm.dept_code.trim().toUpperCase(),
+        dept_name: newDeptForm.dept_name.trim(),
+        head_of_dept: newDeptForm.head_of_dept.trim(),
+      });
+      if (res.success) {
+        const code = newDeptForm.dept_code.trim().toUpperCase();
+        const newDeptItem: MasterDepartment = {
+          id: `dept-${Date.now()}`,
+          dept_code: code,
+          dept_name: newDeptForm.dept_name.trim(),
+          head_of_dept: newDeptForm.head_of_dept.trim(),
+          tags: ['Engineering'],
+          is_active: true,
+        };
+        setMasterData(prev => prev ? {
+          ...prev,
+          departments: [...(prev.departments || []), newDeptItem]
+        } : prev);
+        setNewTenant(prev => ({
+          ...prev,
+          selected_departments: [...(prev.selected_departments || []), code]
+        }));
+        setNewDeptForm({ dept_code: '', dept_name: '', head_of_dept: '' });
+        setShowAddDeptInline(false);
+        setFeedback({ type: 'success', message: `Master Department ${code} created in database and added to college profile!` });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message });
+    }
+  };
+
+  const handleInlineAddDegree = async () => {
+    if (!newDegreeForm.degree_code.trim() || !newDegreeForm.degree_name.trim()) return;
+    try {
+      const res = await api.addMasterDegree({
+        degree_code: newDegreeForm.degree_code.trim().toUpperCase(),
+        degree_name: newDegreeForm.degree_name.trim(),
+        total_semesters: Number(newDegreeForm.total_semesters) || 8,
+        statutory_body: newDegreeForm.statutory_body || 'AICTE',
+      });
+      if (res.success) {
+        const code = newDegreeForm.degree_code.trim().toUpperCase();
+        const newDegItem: MasterDegree = {
+          degree_code: code,
+          degree_name: newDegreeForm.degree_name.trim(),
+          total_semesters: Number(newDegreeForm.total_semesters) || 8,
+          duration_years: Math.round((Number(newDegreeForm.total_semesters) || 8) / 2),
+          statutory_body: (newDegreeForm.statutory_body as any) || 'AICTE',
+          level: (Number(newDegreeForm.total_semesters) || 8) <= 4 ? 'postgraduate' : 'undergraduate',
+        };
+        setMasterData(prev => prev ? {
+          ...prev,
+          degrees: [...(prev.degrees || []), newDegItem]
+        } : prev);
+        setNewTenant(prev => ({
+          ...prev,
+          selected_degrees: [...(prev.selected_degrees || []), code]
+        }));
+        setNewDegreeForm({ degree_code: '', degree_name: '', total_semesters: 8, statutory_body: 'AICTE' });
+        setShowAddDegreeInline(false);
+        setFeedback({ type: 'success', message: `Master Degree ${code} created in database and added to college profile!` });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message });
+    }
+  };
+
+  const handleInlineAddState = async () => {
+    if (!newStateForm.gst_code.trim() || !newStateForm.state_name.trim()) return;
+    try {
+      const res = await api.addMasterState({
+        gst_code: newStateForm.gst_code.trim(),
+        state_name: newStateForm.state_name.trim(),
+        state_short_code: (newStateForm.state_short_code || newStateForm.gst_code).trim().toUpperCase(),
+      });
+      if (res.success) {
+        const code = newStateForm.gst_code.trim();
+        const newStateItem: MasterState = {
+          gst_code: code,
+          state_name: newStateForm.state_name.trim(),
+          state_short_code: (newStateForm.state_short_code || newStateForm.gst_code).trim().toUpperCase(),
+          is_union_territory: false,
+        };
+        setMasterData(prev => prev ? {
+          ...prev,
+          states: [...(prev.states || []), newStateItem]
+        } : prev);
+        setNewTenant(prev => ({
+          ...prev,
+          state_code: code
+        }));
+        setNewStateForm({ gst_code: '', state_name: '', state_short_code: '' });
+        setShowAddStateInline(false);
+        setFeedback({ type: 'success', message: `GST State Code ${code} created in database and selected!` });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message });
+    }
+  };
+
   const handleCreateTenant = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTenant.client_name || !newTenant.short_code) {
@@ -151,9 +267,11 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
     try {
       const res = await api.createTenant({
         ...newTenant,
+        client_id: `CL_${newTenant.short_code.toUpperCase()}`,
         subdomain: newTenant.subdomain || `${newTenant.short_code.toLowerCase()}.gurudotcom`,
         admin_username: newTenant.admin_username || `admin_${newTenant.short_code.toLowerCase()}`,
         admin_email: newTenant.admin_email || `admin@${newTenant.short_code.toLowerCase()}.edu`,
+        admin_password: newTenant.admin_password || 'admin123',
       });
       if (res.success) {
         // Register newly provisioned institution's primary campus into campuses catalog
@@ -168,7 +286,7 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
 
         setFeedback({
           type: 'success',
-          message: `Client ${newTenant.client_name} successfully provisioned! Linked to GST State ${newTenant.state_code} with isolated database db_${newTenant.short_code.toLowerCase()}.`,
+          message: `Collegiate Client ${newTenant.client_name} successfully provisioned with ${newTenant.selected_departments.length} departments, ${newTenant.selected_degrees.length} degrees, and dedicated database tenant!`,
         });
         setIsAddModalOpen(false);
         setNewTenant({
@@ -181,10 +299,12 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
           subdomain: '',
           admin_username: '',
           admin_email: '',
+          admin_password: 'admin123',
           contact_person: '',
           contact_phone: '',
           subscription_tier: 'enterprise',
-          selected_departments: ['CSE', 'ME', 'CE'],
+          selected_departments: ['CSE', 'ME', 'CE', 'ECE'],
+          selected_degrees: ['B.Tech', 'M.Tech', 'MBA'],
         });
         loadData();
       } else {
@@ -517,256 +637,509 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
         </div>
       </div>
 
-      {/* Add New Tenant Modal */}
+      {/* Add New Tenant Modal (Karanvir Sir Lecture 3 & 4: Integrated Master Tables Provisioning) */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto p-6 shadow-2xl border border-slate-200 space-y-4 animate-scaleUp">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="text-base font-bold text-[#00236f]">Onboard New Collegiate Client</h3>
-              <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#00236f] flex items-center justify-center font-black">
+                  <Building2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-[#00236f] tracking-tight">Onboard New Collegiate Institution</h3>
+                  <p className="text-[11px] text-slate-500">Provision dedicated tenant database schema, master tables, and administrative access</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(false)}
+                className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-bold transition"
+              >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleCreateTenant} className="space-y-3">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Institution Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Guru Nanak Dev Engineering College"
-                  value={newTenant.client_name}
-                  onChange={e => setNewTenant({ ...newTenant, client_name: e.target.value })}
-                  className="w-full h-9 px-3 bg-slate-50 border rounded-lg text-xs focus:ring-1 focus:ring-[#00236f] focus:outline-none"
-                />
-              </div>
+            <form onSubmit={handleCreateTenant} className="space-y-4">
+              {/* SECTION 1: Institutional Identity */}
+              <div className="bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 space-y-3">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+                  <span className="w-5 h-5 rounded-full bg-[#00236f] text-white flex items-center justify-center text-[10px]">1</span>
+                  Institutional Identity & Domain Scope
+                </div>
 
-              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Short Code (Prefix)</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Institution Full Name *</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. GNDEC"
-                    value={newTenant.short_code}
-                    onChange={e => setNewTenant({ ...newTenant, short_code: e.target.value.toUpperCase() })}
-                    className="w-full h-9 px-3 bg-slate-50 border rounded-lg text-xs font-mono uppercase focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                    placeholder="e.g. Guru Nanak Dev Engineering College"
+                    value={newTenant.client_name}
+                    onChange={e => setNewTenant({ ...newTenant, client_name: e.target.value })}
+                    className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:ring-1 focus:ring-[#00236f] focus:outline-none"
                   />
                 </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Prefix / Short Code *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. GNDEC"
+                      value={newTenant.short_code}
+                      onChange={e => setNewTenant({ ...newTenant, short_code: e.target.value.toUpperCase() })}
+                      className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-mono uppercase font-bold focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Entity Category</label>
+                    <select
+                      value={newTenant.entity_type}
+                      onChange={e => setNewTenant({ ...newTenant, entity_type: e.target.value as any })}
+                      className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                    >
+                      <option value="college">College / Institute</option>
+                      <option value="university">University Campus</option>
+                      <option value="school">Polytechnic / School</option>
+                      <option value="department">Autonomous Faculty</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">City / Region</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Ludhiana"
+                      value={newTenant.city}
+                      onChange={e => setNewTenant({ ...newTenant, city: e.target.value })}
+                      className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Entity Category</label>
-                  <select
-                    value={newTenant.entity_type}
-                    onChange={e => setNewTenant({ ...newTenant, entity_type: e.target.value as any })}
-                    className="w-full h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:ring-1 focus:ring-[#00236f] focus:outline-none"
-                  >
-                    <option value="college">College / Institute</option>
-                    <option value="university">University Campus</option>
-                    <option value="school">School / Polytechnic</option>
-                    <option value="department">Autonomous Faculty</option>
-                  </select>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">SaaS Subdomain</label>
+                  <div className="flex items-center">
+                    <input
+                      type="text"
+                      placeholder="e.g. gndec"
+                      value={newTenant.subdomain}
+                      onChange={e => setNewTenant({ ...newTenant, subdomain: e.target.value.toLowerCase() })}
+                      className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-mono focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                    />
+                    <span className="text-[11px] text-slate-500 font-mono pl-2">.gurudotcom.erp</span>
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-bold text-slate-700">GST State Code</label>
-                    {onOpenMasterTables && (
+              {/* SECTION 2: Master Tables Provisioning */}
+              <div className="bg-blue-50/40 p-3.5 rounded-xl border border-blue-200/80 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#00236f]">
+                    <span className="w-5 h-5 rounded-full bg-[#00236f] text-white flex items-center justify-center text-[10px]">2</span>
+                    Master Tables Configuration & Regulatory Setup
+                  </div>
+                  <span className="text-[10px] text-blue-700 font-bold bg-blue-100/80 px-2 py-0.5 rounded-md">
+                    Dynamic Master Data
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-bold text-slate-700">GST State Code *</label>
                       <button
                         type="button"
-                        onClick={() => onOpenMasterTables('states')}
-                        className="text-[10px] text-blue-600 hover:underline font-bold"
+                        onClick={() => setShowAddStateInline(!showAddStateInline)}
+                        className="text-[10px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-0.5"
                       >
-                        + Master
+                        <Plus className="w-2.5 h-2.5" />
+                        {showAddStateInline ? 'Close Form' : '+ New State'}
                       </button>
+                    </div>
+                    <select
+                      value={newTenant.state_code}
+                      onChange={e => setNewTenant({ ...newTenant, state_code: e.target.value })}
+                      className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                    >
+                      {masterData?.states && masterData.states.length > 0 ? (
+                        masterData.states.map(s => {
+                          const code = s.gst_code || (s as any).code;
+                          const name = s.state_name || (s as any).name;
+                          const short = s.state_short_code || (s as any).zone || 'Region';
+                          return (
+                            <option key={code} value={code}>
+                              {code} - {name} ({short})
+                            </option>
+                          );
+                        })
+                      ) : (
+                        <>
+                          <option value="03">03 - Punjab (North)</option>
+                          <option value="06">06 - Haryana (North)</option>
+                          <option value="07">07 - Delhi (North)</option>
+                          <option value="08">08 - Rajasthan (North)</option>
+                          <option value="02">02 - Himachal Pradesh (North)</option>
+                          <option value="01">01 - Jammu & Kashmir (North)</option>
+                          <option value="09">09 - Uttar Pradesh (North)</option>
+                          <option value="27">27 - Maharashtra (West)</option>
+                        </>
+                      )}
+                    </select>
+
+                    {/* Inline Quick Add State Form */}
+                    {showAddStateInline && (
+                      <div className="mt-2 p-2.5 bg-white border border-blue-200 rounded-lg space-y-2 animate-fadeIn shadow-2xs">
+                        <div className="text-[10px] font-bold text-[#00236f]">Add New GST State Code to Master DB:</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            placeholder="GST Code (e.g. 19)"
+                            value={newStateForm.gst_code}
+                            onChange={e => setNewStateForm({ ...newStateForm, gst_code: e.target.value })}
+                            className="h-7 px-2 text-[11px] border rounded bg-slate-50"
+                          />
+                          <input
+                            type="text"
+                            placeholder="State Name (e.g. West Bengal)"
+                            value={newStateForm.state_name}
+                            onChange={e => setNewStateForm({ ...newStateForm, state_name: e.target.value })}
+                            className="h-7 px-2 text-[11px] border rounded bg-slate-50"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleInlineAddState}
+                          className="w-full py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-[11px] font-bold"
+                        >
+                          Save State & Select
+                        </button>
+                      </div>
                     )}
                   </div>
-                  <select
-                    value={newTenant.state_code}
-                    onChange={e => setNewTenant({ ...newTenant, state_code: e.target.value })}
-                    className="w-full h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:ring-1 focus:ring-[#00236f] focus:outline-none"
-                  >
-                    {masterData?.states && masterData.states.length > 0 ? (
-                      masterData.states.map(s => (
-                        <option key={s.code} value={s.code}>
-                          {s.code} - {s.name} ({s.zone})
-                        </option>
-                      ))
-                    ) : (
-                      <>
-                        <option value="03">03 - Punjab (North)</option>
-                        <option value="06">06 - Haryana (North)</option>
-                        <option value="07">07 - Delhi (North)</option>
-                        <option value="08">08 - Rajasthan (North)</option>
-                        <option value="02">02 - Himachal Pradesh (North)</option>
-                        <option value="01">01 - Jammu & Kashmir (North)</option>
-                        <option value="09">09 - Uttar Pradesh (North)</option>
-                        <option value="27">27 - Maharashtra (West)</option>
-                      </>
-                    )}
-                  </select>
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-bold text-slate-700">Institution Type</label>
-                    {onOpenMasterTables && (
-                      <button
-                        type="button"
-                        onClick={() => onOpenMasterTables('institutions')}
-                        className="text-[10px] text-blue-600 hover:underline font-bold"
-                      >
-                        + Master
-                      </button>
-                    )}
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Institution Type & Regulatory Body</label>
+                    <select
+                      value={newTenant.institution_type_code}
+                      onChange={e => setNewTenant({ ...newTenant, institution_type_code: e.target.value })}
+                      className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                    >
+                      {masterData?.institutionTypes && masterData.institutionTypes.length > 0 ? (
+                        masterData.institutionTypes.map(it => (
+                          <option key={it.code} value={it.code}>
+                            {it.name} ({it.regulatory_authority || (it as any).regulatory_body || 'Statutory'})
+                          </option>
+                        ))
+                      ) : (
+                        <>
+                          <option value="ENG_COLLEGE">Engineering College (AICTE / PTU)</option>
+                          <option value="MED_COLLEGE">Medical & Allied Sciences (NMC)</option>
+                          <option value="PHARMACY_INST">Pharmacy Institute (PCI)</option>
+                          <option value="MGMT_INST">Management Institute (AICTE)</option>
+                          <option value="POLYTECHNIC">Polytechnic / Diploma (PSBTE)</option>
+                          <option value="UNIV_CAMPUS">University Main Campus (UGC)</option>
+                        </>
+                      )}
+                    </select>
                   </div>
-                  <select
-                    value={newTenant.institution_type_code}
-                    onChange={e => setNewTenant({ ...newTenant, institution_type_code: e.target.value })}
-                    className="w-full h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:ring-1 focus:ring-[#00236f] focus:outline-none"
-                  >
-                    {masterData?.institutionTypes && masterData.institutionTypes.length > 0 ? (
-                      masterData.institutionTypes.map(it => (
-                        <option key={it.code} value={it.code}>
-                          {it.name} ({it.regulatory_body})
-                        </option>
-                      ))
-                    ) : (
-                      <>
-                        <option value="ENG_COLLEGE">Engineering College (AICTE / PTU)</option>
-                        <option value="MED_COLLEGE">Medical & Allied Sciences (NMC)</option>
-                        <option value="PHARMACY_INST">Pharmacy Institute (PCI)</option>
-                        <option value="MGMT_INST">Management Institute (AICTE)</option>
-                        <option value="POLYTECHNIC">Polytechnic / Diploma (PSBTE)</option>
-                        <option value="UNIV_CAMPUS">University Main Campus (UGC)</option>
-                      </>
-                    )}
-                  </select>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-3">
+                {/* Master Academic Departments Provisioning */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">City / Location</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Bathinda"
-                    value={newTenant.city}
-                    onChange={e => setNewTenant({ ...newTenant, city: e.target.value })}
-                    className="w-full h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-1 focus:ring-[#00236f] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Subscription Tier</label>
-                  <select
-                    value={newTenant.subscription_tier}
-                    onChange={e => setNewTenant({ ...newTenant, subscription_tier: e.target.value as any })}
-                    className="w-full h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:ring-1 focus:ring-[#00236f] focus:outline-none"
-                  >
-                    <option value="standard">Standard (Single Campus)</option>
-                    <option value="premium">Premium (Multi-Campus)</option>
-                    <option value="enterprise">Enterprise (Unlimited + Forensics)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Subdomain</label>
-                <input
-                  type="text"
-                  placeholder="e.g. gndec.gurudotcom"
-                  value={newTenant.subdomain}
-                  onChange={e => setNewTenant({ ...newTenant, subdomain: e.target.value })}
-                  className="w-full h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono focus:ring-1 focus:ring-[#00236f] focus:outline-none"
-                />
-              </div>
-
-              {/* Master Departments Selector */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-bold text-slate-700">Initial Academic Departments</label>
-                  {onOpenMasterTables && (
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700">Provision Master Departments</label>
+                      <span className="text-[10px] text-slate-500">Toggle departments to be activated for this collegiate instance</span>
+                    </div>
                     <button
                       type="button"
-                      onClick={() => onOpenMasterTables('departments')}
-                      className="text-[10px] text-blue-600 hover:underline font-bold"
+                      onClick={() => setShowAddDeptInline(!showAddDeptInline)}
+                      className="text-[10px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-0.5"
                     >
-                      Configure Master Departments
+                      <Plus className="w-2.5 h-2.5" />
+                      {showAddDeptInline ? 'Close Form' : '+ Add Master Department'}
                     </button>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-1.5 p-2 bg-slate-50 border border-slate-200 rounded-lg">
-                  {(masterData?.departments || [
-                    { code: 'CSE', name: 'Computer Science' },
-                    { code: 'ME', name: 'Mechanical' },
-                    { code: 'CE', name: 'Civil' },
-                    { code: 'ECE', name: 'Electronics' },
-                    { code: 'EE', name: 'Electrical' },
-                    { code: 'MBA', name: 'Business Admin' },
-                  ]).map(dept => {
-                    const isSelected = newTenant.selected_departments?.includes(dept.code);
-                    return (
+                  </div>
+
+                  {showAddDeptInline && (
+                    <div className="mb-2.5 p-2.5 bg-white border border-blue-200 rounded-lg space-y-2 animate-fadeIn shadow-2xs">
+                      <div className="text-[10px] font-bold text-[#00236f]">Add New Master Department into Platform DB:</div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <input
+                          type="text"
+                          placeholder="Dept Code (e.g. AIML)"
+                          value={newDeptForm.dept_code}
+                          onChange={e => setNewDeptForm({ ...newDeptForm, dept_code: e.target.value.toUpperCase() })}
+                          className="h-7 px-2 text-[11px] border rounded bg-slate-50 font-mono"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Dept Name (e.g. AI & Machine Learning)"
+                          value={newDeptForm.dept_name}
+                          onChange={e => setNewDeptForm({ ...newDeptForm, dept_name: e.target.value })}
+                          className="h-7 px-2 text-[11px] border rounded bg-slate-50"
+                        />
+                        <input
+                          type="text"
+                          placeholder="HOD Name (Optional)"
+                          value={newDeptForm.head_of_dept}
+                          onChange={e => setNewDeptForm({ ...newDeptForm, head_of_dept: e.target.value })}
+                          className="h-7 px-2 text-[11px] border rounded bg-slate-50"
+                        />
+                      </div>
                       <button
                         type="button"
-                        key={dept.code}
-                        onClick={() => {
-                          const current = newTenant.selected_departments || [];
-                          const updated = isSelected
-                            ? current.filter(c => c !== dept.code)
-                            : [...current, dept.code];
-                          setNewTenant({ ...newTenant, selected_departments: updated });
-                        }}
-                        className={`px-2 py-1 rounded text-[11px] font-bold transition-all ${
-                          isSelected
-                            ? 'bg-[#00236f] text-white shadow-xs'
-                            : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
-                        }`}
+                        onClick={handleInlineAddDepartment}
+                        className="w-full py-1 bg-[#00236f] hover:bg-[#001b54] text-white rounded text-[11px] font-bold"
                       >
-                        {dept.code}
+                        Create Master Department & Include in College
                       </button>
-                    );
-                  })}
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap gap-1.5 p-2 bg-white border border-slate-200 rounded-lg">
+                    {(masterData?.departments && masterData.departments.length > 0 ? masterData.departments : [
+                      { dept_code: 'CSE', dept_name: 'Computer Science & Engineering' },
+                      { dept_code: 'ME', dept_name: 'Mechanical Engineering' },
+                      { dept_code: 'CE', dept_name: 'Civil Engineering' },
+                      { dept_code: 'ECE', dept_name: 'Electronics & Communication' },
+                      { dept_code: 'EE', dept_name: 'Electrical Engineering' },
+                      { dept_code: 'MBA', dept_name: 'Business Administration' },
+                      { dept_code: 'MCA', dept_name: 'Computer Applications' },
+                      { dept_code: 'PHARM', dept_name: 'Pharmaceutical Sciences' },
+                      { dept_code: 'AGRI', dept_name: 'Agricultural Sciences' },
+                    ]).map(dept => {
+                      const code = dept.dept_code || (dept as any).code;
+                      const name = dept.dept_name || (dept as any).name;
+                      const isSelected = newTenant.selected_departments?.includes(code);
+                      return (
+                        <button
+                          type="button"
+                          key={code}
+                          onClick={() => {
+                            const current = newTenant.selected_departments || [];
+                            const updated = isSelected
+                              ? current.filter(c => c !== code)
+                              : [...current, code];
+                            setNewTenant({ ...newTenant, selected_departments: updated });
+                          }}
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                            isSelected
+                              ? 'bg-[#00236f] text-white shadow-xs'
+                              : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          {isSelected && <Check className="w-3 h-3 text-emerald-400" />}
+                          <span>{code}</span>
+                          <span className="text-[9px] opacity-75 font-normal hidden sm:inline">({name})</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Master Degrees Provisioning */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700">Provision Master Degrees & Ordinances</label>
+                      <span className="text-[10px] text-slate-500">Select academic degree streams offered at this institution</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddDegreeInline(!showAddDegreeInline)}
+                      className="text-[10px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-0.5"
+                    >
+                      <Plus className="w-2.5 h-2.5" />
+                      {showAddDegreeInline ? 'Close Form' : '+ Add Master Degree'}
+                    </button>
+                  </div>
+
+                  {showAddDegreeInline && (
+                    <div className="mb-2.5 p-2.5 bg-white border border-blue-200 rounded-lg space-y-2 animate-fadeIn shadow-2xs">
+                      <div className="text-[10px] font-bold text-[#00236f]">Add New Master Degree to Platform Registry:</div>
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                        <input
+                          type="text"
+                          placeholder="Code (e.g. BCA)"
+                          value={newDegreeForm.degree_code}
+                          onChange={e => setNewDegreeForm({ ...newDegreeForm, degree_code: e.target.value.toUpperCase() })}
+                          className="h-7 px-2 text-[11px] border rounded bg-slate-50 font-mono"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Degree Title (e.g. Bachelor of Computer Apps)"
+                          value={newDegreeForm.degree_name}
+                          onChange={e => setNewDegreeForm({ ...newDegreeForm, degree_name: e.target.value })}
+                          className="h-7 px-2 text-[11px] border rounded bg-slate-50"
+                        />
+                        <select
+                          value={newDegreeForm.total_semesters}
+                          onChange={e => setNewDegreeForm({ ...newDegreeForm, total_semesters: Number(e.target.value) })}
+                          className="h-7 px-2 text-[11px] border rounded bg-slate-50"
+                        >
+                          <option value={4}>4 Semesters (2 Yrs)</option>
+                          <option value={6}>6 Semesters (3 Yrs)</option>
+                          <option value={8}>8 Semesters (4 Yrs)</option>
+                          <option value={10}>10 Semesters (5 Yrs)</option>
+                        </select>
+                        <input
+                          type="text"
+                          placeholder="Body (e.g. UGC / AICTE)"
+                          value={newDegreeForm.statutory_body}
+                          onChange={e => setNewDegreeForm({ ...newDegreeForm, statutory_body: e.target.value })}
+                          className="h-7 px-2 text-[11px] border rounded bg-slate-50"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleInlineAddDegree}
+                        className="w-full py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-bold"
+                      >
+                        Create Master Degree & Include in College
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap gap-1.5 p-2 bg-white border border-slate-200 rounded-lg">
+                    {(masterData?.degrees && masterData.degrees.length > 0 ? masterData.degrees : [
+                      { degree_code: 'BTECH_CSE', degree_name: 'B.Tech (CSE)', total_semesters: 8 },
+                      { degree_code: 'BTECH_ME', degree_name: 'B.Tech (ME)', total_semesters: 8 },
+                      { degree_code: 'MTECH_CSE', degree_name: 'M.Tech (CSE)', total_semesters: 4 },
+                      { degree_code: 'MBA', degree_name: 'Master of Business Administration', total_semesters: 4 },
+                      { degree_code: 'BCA', degree_name: 'Bachelor of Computer Applications', total_semesters: 6 },
+                      { degree_code: 'MCA', degree_name: 'Master of Computer Applications', total_semesters: 4 },
+                      { degree_code: 'BSC_PHY', degree_name: 'B.Sc (Physics)', total_semesters: 6 },
+                      { degree_code: 'BCA-AI', degree_name: 'BCA (AI & Cloud)', total_semesters: 6 },
+                    ]).map(deg => {
+                      const code = deg.degree_code || (deg as any).code;
+                      const name = deg.degree_name || (deg as any).name;
+                      const sems = deg.total_semesters || (deg as any).sems || 8;
+                      const isSelected = newTenant.selected_degrees?.includes(code);
+                      return (
+                        <button
+                          type="button"
+                          key={code}
+                          onClick={() => {
+                            const current = newTenant.selected_degrees || [];
+                            const updated = isSelected
+                              ? current.filter(c => c !== code)
+                              : [...current, code];
+                            setNewTenant({ ...newTenant, selected_degrees: updated });
+                          }}
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                            isSelected
+                              ? 'bg-emerald-700 text-white shadow-xs'
+                              : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          {isSelected && <Check className="w-3 h-3 text-emerald-200" />}
+                          <span>{code}</span>
+                          <span className="text-[9px] opacity-75 font-normal hidden sm:inline">({sems} Sems)</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Contact Person</label>
-                  <input
-                    type="text"
-                    placeholder="Dr. Harpreet Singh"
-                    value={newTenant.contact_person}
-                    onChange={e => setNewTenant({ ...newTenant, contact_person: e.target.value })}
-                    className="w-full h-9 px-3 bg-slate-50 border rounded-lg text-xs focus:ring-1 focus:ring-[#00236f] focus:outline-none"
-                  />
+              {/* SECTION 3: Administrative Access & Security */}
+              <div className="bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 space-y-3">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+                  <span className="w-5 h-5 rounded-full bg-[#00236f] text-white flex items-center justify-center text-[10px]">3</span>
+                  Institutional Leadership & Admin Credentials
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Phone</label>
-                  <input
-                    type="text"
-                    placeholder="+91 98765 43210"
-                    value={newTenant.contact_phone}
-                    onChange={e => setNewTenant({ ...newTenant, contact_phone: e.target.value })}
-                    className="w-full h-9 px-3 bg-slate-50 border rounded-lg text-xs focus:ring-1 focus:ring-[#00236f] focus:outline-none"
-                  />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Principal / Registrar Full Name</label>
+                    <input
+                      type="text"
+                      placeholder="Dr. Harpreet Singh"
+                      value={newTenant.contact_person}
+                      onChange={e => setNewTenant({ ...newTenant, contact_person: e.target.value })}
+                      className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Contact Phone</label>
+                    <input
+                      type="text"
+                      placeholder="+91 98765 43210"
+                      value={newTenant.contact_phone}
+                      onChange={e => setNewTenant({ ...newTenant, contact_phone: e.target.value })}
+                      className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Admin Username</label>
+                    <input
+                      type="text"
+                      placeholder={`admin_${newTenant.short_code ? newTenant.short_code.toLowerCase() : 'gndec'}`}
+                      value={newTenant.admin_username}
+                      onChange={e => setNewTenant({ ...newTenant, admin_username: e.target.value })}
+                      className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-mono focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Admin Official Email *</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder={`admin@${newTenant.short_code ? newTenant.short_code.toLowerCase() : 'gndec'}.edu`}
+                      value={newTenant.admin_email}
+                      onChange={e => setNewTenant({ ...newTenant, admin_email: e.target.value })}
+                      className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-mono focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Initial Password</label>
+                    <input
+                      type="text"
+                      value={newTenant.admin_password}
+                      onChange={e => setNewTenant({ ...newTenant, admin_password: e.target.value })}
+                      className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-mono focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="pt-3 border-t flex justify-end gap-2">
+              {/* SECTION 4: Database Infrastructure */}
+              <div className="p-3 bg-indigo-50/50 border border-indigo-200/80 rounded-xl flex items-center justify-between text-xs">
+                <div>
+                  <span className="font-bold text-[#00236f] block">Database Engine & Isolation:</span>
+                  <span className="text-[11px] text-slate-600">
+                    Allocating schema <strong className="font-mono text-indigo-900">db_{newTenant.short_code ? newTenant.short_code.toLowerCase() : 'new'}</strong> on PostgreSQL 18.6 Multi-Tenant Cluster with immutable audit stream.
+                  </span>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    Isolated DB
+                  </span>
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="pt-2 border-t flex items-center justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold"
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-[#00236f] hover:bg-[#001b54] text-white rounded-lg text-xs font-bold flex items-center gap-1.5"
+                  className="px-5 py-2.5 bg-[#00236f] hover:bg-[#001b54] text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Provisioning...' : 'Provision Institution & Database'}
+                  <Building2 className="w-4 h-4" />
+                  {isSubmitting ? 'Provisioning Database & Master Tables...' : 'Provision Institution & Database Engine'}
                 </button>
               </div>
             </form>

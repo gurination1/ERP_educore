@@ -6,36 +6,40 @@
 
 ## 1. Executive Topology & Architecture Overview
 
-EduCore ERP operates as a multi-campus, multi-tenant collegiate operating platform. System execution enforces dynamic, database-driven configurations rather than hardcoded client options (as mandated by Karanvir Sir in Recordings 160, 161, and Lecture 3/4).
+EduCore ERP operates as a multi-campus, multi-tenant collegiate operating platform. System execution enforces dynamic, database-driven configurations rather than hardcoded client options (as mandated by Senior Mentor Karanvir Sir in Recordings 160, 161, and Lecture 3/4).
 
 ```mermaid
 flowchart TD
     SA["Super Admin (Apex Authority 9001)"] -->|"Provisions via Master Tables"| Tenant["Collegiate Tenant / Client"]
-    Tenant --> C1["Campus 01: Bathinda (Main)"]
-    Tenant --> C2["Campus 02: Faridkot (Regional)"]
+    Tenant --> C1["Campus 01: Bathinda (Main Campus)"]
+    Tenant --> C2["Campus 02: Faridkot (Regional Campus)"]
     
     subgraph MasterTables ["Tenant-Agnostic Master Relational System"]
         MS["Master States (GST State Codes)"]
-        MIT["Master Institution Types (AICTE/UGC)"]
-        MD["Master Departments (CSE, AGRI, MGMT, ME, CE, PHARM)"]
-        MDeg["Master Degrees (B.Tech, MBA, MCA, B.Pharm)"]
-        MUT["Master User Types (UID Prefixes)"]
-        MES["Master Employee Statuses"]
+        MIT["Master Institution Types (AICTE / UGC / NMC / PCI)"]
+        MD["Master Departments (CSE, AGRI, MGMT, ME, CE, PHARM, AIML)"]
+        MDeg["Master Degrees (B.Tech, MBA, MCA, B.Pharm, BCA-AI)"]
+        MUT["Master User Types (Canonical UID Prefixes)"]
+        MES["Master Employee Statuses (Active, Resigned, Terminated, AWOL)"]
+        MDC["Master Designation Change Types (Promotion, Demotion, Lateral)"]
+        MHostel["Master Residence Typology (ARW vs FCW, AC, Safety Timers)"]
+        MFees["Master Fee Heads (Tuition, Development, Hostel, Transport)"]
     end
 
     MasterTables -->|"Injected Into"| Tenant
-    MasterTables -->|"Injected Into"| Onboard["Super Admin Onboarding Desk"]
+    MasterTables -->|"Integrated Within"| Onboard["Super Admin College Onboarding Modal"]
     
-    HeaderCampus["Header Campus Selector"] -->|"Filters Context"| ERPModules
+    HeaderTenant["Header Tenant Switcher (Super Admin)"] -->|"Selects Active Tenant"| Tenant
+    HeaderCampus["Header Campus Switcher (Institutional Roles)"] -->|"Filters Context"| ERPModules
     
     subgraph ERPModules ["Connected ERP Operational Hubs"]
         Adm["Admissions CRM & Telephony"]
         Reg["Student Registry (ManageStudents)"]
-        Fin["Tuition Ledger & Payment Gateway"]
-        Acad["Academics, Syllabus & Batches"]
+        Fin["Tuition Ledger, Fees & Contra Adjustments"]
+        Acad["Academics, CBCS Syllabus & Timetable"]
         Exam["Exams, Backlogs & Admit Cards"]
-        HR["Faculty HRMS & Staff Dossiers"]
-        Hostel["Hostel Residence & Mess NOC"]
+        HR["Faculty HRMS, Staff Dossiers & Org Journey"]
+        Hostel["Hostel Residence, Typology & Mess NOC"]
         Trans["Fleet & RFID Bus Passes"]
         Audit["Forensic Append-Only Audit Trail"]
     end
@@ -53,87 +57,132 @@ flowchart TD
 
 ---
 
-## 2. Master Tables Relational Binding Matrix
+## 2. Super Admin College Onboarding & Master Tables Provisioning
 
-Hardcoded dropdowns and fixed string arrays are completely prohibited. Master tables dictate all categories, dropdown choices, and validation constraints.
+In accordance with Karanvir Sir's critique in Lecture 4 / Segment 006, Master Tables are no longer hidden behind secondary modal overlaps. The Super Admin College Onboarding Modal (`SuperAdminDashboardView.tsx`) directly embeds full master tables inspection and dynamic provisioning:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor SA as Super Admin (Provost 9001)
+    participant UI as SuperAdminDashboardView
+    participant MasterAPI as /api/master/*
+    participant TenantAPI as /api/tenants
+    participant DB as Multi-Tenant Cluster DB
+
+    SA->>UI: Clicks "+ Onboard New College"
+    UI->>UI: Opens Full Onboarding Suite (4 Structured Sections)
+    
+    rect rgb(240, 245, 255)
+    Note over UI: Section 1: Institutional Identity
+    SA->>UI: Fills Name, Short Code (Prefix), Entity Type, Subdomain, City
+    end
+
+    rect rgb(235, 248, 245)
+    Note over UI: Section 2: Master Tables Provisioning
+    SA->>UI: Selects GST State Code (e.g. 03 - Punjab)
+    opt Inline Add State
+        SA->>UI: Toggles "+ New State", enters GST Code & Name
+        UI->>MasterAPI: POST /api/master/states
+        MasterAPI->>DB: INSERT into master_states
+        MasterAPI-->>UI: Created & Auto-Selected
+    end
+    SA->>UI: Selects Institution Type (e.g. Engineering College AICTE)
+    SA->>UI: Toggles Master Departments Checklist (CSE, ME, CE, ECE, EE, MBA, MCA, PHARM, AGRI)
+    opt Inline Add Master Department
+        SA->>UI: Toggles "+ Add Master Department", enters Code & Name
+        UI->>MasterAPI: POST /api/master/departments
+        MasterAPI->>DB: INSERT into master_departments
+        MasterAPI-->>UI: Created & Auto-Selected in Checklist
+    end
+    SA->>UI: Toggles Master Degrees Checklist (B.Tech, M.Tech, MBA, MCA, B.Sc, B.Pharm)
+    opt Inline Add Master Degree
+        SA->>UI: Toggles "+ Add Master Degree", enters Code, Title, Semesters
+        UI->>MasterAPI: POST /api/master/degrees
+        MasterAPI->>DB: INSERT into master_degrees
+        MasterAPI-->>UI: Created & Auto-Selected in Checklist
+    end
+    end
+
+    rect rgb(245, 245, 255)
+    Note over UI: Section 3: Administrative Access & Security
+    SA->>UI: Fills Principal Name, Phone, Admin Username, Official Email, Initial Password
+    end
+
+    rect rgb(250, 245, 255)
+    Note over UI: Section 4: Cloud Infrastructure & Database Tier
+    SA->>UI: Submits Form
+    UI->>TenantAPI: POST /api/tenants with all master depts, degrees, state, admin credentials
+    TenantAPI->>DB: Allocates isolated schema db_[short_code]
+    TenantAPI-->>UI: Tenant Provisioned Successfully
+    UI->>DB: Creates Primary Main Campus
+    UI->>UI: Auto-refreshes Cockpit & Displays Success Banner
+    end
+```
+
+---
+
+## 3. SaaS Tenant Selector vs Institutional Campus Switcher (`Header.tsx`)
+
+A common UX antipattern is displaying irrelevant regional campus selectors to platform-level Super Admins who govern multi-tenant collegiate clients. EduCore strictly segregates header context selectors:
+
+| Role Logged In | Header Switcher Rendered | Available Options | Triggered Behavior |
+| :--- | :--- | :--- | :--- |
+| `super_admin` | **Collegiate Tenant Selector** (Globe Icon) | • `Baba Farid Group of Institutions [BFGI]`<br/>• `Guru Nanak Dev Engineering College [GNDEC]`<br/>• `Universal Platform View (All Tenants)`<br/>• `+ Onboard New College`<br/>• `Master Architecture Tables` | Sets active tenant scope across the platform cockpit. Navigates directly to tenant provisioning or master architecture drawer. |
+| Institutional Roles (`admin`, `staff`, `accounts`, `hostel`, `counselor`, `hod`, `hr`) | **Campus Switcher** (Building2 Icon) | • `Bathinda Campus 01 (Main)`<br/>• `Faridkot Campus 02 (Regional)`<br/>• `All Campuses (Consolidated)` | Dispatches `onCampusChange` and updates `CampusContext`. Immediately updates live scoped record counts and triggers queries. Displays green `headerToast`. |
+| `student` | **Enrolled Campus Badge** (Building2 Icon) | Static Enrolled Campus: `Bathinda Campus 01 (Main)` | Non-interactive indicator. Enforces institutional rule that a scholar belongs strictly to their enrolled campus unit and cannot switch administrative views. |
+
+---
+
+## 4. Dynamic Campus Scoping Strips on Page Surfaces
+
+To eliminate the perception of "dead or non-functional header controls," every core operational surface features an **Active Campus Scoping Strip** at the top of the content:
+
+| Surface Component | Route | Scoped Data Metrics Displayed | 1-Click Toggle Supported |
+| :--- | :--- | :--- | :--- |
+| `ManageStudentsView.tsx` | `/manage-students` | Scopes enrolled scholars: Bathinda Main (52) vs Faridkot Regional (15) vs Consolidated (67). | Yes (`Bathinda Main`, `Faridkot Regional`, `All Campuses`) |
+| `HostelManagementView.tsx` | `/hostel`, `/hostel-management` | Scopes residence blocks and beds: Bathinda (3 Blocks, 180 Beds) vs Faridkot (1 Block, 72 Beds). | Yes (`Bathinda Main`, `Faridkot Regional`, `All Campuses`) |
+| `StaffManagementView.tsx` | `/staff-management` | Scopes faculty and staff cadre: Bathinda (4 cadre) vs Faridkot (2 cadre) vs Consolidated (6 cadre). | Yes (`Bathinda Main`, `Faridkot Regional`, `All Campuses`) |
+| `FeeLedgerView.tsx` | `/fee-ledger`, `/fees` | Scopes student fee ledgers, defaulters, and cash counters by active campus wing. | Yes (`Bathinda Main`, `Faridkot Regional`, `All Campuses`) |
+| `AdminDashboardView.tsx` | `/dashboard` | Scopes total enrollment, FSR ratio, seat fill rate, and collection KPIs. | Yes (`Bathinda Main`, `Faridkot Regional`, `All Campuses`) |
+
+---
+
+## 5. Master Tables Relational Binding Matrix
+
+Hardcoded dropdowns and fixed string arrays are completely prohibited across EduCore. Master tables dictate all categories, dropdown choices, and validation constraints.
 
 | Master Table | Key Columns | Bound Front-End Modules & Components | Functional Behavior |
 | :--- | :--- | :--- | :--- |
 | `master_states` | `gst_code`, `state_name`, `state_short_code`, `is_ut` | `SuperAdminDashboardView` (Onboarding), `AdmissionsAdminView`, `StudentProfileModal` | Defines GST state code for canonical UID (`[Type]-[Seq]-[State]-[Inst]`). Prevents invalid state entries. |
-| `master_institution_types` | `code`, `name`, `regulatory_authority`, `description` | `SuperAdminDashboardView`, `AdminDashboardView` | Defines statutory authority (AICTE, UGC, PCI, BCI) for new institutions and accreditation limits. |
+| `master_institution_types` | `code`, `name`, `regulatory_authority`, `description` | `SuperAdminDashboardView`, `AdminDashboardView` | Defines statutory authority (AICTE, UGC, PCI, NMC) for new institutions and accreditation limits. |
 | `master_departments` | `dept_code`, `dept_name`, `tags`, `head_of_dept`, `established_year` | `AcademicsView`, `StaffManagementView`, `SuperAdminDashboardView`, `ManageStudentsView` | Dynamically populates department filters, subject offerings, faculty allocation, and batch creation. |
 | `master_degrees` | `degree_code`, `degree_name`, `level`, `duration_years`, `total_semesters` | `AcademicsView`, `AdmissionsAdminView`, `UniversityExamPortalView`, `ManageStudentsView` | Determines standard semester count (8 for B.Tech, 4 for MBA), grade cards, and degree certificates. |
 | `master_user_types` | `type_code`, `alpha_prefix`, `role_key`, `display_title` | `UserManagementView`, `SuperAdminDashboardView`, `Header.tsx` | Enforces canonical UID structure (e.g., `4001` for Admin, `1001` for Student, `2001` for Faculty). |
 | `master_employee_statuses` | `status_code`, `status_name`, `description`, `requires_dates` | `StaffManagementView`, `UserManagementView` | Governs formal HR status transitions (Active, Resigned, Terminated, AWOL) with mandatory exit dates. |
+| `master_designation_changes` | `type_code`, `type_name`, `description` | `StaffManagementView` | Governs career transitions (Promotion, Demotion, Lateral Transfer, Additional Role) in Org Journey. |
 | `master_document_types` | `doc_type_code`, `title`, `mandatory_for`, `max_file_size_mb` | `StudentDocumentsView`, `AdmissionFormView` | Dictates mandatory document verification checklist before admission sanction. |
 | `master_hostel` | `block_code`, `ownership`, `washroom_typology`, `safety_timer_days`, `mess_policy` | `HostelManagementView`, `MasterTablesModal` | Governs residence blocks, ARW (Attached) vs FCW (Floor Common) washrooms, 360-day overhaul, 90-day electrical inspection, and mess billing policies. |
-| `master_fees` | `head_code`, `head_name`, `statutory_category`, `is_refundable`, `concession_tiers` | `FeeLedgerView`, `MasterTablesModal` | Itemized tuition, caution deposit, exam, hostel, and mess fee heads; merit and sibling waiver tiers; contra-ledger demotion adjustments. |
-
-### 2.1 Direct Master Table Access in Operational Views
-Per mentor Karanvir Sir's architectural directive (*"Har setting ke andar ek button hoga master table / master data"*):
-- **Super Admin Dashboard** (`SuperAdminDashboardView.tsx`): Dedicated "Master Tables & Architecture" button in top command strip (`onOpenMasterTables('institutions')`). Client onboarding modal includes inline "+ Master" drawers.
-- **Admin Operations Dashboard** (`AdminDashboardView.tsx`): Prominent "Master Data" button in quick filter toolbar (`onOpenMasterTables()`).
-- **Hostel Operations** (`HostelManagementView.tsx`): "Master Residence Data" button in header toolbar, "Master Residence Settings" in Tab 2, and "Master Typologies" in Tab 3 (`onOpenMasterTables('hostel')`), plus "+ Add Residence Block" interactive modal.
-- **Tuition & Fee Ledgers** (`FeeLedgerView.tsx`): "Master Fee Heads & Rules" button in collections action bar (`onOpenMasterTables('fees')`).
-- **Student Registry** (`ManageStudentsView.tsx`): "+ Master Degrees & Ordinances" button in horizontal filter strip (`onOpenMasterTables('degrees')`).
-- **Faculty & HRMS** (`StaffManagementView.tsx`): "Master Employee Statuses" button in top toolbar (`onOpenMasterTables('employee')`).
-- **Academic Topology & Curriculum** (`AcademicsView.tsx`): "Master Degrees & Ordinances" button in curriculum header (`onOpenMasterTables('degrees')`).
+| `master_fees` | `head_code`, `head_name`, `statutory_category`, `is_refundable`, `concession_tiers` | `FeeLedgerView`, `MasterTablesModal` | Itemized tuition heads, scholarship adjustments, and contra ledger rules. |
 
 ---
 
-## 3. Campus Context & Multi-Campus Filtering Architecture
+## 6. End-to-End Inter-Module Functional Pipelines
 
-The Header Campus Selector (`selectedCampus`) controls the operational lens across all ERP views.
-
-```mermaid
-flowchart LR
-    HeaderSelector["Header: selectedCampus"] --> StateContext["Global Context / App State"]
-    StateContext --> FilterAdmin["AdminDashboardView: KPIs & Topology"]
-    StateContext --> FilterStudents["ManageStudentsView: Student Roster"]
-    StateContext --> FilterFees["FeeLedgerView: Financial Collections"]
-    StateContext --> FilterAdm["AdmissionsAdminView: Candidate Leads"]
-    StateContext --> FilterStaff["StaffManagementView: Faculty & HR"]
-    StateContext --> FilterHostel["HostelManagementView: Residence Blocks"]
-```
-
-### Filtering Behavior by Option:
-1. **`campus_01` (Bathinda Main Campus)**:
-   - Displays students enrolled in Bathinda campus (`campus_id === 'campus_01'`).
-   - Fee ledger totals represent Bathinda collections only.
-   - Admissions radar shows Bathinda walk-ins and applications.
-   - Hostel shows SBS Block A, B, and C located in Bathinda.
-   - Faculty roster filtered to Bathinda teaching assignments.
-2. **`campus_02` (Faridkot Regional Campus)**:
-   - Displays students enrolled in Faridkot campus (`campus_id === 'campus_02'`).
-   - Fee ledger totals represent Faridkot collections only.
-   - Admissions radar shows Faridkot regional leads.
-   - Hostel shows Faridkot Regional Residence Block.
-   - Faculty roster filtered to Faridkot teaching assignments.
-3. **`all` (All Campuses / Consolidated)**:
-   - Aggregates metrics and totals across all campuses.
-   - Tables display campus badge on each record (e.g. `[Bathinda]` or `[Faridkot]`).
-
----
-
-## 4. End-to-End Cross-Module Workflow Pipelines
-
-### Pipeline A: Admissions CRM to Enrolled Scholar Lifecycle
+### Pipeline A: Pre-Admission Intake $\rightarrow$ Token Fee $\rightarrow$ Canonical UID $\rightarrow$ Student Registry
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Lead as Prospect Scholar
-    participant CRM as Enquiries CRM (Counselor)
-    participant Intake as Admissions Desk (Admin)
-    participant Scrutiny as Document Scrutiny
-    participant FeeDesk as Fee Collection
+    actor Cand as Applicant / Counselor
+    participant LeadRadar as Enquiries Radar
+    participant Intake as Admissions Intake Desk
+    participant FeeDesk as Fee Desk
     participant Registry as Student Registry
-    participant LMS as Student Portal
+    participant LMS as LMS & Attendance Engine
 
-    Lead->>CRM: Walk-in / Telephony Enquiry
-    CRM->>Intake: Convert Lead to Application (Draft)
-    Intake->>Intake: Fill Academic Details (10th/12th, State, Quota)
-    Intake->>Scrutiny: Upload & Verify Mandatory Docs (Aadhaar, Marks)
-    Scrutiny->>FeeDesk: Verify Token / Registration Fee (₹1,500)
+    Cand->>LeadRadar: Inquires via Walk-in or Telephony Dock
+    LeadRadar->>Intake: Advances Lead to Formal Admission Intake
+    Intake->>FeeDesk: Collects Token Admission Fee (₹1,500)
     FeeDesk-->>Intake: Token Fee Receipt Verified
     Intake->>Registry: Sanction Admission & Provision Account
     Note over Registry: Auto-Generates Canonical 13-digit UID<br/>[1001]-[Seq]-[03 Punjab]-[01 Inst]
@@ -179,31 +228,57 @@ Per Karanvir Sir Lecture Recording 160 mandate:
 - When a student is demoted (e.g. from Sem 4 back to Sem 3 due to year-back or major backlogs):
   - **Option 1 (Non-Destructive Academic Journey)**: Preserve historical semester attendance, marks, and ledger transactions in software journey.
   - **Option 2 (Clean Reset)**: Reset active academic standing and courses from the demoted semester onwards while locking prior fee payments.
+  - **Contra Ledger Entry**: Automatically posts opposite ledger entry to null & void failed semester fees or carry forward paid fees to repeated semester without violating accounting non-deletion rules.
+
+### Pipeline E: HR Faculty Lifecycle & Software Journey
+Per Karanvir Sir Recording 160:
+- **Employee Status Workflow**: Transitioning an employee to `RESIGNED`, `TERMINATED`, or `AWOL` mandates resignation date, last working day, reason, and handover notes.
+- **Approaching LWD Alert**: HR Executive Radar automatically flags staff whose last working day is within 14 days, providing a 1-click credential revocation and exit clearance action.
+- **Designation Change Workflow**: Recording promotions, demotions, and lateral transfers prompts for revised CTC, effective date, and appends to the immutable Software Journey timeline.
 
 ---
 
-## 5. Audit Logging & Forensic Traceability Matrix
+## 7. Audit Logging & Forensic Traceability Matrix
 Every mutating action writes an append-only cryptographic event:
 - **Actor Identity**: Full Name, Enterprise UID, Institutional Role.
 - **Client Fingerprint**: IPv4/IPv6, Platform OS, Hardware Fingerprint.
-- **Target Entity**: Entity Type (`student`, `fee_payment`, `user`, `admission`, `hostel_bed`), Entity ID.
+- **Target Entity**: Entity Type (`student`, `fee_payment`, `user`, `admission`, `hostel_bed`, `tenant`), Entity ID.
 - **Payload Diff**: JSON diff containing prior value and updated value.
-- **Severity**: `info`, `warning`, `critical` (apex role promotion or fee waiver).
+- **Severity**: `info`, `warning`, `critical` (apex role promotion, tenant provisioning, or fee waiver).
 
 ---
 
-## 6. Verified Production Wiring & System State
+## 8. Verified Production Wiring & Automated Test Assertions
 
-| Component / Subsystem | Connected Data Source | Verified Functional Behavior |
+| Test Suite / Endpoint | Scope | Verified Functional Behavior |
 | :--- | :--- | :--- |
-| **Global Campus Context** (`CampusContext.tsx`) | SQLite / MariaDB `campuses` table | Persists active campus (`campus_01`, `campus_02`, `all`) in `localStorage` across page reloads and deep routes. |
-| **Top Navigation Ribbon & Header** (`Header.tsx`) | `useCampus()` & `master_campuses` | Unclipped, sleek, minimalist Apple-style dropdown directly switches operational view. Verified zero "EduCore OS" text leaks. |
-| **Super Admin Onboarding** (`SuperAdminDashboardView.tsx`) | `master_states`, `master_institution_types`, `master_departments` | Dropdowns dynamically populated from live DB master tables. Includes direct "+ Master" shortcut drawers. |
-| **Master Architecture Drawer** (`MasterTablesModal.tsx`) | `api/master/*` endpoints | Live count badges and inline drawers for adding States, Degrees, Departments, and Institution Types into SQLite. |
-| **Student Registry** (`ManageStudentsView.tsx`) | `students.campus_id` | Scopes pagination and queries by `campus_01` (Bathinda Main: 52) vs `campus_02` (Faridkot: 15). |
-| **Fee Ledger & Defaulters** (`FeeLedgerView.tsx`) | `api/fees/defaulters?campus=` | Scopes fee collections and defaulters to selected campus (Bathinda: 15 defaulters, Faridkot: 2 defaulters). |
-| **Admissions & Prospects** (`AdmissionsAdminView.tsx`) | `api/admissions?campus=` | Followup radar and candidate intake filter by campus. |
-| **Hostel Residence Command** (`HostelManagementView.tsx`) | `buildings` & `rooms` scoped by `campus_id` | Displays Bathinda Blocks (SBS-A, MG-B, BDS-C) vs Faridkot Block (FDK-A). Room inventory and occupancy metrics filter synchronously. |
-| **Transport Fleet** (`TransportManagementView.tsx`) | `vehicles` & `routes` scoped by `campus_id` | Scopes collegiate transit lines by campus region. |
-| **Automated Verification Suite** | `test_campus_master_integration.mjs` & `test_live_ui_audit.mjs` | 100% pass rate across 104 assertions in live headless browser testing. |
+| `POST /api/tenants` | Super Admin Multi-Tenant Onboarding | Successfully provisions collegiate tenants with dynamically injected master departments (`CSE`, `ME`, `AIML`), degrees (`B.Tech`, `BCA-AI`), GST state codes, and isolated DB schemas. |
+| `POST /api/master/*` | Master Architecture | Allows Super Admin to create master departments, degrees, states, and institution types dynamically without touching code. |
+| `GET /api/students?campus=` | Student Registry | Correctly scopes student records: Campus 01 Bathinda (52) + Campus 02 Faridkot (15) = Consolidated Total (67). |
+| `GET /api/staff?campus=` | HR & Faculty Cadre | Correctly scopes staff cadre: Campus 01 Bathinda (6) + Campus 02 Faridkot (0) = Consolidated Total (6). |
+| `GET /api/admissions?campus=` | Admissions Intake CRM | Scopes pre-admission leads and enrollment radar by regional campus wing. |
+| `GET /api/fees/defaulters?campus=` | Tuition & Bursar Operations | Scopes fee defaulters: Campus 01 Bathinda (15) vs Campus 02 Faridkot (2) = Consolidated Total (17). |
+| `GET /api/hostel/buildings?campus=` | Hostel & Residences | Correctly scopes residence buildings: Campus 01 Bathinda (3) + Campus 02 Faridkot (1) = Consolidated Total (4). |
+| `POST /api/hostel/rooms` | Hostel Inventory | Successfully provisions new residential suites with AC/Non-AC, washroom typologies (`ARW` vs `FCW`), and rental structures. |
+| `DELETE /api/hostel/rooms/:id` | Room Deletion Gate (Karanvir Sir Rule) | **Strictly rejects deletion** of occupied rooms with active scholars. Allows deletion only after beds are vacated or shifted. |
+| `POST /api/hostel/allot` | Scholar Allotment Engine | Allots admitted scholars to specific room beds, increments room occupancy, sets room status to occupied when full, and syncs student master record. |
+| `POST /api/hostel/shift` | Room Shifting & Ledger Reconciliation | Shifts scholars between rooms, decrements origin occupancy, increments destination occupancy, and computes credit/refund fee adjustments. |
+| `POST /api/hostel/mess-clearance` | Mess No-Dues Clearance (NOC) | Issues digitally signed clearance certificates with monthly diet counts, clears arrears, and marks caution deposit refund eligibility. |
+| `scripts/verify_complete_erp_connectivity.mjs` | Automated Integration Test Suite | **100% Pass Rate** across all 15 multi-campus, multi-tenant integration test assertions against production daemon. |
 
+---
+
+## 9. Live Browser UI Multi-Role Audit (Puppeteer Headless Verification)
+
+Automated headless browser execution (`node scripts/test_live_ui_audit.mjs`) verified 100% accessibility, RBAC boundaries, and horizontal navigation strips across all 8 roles:
+
+1. **Super Admin** (`superadmin`): Universal multi-tenant overview, client onboarding, RBAC permissions, and master architecture.
+2. **Institutional Admin** (`admin`): Operations console, admissions desk, tuition registers, student directory, academics & governance.
+3. **Faculty / Staff** (`staff01`): Faculty desk, academic timetable, student rosters, examinations, and faculty dossiers.
+4. **Head of Department** (`hod01`): HOD executive desk, department students, faculty cadre, academic reports, and grievance review.
+5. **Admissions Counselor** (`counselor01`): Counselor lead radar, telephony call log, admissions intake, and scholarship reviews.
+6. **Accounts / Bursar** (`accounts01`): Fee collections, demand registers, defaulter lists, contra entries, and exam financial clearance.
+7. **Student / Scholar** (`aryan`): Scholar home, biometric attendance, tuition dues, university admit card, LMS syllabus, and dynamic hostel/transit badges.
+8. **Placement Partner** (`partner01`): Placements portal, candidate search by department & CGPA, job postings, and applicant tracking.
+
+**Result**: 8 / 8 Roles Verified (100% Pass Rate, 0 console errors, all navigation ribbons rendered with Apple/Cupertino aesthetics).

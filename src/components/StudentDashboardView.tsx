@@ -326,14 +326,22 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
               className="w-full p-2 bg-amber-50/60 hover:bg-amber-100/70 border border-amber-200/70 rounded-lg text-left flex justify-between items-center text-amber-900 transition cursor-pointer"
             >
               <span className="font-semibold text-[11px]">Hostel Room & Mess NOC</span>
-              <span className="text-amber-700 font-medium text-[10px]">Room 102 • Cleared &rarr;</span>
+              <span className="text-amber-700 font-medium text-[10px]">
+                {student?.is_hosteller
+                  ? `Room ${student.hostel_room_no || '101'} • Cleared →`
+                  : 'Day Scholar (Apply Room) →'}
+              </span>
             </button>
             <button
               onClick={() => onNavigate('transport')}
               className="w-full p-2 bg-sky-50/60 hover:bg-sky-100/70 border border-sky-200/70 rounded-lg text-left flex justify-between items-center text-sky-900 transition cursor-pointer"
             >
               <span className="font-semibold text-[11px]">Digital RFID Bus Pass</span>
-              <span className="text-sky-700 font-medium text-[10px]">Route 1 (Seat 14) &rarr;</span>
+              <span className="text-sky-700 font-medium text-[10px]">
+                {student?.is_transport_user
+                  ? `${student.transport_route || 'Route 1'} • Active →`
+                  : 'Hosteller / Self Transport →'}
+              </span>
             </button>
           </div>
         </div>

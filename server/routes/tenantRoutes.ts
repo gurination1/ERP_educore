@@ -37,16 +37,22 @@ tenantRouter.get('/', authenticateToken, requireRole('super_admin', 'admin'), as
 
 // 2. Provision new Tenant / Client (Super Admin only)
 const createTenantSchema = z.object({
-  client_id: z.string().min(2),
+  client_id: z.string().optional(),
   short_code: z.string().min(2),
   client_name: z.string().min(3),
-  subdomain: z.string().min(2),
+  subdomain: z.string().optional(),
   entity_type: z.enum(['school', 'college', 'department', 'university']).default('college'),
-  admin_username: z.string().min(3),
+  admin_username: z.string().optional(),
   admin_email: z.string().email(),
+  admin_password: z.string().optional(),
   contact_person: z.string().optional(),
   contact_phone: z.string().optional(),
   subscription_tier: z.enum(['standard', 'premium', 'enterprise']).default('enterprise'),
+  state_code: z.string().optional(),
+  institution_type_code: z.string().optional(),
+  city: z.string().optional(),
+  selected_departments: z.array(z.string()).optional(),
+  selected_degrees: z.array(z.string()).optional(),
 });
 
 tenantRouter.post('/', authenticateToken, requireRole('super_admin'), async (req: AuthRequest, res: Response): Promise<void> => {

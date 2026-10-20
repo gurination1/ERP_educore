@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { User, ActiveScreen } from '../types';
 import { useCampus } from '../context/CampusContext';
-import { Shield, Building2, ChevronDown, Check, User as UserIcon, KeyRound, LogOut } from 'lucide-react';
+import { Shield, Building2, ChevronDown, Check, User as UserIcon, KeyRound, LogOut, Globe } from 'lucide-react';
 
 interface HeaderProps {
   currentUser: User | null;
@@ -88,11 +88,23 @@ export const Header: React.FC<HeaderProps> = ({
     };
   }, [isCampusMenuOpen]);
 
+  const [selectedTenantName, setSelectedTenantName] = useState<string>('BFGI Group of Institutions');
+
+  const handleTenantSelect = (tenantName: string) => {
+    setSelectedTenantName(tenantName);
+    setIsCampusMenuOpen(false);
+    setHeaderToast(`Active SaaS Tenant: ${tenantName}`);
+    setTimeout(() => setHeaderToast(null), 3000);
+  };
+
   const handleCampusSelect = (c: 'campus_01' | 'campus_02' | 'all') => {
     setInternalSelectedCampus(c);
     ctxSetCampus(c);
     onCampusChange?.(c);
     setIsCampusMenuOpen(false);
+    const label = c === 'campus_01' ? 'Bathinda Campus 01 (Main)' : c === 'campus_02' ? 'Faridkot Campus 02 (Regional)' : 'All Campuses (Consolidated)';
+    setHeaderToast(`Active Campus Scope: ${label}`);
+    setTimeout(() => setHeaderToast(null), 3000);
   };
 
   // Pure Digit Canonical 12-13 Digit UID: [Type4]-[Seq2]-[Client2]-[State03]-[Inst01]
@@ -1184,82 +1196,190 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </button>
 
-          {/* DEDICATED CAMPUS SWITCHER DROPDOWN (Clickable Popover, Minimalist, High Z-Index, Unclipped) */}
-          <div className="relative shrink-0" ref={campusDropdownRef}>
-            <button
-              type="button"
-              id="header-campus-switcher"
-              onClick={() => setIsCampusMenuOpen(!isCampusMenuOpen)}
-              className="flex items-center gap-2 px-2.5 py-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl text-xs font-semibold backdrop-blur-md transition-all shadow-xs cursor-pointer select-none"
-              title="Select Campus View"
-            >
-              <Building2 className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-              <span className="font-semibold text-white text-xs truncate max-w-[140px] sm:max-w-none">
-                {effectiveCampus === 'campus_01'
-                  ? 'Bathinda (Main)'
-                  : effectiveCampus === 'campus_02'
-                  ? 'Faridkot (Regional)'
-                  : 'All Campuses'}
-              </span>
-              <ChevronDown className={`w-3.5 h-3.5 text-slate-300 transition-transform ${isCampusMenuOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {isCampusMenuOpen && (
-              <div
-                id="header-campus-dropdown-menu"
-                className="absolute left-0 top-full mt-1.5 w-56 bg-white/98 backdrop-blur-xl rounded-xl shadow-xl border border-slate-200/90 py-1 text-slate-800 z-[9999] animate-fadeIn"
+          {/* DEDICATED TENANT / CAMPUS SWITCHER DROPDOWN (Scoped: SuperAdmin -> Tenants; Institutional -> Campuses) */}
+          {isSuperAdmin ? (
+            <div className="relative shrink-0" ref={campusDropdownRef}>
+              <button
+                type="button"
+                id="header-tenant-switcher"
+                onClick={() => setIsCampusMenuOpen(!isCampusMenuOpen)}
+                className="flex items-center gap-2 px-2.5 py-1.5 bg-indigo-500/20 hover:bg-indigo-500/35 border border-indigo-300/40 text-white rounded-xl text-xs font-semibold backdrop-blur-md transition-all shadow-xs cursor-pointer select-none"
+                title="Collegiate Tenant / Client Scope"
               >
-                <div className="px-3 py-1 border-b border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  Select Campus
+                <Globe className="w-3.5 h-3.5 text-indigo-300 shrink-0" />
+                <span className="font-semibold text-white text-xs truncate max-w-[150px] sm:max-w-none">
+                  {selectedTenantName}
+                </span>
+                <ChevronDown className={`w-3.5 h-3.5 text-indigo-200 transition-transform ${isCampusMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isCampusMenuOpen && (
+                <div
+                  id="header-tenant-dropdown-menu"
+                  className="absolute left-0 top-full mt-1.5 w-64 bg-white/98 backdrop-blur-xl rounded-xl shadow-xl border border-slate-200/90 py-1 text-slate-800 z-[9999] animate-fadeIn"
+                >
+                  <div className="px-3 py-1 border-b border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    SaaS Collegiate Tenants
+                  </div>
+                  <div className="p-1 space-y-0.5">
+                    <button
+                      type="button"
+                      onClick={() => handleTenantSelect('BFGI Group of Institutions')}
+                      className={`w-full px-2.5 py-1.5 text-left rounded-lg text-xs flex items-center justify-between transition cursor-pointer ${
+                        selectedTenantName === 'BFGI Group of Institutions'
+                          ? 'bg-blue-50 text-blue-900 font-bold'
+                          : 'hover:bg-slate-50 text-slate-700 font-medium'
+                      }`}
+                    >
+                      <div className="truncate">
+                        <span className="block font-bold">Baba Farid Group of Institutions</span>
+                        <span className="text-[10px] text-slate-500 font-normal">BFGI • 2 Campuses • Active</span>
+                      </div>
+                      {selectedTenantName === 'BFGI Group of Institutions' && <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleTenantSelect('Guru Nanak Dev Engg College')}
+                      className={`w-full px-2.5 py-1.5 text-left rounded-lg text-xs flex items-center justify-between transition cursor-pointer ${
+                        selectedTenantName === 'Guru Nanak Dev Engg College'
+                          ? 'bg-blue-50 text-blue-900 font-bold'
+                          : 'hover:bg-slate-50 text-slate-700 font-medium'
+                      }`}
+                    >
+                      <div className="truncate">
+                        <span className="block font-bold">Guru Nanak Dev Engg College</span>
+                        <span className="text-[10px] text-slate-500 font-normal">GNDEC • Ludhiana • Active</span>
+                      </div>
+                      {selectedTenantName === 'Guru Nanak Dev Engg College' && <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleTenantSelect('Universal Multi-Tenant View')}
+                      className={`w-full px-2.5 py-1.5 text-left rounded-lg text-xs flex items-center justify-between transition cursor-pointer ${
+                        selectedTenantName === 'Universal Multi-Tenant View'
+                          ? 'bg-blue-50 text-blue-900 font-bold'
+                          : 'hover:bg-slate-50 text-slate-700 font-medium'
+                      }`}
+                    >
+                      <div className="truncate">
+                        <span className="block font-bold">Universal Platform View</span>
+                        <span className="text-[10px] text-slate-500 font-normal">All Collegiate Tenants Aggregated</span>
+                      </div>
+                      {selectedTenantName === 'Universal Multi-Tenant View' && <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
+                    </button>
+
+                    <div className="my-1 border-t border-slate-100" />
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsCampusMenuOpen(false);
+                        onNavigate('tenants');
+                      }}
+                      className="w-full px-2.5 py-1.5 text-left rounded-lg text-xs hover:bg-indigo-50 text-indigo-700 font-bold flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span>+ Manage & Onboard Colleges</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsCampusMenuOpen(false);
+                        onOpenMasterTables?.('institutions');
+                      }}
+                      className="w-full px-2.5 py-1.5 text-left rounded-lg text-xs hover:bg-slate-100 text-slate-700 font-semibold flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span>Master Architecture Tables</span>
+                    </button>
+                  </div>
                 </div>
-                <div className="p-1 space-y-0.5">
-                  <button
-                    type="button"
-                    data-campus="campus_01"
-                    onClick={() => handleCampusSelect('campus_01')}
-                    className={`w-full px-2.5 py-1.5 text-left rounded-lg text-xs flex items-center justify-between transition cursor-pointer ${
-                      effectiveCampus === 'campus_01'
-                        ? 'bg-blue-50 text-blue-900 font-bold'
-                        : 'hover:bg-slate-50 text-slate-700 font-medium'
-                    }`}
-                  >
-                    <span className="truncate">Bathinda Campus 01 (Main)</span>
-                    {effectiveCampus === 'campus_01' && <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
-                  </button>
+              )}
+            </div>
+          ) : currentUser?.role === 'student' ? (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 border border-white/20 text-white rounded-xl text-xs font-semibold backdrop-blur-md shadow-xs select-none shrink-0" title="Enrolled Collegiate Campus">
+              <Building2 className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+              <span className="font-semibold text-white text-xs truncate max-w-[160px] sm:max-w-none">
+                Bathinda Campus 01 (Main)
+              </span>
+            </div>
+          ) : (
+            <div className="relative shrink-0" ref={campusDropdownRef}>
+              <button
+                type="button"
+                id="header-campus-switcher"
+                onClick={() => setIsCampusMenuOpen(!isCampusMenuOpen)}
+                className="flex items-center gap-2 px-2.5 py-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl text-xs font-semibold backdrop-blur-md transition-all shadow-xs cursor-pointer select-none"
+                title="Select Campus View"
+              >
+                <Building2 className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                <span className="font-semibold text-white text-xs truncate max-w-[140px] sm:max-w-none">
+                  {effectiveCampus === 'campus_01'
+                    ? 'Bathinda (Main)'
+                    : effectiveCampus === 'campus_02'
+                    ? 'Faridkot (Regional)'
+                    : 'All Campuses'}
+                </span>
+                <ChevronDown className={`w-3.5 h-3.5 text-slate-300 transition-transform ${isCampusMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
 
-                  <button
-                    type="button"
-                    data-campus="campus_02"
-                    onClick={() => handleCampusSelect('campus_02')}
-                    className={`w-full px-2.5 py-1.5 text-left rounded-lg text-xs flex items-center justify-between transition cursor-pointer ${
-                      effectiveCampus === 'campus_02'
-                        ? 'bg-blue-50 text-blue-900 font-bold'
-                        : 'hover:bg-slate-50 text-slate-700 font-medium'
-                    }`}
-                  >
-                    <span className="truncate">Faridkot Campus 02 (Regional)</span>
-                    {effectiveCampus === 'campus_02' && <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
-                  </button>
+              {isCampusMenuOpen && (
+                <div
+                  id="header-campus-dropdown-menu"
+                  className="absolute left-0 top-full mt-1.5 w-56 bg-white/98 backdrop-blur-xl rounded-xl shadow-xl border border-slate-200/90 py-1 text-slate-800 z-[9999] animate-fadeIn"
+                >
+                  <div className="px-3 py-1 border-b border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Select Campus
+                  </div>
+                  <div className="p-1 space-y-0.5">
+                    <button
+                      type="button"
+                      data-campus="campus_01"
+                      onClick={() => handleCampusSelect('campus_01')}
+                      className={`w-full px-2.5 py-1.5 text-left rounded-lg text-xs flex items-center justify-between transition cursor-pointer ${
+                        effectiveCampus === 'campus_01'
+                          ? 'bg-blue-50 text-blue-900 font-bold'
+                          : 'hover:bg-slate-50 text-slate-700 font-medium'
+                      }`}
+                    >
+                      <span className="truncate">Bathinda Campus 01 (Main)</span>
+                      {effectiveCampus === 'campus_01' && <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
+                    </button>
 
-                  <div className="my-1 border-t border-slate-100" />
+                    <button
+                      type="button"
+                      data-campus="campus_02"
+                      onClick={() => handleCampusSelect('campus_02')}
+                      className={`w-full px-2.5 py-1.5 text-left rounded-lg text-xs flex items-center justify-between transition cursor-pointer ${
+                        effectiveCampus === 'campus_02'
+                          ? 'bg-blue-50 text-blue-900 font-bold'
+                          : 'hover:bg-slate-50 text-slate-700 font-medium'
+                      }`}
+                    >
+                      <span className="truncate">Faridkot Campus 02 (Regional)</span>
+                      {effectiveCampus === 'campus_02' && <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
+                    </button>
 
-                  <button
-                    type="button"
-                    data-campus="all"
-                    onClick={() => handleCampusSelect('all')}
-                    className={`w-full px-2.5 py-1.5 text-left rounded-lg text-xs flex items-center justify-between transition cursor-pointer ${
-                      effectiveCampus === 'all'
-                        ? 'bg-blue-50 text-blue-900 font-bold'
-                        : 'hover:bg-slate-50 text-slate-700 font-medium'
-                    }`}
-                  >
-                    <span className="truncate">All Campuses (Consolidated)</span>
-                    {effectiveCampus === 'all' && <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
-                  </button>
+                    <div className="my-1 border-t border-slate-100" />
+
+                    <button
+                      type="button"
+                      data-campus="all"
+                      onClick={() => handleCampusSelect('all')}
+                      className={`w-full px-2.5 py-1.5 text-left rounded-lg text-xs flex items-center justify-between transition cursor-pointer ${
+                        effectiveCampus === 'all'
+                          ? 'bg-blue-50 text-blue-900 font-bold'
+                          : 'hover:bg-slate-50 text-slate-700 font-medium'
+                      }`}
+                    >
+                      <span className="truncate">All Campuses (Consolidated)</span>
+                      {effectiveCampus === 'all' && <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           {/* Breadcrumb Module */}
           <div className="hidden lg:flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-xs text-white shrink-0">

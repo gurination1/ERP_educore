@@ -687,6 +687,7 @@ function MainApp() {
                   <StaffManagementView
                     currentUser={currentUser}
                     selectedCampus={selectedCampus}
+                    onCampusChange={setSelectedCampus}
                     onOpenMasterTables={handleOpenMasterTables}
                   />
                 ) : currentUser.role === 'counselor' ? (
@@ -707,6 +708,7 @@ function MainApp() {
                   <HostelManagementView
                     currentUser={currentUser}
                     selectedCampus={selectedCampus}
+                    onCampusChange={setSelectedCampus}
                     onOpenMasterTables={handleOpenMasterTables}
                     onNavigate={handleScreenNavigate}
                   />
@@ -714,6 +716,7 @@ function MainApp() {
                   <FeeLedgerView
                     currentUser={currentUser}
                     selectedCampus={selectedCampus}
+                    onCampusChange={setSelectedCampus}
                     onOpenMasterTables={handleOpenMasterTables}
                     onOpenReceiptModal={receiptNo => {
                       setActiveReceiptNo(receiptNo);
@@ -773,6 +776,7 @@ function MainApp() {
                   currentUser={currentUser}
                   currentStudent={currentStudent}
                   selectedCampus={selectedCampus}
+                  onCampusChange={setSelectedCampus}
                   onOpenMasterTables={handleOpenMasterTables}
                   onOpenPayModal={(feeId, studentObj) => {
                     setTargetPayFeeId(feeId);
@@ -844,6 +848,7 @@ function MainApp() {
                 <ManageStudentsView
                   currentUser={currentUser}
                   selectedCampus={selectedCampus}
+                  onCampusChange={setSelectedCampus}
                   onOpenMasterTables={handleOpenMasterTables}
                   onSelectStudent={student => setViewingStudent(student)}
                   onOpenEmailReminders={() => setIsEmailRemindersOpen(true)}
@@ -1228,6 +1233,7 @@ function MainApp() {
                 <StaffManagementView
                   currentUser={currentUser}
                   selectedCampus={selectedCampus}
+                  onCampusChange={setSelectedCampus}
                   onOpenMasterTables={handleOpenMasterTables}
                 />
               </AuthenticatedLayout>
@@ -1280,6 +1286,7 @@ function MainApp() {
                 <HostelManagementView
                   currentUser={currentUser}
                   selectedCampus={selectedCampus}
+                  onCampusChange={setSelectedCampus}
                   onOpenMasterTables={handleOpenMasterTables}
                   onNavigate={handleScreenNavigate}
                 />

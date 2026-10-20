@@ -29,6 +29,7 @@ import { paymentGatewayRouter } from './server/routes/paymentGatewayRoutes.ts';
 import { permissionRouter } from './server/routes/permissionRoutes.ts';
 import { documentRouter } from './server/routes/documentRoutes.ts';
 import { quizRouter } from './server/routes/quizRoutes.ts';
+import { hostelRouter } from './server/routes/hostelRoutes.ts';
 import { errorHandler } from './server/middleware/errorHandler.ts';
 
 dotenv.config();
@@ -91,6 +92,7 @@ async function startServer() {
   app.use('/api/permissions', permissionRouter);
   app.use('/api/documents', documentRouter);
   app.use('/api/quizzes', quizRouter);
+  app.use('/api/hostel', hostelRouter);
   app.use('/api', auditRouter);
 
   // Centralized Error Handler for API

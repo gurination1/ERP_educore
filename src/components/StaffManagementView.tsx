@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { User, StaffRoleAssignment, DefaultCategoryRights } from '../types';
 import { api } from '../api/client';
+import { Building2 } from 'lucide-react';
 
 export type StaffTab = 'overview' | 'payroll' | 'exit-noc' | 'addresses' | 'banks' | 'qualifications' | 'experience' | 'journey' | 'additional-roles';
 
@@ -10,6 +11,7 @@ interface StaffManagementViewProps {
   currentUser: User | null;
   initialTab?: StaffTab;
   selectedCampus?: 'campus_01' | 'campus_02' | 'all';
+  onCampusChange?: (campus: 'campus_01' | 'campus_02' | 'all') => void;
   onOpenMasterTables?: (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents' | 'hostel' | 'fees' | 'employee') => void;
 }
 
@@ -17,6 +19,7 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
   currentUser,
   initialTab,
   selectedCampus,
+  onCampusChange,
   onOpenMasterTables,
 }) => {
   const [searchParams] = useSearchParams();
@@ -775,6 +778,71 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
             + ONBOARD NEW STAFF
           </button>
         </div>
+      </div>
+
+      {/* Dynamic Campus Scoping Strip */}
+      <div className="bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-slate-50 border border-blue-200/80 rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-[#00236f] text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
+            <Building2 className="w-4 h-4 text-amber-300" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-800">Faculty & Staff Cadre Scope:</span>
+              <span className="text-xs font-black text-[#00236f] bg-white px-2.5 py-0.5 rounded-full border border-blue-200 shadow-2xs">
+                {selectedCampus === 'campus_02' ? 'Faridkot Campus 02 (Regional)' : selectedCampus === 'all' ? 'All Campuses (Universal Scope)' : 'Bathinda Campus 01 (Main Campus)'}
+              </span>
+              <span className="text-[11px] text-slate-500 font-semibold hidden sm:inline">
+                ({filteredStaffList.length} faculty/staff members displayed)
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              {selectedCampus === 'campus_02'
+                ? 'Displaying academic faculty and lab staff provisioned for Faridkot Regional Campus.'
+                : selectedCampus === 'all'
+                ? 'Displaying consolidated faculty cadre across all collegiate campuses.'
+                : 'Displaying primary academic faculty and department staff at Bathinda Main Campus.'}
+            </p>
+          </div>
+        </div>
+
+        {onCampusChange && (
+          <div className="flex items-center gap-1.5 p-1 bg-white/80 backdrop-blur rounded-xl border border-slate-200 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => onCampusChange('campus_01')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                (!selectedCampus || selectedCampus === 'campus_01')
+                  ? 'bg-[#00236f] text-white shadow-xs'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              Bathinda Main
+            </button>
+            <button
+              type="button"
+              onClick={() => onCampusChange('campus_02')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                selectedCampus === 'campus_02'
+                  ? 'bg-[#00236f] text-white shadow-xs'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              Faridkot Regional
+            </button>
+            <button
+              type="button"
+              onClick={() => onCampusChange('all')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                selectedCampus === 'all'
+                  ? 'bg-[#00236f] text-white shadow-xs'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              All Campuses
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Alerts */}
