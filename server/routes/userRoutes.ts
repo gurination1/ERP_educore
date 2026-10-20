@@ -11,7 +11,7 @@ const createUserSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
   email: z.string().email('Invalid email address format'),
   password: z.string().min(6, 'Password must be at least 6 characters').default('Educore@2025'),
-  role: z.enum(['admin', 'staff', 'counselor', 'hod', 'accounts', 'student', 'super_admin', 'partner', 'hr']),
+  role: z.enum(['admin', 'staff', 'counselor', 'hod', 'accounts', 'student', 'super_admin', 'partner', 'hr', 'hostel']),
   fullName: z.string().min(2, 'Full name is required'),
   department: z.string().optional(),
   designation: z.string().optional(),
@@ -20,7 +20,7 @@ const createUserSchema = z.object({
 
 const updateUserSchema = z.object({
   fullName: z.string().min(2).optional(),
-  role: z.enum(['admin', 'staff', 'counselor', 'hod', 'accounts', 'student', 'super_admin', 'partner', 'hr']).optional(),
+  role: z.enum(['admin', 'staff', 'counselor', 'hod', 'accounts', 'student', 'super_admin', 'partner', 'hr', 'hostel']).optional(),
   department: z.string().optional(),
   designation: z.string().optional(),
   employeeId: z.string().optional(),
