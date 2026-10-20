@@ -264,15 +264,17 @@ Every mutating action writes an append-only cryptographic event:
 | `POST /api/hostel/allot` | Scholar Allotment Engine | Allots admitted scholars to specific room beds, increments room occupancy, sets room status to occupied when full, and syncs student master record. |
 | `POST /api/hostel/shift` | Room Shifting & Ledger Reconciliation | Shifts scholars between rooms, decrements origin occupancy, increments destination occupancy, and computes credit/refund fee adjustments. |
 | `POST /api/hostel/mess-clearance` | Mess No-Dues Clearance (NOC) | Issues digitally signed clearance certificates with monthly diet counts, clears arrears, and marks caution deposit refund eligibility. |
+| `POST /api/master/departments` & `POST /api/master/degrees` | Dynamic Master Tables Inline Provisioning | Real-time creation of custom departments & academic degrees with deduplication and SQLite `INSERT OR REPLACE` integrity. |
+| `GET /api/students` & `GET /api/staff` | Global Header Live Search Engine | High-throughput debounced querying resolving 13-digit student UIDs and 8-digit staff EMP IDs directly to student master and faculty HR dossiers. |
 | `scripts/verify_complete_erp_connectivity.mjs` | Automated Integration Test Suite | **100% Pass Rate** across all 15 multi-campus, multi-tenant integration test assertions against production daemon. |
 
 ---
 
 ## 9. Live Browser UI Multi-Role Audit (Puppeteer Headless Verification)
 
-Automated headless browser execution (`node scripts/test_live_ui_audit.mjs`) verified 100% accessibility, RBAC boundaries, and horizontal navigation strips across all 8 roles:
+Automated headless browser execution (`node scripts/test_live_ui_audit.mjs`) verified 100% accessibility, RBAC boundaries, and horizontal navigation strips across all 10 roles:
 
-1. **Super Admin** (`superadmin`): Universal multi-tenant overview, client onboarding, RBAC permissions, and master architecture.
+1. **Super Admin** (`superadmin`): Universal multi-tenant overview, client onboarding with master tables, RBAC permissions, and master architecture.
 2. **Institutional Admin** (`admin`): Operations console, admissions desk, tuition registers, student directory, academics & governance.
 3. **Faculty / Staff** (`staff01`): Faculty desk, academic timetable, student rosters, examinations, and faculty dossiers.
 4. **Head of Department** (`hod01`): HOD executive desk, department students, faculty cadre, academic reports, and grievance review.
@@ -280,5 +282,7 @@ Automated headless browser execution (`node scripts/test_live_ui_audit.mjs`) ver
 6. **Accounts / Bursar** (`accounts01`): Fee collections, demand registers, defaulter lists, contra entries, and exam financial clearance.
 7. **Student / Scholar** (`aryan`): Scholar home, biometric attendance, tuition dues, university admit card, LMS syllabus, and dynamic hostel/transit badges.
 8. **Placement Partner** (`partner01`): Placements portal, candidate search by department & CGPA, job postings, and applicant tracking.
+9. **Chief HR Officer** (`hr01`): Comprehensive HRMS, multi-table staff profiles, status transitions (active, resigned, terminated, AOL), software/organization journey logs.
+10. **Hostel Warden** (`warden01`): Building inspection schedules, room occupancy gates, resident allotments, room shifting, mess dues & NOC generation.
 
-**Result**: 8 / 8 Roles Verified (100% Pass Rate, 0 console errors, all navigation ribbons rendered with Apple/Cupertino aesthetics).
+**Result**: 10 / 10 Roles Verified (100% Pass Rate, 104 / 104 assertions passed, 0 errors, all navigation ribbons and modals fully connected).

@@ -5336,7 +5336,13 @@ class DatabaseStore {
         }
 
         try {
-          this.master_departments = readTable('master_departments').map(d => ({ ...d, is_active: Boolean(d.is_active) }));
+          const rawDepts = readTable('master_departments').map(d => ({ ...d, is_active: Boolean(d.is_active) }));
+          const seenDepts = new Set<string>();
+          this.master_departments = rawDepts.filter(d => {
+            if (!d.dept_code || seenDepts.has(d.dept_code)) return false;
+            seenDepts.add(d.dept_code);
+            return true;
+          });
         } catch { this.master_departments = []; }
         try {
           this.master_institution_types = readTable('master_institution_types');
@@ -5601,7 +5607,7 @@ class DatabaseStore {
         if (rows.length === 0) return;
 
         const placeholders = columns.map(() => '?').join(', ');
-        const sql = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`;
+        const sql = `INSERT OR REPLACE INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`;
 
         for (const row of rows) {
           const values = columns.map(col => {
@@ -6403,6 +6409,12 @@ class DatabaseStore {
   }
 
   public async addMasterDepartment(dept: Omit<MasterDepartment, 'id'>): Promise<MasterDepartment> {
+    const existingIdx = this.master_departments.findIndex(d => d.dept_code === dept.dept_code);
+    if (existingIdx !== -1) {
+      this.master_departments[existingIdx] = { ...this.master_departments[existingIdx], ...dept };
+      this.save();
+      return this.master_departments[existingIdx];
+    }
     const newDept: MasterDepartment = {
       id: `dept-${dept.dept_code.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
       ...dept,

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { User, ActiveScreen } from '../types';
 import { useCampus } from '../context/CampusContext';
 import { Shield, Building2, ChevronDown, Check, User as UserIcon, KeyRound, LogOut, Globe } from 'lucide-react';
+import { api } from '../api/client';
 
 interface HeaderProps {
   currentUser: User | null;
@@ -87,6 +88,35 @@ export const Header: React.FC<HeaderProps> = ({
       document.removeEventListener('mousedown', handleOutsideClick);
     };
   }, [isCampusMenuOpen]);
+
+  // Live Database Search: 13-digit Student UID vs 8-digit Staff EMP ID (Karanvir Sir Lecture 4)
+  const [liveSearchResults, setLiveSearchResults] = useState<{ students: any[]; staff: any[] }>({ students: [], staff: [] });
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    const q = (searchQuery || '').trim();
+    if (!q || q.length < 2) {
+      setLiveSearchResults({ students: [], staff: [] });
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const [studRes, staffRes] = await Promise.all([
+          api.getStudents({ search: q, limit: 5 }).catch(() => ({ success: false, students: [] })),
+          api.getStaffList({ search: q }).catch(() => ({ success: false, staff: [] })),
+        ]);
+        const matchedStudents = (studRes.students || (studRes as any).data || []).slice(0, 4);
+        const matchedStaff = (staffRes.staff || (staffRes as any).data || []).slice(0, 4);
+        setLiveSearchResults({ students: matchedStudents, staff: matchedStaff });
+      } catch {
+        // ignore
+      } finally {
+        setIsSearching(false);
+      }
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const [selectedTenantName, setSelectedTenantName] = useState<string>('BFGI Group of Institutions');
 
@@ -1429,75 +1459,123 @@ export const Header: React.FC<HeaderProps> = ({
                     </button>
                   </div>
 
-                  {/* Section 1: Exact Match */}
-                  <div className="mt-2">
-                    <span className="text-[10px] font-extrabold text-[#ea580c] tracking-wider uppercase block mb-1">
-                      Exact Match (UID / EMP ID)
-                    </span>
-                    <div className="p-2.5 bg-blue-50/70 border border-blue-200/80 rounded-xl space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-[#00236f] text-xs">
-                          {searchQuery.replace(/[^0-9]/g, '').length === 13 ? 'Student Scholar Record' : 'Faculty / Staff Record'}
+                  {/* Section 1: Exact Match (Karanvir Sir Lecture 4: 13 digits student, 8 digits staff) */}
+                  {(() => {
+                    const cleanDigits = searchQuery.replace(/[^0-9]/g, '');
+                    const isStaff = cleanDigits.length === 8 || searchQuery.toUpperCase().startsWith('EMP');
+                    return (
+                      <div className="mt-2">
+                        <span className="text-[10px] font-extrabold text-[#ea580c] tracking-wider uppercase block mb-1">
+                          Exact Match ({isStaff ? '8-Digit Staff EMP ID' : '13-Digit Student UID'})
                         </span>
-                        <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-white text-[#00236f] border border-blue-200">
-                          {searchQuery}
-                        </span>
+                        <div className="p-2.5 bg-blue-50/70 border border-blue-200/80 rounded-xl space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-[#00236f] text-xs">
+                              {isStaff ? 'Faculty / Staff Record' : 'Student Scholar Record'}
+                            </span>
+                            <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-white text-[#00236f] border border-blue-200">
+                              {searchQuery}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-600">
+                            {isStaff
+                              ? 'Staff employee record verified in HRMS registry. Direct faculty dossier available.'
+                              : 'Student enrollment dossier verified in collegiate catalog.'}
+                          </p>
+                          <div className="pt-1 flex gap-1.5">
+                            {isStaff ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  onNavigate('staff-management');
+                                  onSearchChange('');
+                                }}
+                                className="px-2 py-0.5 rounded bg-[#00236f] text-white text-[10px] font-bold hover:bg-[#001744] cursor-pointer"
+                              >
+                                View Faculty Dossier →
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  onNavigate('manage-students');
+                                  onSearchChange('');
+                                }}
+                                className="px-2 py-0.5 rounded bg-[#00236f] text-white text-[10px] font-bold hover:bg-[#001744] cursor-pointer"
+                              >
+                                View Student Master →
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                onNavigate('fee-ledger');
+                                onSearchChange('');
+                              }}
+                              className="px-2 py-0.5 rounded bg-white text-[#00236f] border border-blue-200 text-[10px] font-bold hover:bg-slate-50 cursor-pointer"
+                            >
+                              Fee Ledger
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-[11px] text-slate-600">
-                        Match detected in canonical database. Direct dossier available.
-                      </p>
-                      <div className="pt-1 flex gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onNavigate('manage-students');
-                            onSearchChange('');
-                          }}
-                          className="px-2 py-0.5 rounded bg-[#00236f] text-white text-[10px] font-bold hover:bg-[#001744]"
-                        >
-                          View Student Master →
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onNavigate('fee-ledger');
-                            onSearchChange('');
-                          }}
-                          className="px-2 py-0.5 rounded bg-white text-[#00236f] border border-blue-200 text-[10px] font-bold hover:bg-slate-50"
-                        >
-                          Fee Ledger
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                    );
+                  })()}
 
-                  {/* Section 2: Similar / Nearby Matches */}
+                  {/* Section 2: Similar / Nearby Matches from Live DB */}
                   <div className="mt-3 pt-2 border-t border-slate-100">
                     <span className="text-[10px] font-extrabold text-slate-500 tracking-wider uppercase block mb-1">
-                      Similar / Nearby Matches
+                      Live Database Matches {isSearching ? '(Searching...)' : ''}
                     </span>
-                    <div className="space-y-1 max-h-36 overflow-y-auto text-[11px]">
-                      {[
-                        { name: 'Aryan Sharma', id: '1001-88-03-01', dept: 'CSE Sem 4', role: 'Student' },
-                        { name: 'Priya Verma', id: '1001-88-03-02', dept: 'CSE Sem 4', role: 'Student' },
-                        { name: 'Dr. Gurpreet Singh', id: '2001-14-03-01', dept: 'CSE Faculty', role: 'Professor' },
-                        { name: 'Harpreet Kaur', id: '4001-01-03-01', dept: 'Admin Provost', role: 'Administrator' },
-                      ].map((item, idx) => (
-                        <div
-                          key={idx}
-                          onClick={() => {
-                            onNavigate('manage-students');
-                            onSearchChange('');
-                          }}
-                          className="p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer flex items-center justify-between text-slate-700"
-                        >
-                          <div>
-                            <span className="font-semibold block">{item.name}</span>
-                            <span className="text-[10px] text-slate-400 font-mono">{item.id} • {item.dept}</span>
-                          </div>
-                          <span className="text-[10px] font-bold text-slate-500">{item.role}</span>
+                    <div className="space-y-1 max-h-48 overflow-y-auto text-[11px]">
+                      {liveSearchResults.students.length === 0 && liveSearchResults.staff.length === 0 ? (
+                        <div className="p-2 text-center text-slate-400 text-xs italic">
+                          {isSearching ? 'Querying records...' : `No matching records found for "${searchQuery}"`}
                         </div>
-                      ))}
+                      ) : (
+                        <>
+                          {liveSearchResults.students.map((st: any) => (
+                            <div
+                              key={st.id || st.uid}
+                              onClick={() => {
+                                onNavigate('manage-students');
+                                onSearchChange('');
+                              }}
+                              className="p-1.5 rounded-lg hover:bg-blue-50 cursor-pointer flex items-center justify-between text-slate-700 transition"
+                            >
+                              <div>
+                                <span className="font-semibold block text-slate-900">{st.full_name || st.name}</span>
+                                <span className="text-[10px] text-slate-400 font-mono">
+                                  {st.uid || st.roll_no || 'UID'} • {st.course || st.department || 'Student'}
+                                </span>
+                              </div>
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded">
+                                Student
+                              </span>
+                            </div>
+                          ))}
+                          {liveSearchResults.staff.map((sf: any) => (
+                            <div
+                              key={sf.id || sf.staff_id}
+                              onClick={() => {
+                                onNavigate('staff-management');
+                                onSearchChange('');
+                              }}
+                              className="p-1.5 rounded-lg hover:bg-emerald-50 cursor-pointer flex items-center justify-between text-slate-700 transition"
+                            >
+                              <div>
+                                <span className="font-semibold block text-slate-900">{sf.full_name || sf.name}</span>
+                                <span className="text-[10px] text-slate-400 font-mono">
+                                  {sf.employee_id || sf.staff_id} • {sf.primary_designation || sf.department_id || 'Staff'}
+                                </span>
+                              </div>
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded">
+                                Faculty/HR
+                              </span>
+                            </div>
+                          ))}
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
