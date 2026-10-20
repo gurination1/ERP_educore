@@ -74,10 +74,10 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptNo, onClose }
           {/* Header with College Crest */}
           <div className="text-center border-b-2 border-[#00236f] pb-4">
             <h2 className="text-lg font-black tracking-tight text-[#00236f] uppercase">
-              {receiptData?.institutionName || 'Baba Farid Group of Institutions (BFGI)'}
+              {receiptData?.institutionName || 'EduCore Higher Education Institute'}
             </h2>
             <p className="text-[11px] text-[#757682] mt-0.5">
-              {receiptData?.campusAddress || 'Muktsar Road, Deon, Bathinda, Punjab 151001 • Multi-University Affiliated (PUP • MRSPTU • PU) • AICTE Approved'}
+              {receiptData?.campusAddress || 'Campus 01 • Academic Directorate • Statutory Cash & Fee Accounts'}
             </p>
             <span className="inline-block mt-2 px-3 py-0.5 bg-[#dce1ff] text-[#00236f] rounded-full text-[10px] font-extrabold uppercase tracking-wider">
               Official Electronic Fee Receipt (University Statutory Standard)

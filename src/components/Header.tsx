@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { User, ActiveScreen } from '../types';
+import { Shield, Building2, ChevronDown, Check } from 'lucide-react';
 
 interface HeaderProps {
   currentUser: User | null;
@@ -22,6 +23,8 @@ interface HeaderProps {
   onOpenPayModal?: () => void;
   viewMode?: 'desktop' | 'mobile-phone';
   onToggleViewMode?: () => void;
+  selectedCampus?: 'campus_01' | 'campus_02' | 'all';
+  onCampusChange?: (campus: 'campus_01' | 'campus_02' | 'all') => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -43,14 +46,46 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenStaffJourney,
   onOpenAdmitCard,
   onOpenPayModal,
+  selectedCampus: externalSelectedCampus = 'campus_01',
+  onCampusChange,
 }) => {
   const [copiedUid, setCopiedUid] = useState(false);
   const [openDrawer, setOpenDrawer] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [selectedCampus, setSelectedCampus] = useState<'bathinda_main' | 'faridkot_center' | 'all_campuses'>('bathinda_main');
+  const [internalSelectedCampus, setInternalSelectedCampus] = useState<'campus_01' | 'campus_02' | 'all'>(externalSelectedCampus);
+  const [isCampusMenuOpen, setIsCampusMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
+  const campusDropdownRef = useRef<HTMLDivElement>(null);
   const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const effectiveCampus = externalSelectedCampus || internalSelectedCampus;
+
+  useEffect(() => {
+    if (externalSelectedCampus) {
+      setInternalSelectedCampus(externalSelectedCampus);
+    }
+  }, [externalSelectedCampus]);
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (campusDropdownRef.current && !campusDropdownRef.current.contains(event.target as Node)) {
+        setIsCampusMenuOpen(false);
+      }
+    };
+    if (isCampusMenuOpen) {
+      document.addEventListener('mousedown', handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [isCampusMenuOpen]);
+
+  const handleCampusSelect = (c: 'campus_01' | 'campus_02' | 'all') => {
+    setInternalSelectedCampus(c);
+    onCampusChange?.(c);
+    setIsCampusMenuOpen(false);
+  };
 
   // Pure Digit Canonical 12-13 Digit UID: [Type4]-[Seq2]-[Client2]-[State03]-[Inst01]
   const rawUid = currentUser?.enterprise_uid || (
@@ -215,7 +250,7 @@ export const Header: React.FC<HeaderProps> = ({
           { id: 'tenants' as any, label: 'Multi-Tenant Institutions & Subdomains', action: () => { onNavigate('tenants' as any); setOpenDrawer(null); } },
           { id: 'payment-gateways' as ActiveScreen, label: 'Payment Gateways & Current Accounts', action: () => { onNavigate('payment-gateways'); setOpenDrawer(null); } },
           { id: 'master-inst' as any, label: 'Multi-College Institutional Campuses', action: () => { onOpenMasterTables?.('institutions'); onNavigate('master-architecture?tab=institutions' as any); setOpenDrawer(null); } },
-          { id: 'master-univ' as any, label: 'Affiliated Universities (PUP / MRSPTU / PU)', action: () => { onOpenMasterTables?.('institutions'); onNavigate('master-architecture?tab=institutions' as any); setOpenDrawer(null); } },
+          { id: 'master-univ' as any, label: 'University Affiliations & Boards', action: () => { onOpenMasterTables?.('institutions'); onNavigate('master-architecture?tab=institutions' as any); setOpenDrawer(null); } },
           { id: 'master-dept' as any, label: 'Academic Departments Catalog', action: () => { onOpenMasterTables?.('departments'); onNavigate('master-architecture?tab=departments' as any); setOpenDrawer(null); } },
         ],
         isActive: effectivePath.startsWith('/tenants') || effectivePath.startsWith('/payment-gateways'),
@@ -1085,98 +1120,134 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-50 select-none font-sans" ref={navRef}>
       {/* TIER 1: Prestigious Institutional Identity Banner (Cupertino Frosted Navy #00236f) */}
-      <div className="bg-[#00236f]/95 backdrop-blur-2xl text-white px-3 sm:px-6 py-2 border-b border-white/10 flex flex-nowrap items-center justify-between gap-3 text-xs overflow-x-auto no-scrollbar">
-        {/* Left: Crest + Bilingual Institution Typography + Campus Cluster Indicator */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          {isSuperAdmin ? (
-            <>
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-indigo-600 flex items-center justify-center text-white font-black text-xs shadow-md ring-1 ring-white/20">
-                EDU
+      <div className="bg-[#00236f]/95 backdrop-blur-2xl text-white px-3 sm:px-6 py-2 border-b border-white/10 flex items-center justify-between gap-3 text-xs relative z-50 overflow-visible">
+        {/* Left: EduCore Brand + Dedicated Campus Switcher Dropdown */}
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={() => onNavigate(dashboardTarget)}
+            className="flex items-center gap-2.5 text-left group cursor-pointer focus:outline-none shrink-0"
+          >
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white font-black text-xs shadow-md ring-1 ring-white/20">
+              <Shield className="w-4 h-4 text-white" />
+            </div>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1.5 leading-none">
+                <span className="font-black text-sm tracking-tight text-white uppercase leading-none">
+                  EduCore
+                </span>
+                <span className="text-[9px] font-bold uppercase tracking-wider bg-white/15 text-blue-200 px-1.5 py-0.5 rounded leading-none">
+                  ERP
+                </span>
               </div>
-              <button
-                type="button"
-                onClick={() => onNavigate('super-admin-dashboard')}
-                className="flex flex-col text-left group cursor-pointer focus:outline-none"
+              <span className="text-[10px] font-medium text-slate-300/80 leading-tight mt-0.5 hidden sm:inline">
+                {isSuperAdmin ? 'Cloud SaaS Orchestrator' : 'Enterprise Academic Operating System'}
+              </span>
+            </div>
+          </button>
+
+          {/* DEDICATED CAMPUS SWITCHER DROPDOWN (Clickable Popover, High Z-Index, Unclipped) */}
+          <div className="relative shrink-0" ref={campusDropdownRef}>
+            <button
+              type="button"
+              id="header-campus-switcher"
+              onClick={() => setIsCampusMenuOpen(!isCampusMenuOpen)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl text-xs font-semibold backdrop-blur-md transition-all shadow-xs cursor-pointer select-none"
+              title="Select Campus View"
+            >
+              <Building2 className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+              <span className="font-semibold text-white text-xs truncate max-w-[150px] sm:max-w-none">
+                {effectiveCampus === 'campus_01'
+                  ? 'Bathinda Campus 01 (Main)'
+                  : effectiveCampus === 'campus_02'
+                  ? 'Faridkot Campus 02 (Regional)'
+                  : 'All Campuses (Consolidated)'}
+              </span>
+              <ChevronDown className={`w-3.5 h-3.5 text-slate-300 transition-transform ${isCampusMenuOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isCampusMenuOpen && (
+              <div
+                id="header-campus-dropdown-menu"
+                className="absolute left-0 top-full mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200/90 py-2 text-slate-800 z-[9999] animate-fadeIn"
               >
-                <span className="text-[10px] sm:text-[11px] font-semibold text-amber-300/95 tracking-wide leading-tight">
-                  SaaS Multi-Tenant Cloud Platform
-                </span>
-                <span className="font-extrabold text-xs sm:text-sm tracking-tight text-white uppercase leading-tight mt-0.5">
-                  EDUCORE PLATFORM ORCHESTRATOR
-                </span>
-                <span className="text-[9px] sm:text-[10px] font-medium text-slate-300/80 leading-tight hidden sm:inline">
-                  Multi-Tenant Collegiate Infrastructure • PostgreSQL 18.6 & MariaDB
-                </span>
-              </button>
-              <div className="hidden 2xl:flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/15 text-[11px] text-slate-200 ml-2 select-none shadow-inner shrink-0">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                <span className="text-amber-300 font-bold">Apex Cloud:</span>
-                <span className="text-white font-medium">Global Multi-Tenant Root</span>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md border border-white/20 ring-1 ring-white/10 flex items-center justify-center text-amber-300 font-black text-[11px] shadow-sm">
-                BFGI
-              </div>
-              <button
-                type="button"
-                onClick={() => onNavigate(dashboardTarget)}
-                className="flex flex-col text-left group cursor-pointer focus:outline-none"
-              >
-                <span className="text-[10px] sm:text-[11px] font-semibold text-amber-300/95 tracking-wide leading-tight">
-                  ਬਾਬਾ ਫ਼ਰੀਦ ਗਰੁੱਪ ਆਫ਼ ਇੰਸਟੀਚਿਊਟਸ (ਬਠਿੰਡਾ, ਪੰਜਾਬ)
-                </span>
-                <span className="font-extrabold text-xs sm:text-sm tracking-tight text-white uppercase leading-tight mt-0.5">
-                  BABA FARID GROUP OF INSTITUTIONS
-                </span>
-                <span className="text-[9px] sm:text-[10px] font-medium text-slate-300/80 leading-tight hidden sm:inline">
-                  Autonomous Higher Education Ecosystem • Punjab Campus
-                </span>
-              </button>
-              {/* Campus Switcher: Dropdown for Admin/Super Admin only; Static Text for Student/Staff (Karanvir Sir Lecture 4) */}
-              {isSuperAdmin || userRole === 'admin' ? (
-                <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-full border border-white/20 text-[11px] text-slate-200 ml-2 shadow-inner shrink-0 transition-all">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                  <span className="text-amber-300 font-bold">Campus:</span>
-                  <select
-                    id="header-campus-switcher"
-                    value={selectedCampus}
-                    onChange={(e) => setSelectedCampus(e.target.value as any)}
-                    className="bg-transparent text-white font-semibold text-xs border-none focus:outline-none cursor-pointer pr-1"
-                    title="Switch Campus Governance View"
+                <div className="px-3.5 py-1.5 border-b border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Select Institutional Campus
+                </div>
+                <div className="p-1 space-y-0.5">
+                  <button
+                    type="button"
+                    data-campus="campus_01"
+                    onClick={() => handleCampusSelect('campus_01')}
+                    className={`w-full px-3 py-2 text-left rounded-xl text-xs flex items-center justify-between transition cursor-pointer ${
+                      effectiveCampus === 'campus_01'
+                        ? 'bg-blue-50 text-blue-900 font-bold'
+                        : 'hover:bg-slate-50 text-slate-700 font-medium'
+                    }`}
                   >
-                    <option value="bathinda_main" className="bg-[#00236f] text-white">Bathinda Campus 01 (Main)</option>
-                    <option value="faridkot_center" className="bg-[#00236f] text-white">Faridkot Campus 02 (Regional)</option>
-                    <option value="all_campuses" className="bg-[#00236f] text-white">All Campuses (Aggregated View)</option>
-                  </select>
-                </div>
-              ) : (
-                <div className="hidden 2xl:flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/15 text-[11px] text-slate-200 ml-2 select-none shadow-inner shrink-0">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                  <span className="text-amber-300 font-bold">Campus:</span>
-                  <span className="text-white font-medium">Bathinda Campus 01 (Assigned)</span>
-                </div>
-              )}
+                    <div>
+                      <div className="font-bold">Bathinda Campus 01 (Main)</div>
+                      <div className="text-[10px] text-slate-400">Headquarters, Engineering & Sciences</div>
+                    </div>
+                    {effectiveCampus === 'campus_01' && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
+                  </button>
 
-              {/* Karanvir Sir Lecture 4 Breadcrumb: Campus > Active Module */}
-              <div className="hidden lg:flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-xs text-white ml-2 shrink-0">
-                <span className="text-slate-300 font-medium">
-                  {selectedCampus === 'bathinda_main' ? 'Campus 01' : selectedCampus === 'faridkot_center' ? 'Campus 02' : 'All Campuses'}
-                </span>
-                <span className="text-amber-300 font-bold">›</span>
-                <span className="text-amber-300 font-black tracking-tight">{activeModuleTitle}</span>
-              </div>
+                  <button
+                    type="button"
+                    data-campus="campus_02"
+                    onClick={() => handleCampusSelect('campus_02')}
+                    className={`w-full px-3 py-2 text-left rounded-xl text-xs flex items-center justify-between transition cursor-pointer ${
+                      effectiveCampus === 'campus_02'
+                        ? 'bg-blue-50 text-blue-900 font-bold'
+                        : 'hover:bg-slate-50 text-slate-700 font-medium'
+                    }`}
+                  >
+                    <div>
+                      <div className="font-bold">Faridkot Campus 02 (Regional)</div>
+                      <div className="text-[10px] text-slate-400">Regional Studies & Management</div>
+                    </div>
+                    {effectiveCampus === 'campus_02' && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
+                  </button>
 
-              {/* Prominent Orange Academic Session / Term Badge (Karanvir Sir Lecture 4 Segment 0) */}
-              <div className="hidden xl:flex items-center gap-1.5 px-3 py-1 bg-[#ea580c]/35 border border-[#ea580c]/80 text-amber-200 font-black text-xs rounded-full shadow-sm ml-2 shrink-0">
-                <span className="w-2 h-2 rounded-full bg-[#ea580c] animate-pulse shrink-0" />
-                <span className="text-amber-100 font-bold uppercase tracking-wide">Session 2025-2026</span>
-                <span className="text-amber-400 font-bold">•</span>
-                <span className="text-white font-medium text-[11px]">Odd Sem (Aug-Nov)</span>
+                  <div className="my-1 border-t border-slate-100" />
+
+                  <button
+                    type="button"
+                    data-campus="all"
+                    onClick={() => handleCampusSelect('all')}
+                    className={`w-full px-3 py-2 text-left rounded-xl text-xs flex items-center justify-between transition cursor-pointer ${
+                      effectiveCampus === 'all'
+                        ? 'bg-blue-50 text-blue-900 font-bold'
+                        : 'hover:bg-slate-50 text-slate-700 font-medium'
+                    }`}
+                  >
+                    <div>
+                      <div className="font-bold">All Campuses (Consolidated)</div>
+                      <div className="text-[10px] text-slate-400">Aggregated Multi-Campus Governance</div>
+                    </div>
+                    {effectiveCampus === 'all' && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
+                  </button>
+                </div>
               </div>
-            </>
-          )}
+            )}
+          </div>
+
+          {/* Breadcrumb Module */}
+          <div className="hidden lg:flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-xs text-white shrink-0">
+            <span className="text-slate-300 font-medium">
+              {effectiveCampus === 'campus_01' ? 'Campus 01' : effectiveCampus === 'campus_02' ? 'Campus 02' : 'All Campuses'}
+            </span>
+            <span className="text-amber-300 font-bold">›</span>
+            <span className="text-amber-300 font-black tracking-tight">{activeModuleTitle}</span>
+          </div>
+
+          {/* Academic Session / Term Badge */}
+          <div className="hidden xl:flex items-center gap-1.5 px-3 py-1 bg-white/10 border border-white/20 text-amber-200 font-black text-xs rounded-full shadow-sm shrink-0">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+            <span className="text-white font-semibold uppercase tracking-wide">Session 2025-2026</span>
+            <span className="text-white/40 font-bold">•</span>
+            <span className="text-white/80 font-medium text-[11px]">Odd Sem (Aug-Nov)</span>
+          </div>
         </div>
 
         {/* Right: Operational Controls, Canonical Digit UID & Utilities */}
@@ -1421,10 +1492,10 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* TIER 2: Ultra-Sleek Apple Horizontal Ribbon & Mega Navigation Strip */}
-      <div className="w-full bg-white/95 backdrop-blur-2xl border-b border-slate-200/80 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.03)] relative z-40">
-        <div className="w-full max-w-[1600px] mx-auto px-3 sm:px-6 flex items-center h-11 justify-between gap-3">
+      <div className="w-full bg-white/95 backdrop-blur-2xl border-b border-slate-200/80 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.03)] relative z-40 overflow-visible">
+        <div className="w-full max-w-[1600px] mx-auto px-3 sm:px-6 flex items-center h-11 justify-between gap-3 overflow-visible">
           {/* Left: Universal Back Pill + Main Navigation Hubs */}
-          <div className="flex items-center gap-1.5 h-full overflow-x-auto no-scrollbar py-1 shrink-0">
+          <div className="flex items-center gap-1.5 h-full overflow-x-auto md:overflow-visible no-scrollbar py-1 shrink-0">
             {/* Apple-Grade Universal Back Button (Visible when on any sub-screen) */}
             {canGoBack && onGoBack && (
               <button
@@ -1517,7 +1588,7 @@ export const Header: React.FC<HeaderProps> = ({
                               {sec.label} Console
                             </span>
                             <span className="text-[10px] font-mono text-slate-400 font-semibold">
-                              PUP • MRSPTU • PU
+                              EduCore OS
                             </span>
                           </div>
 
@@ -1679,7 +1750,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               )}
               <div className="text-[10px] font-mono text-slate-400">
-                PUP Patiala • MRSPTU • PU Affiliated
+                EduCore Enterprise ERP
               </div>
             </div>
           </div>

@@ -2043,7 +2043,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
               {/* Institutional Crest & Header */}
               <div className="text-center pb-3 border-b-2 border-slate-200">
                 <div className="text-[10px] font-black text-[#ea580c] uppercase tracking-widest">
-                  Baba Farid Group of Institutions • Bathinda (Punjab 03)
+                  EduCore Campus Residence & Hostels Directorate
                 </div>
                 <h2 className="text-lg font-black text-[#00236f] uppercase tracking-tight mt-0.5">
                   Directorate of Residence, Hostel & Mess Affairs
@@ -2166,7 +2166,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({ curr
                     [DIGITAL SIGNATURE]
                   </div>
                   <strong className="text-[#00236f] font-bold block">Bursar & Provost Council</strong>
-                  <span className="text-[9px] text-slate-400">Baba Farid Group of Institutions</span>
+                  <span className="text-[9px] text-slate-400">EduCore Autonomous Institutional System</span>
                 </div>
               </div>
             </div>

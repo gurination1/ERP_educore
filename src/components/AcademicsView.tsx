@@ -715,7 +715,7 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
                 B.Tech Computer Science & Engg.
               </p>
               <span className="text-xs text-slate-500 mt-0.5 block">
-                4-Year Full-Time • AICTE & Tripartite Affiliated
+                4-Year Full-Time Degree Program • Autonomous Curriculum
               </span>
             </div>
 
@@ -1039,7 +1039,7 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Affiliated Course *</label>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Academic Degree / Course *</label>
                       <select
                         value={newBatch.course_id}
                         onChange={e => {

@@ -1394,7 +1394,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 
                 <div>
                   <h3 className="text-base font-bold">Direct Institutional Admission Intake</h3>
-                  <p className="text-[11px] text-blue-100">Affiliated to Punjab Technical University (PTU) / State Regulatory Board</p>
+                  <p className="text-[11px] text-blue-100">EduCore Autonomous Admissions Desk • Session 2025-26</p>
                 </div>
               </div>
               <button
@@ -1766,7 +1766,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 <span className="font-bold text-[10px]">✓</span>
               </div>
               <h3 className="text-lg font-bold tracking-tight">EduCore Institute of Higher Education</h3>
-              <p className="text-xs text-blue-100">Affiliated to State Technical University • Admission Session 2025-26</p>
+              <p className="text-xs text-blue-100">Autonomous Degree College • Academic Session 2025-26</p>
               <div className="pt-2">
                 <span className="px-3 py-1 bg-white/20 rounded-full text-[11px] font-mono tracking-wider font-bold">
                   PROVISIONAL ADMISSION & STUDENT PORTAL CREDENTIALS

@@ -201,8 +201,8 @@ export const PartnerPortalView: React.FC<PartnerPortalViewProps> = ({ currentUse
   const handleDownloadTranscript = (stu: any) => {
     const text = `EDUCORE INSTITUTIONAL PLACEMENT DOSSIER & VERIFIED ACADEMIC TRANSCRIPT
 ================================================================================
-INSTITUTION: Baba Farid Group of Institutions (BFGI)
-AFFILIATION: Maharaja Ranjit Singh Punjab Technical University (MRSPTU) / PUP / PU
+INSTITUTION: EduCore Autonomous Collegiate Ecosystem
+ACCREDITATION: Autonomous Tier-1 Engineering & Management System
 ================================================================================
 CANDIDATE INFORMATION:
   Scholar Name       : ${stu.full_name}

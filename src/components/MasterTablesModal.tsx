@@ -43,10 +43,10 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
   ];
 
   const masterInstitutions = [
-    { code: '01', name: 'Baba Farid College of Engineering & Technology', affiliation: 'MRSPTU Affiliated (Autonomous)', type: 'Engineering & Technology', campus: 'Bathinda Main (Campus 01)' },
-    { code: '02', name: 'Baba Farid College of Management & Technology', affiliation: 'Punjabi University Patiala (PUP)', type: 'Business & Management', campus: 'Bathinda Campus 02' },
-    { code: '03', name: 'Baba Farid Degree College', affiliation: 'Punjabi University Patiala (PUP)', type: 'Humanities, Science & Commerce', campus: 'Bathinda Campus 03' },
-    { code: '04', name: 'Baba Farid College of Agriculture', affiliation: 'Punjabi University Patiala (PUP)', type: 'Agricultural Sciences', campus: 'Bathinda Agri Research Center' },
+    { code: '01', name: 'EduCore School of Engineering & Technology', affiliation: 'Autonomous Tier-1 Engineering', type: 'Engineering & Technology', campus: 'Bathinda Main (Campus 01)' },
+    { code: '02', name: 'EduCore School of Management & Technology', affiliation: 'Autonomous Management Programs', type: 'Business & Management', campus: 'Faridkot Campus 02' },
+    { code: '03', name: 'EduCore Institute of Advanced Studies', affiliation: 'Autonomous Sciences & Humanities', type: 'Humanities, Science & Commerce', campus: 'Bathinda Campus 01' },
+    { code: '04', name: 'EduCore Institute of Agricultural Sciences', affiliation: 'Autonomous Applied Sciences', type: 'Agricultural Sciences', campus: 'Regional Agri Center' },
   ];
 
   useEffect(() => {

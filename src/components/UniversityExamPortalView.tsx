@@ -814,10 +814,10 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
                   {/* Header */}
                   <div className="text-center border-b-2 border-[#00236f] pb-4 space-y-1">
                     <div className="text-[10px] sm:text-xs font-semibold text-slate-600 uppercase tracking-widest">
-                      Autonomous Campus • Affiliated to Punjabi University Patiala / MRSPTU / Panjab University
+                      EduCore Examination Directorate • Session 2025-26
                     </div>
                     <h2 className="text-base sm:text-xl font-black text-[#00236f] uppercase tracking-tight">
-                      BABA FARID GROUP OF INSTITUTIONS (BATHINDA)
+                      EduCore Higher Education Institute
                     </h2>
                     <h3 className="text-xs sm:text-sm font-bold text-amber-900 uppercase">
                       OFFICIAL EXAMINATION ROLL NUMBER SLIP & ADMIT CARD
@@ -926,7 +926,7 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
                         [COE Digital Seal]
                       </div>
                       <span className="font-extrabold text-[#00236f] text-xs">Controller of Examinations</span>
-                      <span className="text-[10px] text-slate-500">Baba Farid Group of Institutions</span>
+                      <span className="text-[10px] text-slate-500">EduCore Examination Directorate</span>
                     </div>
                   </div>
                 </div>

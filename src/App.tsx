@@ -56,6 +56,8 @@ interface LayoutProps {
   onOpenMasterTables?: (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents') => void;
   onOpenPayModal?: () => void;
   onOpenAdmitCard?: () => void;
+  selectedCampus?: 'campus_01' | 'campus_02' | 'all';
+  onCampusChange?: (campus: 'campus_01' | 'campus_02' | 'all') => void;
   children: React.ReactNode;
 }
 
@@ -68,6 +70,8 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
   onOpenMasterTables: propOnOpenMasterTables,
   onOpenPayModal: propOnOpenPayModal,
   onOpenAdmitCard: propOnOpenAdmitCard,
+  selectedCampus = 'campus_01',
+  onCampusChange,
   children,
 }) => {
   const navigate = useNavigate();
@@ -314,6 +318,8 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
         onOpenStaffJourney={() => setShowStaffJourney(true)}
         onOpenAdmitCard={handleOpenAdmit}
         onOpenPayModal={handleOpenPay}
+        selectedCampus={selectedCampus}
+        onCampusChange={onCampusChange}
       />
 
       <main className="flex-1 min-w-0 w-full max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4 pb-12">
@@ -350,8 +356,12 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
                   Global Multi-Tenant Cloud Root
                 </span>
               ) : (
-                <span className="font-semibold text-[#00236f] bg-blue-50/90 px-2.5 py-0.5 rounded-full border border-blue-100">
-                  PUP Patiala • MRSPTU • PU Affiliated
+                <span className="font-semibold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
+                  {selectedCampus === 'campus_01'
+                    ? 'Bathinda Campus 01 (Main)'
+                    : selectedCampus === 'campus_02'
+                    ? 'Faridkot Campus 02 (Regional)'
+                    : 'All Campuses (Consolidated)'}
                 </span>
               )}
             </div>
@@ -414,6 +424,7 @@ function MainApp() {
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentStudent, setCurrentStudent] = useState<StudentProfile | null>(null);
+  const [selectedCampus, setSelectedCampus] = useState<'campus_01' | 'campus_02' | 'all'>('campus_01');
   const [isInitializing, setIsInitializing] = useState(true);
   const [notices, setNotices] = useState<NoticeItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -630,6 +641,8 @@ function MainApp() {
                 onSearchChange={setSearchQuery}
                 onOpenMasterTables={handleOpenMasterTables}
                 onOpenAuditLogs={handleOpenAuditLogs}
+                selectedCampus={selectedCampus}
+                onCampusChange={setSelectedCampus}
                 onOpenPayModal={() => {
                   setTargetPayFeeId(undefined);
                   setTargetPayStudent(currentStudent);
@@ -646,6 +659,8 @@ function MainApp() {
                   />
                 ) : currentUser.role === 'admin' ? (
                   <AdminDashboardView
+                    selectedCampus={selectedCampus}
+                    onSelectCampus={setSelectedCampus}
                     onNavigate={handleScreenNavigate}
                     onOpenEmailReminders={() => setIsEmailRemindersOpen(true)}
                   />

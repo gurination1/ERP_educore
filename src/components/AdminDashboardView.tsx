@@ -6,10 +6,14 @@ import { X, Download, Users, CheckCircle2, AlertTriangle, ArrowRight } from 'luc
 interface AdminDashboardViewProps {
   onNavigate: (screen: ActiveScreen) => void;
   onOpenEmailReminders?: () => void;
+  selectedCampus?: 'campus_01' | 'campus_02' | 'all';
+  onSelectCampus?: (campus: 'campus_01' | 'campus_02' | 'all') => void;
 }
 
 export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   onNavigate,
+  selectedCampus = 'campus_01',
+  onSelectCampus,
 }) => {
   const [selectedCluster, setSelectedCluster] = useState('All Departments');
   const [selectedTerm, setSelectedTerm] = useState('Current Term');
@@ -369,7 +373,13 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
 
         <div className="hidden md:flex items-center gap-2 pr-2 text-[11px] text-slate-500 font-mono shrink-0">
           <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-          <span>Campus 01 • Bathinda Main</span>
+          <span>
+            {selectedCampus === 'campus_01'
+              ? 'Campus 01 • Bathinda Main'
+              : selectedCampus === 'campus_02'
+              ? 'Campus 02 • Faridkot Regional'
+              : 'All Campuses • Consolidated View'}
+          </span>
         </div>
       </div>
 

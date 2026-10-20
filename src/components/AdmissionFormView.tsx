@@ -310,7 +310,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
                   Official Admission & Credentials Slip
                 </h2>
                 <p className="text-xs text-[#757682]">
-                  Multi-University Affiliated • PUP Patiala • MRSPTU • Panjab University
+                  EduCore Enterprise Academic Registry • Autonomous Collegiate System
                 </p>
               </div>
             </div>

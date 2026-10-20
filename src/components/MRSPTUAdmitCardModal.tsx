@@ -146,7 +146,7 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
                 <h2 className="text-base sm:text-lg font-extrabold uppercase tracking-tight text-[#00236f]">
                   {card.university || 'University Examination Council'}
                 </h2>
-                <p className="text-[10px] text-[#444651] font-semibold">{card.accreditation || 'Multi-University Affiliated • PUP Patiala / MRSPTU / PU'}</p>
+                <p className="text-[10px] text-[#444651] font-semibold">{card.accreditation || 'EduCore Examination Directorate • Autonomous Collegiate System'}</p>
                 <p className="text-[11px] font-bold text-[#ba1a1a] uppercase tracking-wider mt-0.5">
                   Admit Card / Roll Number Slip • {card.examSession}
                 </p>

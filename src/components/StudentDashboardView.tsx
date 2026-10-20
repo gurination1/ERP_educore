@@ -115,7 +115,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
             UID: {(student.enterprise_uid || '1001-88-03-01').replace(/BFGI/g, '01')}
           </span>
           <span className="text-[10px] text-slate-500 hidden md:inline-flex">
-            Multi-Affiliated • Session {sessionName}
+            Academic Session {sessionName}
           </span>
         </div>
 
