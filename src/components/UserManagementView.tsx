@@ -792,27 +792,26 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
         )}
       </div>
 
-      {/* Modal: Hire / Provision Staff Role */}
+      {/* Inline Workspace: Hire / Provision Staff Role (Zero Popups) */}
       {isHireModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-linear-to-r from-[#00236f] to-[#1e3a8a] text-white">
-              <div className="flex items-center gap-2.5">
-                
-                <div>
-                  <h3 className="text-base font-bold">Hire & Provision Staff Role</h3>
-                  <p className="text-[11px] text-blue-100">Punjab College ERP Institutional Authority</p>
-                </div>
+        <div className="bg-white rounded-2xl w-full flex flex-col shadow-sm border border-blue-200 overflow-hidden animate-fadeIn my-4">
+          <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-linear-to-r from-[#00236f] to-[#1e3a8a] text-white">
+            <div className="flex items-center gap-2.5">
+              
+              <div>
+                <h3 className="text-base font-bold">Hire & Provision Staff Role</h3>
+                <p className="text-[11px] text-blue-100">Punjab College ERP Institutional Authority</p>
               </div>
-              <button
-                onClick={() => setIsHireModalOpen(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white cursor-pointer"
-              >
-                <span className="font-bold text-[10px]">✕</span>
-              </button>
             </div>
+            <button
+              onClick={() => setIsHireModalOpen(false)}
+              className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white cursor-pointer"
+            >
+              <span className="font-bold text-[10px]">✕</span>
+            </button>
+          </div>
 
-            <form onSubmit={handleHireSubmit} className="p-6 space-y-4 overflow-y-auto text-xs">
+          <form onSubmit={handleHireSubmit} className="p-6 space-y-4 text-xs">
               {/* Role Selection */}
               <div>
                 <label className="block text-[11px] font-bold text-[#191c1d] uppercase mb-1">
@@ -973,14 +972,12 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
               </div>
             </form>
           </div>
-        </div>
       )}
 
-      {/* Modal: Edit User Profile */}
+      {/* Inline Workspace: Edit User Profile (Zero Popups) */}
       {isEditModalOpen && selectedUser && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-[#f8f9fa]">
+        <div className="bg-white rounded-2xl w-full flex flex-col shadow-sm border border-blue-200 overflow-hidden animate-fadeIn my-4">
+          <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-[#f8f9fa]">
               <div className="flex items-center gap-2">
                 <Edit className="w-3.5 h-3.5 text-[#00236f]" />
                 <h3 className="text-sm font-bold text-[#191c1d]">Edit Employee Profile</h3>
@@ -1081,14 +1078,12 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
               </div>
             </form>
           </div>
-        </div>
       )}
 
-      {/* Modal: Override & Reset Password */}
+      {/* Inline Workspace: Override & Reset Password (Zero Popups) */}
       {isResetPasswordModalOpen && selectedUser && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-red-50 text-red-900">
+        <div className="bg-white rounded-2xl w-full shadow-sm border border-amber-300 overflow-hidden animate-fadeIn my-4">
+          <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-red-50 text-red-900">
               <div className="flex items-center gap-2">
                 
                 <h3 className="text-sm font-bold">Admin Password Reset Override</h3>
@@ -1147,14 +1142,12 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
               </div>
             </form>
           </div>
-        </div>
       )}
 
-      {/* Modal: Official Staff Credentials Slip */}
+      {/* Inline Card: Official Staff Credentials Slip (Zero Popups) */}
       {credentialsSlip && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="p-6 bg-linear-to-r from-[#00236f] to-[#1e3a8a] text-white text-center">
+        <div className="bg-white rounded-2xl w-full shadow-sm border border-blue-300 overflow-hidden animate-fadeIn my-4">
+          <div className="p-6 bg-linear-to-r from-[#00236f] to-[#1e3a8a] text-white text-center">
               
               <h3 className="text-lg font-bold mt-1">Staff Appointment & Credentials Slip</h3>
               <p className="text-[11px] text-blue-100 mt-0.5">EduCore Institutional Governance Authority</p>
@@ -1233,14 +1226,12 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
               </div>
             </div>
           </div>
-        </div>
       )}
 
-      {/* Modal: Super Admin Apex Override */}
+      {/* Inline Workspace: Super Admin Apex Override (Zero Popups) */}
       {isApexOverrideModalOpen && selectedUser && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full flex flex-col shadow-2xl border border-amber-300 overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="px-6 py-4 border-b border-amber-200 flex items-center justify-between bg-gradient-to-r from-amber-700 via-amber-800 to-[#00236f] text-white">
+        <div className="bg-white rounded-2xl w-full flex flex-col shadow-sm border border-amber-400 overflow-hidden animate-fadeIn my-4">
+          <div className="px-6 py-4 border-b border-amber-200 flex items-center justify-between bg-gradient-to-r from-amber-700 via-amber-800 to-[#00236f] text-white">
               <div className="flex items-center gap-2.5">
                 
                 <div>
@@ -1373,14 +1364,12 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
               </div>
             </form>
           </div>
-        </div>
       )}
 
-      {/* Modal: Status & Account Governance (Deactivation / Suspension / Resignation / AWOL) */}
+      {/* Inline Workspace: Status & Account Governance (Zero Popups) */}
       {isStatusModalOpen && statusTargetUser && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-gradient-to-r from-[#00236f] to-[#1e3a8a] text-white">
+        <div className="bg-white rounded-2xl w-full shadow-sm border border-slate-300 overflow-hidden animate-fadeIn my-4">
+          <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-gradient-to-r from-[#00236f] to-[#1e3a8a] text-white">
               <div className="flex items-center gap-2.5">
                 <span className="text-lg">⚙</span>
                 <div>
@@ -1502,15 +1491,12 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
               </div>
             </form>
           </div>
-        </div>
       )}
 
-      {/* Modal: Software Journey & User Forensic Audit (Recording 160 Mandate) */}
+      {/* Inline Workspace: Software Journey & User Forensic Audit (Zero Popups) */}
       {isJourneyModalOpen && journeyUser && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
-            {/* Header Ribbon */}
-            <div className="px-6 py-4 border-b border-slate-200 bg-linear-to-r from-[#00236f] to-[#1e3a8a] text-white flex items-center justify-between">
+        <div className="bg-white rounded-2xl w-full flex flex-col shadow-sm border border-slate-300 overflow-hidden animate-fadeIn my-4">
+          <div className="px-6 py-4 border-b border-slate-200 bg-linear-to-r from-[#00236f] to-[#1e3a8a] text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-lg font-bold font-mono">
                   {journeyUser.full_name.charAt(0)}
@@ -1736,7 +1722,6 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
               </button>
             </div>
           </div>
-        </div>
       )}
     </div>
   );

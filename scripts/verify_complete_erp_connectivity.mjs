@@ -177,15 +177,20 @@ async function run() {
   console.log('✓ Empty Room Deletion OK');
 
   // 13. Test Hostel Bed Allotment & Student Sync
+  const roomsRes = await fetch(`${BASE_URL}/api/hostel/rooms`, {
+    headers: { 'Authorization': `Bearer ${adminToken}` },
+  }).then(r => r.json());
+  const targetRoom = (roomsRes.rooms || []).find(r => r.current_occupancy < r.capacity) || { id: 'rm-301', room_number: '301' };
+
   const allotRes = await fetch(`${BASE_URL}/api/hostel/allot`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
     body: JSON.stringify({
-      student_uid: 'STU-2023-088',
+      student_uid: `STU-2023-${Date.now().toString().slice(-4)}`,
       student_name: 'Aryan Sharma',
       course_name: 'B.Tech CSE',
       semester: 4,
-      room_id: 'rm-102',
+      room_id: targetRoom.id,
       billing_cycle: 'semester',
       mess_enrolled: true,
     }),

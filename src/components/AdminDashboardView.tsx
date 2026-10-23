@@ -1165,33 +1165,32 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         </div>
       )}
 
-      {/* MODAL: EXECUTIVE STUDENT ENROLLMENT & DEPARTMENTAL LIFECYCLE DRILLDOWN (Karanvir Sir Seg 000 Mandate) */}
+      {/* INLINE WORKSPACE: EXECUTIVE STUDENT ENROLLMENT & DEPARTMENTAL LIFECYCLE DRILLDOWN (Zero Popups) */}
       {isEnrollmentDrilldownOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-4xl w-full shadow-2xl border border-slate-200 text-slate-900 space-y-5 max-h-[90vh] overflow-y-auto">
-            {/* Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div>
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-[#00236f] text-[10px] font-black uppercase tracking-wide border border-blue-200 mb-1">
-                  <span>Executive Governance Drilldown</span>
-                  <span>•</span>
-                  <span>Karanvir Sir Seg 000 Mandate</span>
-                </div>
-                <h2 className="text-lg font-black text-[#00236f] tracking-tight">
-                  Academic Topology & Departmental Student Status Matrix
-                </h2>
-                <p className="text-xs text-slate-500 font-medium">
-                  Autonomous Campus Cohort • Session {selectedTerm} • Real-Time Registrar Sync
-                </p>
+        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border-2 border-[#00236f]/30 text-slate-900 space-y-5 animate-in fade-in">
+          {/* Header */}
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-[#00236f] text-[10px] font-black uppercase tracking-wide border border-blue-200 mb-1">
+                <span>Executive Governance Drilldown</span>
+                <span>•</span>
+                <span>Inline Topology View</span>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsEnrollmentDrilldownOpen(false)}
-                className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <h2 className="text-lg font-black text-[#00236f] tracking-tight">
+                Academic Topology & Departmental Student Status Matrix
+              </h2>
+              <p className="text-xs text-slate-500 font-medium">
+                Autonomous Campus Cohort • Session {selectedTerm} • Real-Time Registrar Sync
+              </p>
             </div>
+            <button
+              type="button"
+              onClick={() => setIsEnrollmentDrilldownOpen(false)}
+              className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
             {/* PROMINENT TOP SUMMARY TOTAL BANNER (Karanvir Sir: "Sabse neeche mat dikhana, upar hi total dikhana hai tune... words mein na!") */}
             <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-900 to-[#001744] text-white shadow-md">
@@ -1322,8 +1321,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 };

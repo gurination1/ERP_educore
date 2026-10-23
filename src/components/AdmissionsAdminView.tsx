@@ -1389,11 +1389,10 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
         </div>
       )}
 
-      {/* Modal: Direct Indian College Admission Intake */}
+      {/* INLINE WORKSPACE: Direct Indian College Admission Intake (Zero Popups) */}
       {isDirectAdmitOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
-            {/* Header */}
+        <div className="mb-6 bg-white rounded-2xl w-full flex flex-col shadow-xl border-2 border-[#00236f]/30 overflow-hidden animate-in fade-in duration-200">
+          {/* Header */}
             <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-linear-to-r from-[#00236f] to-[#1e3a8a] text-white">
               <div className="flex items-center gap-2.5">
                 
@@ -1757,15 +1756,13 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 </button>
               </div>
             </form>
-          </div>
         </div>
       )}
 
-      {/* Modal: Official Admission & Temporary Credentials Slip */}
+      {/* INLINE WORKSPACE: Official Admission & Temporary Credentials Slip (Zero Popups) */}
       {credentialsSlip && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
-            {/* Printable Slip Header */}
+        <div className="mb-6 bg-white rounded-2xl w-full max-w-xl mx-auto shadow-2xl border-2 border-emerald-500/40 overflow-hidden animate-in fade-in zoom-in duration-200">
+          {/* Printable Slip Header */}
             <div className="p-6 bg-[#00236f] text-white text-center space-y-1">
               <div className="inline-block p-2 bg-white/10 rounded-full mb-1">
                 <span className="font-bold text-[10px]">✓</span>
@@ -1876,15 +1873,13 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 </button>
               </div>
             </div>
-          </div>
         </div>
       )}
 
-      {/* Modal: Faculty Scrutiny Committee Verification */}
+      {/* INLINE WORKSPACE: Faculty Scrutiny Committee Verification (Zero Popups) */}
       {scrutinyApplicant && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-xl w-full flex flex-col shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="px-6 py-4 border-b border-[#e1e3e4] bg-linear-to-r from-[#00236f] to-[#1e3a8a] text-white flex items-center justify-between">
+        <div className="mb-6 bg-white rounded-2xl w-full max-w-2xl mx-auto flex flex-col shadow-xl border-2 border-[#00236f]/30 overflow-hidden animate-in fade-in duration-200">
+          <div className="px-6 py-4 border-b border-[#e1e3e4] bg-linear-to-r from-[#00236f] to-[#1e3a8a] text-white flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 
                 <div>
@@ -2017,15 +2012,13 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 </button>
               </div>
             </div>
-          </div>
         </div>
       )}
 
-      {/* Modal: Rejection Confirmation with Reason */}
+      {/* INLINE WORKSPACE: Rejection Confirmation with Reason (Zero Popups) */}
       {rejectionApplicant && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-lg w-full flex flex-col shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#ba1a1a] text-white flex items-center justify-between">
+        <div className="mb-6 bg-white rounded-2xl w-full max-w-lg mx-auto flex flex-col shadow-xl border-2 border-red-500/40 overflow-hidden animate-in fade-in zoom-in duration-200">
+          <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#ba1a1a] text-white flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <span className="font-bold text-[10px]">✕</span>
                 <div>
@@ -2095,15 +2088,13 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 </button>
               </div>
             </div>
-          </div>
         </div>
       )}
 
-      {/* Modal: Log Follow-Up Counseling Interaction */}
+      {/* INLINE WORKSPACE: Log Follow-Up Counseling Interaction (Zero Popups) */}
       {selectedLeadForFollowup && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-lg w-full flex flex-col shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#00236f] text-white flex items-center justify-between">
+        <div className="mb-6 bg-white rounded-2xl w-full max-w-lg mx-auto flex flex-col shadow-xl border-2 border-[#00236f]/30 overflow-hidden animate-in fade-in zoom-in duration-200">
+          <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#00236f] text-white flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 
                 <div>
@@ -2219,15 +2210,13 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 </button>
               </div>
             </form>
-          </div>
         </div>
       )}
 
-      {/* Modal: Lead Interaction & Follow-Up Audit Timeline */}
+      {/* INLINE WORKSPACE: Lead Interaction & Follow-Up Audit Timeline (Zero Popups) */}
       {selectedLeadForHistory && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#00236f] text-white flex items-center justify-between">
+        <div className="mb-6 bg-white rounded-2xl w-full max-w-xl mx-auto flex flex-col shadow-xl border-2 border-[#00236f]/30 overflow-hidden animate-in fade-in zoom-in duration-200">
+          <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#00236f] text-white flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 
                 <div>
@@ -2289,17 +2278,16 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 Close Timeline
               </button>
             </div>
-          </div>
         </div>
       )}
 
       {/* ========================================================================= */}
       {/* KARANVIR SIR LECTURE 4: TOKEN FEE RECEIPT VERIFICATION MODAL DIALOG       */}
       {/* ========================================================================= */}
+      {/* INLINE WORKSPACE: KARANVIR SIR LECTURE 4: TOKEN FEE RECEIPT VERIFICATION (Zero Popups) */}
       {feeVerifyingApplicant && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden text-xs">
-            <div className="px-5 py-4 bg-[#00236f] text-white flex items-center justify-between">
+        <div className="mb-6 bg-white rounded-2xl w-full max-w-md mx-auto shadow-xl border-2 border-[#00236f]/30 overflow-hidden text-xs animate-fade-in">
+          <div className="px-5 py-4 bg-[#00236f] text-white flex items-center justify-between">
               <div>
                 <h4 className="font-bold text-sm flex items-center gap-2">
                   <Lock className="w-4 h-4 text-blue-200" />
@@ -2387,7 +2375,6 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 </button>
               </div>
             </form>
-          </div>
         </div>
       )}
 

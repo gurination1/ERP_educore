@@ -465,11 +465,10 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         </div>
       </div>
 
-      {/* CBCS Semester Grade Card & Results Gazette Modal */}
+      {/* INLINE WORKSPACE: CBCS Semester Grade Card & Results Gazette (Zero Popups) */}
       {showGradeCardModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-2xl w-full p-6 space-y-4 animate-scaleUp">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="mt-6 bg-white rounded-2xl shadow-xl border-2 border-[#00236f]/30 p-6 space-y-4 animate-scaleUp">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <span className="text-[10px] font-bold tracking-widest text-[#ea580c] uppercase block">Maharaja Ranjit Singh Punjab Technical University</span>
                 <h3 className="text-base font-extrabold text-[#00236f]">Official CBCS Semester Grade Card & Results Gazette</h3>
@@ -586,8 +585,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
               </div>
             )}
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 };

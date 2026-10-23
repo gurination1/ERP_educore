@@ -8,6 +8,8 @@ import { ShieldCheck } from 'lucide-react';
 interface AcademicsViewProps {
   currentUser: User | null;
   onOpenMasterTables?: (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents' | 'hostel' | 'fees' | 'employee') => void;
+  selectedCampus?: 'campus_01' | 'campus_02' | 'all';
+  onCampusChange?: (c: 'campus_01' | 'campus_02' | 'all') => void;
 }
 
 interface SyllabusUnit {
@@ -159,7 +161,12 @@ type AcademicTab =
   | 'timetable'
   | 'attendance';
 
-export const AcademicsView: React.FC<AcademicsViewProps> = ({ currentUser, onOpenMasterTables }) => {
+export const AcademicsView: React.FC<AcademicsViewProps> = ({
+  currentUser,
+  onOpenMasterTables,
+  selectedCampus = 'campus_01',
+  onCampusChange,
+}) => {
   const [searchParams] = useSearchParams();
   const rawTab = searchParams.get('tab');
   const urlTab = (rawTab === 'cbcs' ? 'syllabus' : rawTab) as AcademicTab | null;
@@ -594,6 +601,16 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
         </div>
 
         <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 border border-amber-200/80 rounded-lg text-amber-900 font-semibold text-[11px]">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+            <span>
+              {selectedCampus === 'campus_02'
+                ? 'Faridkot Campus 02 (Regional)'
+                : selectedCampus === 'all'
+                ? 'All Campuses'
+                : 'Bathinda Campus 01 (Main)'}
+            </span>
+          </div>
           {onOpenMasterTables && (
             <button
               type="button"
@@ -889,6 +906,98 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
                       Approve All Pending ({batches.filter(b => b.approval_status === 'pending_approval').length})
                     </button>
                   )}
+                </div>
+              )}
+
+              {/* INLINE WORKSPACE: BATCH PROMOTION WORKFLOW (Zero Popups) */}
+              {isPromotingBatch && (
+                <div className="bg-white rounded-2xl p-5 border-2 border-[#ea580c]/30 shadow-md space-y-4 text-xs animate-in fade-in">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                    <h3 className="text-sm font-black text-[#00236f] flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded bg-orange-100 text-[#ea580c] text-[10px] uppercase font-bold">Promotion Canvas</span>
+                      <span>Promote Academic Batch & Enrolled Scholars (Inline Workflow)</span>
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setIsPromotingBatch(false)}
+                      className="px-2.5 py-1 rounded-lg hover:bg-slate-100 text-slate-500 font-bold"
+                    >
+                      ✕ Close Form
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleExecuteBatchPromotion} className="space-y-4">
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">Source Current Batch:</label>
+                      <select
+                        value={promoteSourceBatchId}
+                        onChange={e => setPromoteSourceBatchId(e.target.value)}
+                        className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-white"
+                      >
+                        {batches.map(b => (
+                          <option key={b.id} value={b.id}>
+                            {b.batch_name} ({b.course_id?.toUpperCase()})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="font-bold text-slate-700 block mb-1">Target Promoted Semester:</label>
+                        <select
+                          value={promoteTargetSemester}
+                          onChange={e => setPromoteTargetSemester(Number(e.target.value))}
+                          className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-white"
+                        >
+                          {[2, 3, 4, 5, 6, 7, 8].map(s => (
+                            <option key={s} value={s}>Semester {s}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="font-bold text-slate-700 block mb-1">Target Academic Session:</label>
+                        <input
+                          type="text"
+                          value={promoteSession}
+                          onChange={e => setPromoteSession(e.target.value)}
+                          className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-900 leading-relaxed font-semibold">
+                      Ordinance Gate: Only scholars satisfying the {promoteAttendanceCutoff}% biometric attendance threshold and passing minimum core credits will transition to the promoted roster. Dues clearance verified.
+                    </div>
+
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">Dean / HOD Statutory Authorization:</label>
+                      <input
+                        type="text"
+                        value={promoteApprovalDean}
+                        onChange={e => setPromoteApprovalDean(e.target.value)}
+                        className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50"
+                        required
+                      />
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                      <button
+                        type="button"
+                        onClick={() => setIsPromotingBatch(false)}
+                        className="px-3.5 py-1.5 rounded-xl font-bold text-slate-600 hover:bg-slate-100"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-4 py-1.5 rounded-xl font-bold bg-[#ea580c] hover:bg-[#c2410c] text-white shadow-sm"
+                      >
+                        Execute Batch Promotion & Advance Roster
+                      </button>
+                    </div>
+                  </form>
                 </div>
               )}
 
@@ -1268,6 +1377,62 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
             </div>
           </div>
 
+          {/* INLINE WORKSPACE: NON-DESTRUCTIVE SECTION TRANSFER (Zero Popups) */}
+          {isTransferModalOpen && (
+            <div className="bg-white rounded-2xl border-2 border-indigo-200 shadow-md p-5 space-y-3 animate-fade-in">
+              <div className="pb-2.5 border-b border-slate-200 flex items-center justify-between">
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm">Non-Destructive Section Transfer (Inline Action)</h4>
+                  <p className="text-[11px] text-slate-500">Transfers student while retaining all cumulative attendance logs and ledger records</p>
+                </div>
+                <button onClick={() => setIsTransferModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold px-2 py-1 rounded hover:bg-slate-100">✕ Close</button>
+              </div>
+              <form onSubmit={handleSectionTransfer} className="space-y-3">
+                <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-[11px] flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>All historical attendance percentages and fee accounts remain intact without destructive wipes.</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Student ID / Roll No *</label>
+                    <input
+                      type="text"
+                      required
+                      value={transferData.student_id}
+                      onChange={e => setTransferData(prev => ({ ...prev, student_id: e.target.value }))}
+                      className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Target Section *</label>
+                    <select
+                      value={transferData.target_section_id}
+                      onChange={e => setTransferData(prev => ({ ...prev, target_section_id: e.target.value }))}
+                      className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                    >
+                      <option value="sec-cse-a">Section A (Room 101)</option>
+                      <option value="sec-cse-b">Section B (Room 102)</option>
+                      <option value="sec-ece-a">ECE Section A</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Administrative Reason</label>
+                  <input
+                    type="text"
+                    value={transferData.reason}
+                    onChange={e => setTransferData(prev => ({ ...prev, reason: e.target.value }))}
+                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                  <button type="button" onClick={() => setIsTransferModalOpen(false)} className="px-3 py-1.5 text-xs text-slate-600">Cancel</button>
+                  <button type="submit" className="px-4 py-1.5 text-xs font-bold text-white bg-[#00236f] rounded-lg">Execute Transfer</button>
+                </div>
+              </form>
+            </div>
+          )}
+
           <div className="bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-xs">
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-50 border-b border-slate-200 font-semibold text-slate-700">
@@ -1314,6 +1479,158 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
               + Add Subject to Matrix
             </button>
           </div>
+
+          {/* INLINE WORKSPACE: ADD SUBJECT (Zero Popups) */}
+          {isAddSubjectOpen && (
+            <div className="bg-white rounded-2xl border-2 border-[#00236f]/30 shadow-md p-5 space-y-3.5 animate-fade-in">
+              <div className="pb-2.5 border-b border-slate-200 flex items-center justify-between">
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm">Add Curriculum Subject (Inline Workspace)</h4>
+                  <p className="text-[11px] text-slate-500 font-mono">Formula: [NAME]_[COURSE]_[TERM]</p>
+                </div>
+                <button onClick={() => setIsAddSubjectOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold px-2 py-1 rounded hover:bg-slate-100">✕ Close</button>
+              </div>
+              <form onSubmit={handleCreateSubject} className="space-y-3.5">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Course Code *</label>
+                    <select
+                      value={newSubject.course_id}
+                      onChange={e => setNewSubject(prev => ({ ...prev, course_id: e.target.value }))}
+                      className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                    >
+                      <option value="cse">CSE (B.Tech Computer Science)</option>
+                      <option value="ece">ECE (B.Tech Electronics)</option>
+                      <option value="mech">MECH (Mechanical)</option>
+                      <option value="civil">CIVIL (Civil Engg)</option>
+                      <option value="mba">MBA (Management)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Term / Semester *</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="10"
+                      required
+                      value={newSubject.term_number}
+                      onChange={e => setNewSubject(prev => ({ ...prev, term_number: parseInt(e.target.value) || 1 }))}
+                      className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Subject Name *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Distributed Database Systems"
+                    value={newSubject.subject_name}
+                    onChange={e => setNewSubject(prev => ({ ...prev, subject_name: e.target.value }))}
+                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Subject Classification *</label>
+                    <select
+                      value={newSubject.subject_type}
+                      onChange={e => {
+                        const val = e.target.value;
+                        setNewSubject(prev => ({
+                          ...prev,
+                          subject_type: val as any,
+                          take_attendance: val === 'free_period' ? false : prev.take_attendance,
+                          take_exam: val === 'free_period' ? false : prev.take_exam,
+                          show_in_report_card: val === 'free_period' ? false : prev.show_in_report_card,
+                        }));
+                      }}
+                      className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg font-semibold"
+                    >
+                      <option value="compulsory">Compulsory Theory</option>
+                      <option value="elective">Elective</option>
+                      <option value="practical">Practical / Lab</option>
+                      <option value="free_period">Free Period (FC - Auto Present)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Credits *</label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      min="0"
+                      max="10"
+                      required
+                      value={newSubject.credits}
+                      onChange={e => setNewSubject(prev => ({ ...prev, credits: parseFloat(e.target.value) || 0 }))}
+                      className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                    />
+                  </div>
+                </div>
+
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                  <span className="text-[11px] font-bold text-slate-900 block">Evaluation & Attendance Gates:</span>
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={newSubject.take_exam}
+                        onChange={e => setNewSubject(prev => ({ ...prev, take_exam: e.target.checked }))}
+                        className="rounded text-[#00236f] focus:ring-[#00236f]"
+                      />
+                      <span><strong>take_exam</strong> — Subject requires university/internal examination</span>
+                    </label>
+                    <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={newSubject.show_in_report_card}
+                        onChange={e => setNewSubject(prev => ({ ...prev, show_in_report_card: e.target.checked }))}
+                        className="rounded text-[#00236f] focus:ring-[#00236f]"
+                      />
+                      <span><strong>show_in_report_card</strong> — Display on academic transcript & grade sheet</span>
+                    </label>
+                    <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={newSubject.take_attendance}
+                        onChange={e => setNewSubject(prev => ({ ...prev, take_attendance: e.target.checked }))}
+                        className="rounded text-[#00236f] focus:ring-[#00236f]"
+                      />
+                      <span><strong>take_attendance</strong> — Track daily lecture attendance (Uncheck for FC / Free Period)</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Max Marks</label>
+                    <input
+                      type="number"
+                      value={newSubject.max_marks}
+                      onChange={e => setNewSubject(prev => ({ ...prev, max_marks: parseInt(e.target.value) || 100 }))}
+                      className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Pass Marks</label>
+                    <input
+                      type="number"
+                      value={newSubject.pass_marks}
+                      onChange={e => setNewSubject(prev => ({ ...prev, pass_marks: parseInt(e.target.value) || 40 }))}
+                      className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                  <button type="button" onClick={() => setIsAddSubjectOpen(false)} className="px-3 py-1.5 text-xs text-slate-600">Cancel</button>
+                  <button type="submit" className="px-4 py-1.5 text-xs font-bold text-white bg-[#00236f] rounded-lg">Register Subject</button>
+                </div>
+              </form>
+            </div>
+          )}
 
           <div className="bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-xs">
             <table className="w-full text-left text-xs">
@@ -1367,6 +1684,59 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
               <p className="text-slate-500 text-xs">Track faculty assignment validity dates (valid_from, valid_until) and trigger mid-term successor handovers.</p>
             </div>
           </div>
+
+          {/* INLINE WORKSPACE: FACULTY HANDOVER (Zero Popups) */}
+          {isHandoverModalOpen && selectedAllocation && (
+            <div className="bg-white rounded-2xl border-2 border-amber-300 shadow-md p-5 space-y-3 animate-fade-in">
+              <div className="pb-2.5 border-b border-slate-200 flex items-center justify-between">
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm">Faculty Subject Handover (Inline Action)</h4>
+                  <p className="text-[11px] text-slate-500">Relieving <strong>{selectedAllocation.faculty_id}</strong> for <strong>{selectedAllocation.subject_id}</strong></p>
+                </div>
+                <button onClick={() => setIsHandoverModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold px-2 py-1 rounded hover:bg-slate-100">✕ Close</button>
+              </div>
+              <form onSubmit={handleHandoverAllocation} className="space-y-3">
+                <p className="text-xs text-slate-600">
+                  Successor takes charge automatically from the next calendar day. Historical attendance marks remain immutably attributed to each instructor.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Successor Faculty ID *</label>
+                    <input
+                      type="text"
+                      required
+                      value={handoverData.new_faculty_id}
+                      onChange={e => setHandoverData(prev => ({ ...prev, new_faculty_id: e.target.value }))}
+                      className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Handover Effective Date *</label>
+                    <input
+                      type="date"
+                      required
+                      value={handoverData.handover_date}
+                      onChange={e => setHandoverData(prev => ({ ...prev, handover_date: e.target.value }))}
+                      className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Reason for Handover</label>
+                  <input
+                    type="text"
+                    value={handoverData.reason}
+                    onChange={e => setHandoverData(prev => ({ ...prev, reason: e.target.value }))}
+                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                  <button type="button" onClick={() => setIsHandoverModalOpen(false)} className="px-3 py-1.5 text-xs text-slate-600">Cancel</button>
+                  <button type="submit" className="px-4 py-1.5 text-xs font-bold text-white bg-amber-600 rounded-lg">Confirm Handover</button>
+                </div>
+              </form>
+            </div>
+          )}
 
           <div className="bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-xs">
             <table className="w-full text-left text-xs">
@@ -1432,6 +1802,130 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
               + Add Slot
             </button>
           </div>
+
+          {/* INLINE WORKSPACE: ADD TIMETABLE SLOT (Zero Popups) */}
+          {isAddSlotOpen && (
+            <div className="bg-white rounded-2xl border-2 border-blue-300 shadow-md p-5 space-y-3 animate-fade-in">
+              <div className="pb-2.5 border-b border-slate-200 flex items-center justify-between">
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm">Add Timetable Lecture Slot (Inline Action)</h4>
+                  <p className="text-[11px] text-slate-500 font-mono">Conflict detection & Combined Classes (CC)</p>
+                </div>
+                <button onClick={() => setIsAddSlotOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold px-2 py-1 rounded hover:bg-slate-100">✕ Close</button>
+              </div>
+              <form onSubmit={handleCreateTimetableSlot} className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Batch ID *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newSlot.batch_id}
+                      onChange={e => setNewSlot(prev => ({ ...prev, batch_id: e.target.value }))}
+                      className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Section ID</label>
+                    <input
+                      type="text"
+                      value={newSlot.section_id}
+                      onChange={e => setNewSlot(prev => ({ ...prev, section_id: e.target.value }))}
+                      className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Subject Code / ID *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. CS101 or sub-cs-101"
+                      value={newSlot.subject_id}
+                      onChange={e => setNewSlot(prev => ({ ...prev, subject_id: e.target.value }))}
+                      className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Faculty ID *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. usr-staff-01"
+                      value={newSlot.faculty_id}
+                      onChange={e => setNewSlot(prev => ({ ...prev, faculty_id: e.target.value }))}
+                      className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Day *</label>
+                    <select
+                      value={newSlot.day_of_week}
+                      onChange={e => setNewSlot(prev => ({ ...prev, day_of_week: e.target.value }))}
+                      className="w-full px-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                    >
+                      {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map(d => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Start *</label>
+                    <input
+                      type="time"
+                      required
+                      value={newSlot.start_time}
+                      onChange={e => setNewSlot(prev => ({ ...prev, start_time: e.target.value }))}
+                      className="w-full px-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">End *</label>
+                    <input
+                      type="time"
+                      required
+                      value={newSlot.end_time}
+                      onChange={e => setNewSlot(prev => ({ ...prev, end_time: e.target.value }))}
+                      className="w-full px-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Room / Lab Number</label>
+                  <input
+                    type="text"
+                    value={newSlot.room_number}
+                    onChange={e => setNewSlot(prev => ({ ...prev, room_number: e.target.value }))}
+                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                  />
+                </div>
+
+                <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-xl">
+                  <label className="flex items-center gap-2 text-xs text-blue-900 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newSlot.is_combined_class}
+                      onChange={e => setNewSlot(prev => ({ ...prev, is_combined_class: e.target.checked }))}
+                      className="rounded text-[#00236f] focus:ring-[#00236f]"
+                    />
+                    <span><strong>Combined Class (CC)</strong> — Merge across multiple batches into single lecture</span>
+                  </label>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                  <button type="button" onClick={() => setIsAddSlotOpen(false)} className="px-3 py-1.5 text-xs text-slate-600">Cancel</button>
+                  <button type="submit" className="px-4 py-1.5 text-xs font-bold text-white bg-[#00236f] rounded-lg">Schedule Slot</button>
+                </div>
+              </form>
+            </div>
+          )}
 
           <div className="bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-xs">
             <table className="w-full text-left text-xs">
@@ -1529,539 +2023,7 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
         </div>
       )}
 
-      {/* Modals: Create Batch */}
-      {isAddBatchOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
-            <div className="px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-              <h4 className="font-bold text-slate-900">Create Academic Batch (Level 4)</h4>
-              <button onClick={() => setIsAddBatchOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
-            </div>
-            <form onSubmit={handleCreateBatch} className="p-5 space-y-3">
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Batch Name *</label>
-                <input
-                  type="text"
-                  required
-                  value={newBatch.batch_name}
-                  onChange={e => setNewBatch(prev => ({ ...prev, batch_name: e.target.value }))}
-                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Start Year</label>
-                  <input
-                    type="number"
-                    value={newBatch.start_year}
-                    onChange={e => setNewBatch(prev => ({ ...prev, start_year: parseInt(e.target.value, 10) }))}
-                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">End Year</label>
-                  <input
-                    type="number"
-                    value={newBatch.end_year}
-                    onChange={e => setNewBatch(prev => ({ ...prev, end_year: parseInt(e.target.value, 10) }))}
-                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Academic System</label>
-                <select
-                  value={newBatch.academic_system}
-                  onChange={e => setNewBatch(prev => ({ ...prev, academic_system: e.target.value as any }))}
-                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
-                >
-                  <option value="semester">Semester System (8 Terms)</option>
-                  <option value="annual">Annual System (4 Terms)</option>
-                </select>
-              </div>
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-                <button type="button" onClick={() => setIsAddBatchOpen(false)} className="px-3 py-1.5 text-xs text-slate-600">Cancel</button>
-                <button type="submit" className="px-4 py-1.5 text-xs font-bold text-white bg-[#00236f] rounded-lg">Create</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modals: Non-destructive Section Transfer */}
-      {isTransferModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
-            <div className="px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-              <h4 className="font-bold text-slate-900">Non-Destructive Section Transfer</h4>
-              <button onClick={() => setIsTransferModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
-            </div>
-            <form onSubmit={handleSectionTransfer} className="p-5 space-y-3">
-              <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-[11px] flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>All historical attendance percentages and fee accounts remain intact without destructive wipes.</span>
-              </div>
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Student ID / Roll No *</label>
-                <input
-                  type="text"
-                  required
-                  value={transferData.student_id}
-                  onChange={e => setTransferData(prev => ({ ...prev, student_id: e.target.value }))}
-                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg font-mono"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Target Section *</label>
-                <select
-                  value={transferData.target_section_id}
-                  onChange={e => setTransferData(prev => ({ ...prev, target_section_id: e.target.value }))}
-                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
-                >
-                  <option value="sec-cse-a">Section A (Room 101)</option>
-                  <option value="sec-cse-b">Section B (Room 102)</option>
-                  <option value="sec-ece-a">ECE Section A</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Administrative Reason</label>
-                <input
-                  type="text"
-                  value={transferData.reason}
-                  onChange={e => setTransferData(prev => ({ ...prev, reason: e.target.value }))}
-                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-                <button type="button" onClick={() => setIsTransferModalOpen(false)} className="px-3 py-1.5 text-xs text-slate-600">Cancel</button>
-                <button type="submit" className="px-4 py-1.5 text-xs font-bold text-white bg-[#00236f] rounded-lg">Execute Transfer</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modals: Handover Faculty */}
-      {isHandoverModalOpen && selectedAllocation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
-            <div className="px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-              <h4 className="font-bold text-slate-900">Faculty Subject Handover</h4>
-              <button onClick={() => setIsHandoverModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
-            </div>
-            <form onSubmit={handleHandoverAllocation} className="p-5 space-y-3">
-              <p className="text-xs text-slate-600">
-                Relieving <strong>{selectedAllocation.faculty_id}</strong> for subject <strong>{selectedAllocation.subject_id}</strong>. Successor takes charge automatically from the next calendar day.
-              </p>
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Successor Faculty ID *</label>
-                <input
-                  type="text"
-                  required
-                  value={handoverData.new_faculty_id}
-                  onChange={e => setHandoverData(prev => ({ ...prev, new_faculty_id: e.target.value }))}
-                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Handover Effective Date *</label>
-                <input
-                  type="date"
-                  required
-                  value={handoverData.handover_date}
-                  onChange={e => setHandoverData(prev => ({ ...prev, handover_date: e.target.value }))}
-                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Reason for Handover</label>
-                <input
-                  type="text"
-                  value={handoverData.reason}
-                  onChange={e => setHandoverData(prev => ({ ...prev, reason: e.target.value }))}
-                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-                <button type="button" onClick={() => setIsHandoverModalOpen(false)} className="px-3 py-1.5 text-xs text-slate-600">Cancel</button>
-                <button type="submit" className="px-4 py-1.5 text-xs font-bold text-white bg-amber-600 rounded-lg">Confirm Handover</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal: Add Subject */}
-      {isAddSubjectOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden">
-            <div className="px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-              <div>
-                <h4 className="font-bold text-slate-900 text-sm">Add Curriculum Subject</h4>
-                <p className="text-[11px] text-slate-500 font-mono">Formula: [NAME]_[COURSE]_[TERM]</p>
-              </div>
-              <button onClick={() => setIsAddSubjectOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
-            </div>
-            <form onSubmit={handleCreateSubject} className="p-5 space-y-3.5">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Course Code *</label>
-                  <select
-                    value={newSubject.course_id}
-                    onChange={e => setNewSubject(prev => ({ ...prev, course_id: e.target.value }))}
-                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
-                  >
-                    <option value="cse">CSE (B.Tech Computer Science)</option>
-                    <option value="ece">ECE (B.Tech Electronics)</option>
-                    <option value="mech">MECH (Mechanical)</option>
-                    <option value="civil">CIVIL (Civil Engg)</option>
-                    <option value="mba">MBA (Management)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Term / Semester *</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="10"
-                    required
-                    value={newSubject.term_number}
-                    onChange={e => setNewSubject(prev => ({ ...prev, term_number: parseInt(e.target.value) || 1 }))}
-                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Subject Name *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Distributed Database Systems"
-                  value={newSubject.subject_name}
-                  onChange={e => setNewSubject(prev => ({ ...prev, subject_name: e.target.value }))}
-                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Subject Classification *</label>
-                  <select
-                    value={newSubject.subject_type}
-                    onChange={e => {
-                      const val = e.target.value;
-                      setNewSubject(prev => ({
-                        ...prev,
-                        subject_type: val as any,
-                        take_attendance: val === 'free_period' ? false : prev.take_attendance,
-                        take_exam: val === 'free_period' ? false : prev.take_exam,
-                        show_in_report_card: val === 'free_period' ? false : prev.show_in_report_card,
-                      }));
-                    }}
-                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg font-semibold"
-                  >
-                    <option value="compulsory">Compulsory Theory</option>
-                    <option value="elective">Elective</option>
-                    <option value="practical">Practical / Lab</option>
-                    <option value="free_period">Free Period (FC - Auto Present)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Credits *</label>
-                  <input
-                    type="number"
-                    step="0.5"
-                    min="0"
-                    max="10"
-                    required
-                    value={newSubject.credits}
-                    onChange={e => setNewSubject(prev => ({ ...prev, credits: parseFloat(e.target.value) || 0 }))}
-                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
-                  />
-                </div>
-              </div>
-
-              {/* 3 Evaluation Checkboxes (Karanvir Sir Mandatory Rule) */}
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                <span className="text-[11px] font-bold text-slate-900 block">Evaluation & Attendance Gates:</span>
-                <div className="space-y-1.5">
-                  <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={newSubject.take_exam}
-                      onChange={e => setNewSubject(prev => ({ ...prev, take_exam: e.target.checked }))}
-                      className="rounded text-[#00236f] focus:ring-[#00236f]"
-                    />
-                    <span><strong>take_exam</strong> — Subject requires university/internal examination</span>
-                  </label>
-                  <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={newSubject.show_in_report_card}
-                      onChange={e => setNewSubject(prev => ({ ...prev, show_in_report_card: e.target.checked }))}
-                      className="rounded text-[#00236f] focus:ring-[#00236f]"
-                    />
-                    <span><strong>show_in_report_card</strong> — Display on academic transcript & grade sheet</span>
-                  </label>
-                  <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={newSubject.take_attendance}
-                      onChange={e => setNewSubject(prev => ({ ...prev, take_attendance: e.target.checked }))}
-                      className="rounded text-[#00236f] focus:ring-[#00236f]"
-                    />
-                    <span><strong>take_attendance</strong> — Track daily lecture attendance (Uncheck for FC / Free Period)</span>
-                  </label>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Max Marks</label>
-                  <input
-                    type="number"
-                    value={newSubject.max_marks}
-                    onChange={e => setNewSubject(prev => ({ ...prev, max_marks: parseInt(e.target.value) || 100 }))}
-                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Pass Marks</label>
-                  <input
-                    type="number"
-                    value={newSubject.pass_marks}
-                    onChange={e => setNewSubject(prev => ({ ...prev, pass_marks: parseInt(e.target.value) || 40 }))}
-                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-                <button type="button" onClick={() => setIsAddSubjectOpen(false)} className="px-3 py-1.5 text-xs text-slate-600">Cancel</button>
-                <button type="submit" className="px-4 py-1.5 text-xs font-bold text-white bg-[#00236f] rounded-lg">Register Subject</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal: Add Timetable Slot */}
-      {isAddSlotOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
-            <div className="px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-              <div>
-                <h4 className="font-bold text-slate-900 text-sm">Add Timetable Lecture Slot</h4>
-                <p className="text-[11px] text-slate-500 font-mono">Conflict detection & Combined Classes (CC)</p>
-              </div>
-              <button onClick={() => setIsAddSlotOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
-            </div>
-            <form onSubmit={handleCreateTimetableSlot} className="p-5 space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Batch ID *</label>
-                  <input
-                    type="text"
-                    required
-                    value={newSlot.batch_id}
-                    onChange={e => setNewSlot(prev => ({ ...prev, batch_id: e.target.value }))}
-                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Section ID</label>
-                  <input
-                    type="text"
-                    value={newSlot.section_id}
-                    onChange={e => setNewSlot(prev => ({ ...prev, section_id: e.target.value }))}
-                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg font-mono"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Subject Code / ID *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. CS101 or sub-cs-101"
-                  value={newSlot.subject_id}
-                  onChange={e => setNewSlot(prev => ({ ...prev, subject_id: e.target.value }))}
-                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Faculty ID *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. usr-staff-01"
-                  value={newSlot.faculty_id}
-                  onChange={e => setNewSlot(prev => ({ ...prev, faculty_id: e.target.value }))}
-                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg font-mono"
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Day *</label>
-                  <select
-                    value={newSlot.day_of_week}
-                    onChange={e => setNewSlot(prev => ({ ...prev, day_of_week: e.target.value }))}
-                    className="w-full px-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
-                  >
-                    {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map(d => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Start *</label>
-                  <input
-                    type="time"
-                    required
-                    value={newSlot.start_time}
-                    onChange={e => setNewSlot(prev => ({ ...prev, start_time: e.target.value }))}
-                    className="w-full px-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">End *</label>
-                  <input
-                    type="time"
-                    required
-                    value={newSlot.end_time}
-                    onChange={e => setNewSlot(prev => ({ ...prev, end_time: e.target.value }))}
-                    className="w-full px-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Room / Lab Number</label>
-                <input
-                  type="text"
-                  value={newSlot.room_number}
-                  onChange={e => setNewSlot(prev => ({ ...prev, room_number: e.target.value }))}
-                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
-                />
-              </div>
-
-              <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-xl">
-                <label className="flex items-center gap-2 text-xs text-blue-900 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={newSlot.is_combined_class}
-                    onChange={e => setNewSlot(prev => ({ ...prev, is_combined_class: e.target.checked }))}
-                    className="rounded text-[#00236f] focus:ring-[#00236f]"
-                  />
-                  <span><strong>Combined Class (CC)</strong> — Merge across multiple batches into single lecture</span>
-                </label>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-                <button type="button" onClick={() => setIsAddSlotOpen(false)} className="px-3 py-1.5 text-xs text-slate-600">Cancel</button>
-                <button type="submit" className="px-4 py-1.5 text-xs font-bold text-white bg-[#00236f] rounded-lg">Schedule Slot</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-      {/* MODAL: BATCH PROMOTION WORKFLOW (Karanvir Sir Lecture 4 Segment 4) */}
-      {isPromotingBatch && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-slate-100 space-y-4 text-xs">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-black text-[#00236f] flex items-center gap-2">
-                <span>Promote Academic Batch & Enrolled Scholars</span>
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsPromotingBatch(false)}
-                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 font-bold"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleExecuteBatchPromotion} className="space-y-4">
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">Source Current Batch:</label>
-                <select
-                  value={promoteSourceBatchId}
-                  onChange={e => setPromoteSourceBatchId(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-white"
-                >
-                  {batches.map(b => (
-                    <option key={b.id} value={b.id}>
-                      {b.batch_name} ({b.course_id?.toUpperCase()})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">Target Promoted Semester:</label>
-                  <select
-                    value={promoteTargetSemester}
-                    onChange={e => setPromoteTargetSemester(Number(e.target.value))}
-                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-white"
-                  >
-                    {[2, 3, 4, 5, 6, 7, 8].map(s => (
-                      <option key={s} value={s}>Semester {s}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">Target Academic Session:</label>
-                  <input
-                    type="text"
-                    value={promoteSession}
-                    onChange={e => setPromoteSession(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50"
-                  />
-                </div>
-              </div>
-
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-[11px] text-amber-900 leading-relaxed font-semibold">
-                Ordinance Gate: Only scholars satisfying the {promoteAttendanceCutoff}% biometric attendance threshold and passing minimum core credits will transition to the promoted roster. Dues clearance verified.
-              </div>
-
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">Dean / HOD Statutory Authorization:</label>
-                <input
-                  type="text"
-                  value={promoteApprovalDean}
-                  onChange={e => setPromoteApprovalDean(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50"
-                  required
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsPromotingBatch(false)}
-                  className="px-4 py-2 rounded-xl font-bold text-slate-600 hover:bg-slate-100"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl font-bold bg-[#ea580c] hover:bg-[#c2410c] text-white shadow-sm"
-                >
-                  Execute Batch Promotion & Advance Roster
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
+      {/* Attendance Lock Ordinance inline modal is retained above */}
     </div>
   );
 };

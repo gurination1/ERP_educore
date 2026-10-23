@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { safeGoBack } from '../utils/navigation';
 import { api, setStoredToken, setStoredUser } from '../api/client';
 import { User, MasterData, MasterDepartment, MasterDegree, MasterState } from '../types';
-import { Building2, Plus, Check, Layers, ShieldCheck } from 'lucide-react';
+import { MasterTablesModal } from './MasterTablesModal';
+import { Building2, Plus, Check, Layers, ShieldCheck, ArrowRight } from 'lucide-react';
 
 interface Tenant {
   id: string;
@@ -39,8 +40,8 @@ export const TenantsManagementView: React.FC<TenantsManagementViewProps> = ({ cu
   const [impersonatingId, setImpersonatingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
-  // Add Tenant Modal with Master Tables Integration (Karanvir Sir Lecture 3 & 4)
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  // ZERO POPUP INLINE TABS
+  const [activeTab, setActiveTab] = useState<'list' | 'onboard' | 'masters'>('list');
   const [newTenant, setNewTenant] = useState({
     client_name: '',
     short_code: '',
@@ -287,7 +288,7 @@ export const TenantsManagementView: React.FC<TenantsManagementViewProps> = ({ cu
         }).catch(() => null);
 
         setTenants(prev => [res.tenant, ...prev]);
-        setIsAddModalOpen(false);
+        setActiveTab('list');
         setFeedback({
           type: 'success',
           message: `Collegiate Client ${newTenant.client_name} successfully provisioned with ${newTenant.selected_departments.length} departments, ${newTenant.selected_degrees.length} degrees, and dedicated database tenant!`,
@@ -388,15 +389,42 @@ export const TenantsManagementView: React.FC<TenantsManagementViewProps> = ({ cu
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200/80">
             <button
-              onClick={() => setIsAddModalOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#00236f] hover:bg-[#001950] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors cursor-pointer"
+              type="button"
+              onClick={() => setActiveTab('list')}
+              className={`h-8 px-3 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'list'
+                  ? 'bg-white text-[#00236f] shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              <span>Provision New Client</span>
+              <Building2 className="w-3.5 h-3.5" />
+              <span>Colleges Registry ({tenants.length})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('onboard')}
+              className={`h-8 px-3 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'onboard'
+                  ? 'bg-[#00236f] text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>+ Provision College</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('masters')}
+              className={`h-8 px-3 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'masters'
+                  ? 'bg-white text-[#00236f] shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>Master Tables</span>
             </button>
           </div>
         </div>
@@ -426,8 +454,10 @@ export const TenantsManagementView: React.FC<TenantsManagementViewProps> = ({ cu
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs">
+      {/* Filter and Search Bar & Table (When Tab === 'list') */}
+      {activeTab === 'list' && (
+        <>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs">
         <div className="relative flex-1 min-w-[240px]">
           <svg
             className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"
@@ -610,31 +640,32 @@ export const TenantsManagementView: React.FC<TenantsManagementViewProps> = ({ cu
           </table>
         </div>
       </div>
+      </>
+      )}
 
-      {/* Provision New Client Modal (Karanvir Sir Lecture 3 & 4: Master Tables Provisioning) */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto p-6 shadow-2xl border border-slate-200 space-y-4 animate-scaleUp">
-            <div className="flex items-center justify-between border-b pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#00236f] flex items-center justify-center font-black">
-                  <Building2 className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-base font-extrabold text-[#00236f] tracking-tight">Onboard New Collegiate Institution</h3>
-                  <p className="text-[11px] text-slate-500">Provision dedicated tenant database schema, master tables, and administrative access</p>
-                </div>
+      {/* Provision New Client Workspace (Full-Width Inline Form - Zero Popups!) */}
+      {activeTab === 'onboard' && (
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/90 space-y-4 animate-fadeIn">
+          <div className="flex items-center justify-between border-b pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#00236f] flex items-center justify-center font-black">
+                <Building2 className="w-4 h-4" />
               </div>
-              <button
-                type="button"
-                onClick={() => setIsAddModalOpen(false)}
-                className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-bold transition cursor-pointer"
-              >
-                ✕
-              </button>
+              <div>
+                <h3 className="text-base font-extrabold text-[#00236f] tracking-tight">Onboard New Collegiate Institution (Inline Canvas)</h3>
+                <p className="text-[11px] text-slate-500">Provision dedicated tenant database schema, master tables, and administrative access directly on canvas</p>
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={() => setActiveTab('list')}
+              className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer"
+            >
+              Back to Directory
+            </button>
+          </div>
 
-            <form onSubmit={handleCreateTenant} className="space-y-4">
+          <form onSubmit={handleCreateTenant} className="space-y-4">
               {/* SECTION 1: Institutional Identity */}
               <div className="bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 space-y-3">
                 <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
@@ -1083,7 +1114,7 @@ export const TenantsManagementView: React.FC<TenantsManagementViewProps> = ({ cu
               <div className="flex items-center justify-end gap-2 pt-3 border-t">
                 <button
                   type="button"
-                  onClick={() => setIsAddModalOpen(false)}
+                  onClick={() => setActiveTab('list')}
                   className="px-4 py-2 border border-slate-200 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer"
                 >
                   Cancel
@@ -1099,6 +1130,34 @@ export const TenantsManagementView: React.FC<TenantsManagementViewProps> = ({ cu
               </div>
             </form>
           </div>
+      )}
+
+      {/* Master Relational Architecture Workspace (Full-Width Inline Table - Zero Popups!) */}
+      {activeTab === 'masters' && (
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/90 space-y-4 animate-fadeIn">
+          <div className="flex items-center justify-between border-b pb-2.5">
+            <div>
+              <h3 className="text-base font-extrabold text-[#00236f] tracking-tight">
+                Tenant-Agnostic Master Relational System (Zero Popups)
+              </h3>
+              <p className="text-[11px] text-slate-500">
+                View, audit, and configure canonical master schemas (States, Departments, Degrees, Document Types, Hostel, Fee Heads)
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveTab('list')}
+              className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer"
+            >
+              Back to Directory
+            </button>
+          </div>
+
+          <MasterTablesModal
+            isOpen={true}
+            isEmbeddedView={true}
+            onClose={() => setActiveTab('list')}
+          />
         </div>
       )}
     </div>

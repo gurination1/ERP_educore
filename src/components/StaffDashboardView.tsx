@@ -7,6 +7,8 @@ import { Lock, Unlock, AlertOctagon, CheckCircle2, Phone } from 'lucide-react';
 interface StaffDashboardViewProps {
   currentUser: User | null;
   onNavigate: (screen: ActiveScreen) => void;
+  selectedCampus?: 'campus_01' | 'campus_02' | 'all';
+  onCampusChange?: (c: 'campus_01' | 'campus_02' | 'all') => void;
 }
 
 interface StudentAttendanceEntry {
@@ -28,6 +30,8 @@ interface StudentAttendanceEntry {
 export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
   currentUser,
   onNavigate,
+  selectedCampus = 'campus_01',
+  onCampusChange,
 }) => {
   const isCounselor = currentUser?.role === 'counselor';
   const isHOD = currentUser?.role === 'hod';
@@ -601,6 +605,10 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
             <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-[#757682]">
               <span className="flex items-center gap-1">
                 <span>UID: {currentUser?.enterprise_uid || '2001-14-03-01'}</span>
+              </span>
+              <span>•</span>
+              <span className="flex items-center gap-1 font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                <span>📍 {selectedCampus === 'campus_02' ? 'Faridkot Campus 02 (Regional)' : selectedCampus === 'all' ? 'All Campuses (Consolidated)' : 'Bathinda Campus 01 (Main)'}</span>
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
@@ -2076,246 +2084,242 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
         </div>
       )}
 
-      {/* COUNSELOR MODAL 1: LOG CANDIDATE CALL / RECALL */}
+      {/* INLINE WORKSPACE: COUNSELOR LOG CANDIDATE CALL / RECALL (Zero Popups) */}
       {isLogCallOpen && callTargetProspect && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-slate-300 w-full max-w-md p-6 space-y-4 shadow-2xl animate-fadeIn">
-            <div className="flex justify-between items-center border-b pb-3">
+        <div className="mb-6 bg-white rounded-2xl border-2 border-[#00236f]/30 w-full p-6 space-y-4 shadow-lg animate-fadeIn">
+          <div className="flex justify-between items-center border-b pb-3">
+            <div>
+              <h3 className="text-sm font-bold text-[#00236f]">Log Candidate Interaction & Telephony Call (Inline Workspace)</h3>
+              <p className="text-xs text-slate-500">
+                {callTargetProspect.first_name || callTargetProspect.student_name} ({callTargetProspect.phone || callTargetProspect.mobile})
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsLogCallOpen(false)}
+              className="text-slate-400 hover:text-slate-700 font-bold px-2 py-1 rounded hover:bg-slate-100"
+            >
+              ✕ Close
+            </button>
+          </div>
+
+          <form onSubmit={handleLogCallSubmit} className="space-y-3">
+            <div>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">Interaction Medium</label>
+              <select
+                value={callForm.interaction_type}
+                onChange={e => setCallForm({ ...callForm, interaction_type: e.target.value })}
+                className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+              >
+                <option value="phone">Telephony Voice Call</option>
+                <option value="whatsapp">WhatsApp Official Chat</option>
+                <option value="in_person">In-Person Campus Counseling Desk</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">Discussion Outcome</label>
+              <select
+                value={callForm.outcome}
+                onChange={e => setCallForm({ ...callForm, outcome: e.target.value })}
+                className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+              >
+                <option value="interested">Candidate Highly Interested (Scheduled Callback)</option>
+                <option value="callback_requested">Parent Requested Callback in Evening</option>
+                <option value="campus_visit">Visiting Campus with Family This Weekend</option>
+                <option value="admitted">Converted! Ready to Fill Admission Form</option>
+                <option value="not_interested">Not Interested (Opted Other College / Location)</option>
+                <option value="no_response">Call Not Answered (Ringing / Switched Off)</option>
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
               <div>
-                <h3 className="text-sm font-bold text-[#00236f]">Log Candidate Interaction & Telephony Call</h3>
-                <p className="text-xs text-slate-500">
-                  {callTargetProspect.first_name || callTargetProspect.student_name} ({callTargetProspect.phone || callTargetProspect.mobile})
-                </p>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Next Scheduled Date</label>
+                <input
+                  type="date"
+                  value={callForm.next_followup_date}
+                  onChange={e => setCallForm({ ...callForm, next_followup_date: e.target.value })}
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                />
               </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Priority</label>
+                <select
+                  value={callForm.priority}
+                  onChange={e => setCallForm({ ...callForm, priority: e.target.value })}
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                >
+                  <option value="p1_high">P1 High Priority</option>
+                  <option value="p2_normal">P2 Normal</option>
+                  <option value="p3_low">P3 Low</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">Counseling Discussion Notes</label>
+              <textarea
+                rows={3}
+                value={callForm.notes}
+                onChange={e => setCallForm({ ...callForm, notes: e.target.value })}
+                placeholder="e.g. Discussed CSE specialization, parent inquired about college bus routes from Mansa..."
+                className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t">
               <button
                 type="button"
                 onClick={() => setIsLogCallOpen(false)}
-                className="text-slate-400 hover:text-slate-700 font-bold"
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold"
               >
-                ✕
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmittingCall}
+                className="px-4 py-1.5 bg-[#00236f] hover:bg-[#1a4bb0] text-white rounded-lg text-xs font-bold"
+              >
+                {isSubmittingCall ? 'Recording...' : 'Save Interaction Log'}
               </button>
             </div>
-
-            <form onSubmit={handleLogCallSubmit} className="space-y-3">
-              <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1">Interaction Medium</label>
-                <select
-                  value={callForm.interaction_type}
-                  onChange={e => setCallForm({ ...callForm, interaction_type: e.target.value })}
-                  className="w-full p-2 border border-slate-300 rounded-lg text-xs"
-                >
-                  <option value="phone">Telephony Voice Call</option>
-                  <option value="whatsapp">WhatsApp Official Chat</option>
-                  <option value="in_person">In-Person Campus Counseling Desk</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1">Discussion Outcome</label>
-                <select
-                  value={callForm.outcome}
-                  onChange={e => setCallForm({ ...callForm, outcome: e.target.value })}
-                  className="w-full p-2 border border-slate-300 rounded-lg text-xs"
-                >
-                  <option value="interested">Candidate Highly Interested (Scheduled Callback)</option>
-                  <option value="callback_requested">Parent Requested Callback in Evening</option>
-                  <option value="campus_visit">Visiting Campus with Family This Weekend</option>
-                  <option value="admitted">Converted! Ready to Fill Admission Form</option>
-                  <option value="not_interested">Not Interested (Opted Other College / Location)</option>
-                  <option value="no_response">Call Not Answered (Ringing / Switched Off)</option>
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 block mb-1">Next Scheduled Date</label>
-                  <input
-                    type="date"
-                    value={callForm.next_followup_date}
-                    onChange={e => setCallForm({ ...callForm, next_followup_date: e.target.value })}
-                    className="w-full p-2 border border-slate-300 rounded-lg text-xs"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 block mb-1">Priority</label>
-                  <select
-                    value={callForm.priority}
-                    onChange={e => setCallForm({ ...callForm, priority: e.target.value })}
-                    className="w-full p-2 border border-slate-300 rounded-lg text-xs"
-                  >
-                    <option value="p1_high">P1 High Priority</option>
-                    <option value="p2_normal">P2 Normal</option>
-                    <option value="p3_low">P3 Low</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1">Counseling Discussion Notes</label>
-                <textarea
-                  rows={3}
-                  value={callForm.notes}
-                  onChange={e => setCallForm({ ...callForm, notes: e.target.value })}
-                  placeholder="e.g. Discussed CSE specialization, parent inquired about college bus routes from Mansa..."
-                  className="w-full p-2 border border-slate-300 rounded-lg text-xs"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2 border-t">
-                <button
-                  type="button"
-                  onClick={() => setIsLogCallOpen(false)}
-                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmittingCall}
-                  className="px-4 py-1.5 bg-[#00236f] hover:bg-[#1a4bb0] text-white rounded-lg text-xs font-bold"
-                >
-                  {isSubmittingCall ? 'Recording...' : 'Save Interaction Log'}
-                </button>
-              </div>
-            </form>
-          </div>
+          </form>
         </div>
       )}
 
-      {/* COUNSELOR MODAL 2: REGISTER WALK-IN PROSPECT */}
+      {/* INLINE WORKSPACE: COUNSELOR REGISTER WALK-IN PROSPECT (Zero Popups) */}
       {isNewLeadModalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-slate-300 w-full max-w-md p-6 space-y-4 shadow-2xl animate-fadeIn">
-            <div className="flex justify-between items-center border-b pb-3">
-              <div>
-                <h3 className="text-sm font-bold text-[#00236f]">Register Walk-in Admissions Prospect</h3>
-                <p className="text-xs text-slate-500">Record a candidate visiting the campus counseling reception</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsNewLeadModalOpen(false)}
-                className="text-slate-400 hover:text-slate-700 font-bold"
-              >
-                ✕
-              </button>
+        <div className="mb-6 bg-white rounded-2xl border-2 border-[#00236f]/30 w-full p-6 space-y-4 shadow-lg animate-fadeIn">
+          <div className="flex justify-between items-center border-b pb-3">
+            <div>
+              <h3 className="text-sm font-bold text-[#00236f]">Register Walk-in Admissions Prospect (Inline Workspace)</h3>
+              <p className="text-xs text-slate-500">Record a candidate visiting the campus counseling reception</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsNewLeadModalOpen(false)}
+              className="text-slate-400 hover:text-slate-700 font-bold px-2 py-1 rounded hover:bg-slate-100"
+            >
+              ✕ Close
+            </button>
+          </div>
+
+          <form onSubmit={handleCreateLeadSubmit} className="space-y-3">
+            <div>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">Candidate Full Name *</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Jaspreet Singh"
+                value={newLeadForm.student_name}
+                onChange={e => setNewLeadForm({ ...newLeadForm, student_name: e.target.value })}
+                className="w-full p-2 border border-slate-300 rounded-lg text-xs font-medium"
+              />
             </div>
 
-            <form onSubmit={handleCreateLeadSubmit} className="space-y-3">
+            <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1">Candidate Full Name *</label>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Mobile Number *</label>
                 <input
-                  type="text"
+                  type="tel"
                   required
-                  placeholder="e.g. Jaspreet Singh"
-                  value={newLeadForm.student_name}
-                  onChange={e => setNewLeadForm({ ...newLeadForm, student_name: e.target.value })}
-                  className="w-full p-2 border border-slate-300 rounded-lg text-xs font-medium"
+                  placeholder="e.g. 9876543210"
+                  value={newLeadForm.mobile}
+                  onChange={e => setNewLeadForm({ ...newLeadForm, mobile: e.target.value })}
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
                 />
               </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 block mb-1">Mobile Number *</label>
-                  <input
-                    type="tel"
-                    required
-                    placeholder="e.g. 9876543210"
-                    value={newLeadForm.mobile}
-                    onChange={e => setNewLeadForm({ ...newLeadForm, mobile: e.target.value })}
-                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 block mb-1">Email Address</label>
-                  <input
-                    type="email"
-                    placeholder="e.g. candidate@gmail.com"
-                    value={newLeadForm.email}
-                    onChange={e => setNewLeadForm({ ...newLeadForm, email: e.target.value })}
-                    className="w-full p-2 border border-slate-300 rounded-lg text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 block mb-1">Father's Name</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Sardar Balwinder Singh"
-                    value={newLeadForm.father_name}
-                    onChange={e => setNewLeadForm({ ...newLeadForm, father_name: e.target.value })}
-                    className="w-full p-2 border border-slate-300 rounded-lg text-xs"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 block mb-1">Selected Degree / Course</label>
-                  <select
-                    value={newLeadForm.selected_course}
-                    onChange={e => setNewLeadForm({ ...newLeadForm, selected_course: e.target.value })}
-                    className="w-full p-2 border border-slate-300 rounded-lg text-xs"
-                  >
-                    <option value="B.Tech Computer Science & Engineering">B.Tech CSE</option>
-                    <option value="B.Tech Electronics & Comm">B.Tech ECE</option>
-                    <option value="Bachelor of Computer Applications">BCA</option>
-                    <option value="Master of Business Administration">MBA</option>
-                    <option value="Master of Computer Applications">MCA</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 block mb-1">Class 10th Marks %</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. 82.5"
-                    value={newLeadForm.tenth_percentage}
-                    onChange={e => setNewLeadForm({ ...newLeadForm, tenth_percentage: e.target.value })}
-                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 block mb-1">Class 12th Marks %</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. 85.0"
-                    value={newLeadForm.twelfth_percentage}
-                    onChange={e => setNewLeadForm({ ...newLeadForm, twelfth_percentage: e.target.value })}
-                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
-                  />
-                </div>
-              </div>
-
               <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1">Counseling Walk-in Notes</label>
-                <textarea
-                  rows={2}
-                  value={newLeadForm.notes}
-                  onChange={e => setNewLeadForm({ ...newLeadForm, notes: e.target.value })}
-                  placeholder="e.g. Inquired about hostel & tuition fee installments..."
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Email Address</label>
+                <input
+                  type="email"
+                  placeholder="e.g. candidate@gmail.com"
+                  value={newLeadForm.email}
+                  onChange={e => setNewLeadForm({ ...newLeadForm, email: e.target.value })}
                   className="w-full p-2 border border-slate-300 rounded-lg text-xs"
                 />
               </div>
+            </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t">
-                <button
-                  type="button"
-                  onClick={() => setIsNewLeadModalOpen(false)}
-                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmittingLead}
-                  className="px-4 py-1.5 bg-[#00236f] hover:bg-[#1a4bb0] text-white rounded-lg text-xs font-bold"
-                >
-                  {isSubmittingLead ? 'Registering...' : 'Register Walk-in Lead'}
-                </button>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Father's Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Sardar Balwinder Singh"
+                  value={newLeadForm.father_name}
+                  onChange={e => setNewLeadForm({ ...newLeadForm, father_name: e.target.value })}
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                />
               </div>
-            </form>
-          </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Selected Degree / Course</label>
+                <select
+                  value={newLeadForm.selected_course}
+                  onChange={e => setNewLeadForm({ ...newLeadForm, selected_course: e.target.value })}
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                >
+                  <option value="B.Tech Computer Science & Engineering">B.Tech CSE</option>
+                  <option value="B.Tech Electronics & Comm">B.Tech ECE</option>
+                  <option value="Bachelor of Computer Applications">BCA</option>
+                  <option value="Master of Business Administration">MBA</option>
+                  <option value="Master of Computer Applications">MCA</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Class 10th Marks %</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 82.5"
+                  value={newLeadForm.tenth_percentage}
+                  onChange={e => setNewLeadForm({ ...newLeadForm, tenth_percentage: e.target.value })}
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Class 12th Marks %</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 85.0"
+                  value={newLeadForm.twelfth_percentage}
+                  onChange={e => setNewLeadForm({ ...newLeadForm, twelfth_percentage: e.target.value })}
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">Counseling Walk-in Notes</label>
+              <textarea
+                rows={2}
+                value={newLeadForm.notes}
+                onChange={e => setNewLeadForm({ ...newLeadForm, notes: e.target.value })}
+                placeholder="e.g. Inquired about hostel & tuition fee installments..."
+                className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <button
+                type="button"
+                onClick={() => setIsNewLeadModalOpen(false)}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmittingLead}
+                className="px-4 py-1.5 bg-[#00236f] hover:bg-[#1a4bb0] text-white rounded-lg text-xs font-bold"
+              >
+                {isSubmittingLead ? 'Registering...' : 'Register Walk-in Lead'}
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>

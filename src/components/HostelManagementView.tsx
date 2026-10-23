@@ -2134,23 +2134,22 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
     </>
   )}
 
-      {/* MODAL 1: ROOM SHIFTING WIZARD */}
+      {/* INLINE: ROOM SHIFTING WIZARD (Zero Popups) */}
       {isRoomShiftModalOpen && shiftingResident && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-black text-[#00236f] flex items-center gap-2">
-                <ArrowRightLeft className="w-4 h-4 text-[#ea580c]" />
-                <span>Room Shifting & Rent Adjustment Wizard</span>
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsRoomShiftModalOpen(false)}
-                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+        <div className="bg-white rounded-2xl w-full p-6 shadow-sm border-2 border-[#00236f] space-y-4 animate-fadeIn my-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-black text-[#00236f] flex items-center gap-2">
+              <ArrowRightLeft className="w-4 h-4 text-[#ea580c]" />
+              <span>Room Shifting & Rent Adjustment Wizard</span>
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIsRoomShiftModalOpen(false)}
+              className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
 
             <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1">
               <div>
@@ -2226,23 +2225,21 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
               </button>
             </div>
           </div>
-        </div>
       )}
 
-      {/* MODAL 2: MESS NO-DUES CLEARANCE ISSUANCE */}
+      {/* INLINE: MESS NO-DUES CLEARANCE ISSUANCE (Zero Popups) */}
       {isMessClearanceModalOpen && clearingResident && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-black text-[#00236f] flex items-center gap-2">
-                <FileCheck className="w-4 h-4 text-emerald-600" />
-                <span>Issue Mess No-Dues Clearance</span>
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsMessClearanceModalOpen(false)}
-                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700"
-              >
+        <div className="bg-white rounded-2xl w-full p-6 shadow-sm border-2 border-emerald-600 space-y-4 animate-fadeIn my-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-black text-[#00236f] flex items-center gap-2">
+              <FileCheck className="w-4 h-4 text-emerald-600" />
+              <span>Issue Mess No-Dues Clearance</span>
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIsMessClearanceModalOpen(false)}
+              className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer"
+            >
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -2309,22 +2306,20 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
               )}
             </div>
           </div>
-        </div>
       )}
-      {/* MODAL 3: ADD ROOM WIZARD (Karanvir Sir Lecture 4) */}
+      {/* INLINE: ADD ROOM WIZARD (Zero Popups) */}
       {isAddRoomModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-slate-100 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-black text-[#00236f] flex items-center gap-2">
-                <Bed className="w-5 h-5 text-[#ea580c]" />
-                <span>Add Room (Floor-Wise Auto-Numbering)</span>
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsAddRoomModalOpen(false)}
-                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700"
-              >
+        <div className="bg-white rounded-2xl w-full p-6 shadow-sm border-2 border-[#00236f] space-y-4 animate-fadeIn my-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 className="text-base font-black text-[#00236f] flex items-center gap-2">
+              <Bed className="w-5 h-5 text-[#ea580c]" />
+              <span>Add Room (Floor-Wise Auto-Numbering)</span>
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIsAddRoomModalOpen(false)}
+              className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer"
+            >
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -2514,28 +2509,26 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
               </div>
             </form>
           </div>
-        </div>
       )}
 
-      {/* MODAL 3B: ADD RESIDENCE BLOCK (Karanvir Sir Lecture 4) */}
+      {/* INLINE: ADD RESIDENCE BLOCK (Zero Popups) */}
       {isAddBuildingModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-slate-100 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="text-base font-black text-[#00236f] flex items-center gap-2">
-                  <Building2 className="w-5 h-5 text-[#ea580c]" />
-                  <span>Register New Residence Block</span>
-                </h3>
-                <p className="text-[11px] text-slate-500 mt-0.5">
-                  Structural 360-day maintenance and 90-day electrical audit timers start upon creation.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsAddBuildingModalOpen(false)}
-                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 font-bold cursor-pointer"
-              >
+        <div className="bg-white rounded-2xl w-full p-6 shadow-sm border-2 border-[#00236f] space-y-4 animate-fadeIn my-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h3 className="text-base font-black text-[#00236f] flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-[#ea580c]" />
+                <span>Register New Residence Block</span>
+              </h3>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Structural 360-day maintenance and 90-day electrical audit timers start upon creation.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsAddBuildingModalOpen(false)}
+              className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 font-bold cursor-pointer"
+            >
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -2712,23 +2705,21 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
               </div>
             </form>
           </div>
-        </div>
       )}
 
-      {/* MODAL 4: ALLOT ROOM TO UNALLOCATED SCHOLAR */}
+      {/* INLINE: ALLOT ROOM TO UNALLOCATED SCHOLAR (Zero Popups) */}
       {isAllocatingModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 space-y-4 text-xs">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-black text-[#00236f] flex items-center gap-2">
-                <Bed className="w-5 h-5 text-[#ea580c]" />
-                <span>Allot Residence Room & Bed</span>
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsAllocatingModalOpen(false)}
-                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 font-bold"
-              >
+        <div className="bg-white rounded-2xl w-full p-6 shadow-sm border-2 border-[#00236f] space-y-4 text-xs animate-fadeIn my-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 className="text-base font-black text-[#00236f] flex items-center gap-2">
+              <Bed className="w-5 h-5 text-[#ea580c]" />
+              <span>Allot Residence Room & Bed</span>
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIsAllocatingModalOpen(false)}
+              className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 font-bold cursor-pointer"
+            >
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -2816,23 +2807,21 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
               </button>
             </div>
           </div>
-        </div>
       )}
 
-      {/* MODAL: VACATE RESIDENCE BED */}
+      {/* INLINE: VACATE RESIDENCE BED (Zero Popups) */}
       {isVacateModalOpen && vacatingResident && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 space-y-4 text-xs">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-black text-[#00236f] flex items-center gap-2">
-                <LogOut className="w-5 h-5 text-rose-600" />
-                <span>Vacate Residence Bed & Release Room</span>
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsVacateModalOpen(false)}
-                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 font-bold"
-              >
+        <div className="bg-white rounded-2xl w-full p-6 shadow-sm border-2 border-rose-600 space-y-4 text-xs animate-fadeIn my-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 className="text-base font-black text-[#00236f] flex items-center gap-2">
+              <LogOut className="w-5 h-5 text-rose-600" />
+              <span>Vacate Residence Bed & Release Room</span>
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIsVacateModalOpen(false)}
+              className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 font-bold cursor-pointer"
+            >
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -2893,15 +2882,12 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
               )}
             </div>
           </div>
-        </div>
       )}
 
-      {/* MODAL 5: OFFICIAL PRINTABLE MESS NO-DUES CLEARANCE NOC CERTIFICATE */}
+      {/* INLINE: OFFICIAL PRINTABLE MESS NO-DUES CLEARANCE NOC CERTIFICATE (Zero Popups) */}
       {isNocModalOpen && selectedNocRecord && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl border border-slate-200 text-slate-900 space-y-5">
-            {/* Action Bar */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="bg-white rounded-2xl w-full p-6 sm:p-8 shadow-sm border-2 border-slate-300 text-slate-900 space-y-5 animate-fadeIn my-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <span className="text-xs font-bold text-slate-500 uppercase tracking-widest font-mono">
                 Official Digital Certificate • Karanvir Sir Seg 008 Ordinance
               </span>
@@ -3067,7 +3053,6 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
               </button>
             </div>
           </div>
-        </div>
       )}
 
     </div>

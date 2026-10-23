@@ -632,19 +632,18 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
         </div>
       )}
 
-      {/* Student Progression Lifecycle Modal (Lecture 3) */}
+      {/* Student Progression Lifecycle Workspace (Zero Popups) */}
       {isProgressionModalOpen && selectedProgressionStudent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden text-xs">
-            <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-              <div>
-                <h4 className="font-bold text-slate-900 text-sm">Academic Progression Lifecycle</h4>
-                <p className="text-[11px] text-slate-500">
-                  {selectedProgressionStudent.first_name} {selectedProgressionStudent.last_name} ({selectedProgressionStudent.student_id})
-                </p>
-              </div>
-              <button onClick={() => setIsProgressionModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold text-sm">✕</button>
+        <div className="bg-white rounded-2xl w-full shadow-sm border-2 border-[#00236f] overflow-hidden text-xs animate-fadeIn my-4">
+          <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <div>
+              <h4 className="font-bold text-slate-900 text-sm">Academic Progression Lifecycle</h4>
+              <p className="text-[11px] text-slate-500">
+                {selectedProgressionStudent.first_name} {selectedProgressionStudent.last_name} ({selectedProgressionStudent.student_id})
+              </p>
             </div>
+            <button onClick={() => setIsProgressionModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold text-sm cursor-pointer">✕</button>
+          </div>
 
             <form onSubmit={handleUpdateProgression} className="p-5 space-y-3.5">
               <div>
@@ -861,7 +860,6 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
               </div>
             </form>
           </div>
-        </div>
       )}
     </div>
   );

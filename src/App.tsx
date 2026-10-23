@@ -38,6 +38,7 @@ import { PartnerPortalView } from './components/PartnerPortalView';
 import { BulkImportView } from './components/BulkImportView';
 import { EnquiriesView } from './components/EnquiriesView';
 import { UniversityExamPortalView } from './components/UniversityExamPortalView';
+import { InlineSearchCanvas } from './components/InlineSearchCanvas';
 import { TenantsManagementView } from './components/TenantsManagementView';
 import { PaymentGatewaysView } from './components/PaymentGatewaysView';
 import { FieldPermissionsView } from './components/FieldPermissionsView';
@@ -384,7 +385,18 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
           </nav>
         )}
 
-        {children}
+        {searchQuery && searchQuery.trim().length > 0 ? (
+          <InlineSearchCanvas
+            searchQuery={searchQuery}
+            onClose={() => {
+              if (onSearchChange) onSearchChange('');
+            }}
+            onNavigate={handleNavigate}
+            selectedCampus={selectedCampus}
+          />
+        ) : (
+          children
+        )}
       </main>
 
       {/* Global Modals */}
@@ -467,11 +479,15 @@ function MainApp() {
   const [masterTablesTab, setMasterTablesTab] = useState<'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents' | 'hostel' | 'fees' | 'employee'>('states');
 
   const handleOpenMasterTables = (tab?: 'states' | 'departments' | 'institutions' | 'userTypes' | 'degrees' | 'documents' | 'hostel' | 'fees' | 'employee') => {
-    if (tab) setMasterTablesTab(tab);
-    setShowMasterTables(true);
+    if (tab) {
+      setMasterTablesTab(tab);
+      navigate(`/master-architecture?tab=${tab}`);
+    } else {
+      navigate('/master-architecture');
+    }
   };
   const handleOpenAuditLogs = () => {
-    setShowAuditLogs(true);
+    navigate('/audit-logs');
   };
 
   useEffect(() => {
@@ -674,6 +690,7 @@ function MainApp() {
                     onNavigate={handleScreenNavigate}
                     onOpenMasterTables={handleOpenMasterTables}
                     onOpenAuditLogs={handleOpenAuditLogs}
+                    selectedCampus={selectedCampus}
                   />
                 ) : currentUser.role === 'admin' ? (
                   <AdminDashboardView
@@ -701,6 +718,8 @@ function MainApp() {
                   <StaffDashboardView
                     currentUser={currentUser}
                     onNavigate={handleScreenNavigate}
+                    selectedCampus={selectedCampus}
+                    onCampusChange={setSelectedCampus}
                   />
                 ) : currentUser.role === 'partner' ? (
                   <PartnerPortalView currentUser={currentUser} />
@@ -915,6 +934,8 @@ function MainApp() {
                 <AcademicsView
                   currentUser={currentUser}
                   onOpenMasterTables={handleOpenMasterTables}
+                  selectedCampus={selectedCampus}
+                  onCampusChange={setSelectedCampus}
                 />
               </AuthenticatedLayout>
             )
@@ -1032,6 +1053,11 @@ function MainApp() {
               </AuthenticatedLayout>
             )
           }
+        />
+
+        <Route
+          path="/master-tables"
+          element={<Navigate to="/master-architecture" replace />}
         />
 
         <Route
@@ -1239,6 +1265,11 @@ function MainApp() {
               </AuthenticatedLayout>
             )
           }
+        />
+
+        <Route
+          path="/staff"
+          element={<Navigate to="/staff-management" replace />}
         />
 
         <Route
@@ -1528,15 +1559,6 @@ function MainApp() {
         />
       )}
 
-      <AuditTrailModal
-        isOpen={showAuditLogs}
-        onClose={() => setShowAuditLogs(false)}
-      />
-      <MasterTablesModal
-        isOpen={showMasterTables}
-        initialTab={masterTablesTab}
-        onClose={() => setShowMasterTables(false)}
-      />
     </ErrorBoundary>
   );
 }

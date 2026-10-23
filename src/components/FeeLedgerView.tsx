@@ -1540,17 +1540,16 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
         </>
       )}
 
-      {/* MODAL 1: CREATE FEE POLICY MODAL */}
+      {/* INLINE: CREATE FEE POLICY WORKSPACE (Zero Popups) */}
       {isCreatePolicyOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden animate-scaleIn space-y-4 p-6">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-black text-base text-[#00236f] flex items-center gap-2">
-                <Percent className="w-5 h-5 text-emerald-600" />
-                <span>Create Institutional Dynamic Fee Policy</span>
-              </h3>
-              <button onClick={() => setIsCreatePolicyOpen(false)} className="text-slate-400 hover:text-slate-700 font-bold">✕</button>
-            </div>
+        <div className="bg-white rounded-2xl w-full shadow-sm border-2 border-[#00236f] overflow-hidden animate-fadeIn space-y-4 p-6 my-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 className="font-black text-base text-[#00236f] flex items-center gap-2">
+              <Percent className="w-5 h-5 text-emerald-600" />
+              <span>Create Institutional Dynamic Fee Policy</span>
+            </h3>
+            <button onClick={() => setIsCreatePolicyOpen(false)} className="text-slate-400 hover:text-slate-700 font-bold cursor-pointer">✕</button>
+          </div>
 
             <form onSubmit={handleCreatePolicy} className="space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
@@ -1661,18 +1660,16 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
               </div>
             </form>
           </div>
-        </div>
       )}
 
-      {/* MODAL 2: ASSIGN POLICY WITH CONTRA REVERSAL PROMPT */}
+      {/* INLINE: ASSIGN POLICY WITH CONTRA REVERSAL PROMPT (Zero Popups) */}
       {assignPolicyModal.isOpen && assignPolicyModal.policy && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 p-6 space-y-4 text-xs animate-scaleIn">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-black text-base text-[#00236f] flex items-center gap-2">
-                <Percent className="w-5 h-5 text-emerald-600" />
-                <span>Assign Policy: {assignPolicyModal.policy.policy_code}</span>
-              </h3>
+        <div className="bg-white rounded-2xl w-full shadow-sm border-2 border-emerald-600 p-6 space-y-4 text-xs animate-fadeIn my-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 className="font-black text-base text-[#00236f] flex items-center gap-2">
+              <Percent className="w-5 h-5 text-emerald-600" />
+              <span>Assign Policy: {assignPolicyModal.policy.policy_code}</span>
+            </h3>
               <button
                 onClick={() => setAssignPolicyModal({ isOpen: false, policy: null, targetStudentId: '', scope: 'entire_course' })}
                 className="text-slate-400 font-bold"
@@ -1747,14 +1744,12 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
               </button>
             </div>
           </div>
-        </div>
       )}
 
-      {/* Assign Fee Head Modal (Strictly Admin / Accounts Branch Only) */}
+      {/* INLINE: Assign Statutory Fee Head (Zero Popups) */}
       {isActualAdmin && isAssignModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-[#e1e3e4] overflow-hidden animate-scaleIn">
-            <div className="px-6 py-4 bg-[#00236f] text-white flex items-center justify-between">
+        <div className="bg-white rounded-2xl w-full shadow-sm border-2 border-[#00236f] overflow-hidden animate-fadeIn my-4">
+          <div className="px-6 py-4 bg-[#00236f] text-white flex items-center justify-between">
               <div>
                 <h3 className="font-bold text-base">Assign Statutory Fee Head</h3>
                 <p className="text-xs text-blue-200">
@@ -1861,7 +1856,6 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
               </div>
             </form>
           </div>
-        </div>
       )}
     </div>
   );

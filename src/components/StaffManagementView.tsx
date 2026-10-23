@@ -2025,16 +2025,15 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
       </div>
       )}
 
-      {/* MODAL: Transition Status */}
+      {/* INLINE: Transition Status (Zero Popups) */}
       {showStatusModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded border border-[#00236f] w-full max-w-md p-4 space-y-3 font-sans text-[11px]">
-            <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-bold text-[#00236f]">TRANSITION EMPLOYEE STATUS & LIFECYCLE</span>
-              <button onClick={() => setShowStatusModal(false)} className="text-gray-500 hover:text-black">
-                [CLOSE]
-              </button>
-            </div>
+        <div className="bg-white rounded-xl border-2 border-[#00236f] w-full p-4 space-y-3 font-sans text-[11px] shadow-sm animate-fadeIn my-4">
+          <div className="flex justify-between items-center border-b pb-2">
+            <span className="font-bold text-[#00236f]">TRANSITION EMPLOYEE STATUS & LIFECYCLE</span>
+            <button onClick={() => setShowStatusModal(false)} className="text-gray-500 hover:text-black">
+              [CLOSE]
+            </button>
+          </div>
 
             <div className="space-y-2">
               <div>
@@ -2104,19 +2103,17 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
               </button>
             </div>
           </div>
-        </div>
       )}
 
-      {/* MODAL: Admin Password Reset */}
+      {/* INLINE: Admin Password Reset (Zero Popups) */}
       {showPasswordModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded border border-[#00236f] w-full max-w-md p-4 space-y-3 font-sans text-[11px]">
-            <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-bold text-[#00236f]">ADMIN-ASSISTED CREDENTIAL OVERRIDE</span>
-              <button onClick={() => setShowPasswordModal(false)} className="text-gray-500 hover:text-black">
-                [CLOSE]
-              </button>
-            </div>
+        <div className="bg-white rounded-xl border-2 border-[#00236f] w-full p-4 space-y-3 font-sans text-[11px] shadow-sm animate-fadeIn my-4">
+          <div className="flex justify-between items-center border-b pb-2">
+            <span className="font-bold text-[#00236f]">ADMIN-ASSISTED CREDENTIAL OVERRIDE</span>
+            <button onClick={() => setShowPasswordModal(false)} className="text-gray-500 hover:text-black">
+              [CLOSE]
+            </button>
+          </div>
 
             <div className="space-y-2">
               <div className="bg-amber-50 border border-amber-300 p-2 rounded text-[10px] text-amber-900">
@@ -2150,19 +2147,17 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
               </button>
             </div>
           </div>
-        </div>
       )}
 
-      {/* MODAL: Onboard New Staff */}
+      {/* INLINE: Onboard New Staff (Zero Popups) */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded border border-[#00236f] w-full max-w-lg p-4 space-y-3 font-sans text-[11px]">
-            <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-bold text-[#00236f]">ONBOARD NEW FACULTY / STAFF MEMBER</span>
-              <button onClick={() => setShowCreateModal(false)} className="text-gray-500 hover:text-black">
-                [CLOSE]
-              </button>
-            </div>
+        <div className="bg-white rounded-xl border-2 border-[#00236f] w-full p-4 space-y-3 font-sans text-[11px] shadow-sm animate-fadeIn my-4">
+          <div className="flex justify-between items-center border-b pb-2">
+            <span className="font-bold text-[#00236f]">ONBOARD NEW FACULTY / STAFF MEMBER</span>
+            <button onClick={() => setShowCreateModal(false)} className="text-gray-500 hover:text-black">
+              [CLOSE]
+            </button>
+          </div>
 
             <div className="grid grid-cols-2 gap-2">
               <div>
@@ -2277,14 +2272,12 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
               </button>
             </div>
           </div>
-        </div>
       )}
 
-      {/* Designation Transition Modal (Lecture 3 & Recording 160) */}
+      {/* INLINE: Designation & Role Transition (Zero Popups) */}
       {showDesignationModal && staffProfile && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-5 space-y-4 shadow-xl border border-slate-200 animate-fadeIn">
-            <div className="border-b pb-2 flex items-center justify-between">
+        <div className="bg-white rounded-xl border-2 border-[#00236f] w-full p-5 space-y-4 shadow-sm animate-fadeIn my-4">
+          <div className="border-b pb-2 flex items-center justify-between">
               <div>
                 <h3 className="font-extrabold text-sm text-[#00236f] uppercase">
                   Designation & Role Transition
@@ -2385,14 +2378,12 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
               </div>
             </form>
           </div>
-        </div>
       )}
 
-      {/* MODAL: Add Staff Address */}
+      {/* INLINE: Add Staff Address (Zero Popups) */}
       {showAddressModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-5 space-y-3 shadow-xl border border-slate-200 animate-fadeIn text-[11px]">
-            <div className="border-b pb-2 flex items-center justify-between">
+        <div className="bg-white rounded-xl border-2 border-[#00236f] w-full p-5 space-y-3 shadow-sm animate-fadeIn my-4 text-[11px]">
+          <div className="border-b pb-2 flex items-center justify-between">
               <span className="font-extrabold text-sm text-[#00236f] uppercase">
                 Add Staff Residential Address
               </span>
@@ -2497,14 +2488,12 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
               </div>
             </form>
           </div>
-        </div>
       )}
 
-      {/* MODAL: Add Staff Bank Account */}
+      {/* INLINE: Add Staff Bank Account (Zero Popups) */}
       {showBankModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-5 space-y-3 shadow-xl border border-slate-200 animate-fadeIn text-[11px]">
-            <div className="border-b pb-2 flex items-center justify-between">
+        <div className="bg-white rounded-xl border-2 border-[#00236f] w-full p-5 space-y-3 shadow-sm animate-fadeIn my-4 text-[11px]">
+          <div className="border-b pb-2 flex items-center justify-between">
               <span className="font-extrabold text-sm text-[#00236f] uppercase">
                 Add Salary Disbursement Bank Mandate
               </span>
@@ -2595,14 +2584,12 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
               </div>
             </form>
           </div>
-        </div>
       )}
 
-      {/* MODAL: Add Staff Qualification */}
+      {/* INLINE: Add Staff Qualification (Zero Popups) */}
       {showQualificationModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-5 space-y-3 shadow-xl border border-slate-200 animate-fadeIn text-[11px]">
-            <div className="border-b pb-2 flex items-center justify-between">
+        <div className="bg-white rounded-xl border-2 border-[#00236f] w-full p-5 space-y-3 shadow-sm animate-fadeIn my-4 text-[11px]">
+          <div className="border-b pb-2 flex items-center justify-between">
               <span className="font-extrabold text-sm text-[#00236f] uppercase">
                 Add Academic Degree & UGC/PhD Credential
               </span>
@@ -2694,14 +2681,12 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
               </div>
             </form>
           </div>
-        </div>
       )}
 
-      {/* MODAL: Add Staff Experience */}
+      {/* INLINE: Add Staff Experience (Zero Popups) */}
       {showExperienceModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-5 space-y-3 shadow-xl border border-slate-200 animate-fadeIn text-[11px]">
-            <div className="border-b pb-2 flex items-center justify-between">
+        <div className="bg-white rounded-xl border-2 border-[#00236f] w-full p-5 space-y-3 shadow-sm animate-fadeIn my-4 text-[11px]">
+          <div className="border-b pb-2 flex items-center justify-between">
               <span className="font-extrabold text-sm text-[#00236f] uppercase">
                 Add Prior Work Experience & Tenure
               </span>
@@ -2792,7 +2777,6 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
               </div>
             </form>
           </div>
-        </div>
       )}
     </div>
   );
