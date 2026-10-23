@@ -207,6 +207,62 @@ flowchart TD
 - **Admit Card & Results**: CBCS semester marksheet, university result gazette, SGPA/CGPA.
 - **Grievances & Support**: Submit issue ticket with status tracking.
 
+### K. User Management & Dynamic Role Rights Matrix (Seg 006 & Recording 161)
+- **10 Canonical Institutional Roles**:
+  1. `admin` (Institutional Provost & Registrar Governance)
+  2. `super_admin` (Universal Platform Orchestrator & Multi-Tenant Host)
+  3. `staff` (Academic Faculty & Teaching Professor)
+  4. `hod` (Department Head & Academic Ordinance Overseer)
+  5. `student` (Undergraduate / Postgraduate Enrolled Scholar)
+  6. `accounts` (Bursar, Fee Collections & Ledger Cashier)
+  7. `counselor` (Admissions CRM, Walk-in Inquiries & Call Radar)
+  8. `hostel` (Warden, Residence Buildings, Bed Topology & Mess Dues)
+  9. `hr` (Personnel Officer, Staff Lifecycle, Payroll & Exit Clearances)
+  10. `partner` (Corporate Recruiter & Placement Agency)
+- **Interactive Role Badge Action (Seg 006:180)**:
+  - Clicking any user's role badge in the roster opens an inline, zero-popup **Role Rights & Permissions Matrix Canvas** (`activeRoleMatrixUser`).
+  - **10 Fine-Grained Discretionary Privileges**:
+    - `fees_collect`: Fee Collection & Counter Receipt Issuance
+    - `admissions_crm`: Admissions CRM & Walk-In Prospect Management
+    - `student_manage`: Student Registry & Academic Progression Actions
+    - `academics_curriculum`: Curriculum, Syllabus & Timetable Management
+    - `exam_clearance`: University Examination & Admit Card Gate Clearance
+    - `faculty_hrms`: Staff Roster, Additional Roles & Multi-Duty Allocation
+    - `hostel_allot`: Residence Buildings, Bed Allocation & Mess Clearance
+    - `doc_compliance`: Compliance Dossiers, Document Attestation & Verification
+    - `mis_reports`: Executive Institutional MIS & Financial Analytics
+    - `master_arch`: Master Tables Governance (States, Depts, Degrees)
+  - **Auto-Apply & Save Rights Globally**: Commits permissions immediately to user state and institutional audit logs.
+  - **Revoke All Discretionary Rights (Seg 006:63)**: Strips all discretionary permissions in one click, falling back strictly to canonical base role.
+  - **Software Journey Timeline (Rec 160)**: Visual timeline of state transitions (User Added -> Admin Promotion -> Rights Assignment) with timestamps, actor UIDs, and forensic device logging.
+
+### L. Corporate Placement & Partner Portal (Recording 161 Specifications)
+- **Direct Accounts Menu Access**: Accessible under Account / Tuition & Ledgers ribbon (`partner-portal`).
+- **Partner Classification**: Sole Proprietorship, Partnership Firm, Private Limited, Public Corporation.
+- **Multi-Contact Matrix**:
+  - Support for multiple contact persons per partner organization.
+  - Strict 1-default flag requirement (`is_default: true`).
+- **Multi-Bank Ledger Matrix**:
+  - Multiple bank accounts per corporate partner.
+  - Strict 1-default disbursement account.
+- **Taxation & Compliance**: PAN Number, GSTIN identification.
+- **Dynamic Bulk Data Import Engine**:
+  - Format-agnostic CSV / Excel ingestion.
+  - Left column: System database fields; Right column: Dynamic dropdown matching CSV headers.
+  - 3-Tier Record Categorization:
+    1. *Fresh*: Clean data, zero conflicts -> Eligible for 1-click import.
+    2. *Probable Duplicate*: Partial match on mobile/Aadhaar -> Flagged and excluded from direct write.
+    3. *Wrong Data*: Incomplete digits or invalid format -> Tagged for separate Excel error export.
+
+### M. Zero-Popup Inline Canvas Architecture Guarantee
+- **Mentor Directive**: *"Pop-up pop-up pop-up khatam karo, yahan pe ek page aa jayega, thik hai?"* (Karanvir Sir Seg 003:364).
+- **100% Zero-Popup Compliance**:
+  - Zero modal overlays (`fixed inset-0 bg-black/50`) across all 10 roles.
+  - Every modal converted to inline, expandable card viewports with seamless DOM flow and responsive container layouts.
+- **100% Scalable SVG Icons**:
+  - Zero raw Unicode replacement symbols (`✓`, `✕`, `→`, `←`, `[!]`, `⚠️`, `▼`).
+  - Standardized on Lucide-React SVG icons across all 30+ enterprise components.
+
 ---
 
 ## 4. Verification & Testing Matrix
@@ -218,3 +274,6 @@ flowchart TD
 6. Demotion ledger recalculation with contra-entries.
 7. Hostel room capacity enforcement and Mess NOC generation.
 8. Zero floating popups across all 10 roles.
+9. Interactive role badges & rights matrix toggle test across 10 roles.
+10. Partner portal multi-bank and multi-contact default flag enforcement.
+11. Clean build verification with `npm run build` and zero compilation errors.

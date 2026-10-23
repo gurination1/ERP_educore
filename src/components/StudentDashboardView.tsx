@@ -2,6 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { StudentProfile, ActiveScreen, NoticeItem } from '../types';
+import {
+  Brain,
+  Award,
+  FolderCheck,
+  Sparkles,
+  BookOpen,
+  Building2,
+  Bus,
+  CreditCard,
+  Receipt,
+  FileText,
+  CheckCircle2,
+  AlertTriangle,
+  ArrowRight,
+  GraduationCap,
+  X,
+} from 'lucide-react';
 
 interface StudentDashboardViewProps {
   student: StudentProfile | null;
@@ -252,24 +269,27 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
               <button
                 id="student-pay-now-btn"
                 onClick={onOpenPayModal}
-                className="flex-1 py-2 px-3 bg-gradient-to-r from-[#ea580c] to-[#c2410c] hover:opacity-95 text-white rounded-lg font-bold text-xs tracking-wide text-center transition cursor-pointer shadow-2xs"
+                className="flex-1 py-2 px-3 bg-gradient-to-r from-[#ea580c] to-[#c2410c] hover:opacity-95 text-white rounded-lg font-bold text-xs tracking-wide text-center transition cursor-pointer shadow-2xs flex items-center justify-center gap-1.5"
               >
-                Pay Outstanding Due: ₹{(totalDue || 0).toLocaleString('en-IN')}
+                <CreditCard className="w-4 h-4 text-white" />
+                <span>Pay Outstanding Due: ₹{(totalDue || 0).toLocaleString('en-IN')}</span>
               </button>
             ) : (
               <button
                 onClick={() => onOpenReceiptModal(latestReceipt)}
-                className="flex-1 py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs tracking-wide text-center transition cursor-pointer shadow-2xs"
+                className="flex-1 py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs tracking-wide text-center transition cursor-pointer shadow-2xs flex items-center justify-center gap-1.5"
               >
-                Download Term Clearance Receipt
+                <FileText className="w-4 h-4 text-white" />
+                <span>Download Term Clearance Receipt</span>
               </button>
             )}
             <button
               id="student-view-ledger-btn"
               onClick={() => onNavigate('fee-ledger')}
-              className="py-2 px-3 bg-white border border-slate-200 text-[#00236f] hover:bg-slate-50 rounded-lg font-semibold text-xs transition cursor-pointer"
+              className="py-2 px-3 bg-white border border-slate-200 text-[#00236f] hover:bg-slate-50 rounded-lg font-semibold text-xs transition cursor-pointer flex items-center gap-1.5"
             >
-              Full Fee Ledger
+              <Receipt className="w-4 h-4 text-[#00236f]" />
+              <span>Full Fee Ledger</span>
             </button>
           </div>
         </div>
@@ -287,7 +307,10 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
               onClick={() => onNavigate('student-quiz-lms')}
               className="w-full p-2 bg-slate-50/80 hover:bg-blue-50/70 border border-slate-200/60 rounded-lg text-left flex justify-between items-center text-[#00236f] transition cursor-pointer"
             >
-              <span className="font-semibold text-[11px]">CBT Quiz LMS Engine</span>
+              <div className="flex items-center gap-2">
+                <Brain className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                <span className="font-semibold text-[11px]">CBT Quiz LMS Engine</span>
+              </div>
               <span className="text-slate-400 font-normal text-[10px]">Active &rarr;</span>
             </button>
             <button
@@ -297,35 +320,50 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
               }}
               className="w-full p-2 bg-emerald-50/70 hover:bg-emerald-100/70 border border-emerald-200/80 rounded-lg text-left flex justify-between items-center text-emerald-900 transition cursor-pointer"
             >
-              <span className="font-semibold text-[11px]">Semester Results & SGPA Grade Card</span>
+              <div className="flex items-center gap-2">
+                <Award className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span className="font-semibold text-[11px]">Semester Results & SGPA Grade Card</span>
+              </div>
               <span className="text-emerald-700 font-bold text-[10px]">CBCS Gazette &rarr;</span>
             </button>
             <button
               onClick={() => onNavigate('student-documents')}
               className="w-full p-2 bg-slate-50/80 hover:bg-blue-50/70 border border-slate-200/60 rounded-lg text-left flex justify-between items-center text-[#00236f] transition cursor-pointer"
             >
-              <span className="font-semibold text-[11px]">Student Documents Vault</span>
+              <div className="flex items-center gap-2">
+                <FolderCheck className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                <span className="font-semibold text-[11px]">Student Documents Vault</span>
+              </div>
               <span className="text-slate-400 font-normal text-[10px]">85% Domicile &rarr;</span>
             </button>
             <button
               onClick={() => onNavigate('scholarships')}
               className="w-full p-2 bg-slate-50/80 hover:bg-blue-50/70 border border-slate-200/60 rounded-lg text-left flex justify-between items-center text-[#00236f] transition cursor-pointer"
             >
-              <span className="font-semibold text-[11px]">Apply For Scholarship</span>
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                <span className="font-semibold text-[11px]">Apply For Scholarship</span>
+              </div>
               <span className="text-slate-400 font-normal text-[10px]">Merit & Post-Matric &rarr;</span>
             </button>
             <button
               onClick={() => onNavigate('academics')}
               className="w-full p-2 bg-slate-50/80 hover:bg-blue-50/70 border border-slate-200/60 rounded-lg text-left flex justify-between items-center text-[#00236f] transition cursor-pointer"
             >
-              <span className="font-semibold text-[11px]">Timetable & Syllabus</span>
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                <span className="font-semibold text-[11px]">Timetable & Syllabus</span>
+              </div>
               <span className="text-slate-400 font-normal text-[10px]">CBCS Scheme &rarr;</span>
             </button>
             <button
               onClick={() => onNavigate('hostel')}
               className="w-full p-2 bg-amber-50/60 hover:bg-amber-100/70 border border-amber-200/70 rounded-lg text-left flex justify-between items-center text-amber-900 transition cursor-pointer"
             >
-              <span className="font-semibold text-[11px]">Hostel Room & Mess NOC</span>
+              <div className="flex items-center gap-2">
+                <Building2 className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                <span className="font-semibold text-[11px]">Hostel Room & Mess NOC</span>
+              </div>
               <span className="text-amber-700 font-medium text-[10px]">
                 {student?.is_hosteller
                   ? `Room ${student.hostel_room_no || '101'} • Cleared →`
@@ -336,7 +374,10 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
               onClick={() => onNavigate('transport')}
               className="w-full p-2 bg-sky-50/60 hover:bg-sky-100/70 border border-sky-200/70 rounded-lg text-left flex justify-between items-center text-sky-900 transition cursor-pointer"
             >
-              <span className="font-semibold text-[11px]">Digital RFID Bus Pass</span>
+              <div className="flex items-center gap-2">
+                <Bus className="w-3.5 h-3.5 text-sky-700 shrink-0" />
+                <span className="font-semibold text-[11px]">Digital RFID Bus Pass</span>
+              </div>
               <span className="text-sky-700 font-medium text-[10px]">
                 {student?.is_transport_user
                   ? `${student.transport_route || 'Route 1'} • Active →`
@@ -477,7 +518,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                 onClick={() => setShowGradeCardModal(false)}
                 className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold flex items-center justify-center cursor-pointer"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 

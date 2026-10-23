@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { safeGoBack } from '../utils/navigation';
 import { api } from '../api/client';
 import { DynamicFormItem, DynamicFormFieldDef, User } from '../types';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Plus, Check } from 'lucide-react';
 
 interface DynamicFormBuilderViewProps {
   currentUser: User | null;
@@ -208,7 +208,7 @@ export const DynamicFormBuilderView: React.FC<DynamicFormBuilderViewProps> = ({ 
                   onClick={handleAddField}
                   className="px-3 py-1 bg-[#ffedd5] text-[#00236f] hover:bg-[#ffedd5] rounded text-xs font-bold flex items-center gap-1"
                 >
-                  <span className="font-bold text-[10px]">+</span>
+                  <Plus className="w-3.5 h-3.5" />
                   <span>Add Field</span>
                 </button>
               </div>
@@ -364,7 +364,7 @@ export const DynamicFormBuilderView: React.FC<DynamicFormBuilderViewProps> = ({ 
 
               {submissionSuccess && (
                 <div className="mt-4 p-3.5 bg-[#ffedd5] border border-[#ea580c] text-[#00236f] rounded-xl text-xs font-bold flex items-center gap-2">
-                  <span className="font-bold text-[10px]">✓</span>
+                  <Check className="w-4 h-4 text-emerald-600" />
                   <span>{submissionSuccess}</span>
                 </div>
               )}

@@ -678,8 +678,13 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
 
       {noticeFeedback && (
         <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl text-xs font-semibold flex items-center justify-between animate-fadeIn">
-          <span>✓ {noticeFeedback}</span>
-          <button onClick={() => setNoticeFeedback(null)} className="text-emerald-700 font-bold ml-2">✕</button>
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{noticeFeedback}</span>
+          </div>
+          <button onClick={() => setNoticeFeedback(null)} className="text-emerald-700 hover:text-emerald-900 font-bold ml-2 p-1 cursor-pointer">
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
@@ -1548,7 +1553,9 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
               <Percent className="w-5 h-5 text-emerald-600" />
               <span>Create Institutional Dynamic Fee Policy</span>
             </h3>
-            <button onClick={() => setIsCreatePolicyOpen(false)} className="text-slate-400 hover:text-slate-700 font-bold cursor-pointer">✕</button>
+            <button onClick={() => setIsCreatePolicyOpen(false)} className="text-slate-400 hover:text-slate-700 font-bold cursor-pointer p-1">
+              <X className="w-4 h-4" />
+            </button>
           </div>
 
             <form onSubmit={handleCreatePolicy} className="space-y-4 text-xs">
@@ -1672,9 +1679,9 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
             </h3>
               <button
                 onClick={() => setAssignPolicyModal({ isOpen: false, policy: null, targetStudentId: '', scope: 'entire_course' })}
-                className="text-slate-400 font-bold"
+                className="text-slate-400 hover:text-slate-700 font-bold p-1 cursor-pointer"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -1758,16 +1765,16 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
               </div>
               <button
                 onClick={() => setIsAssignModalOpen(false)}
-                className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10"
+                className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 cursor-pointer"
               >
-                <span className="font-bold text-[10px]">✕</span>
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleAssignHead} className="p-6 space-y-4">
               {assignError && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 font-semibold flex items-center gap-2">
-                  <span className="font-bold text-[10px]">[!]</span>
+                  <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
                   <span>{assignError}</span>
                 </div>
               )}
@@ -1848,7 +1855,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                     <span>Assigning...</span>
                   ) : (
                     <>
-                      <span className="font-bold text-[10px]">✓</span>
+                      <CheckCircle2 className="w-4 h-4" />
                       <span>Confirm Assessment</span>
                     </>
                   )}

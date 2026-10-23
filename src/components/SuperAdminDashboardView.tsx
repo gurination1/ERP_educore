@@ -455,8 +455,8 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
           }`}
         >
           <span className="font-medium">{feedback.message}</span>
-          <button onClick={() => setFeedback(null)} className="font-bold ml-2 text-slate-500 hover:text-slate-800">
-            ✕
+          <button onClick={() => setFeedback(null)} className="p-1 font-bold ml-2 text-slate-500 hover:text-slate-800 cursor-pointer">
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
@@ -763,7 +763,12 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
                         : 'border-emerald-200 bg-emerald-50/50 text-emerald-800 hover:bg-emerald-100'
                     }`}
                   >
-                    {selectedTenant.is_functional ? 'Deactivate' : '✓ Make Active'}
+                    {selectedTenant.is_functional ? 'Deactivate' : (
+                      <span className="flex items-center justify-center gap-1">
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Make Active</span>
+                      </span>
+                    )}
                   </button>
                 </div>
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../api/client';
+import { Bot, Sparkles, Check, AlertCircle, X, CheckCircle2 } from 'lucide-react';
 
 interface AIAssistantModalProps {
   isOpen: boolean;
@@ -67,7 +68,9 @@ Extracurriculars: National Science Olympiad Finalist, School Coding Club Preside
         {/* Header */}
         <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-linear-to-r from-[#00236f] to-[#1a4bb0] text-white">
           <div className="flex items-center gap-2.5">
-            
+            <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
+              <Bot className="w-5 h-5 text-amber-300" />
+            </div>
             <div>
               <h2 className="text-base font-bold leading-tight">AI Admission Document Auto-Parser</h2>
               <p className="text-xs text-blue-100">Powered by Google Gemini • Zero manual typing</p>
@@ -77,7 +80,7 @@ Extracurriculars: National Science Olympiad Finalist, School Coding Club Preside
             onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white transition-colors"
           >
-            ✕
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -114,7 +117,7 @@ Extracurriculars: National Science Olympiad Finalist, School Coding Club Preside
 
               {error && (
                 <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg flex items-center gap-2">
-                  <span className="font-bold text-[10px]">[!]</span>
+                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
@@ -124,7 +127,7 @@ Extracurriculars: National Science Olympiad Finalist, School Coding Club Preside
             <div className="space-y-4">
               <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-[10px]">✓</span>
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                   <div>
                     <p className="text-xs font-bold text-emerald-900">Successfully Extracted by Gemini AI</p>
                     <p className="text-[11px] text-emerald-700">
@@ -212,7 +215,7 @@ Extracurriculars: National Science Olympiad Finalist, School Coding Club Preside
               onClick={handleConfirmApply}
               className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm flex items-center gap-1.5 transition-all"
             >
-              <span className="font-bold text-[10px]">✓</span>
+              <Check className="w-4 h-4" />
               Auto-Fill Admission Form
             </button>
           )}

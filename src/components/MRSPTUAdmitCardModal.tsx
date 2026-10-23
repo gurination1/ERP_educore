@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
-import { AlertOctagon } from 'lucide-react';
+import { AlertOctagon, X, AlertTriangle, AlertCircle } from 'lucide-react';
 
 interface MRSPTUAdmitCardModalProps {
   studentId?: string;
@@ -79,7 +79,7 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
               className="p-1.5 text-[#757682] hover:text-[#191c1d] hover:bg-[#f3f4f5] rounded-lg transition-colors cursor-pointer"
               title="Close"
             >
-              <span className="font-bold text-[10px]">✕</span>
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -93,7 +93,7 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
         ) : errorMsg ? (
           <div className="py-8 text-center space-y-3">
             <div className="w-12 h-12 bg-[#ffdad6] text-[#ba1a1a] rounded-full flex items-center justify-center mx-auto">
-              <span className="font-bold text-[10px]">[!]</span>
+              <AlertTriangle className="w-6 h-6 text-[#ba1a1a]" />
             </div>
             <p className="text-sm font-bold text-[#ba1a1a]">{errorMsg}</p>
           </div>
@@ -118,7 +118,7 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
                   key={idx}
                   className="p-3.5 rounded-xl border border-[#ffdad6] bg-[#fff8f7] flex items-start gap-3 text-left"
                 >
-                  <span className="font-bold text-[10px]">[!]</span>
+                  <AlertTriangle className="w-4 h-4 text-[#ba1a1a] shrink-0 mt-0.5" />
                   <div className="text-xs text-[#191c1d]">
                     <p className="font-semibold">{reason}</p>
                   </div>

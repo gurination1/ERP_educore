@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { safeGoBack } from '../utils/navigation';
 import { api } from '../api/client';
 import { ScholarshipScheme, ScholarshipApp, User } from '../types';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Plus, Check, CheckCircle2, X, AlertTriangle, Award, Sparkles, BookOpen } from 'lucide-react';
 
 interface ScholarshipsViewProps {
   currentUser: User | null;
@@ -239,7 +239,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                 onClick={() => setIsCreatingScheme(true)}
                 className="px-4 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
               >
-                <span className="font-bold text-[10px]">+</span>
+                <Plus className="w-3.5 h-3.5" />
                 <span>Create Scheme</span>
               </button>
             </>
@@ -273,14 +273,14 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
 
       {awardSuccessMsg && (
         <div className="p-3.5 bg-[#ffedd5] border border-[#ea580c] text-[#00236f] rounded-xl text-xs font-bold flex items-center gap-2 animate-fadeIn">
-          <span className="font-bold text-[10px]">✓</span>
+          <Check className="w-4 h-4 text-emerald-600" />
           <span>{awardSuccessMsg}</span>
         </div>
       )}
 
       {applySuccessMsg && (
         <div className="p-3.5 bg-[#ffedd5] border border-[#ea580c] text-[#00236f] rounded-xl text-xs font-bold flex items-center gap-2">
-          <span className="font-bold text-[10px]">✓</span>
+          <Check className="w-4 h-4 text-emerald-600" />
           <span>{applySuccessMsg}</span>
         </div>
       )}
@@ -294,7 +294,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                 onClick={() => setSelectedScheme(null)}
                 className="text-[#757682] hover:text-[#191c1d]"
               >
-                <span className="font-bold text-[10px]">✕</span>
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -380,7 +380,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-[#191c1d]">Review Scholarship Application</h3>
               <button onClick={() => setReviewApp(null)} className="text-[#757682] hover:text-[#191c1d]">
-                <span className="font-bold text-[10px]">✕</span>
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -439,7 +439,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                 <p className="text-xs text-[#757682]">Define new institutional financial aid or grant endowment</p>
               </div>
               <button onClick={() => setIsCreatingScheme(false)} className="text-[#757682] hover:text-[#191c1d]">
-                <span className="font-bold text-[10px]">✕</span>
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -538,19 +538,19 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
             <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
               <div>
                 <h3 className="text-lg font-bold text-[#191c1d] flex items-center gap-2">
-                  
+                  <Award className="w-5 h-5 text-amber-500" />
                   <span>Award Institutional Scholarship</span>
                 </h3>
                 <p className="text-xs text-[#757682]">Directly grant and disburse scholarship concession into student ledger</p>
               </div>
               <button onClick={() => setIsAwardModalOpen(false)} className="text-[#757682] hover:text-[#191c1d]">
-                <span className="font-bold text-[10px]">✕</span>
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             {awardErrorMsg && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 font-semibold flex items-center gap-2">
-                <span className="font-bold text-[10px]">[!]</span>
+                <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
                 <span>{awardErrorMsg}</span>
               </div>
             )}
@@ -651,7 +651,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                     <span>Disbursing Aid...</span>
                   ) : (
                     <>
-                      <span className="font-bold text-[10px]">✓</span>
+                      <Check className="w-4 h-4 mr-1 inline" />
                       <span>Award & Disburse to Ledger</span>
                     </>
                   )}
@@ -723,7 +723,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
                 {isActualAdmin ? (
                   <div className="flex items-center gap-2">
                     <span className="px-2.5 py-1 bg-[#ffedd5] text-[#00236f] rounded-lg text-[11px] font-bold hidden sm:flex items-center gap-1">
-                      <span className="font-bold text-[10px]">✓</span>
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
                       <span>Active</span>
                     </span>
                     <button

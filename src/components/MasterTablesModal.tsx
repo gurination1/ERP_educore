@@ -206,7 +206,9 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
             {feedback.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" /> : <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />}
             <span>{feedback.message}</span>
           </div>
-          <button type="button" onClick={() => setFeedback(null)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+          <button type="button" onClick={() => setFeedback(null)} className="text-slate-400 hover:text-slate-600 font-bold p-1 cursor-pointer">
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
       )}
 

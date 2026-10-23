@@ -27,6 +27,7 @@ import {
   ExternalLink,
   Zap,
   Printer,
+  Check,
   LogOut,
 } from 'lucide-react';
 import {
@@ -2968,8 +2969,9 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
                         </span>
                       </div>
                     </div>
-                    <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-bold text-[10px]">
-                      CLEARED ✓
+                    <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-bold text-[10px] inline-flex items-center gap-1">
+                      <span>CLEARED</span>
+                      <Check className="w-3 h-3" />
                     </span>
                   </div>
 
@@ -2985,8 +2987,9 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
                         </span>
                       </div>
                     </div>
-                    <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-bold text-[10px]">
-                      SURRENDERED ✓
+                    <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-bold text-[10px] inline-flex items-center gap-1">
+                      <span>SURRENDERED</span>
+                      <Check className="w-3 h-3" />
                     </span>
                   </div>
 
@@ -3002,8 +3005,9 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
                         </span>
                       </div>
                     </div>
-                    <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-bold text-[10px]">
-                      VERIFIED ✓
+                    <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-bold text-[10px] inline-flex items-center gap-1">
+                      <span>VERIFIED</span>
+                      <Check className="w-3 h-3" />
                     </span>
                   </div>
 

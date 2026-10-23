@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { api } from '../api/client';
 import { User } from '../types';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, X, Check, ArrowLeft, ArrowRight, Plus } from 'lucide-react';
 
 interface AcademicsViewProps {
   currentUser: User | null;
@@ -920,9 +920,10 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
                     <button
                       type="button"
                       onClick={() => setIsPromotingBatch(false)}
-                      className="px-2.5 py-1 rounded-lg hover:bg-slate-100 text-slate-500 font-bold"
+                      className="px-2.5 py-1 rounded-lg hover:bg-slate-100 text-slate-500 font-bold flex items-center gap-1"
                     >
-                      ✕ Close Form
+                      <X className="w-3.5 h-3.5" />
+                      <span>Close Form</span>
                     </button>
                   </div>
 
@@ -1049,15 +1050,17 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
                                 <button
                                   type="button"
                                   onClick={() => handleApproveBatch(b.id)}
-                                  className="px-2 py-0.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold shadow-xs transition cursor-pointer"
+                                  className="px-2 py-0.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold shadow-xs transition cursor-pointer flex items-center gap-1"
                                 >
-                                  ✓ Approve
+                                  <Check className="w-3 h-3" />
+                                  <span>Approve</span>
                                 </button>
                               )}
                             </div>
                           ) : (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                              ✓ Active & Approved
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 flex items-center gap-1 inline-flex">
+                              <Check className="w-3 h-3" />
+                              <span>Active & Approved</span>
                             </span>
                           )}
                         </td>
@@ -1088,9 +1091,10 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
                 <button
                   type="button"
                   onClick={() => setIsCreatingBatch(false)}
-                  className="px-3 py-1.5 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl text-xs font-semibold"
+                  className="px-3 py-1.5 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl text-xs font-semibold flex items-center gap-1.5"
                 >
-                  ← Back to Batches
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Back to Batches</span>
                 </button>
               </div>
 
@@ -1339,9 +1343,10 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
                     </button>
                     <button
                       type="submit"
-                      className="px-5 py-2 bg-[#00236f] hover:bg-[#001950] text-white rounded-xl font-bold transition shadow-xs"
+                      className="px-5 py-2 bg-[#00236f] hover:bg-[#001950] text-white rounded-xl font-bold transition shadow-xs flex items-center gap-1.5"
                     >
-                      Deploy Academic Batch ✓
+                      <span>Deploy Academic Batch</span>
+                      <Check className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -1385,7 +1390,10 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
                   <h4 className="font-bold text-slate-900 text-sm">Non-Destructive Section Transfer (Inline Action)</h4>
                   <p className="text-[11px] text-slate-500">Transfers student while retaining all cumulative attendance logs and ledger records</p>
                 </div>
-                <button onClick={() => setIsTransferModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold px-2 py-1 rounded hover:bg-slate-100">✕ Close</button>
+                <button onClick={() => setIsTransferModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold px-2 py-1 rounded hover:bg-slate-100 flex items-center gap-1">
+                  <X className="w-3.5 h-3.5" />
+                  <span>Close</span>
+                </button>
               </div>
               <form onSubmit={handleSectionTransfer} className="space-y-3">
                 <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-[11px] flex items-center gap-1.5">
@@ -1451,7 +1459,8 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
                     <td className="px-4 py-3">{s.capacity} Students</td>
                     <td className="px-4 py-3 text-slate-500">
                       <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                        ✓ Preserves Cumulative Attendance & Fee Heads
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Preserves Cumulative Attendance & Fee Heads</span>
                       </span>
                     </td>
                   </tr>
@@ -1488,7 +1497,10 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
                   <h4 className="font-bold text-slate-900 text-sm">Add Curriculum Subject (Inline Workspace)</h4>
                   <p className="text-[11px] text-slate-500 font-mono">Formula: [NAME]_[COURSE]_[TERM]</p>
                 </div>
-                <button onClick={() => setIsAddSubjectOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold px-2 py-1 rounded hover:bg-slate-100">✕ Close</button>
+                <button onClick={() => setIsAddSubjectOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold px-2 py-1 rounded hover:bg-slate-100 flex items-center gap-1">
+                  <X className="w-3.5 h-3.5" />
+                  <span>Close</span>
+                </button>
               </div>
               <form onSubmit={handleCreateSubject} className="space-y-3.5">
                 <div className="grid grid-cols-2 gap-3">
@@ -1693,7 +1705,10 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
                   <h4 className="font-bold text-slate-900 text-sm">Faculty Subject Handover (Inline Action)</h4>
                   <p className="text-[11px] text-slate-500">Relieving <strong>{selectedAllocation.faculty_id}</strong> for <strong>{selectedAllocation.subject_id}</strong></p>
                 </div>
-                <button onClick={() => setIsHandoverModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold px-2 py-1 rounded hover:bg-slate-100">✕ Close</button>
+                <button onClick={() => setIsHandoverModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold px-2 py-1 rounded hover:bg-slate-100 flex items-center gap-1">
+                  <X className="w-3.5 h-3.5" />
+                  <span>Close</span>
+                </button>
               </div>
               <form onSubmit={handleHandoverAllocation} className="space-y-3">
                 <p className="text-xs text-slate-600">
@@ -1811,7 +1826,10 @@ Record Generated on ${new Date().toISOString().slice(0, 10)}
                   <h4 className="font-bold text-slate-900 text-sm">Add Timetable Lecture Slot (Inline Action)</h4>
                   <p className="text-[11px] text-slate-500 font-mono">Conflict detection & Combined Classes (CC)</p>
                 </div>
-                <button onClick={() => setIsAddSlotOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold px-2 py-1 rounded hover:bg-slate-100">✕ Close</button>
+                <button onClick={() => setIsAddSlotOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold px-2 py-1 rounded hover:bg-slate-100 flex items-center gap-1">
+                  <X className="w-3.5 h-3.5" />
+                  <span>Close</span>
+                </button>
               </div>
               <form onSubmit={handleCreateTimetableSlot} className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
+import { Sparkles, FileText, CheckCircle2, Copy, X, AlertCircle, RefreshCw } from 'lucide-react';
 
 interface AIFeeNoticeModalProps {
   isOpen: boolean;
@@ -72,7 +73,9 @@ export const AIFeeNoticeModal: React.FC<AIFeeNoticeModalProps> = ({
         {/* Header */}
         <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-linear-to-r from-[#00236f] to-[#1a4bb0] text-white">
           <div className="flex items-center gap-2.5">
-            
+            <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
+              <Sparkles className="w-5 h-5 text-amber-300" />
+            </div>
             <div>
               <h2 className="text-base font-bold leading-tight">AI Fee Recovery Notice Generator</h2>
               <p className="text-xs text-blue-100">
@@ -84,7 +87,7 @@ export const AIFeeNoticeModal: React.FC<AIFeeNoticeModalProps> = ({
             onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white transition-colors"
           >
-            ✕
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -115,14 +118,14 @@ export const AIFeeNoticeModal: React.FC<AIFeeNoticeModalProps> = ({
         <div className="p-6 overflow-y-auto space-y-4 flex-1">
           {loading ? (
             <div className="py-12 text-center space-y-3">
-              <span className="inline-block animate-spin text-3xl text-[#00236f]">⟳</span>
+              <RefreshCw className="w-8 h-8 mx-auto text-[#00236f] animate-spin" />
               <p className="text-xs font-semibold text-[#444651]">
                 Gemini AI is crafting context-aware fee notice...
               </p>
             </div>
           ) : error ? (
             <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2">
-              <span className="font-bold text-[10px]">[!]</span>
+              <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
               <span>{error}</span>
             </div>
           ) : noticeData ? (

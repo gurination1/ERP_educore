@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { User } from '../types';
 import { api } from '../api/client';
-import { Download } from 'lucide-react';
+import { Download, Check, X, CheckCircle2 } from 'lucide-react';
 
 interface PartnerPortalViewProps {
   currentUser: User | null;
@@ -291,7 +291,7 @@ This transcript is digitally generated and certified by EduCore Academic ERP.`;
 
       {feedbackMsg && (
         <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-2xl text-xs font-medium flex items-center gap-2 shadow-xs">
-          <span className="font-bold text-[10px] bg-emerald-600 text-white rounded-full w-4 h-4 inline-flex items-center justify-center">✓</span>
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>{feedbackMsg}</span>
         </div>
       )}
@@ -581,7 +581,7 @@ This transcript is digitally generated and certified by EduCore Academic ERP.`;
                 onClick={() => setSelectedStudentForTranscript(null)}
                 className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center font-bold text-xs"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 

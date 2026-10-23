@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import { StaffAcademicJourney, User } from '../types';
+import { X, CheckCircle2, Plus } from 'lucide-react';
 
 interface StaffAcademicJourneyModalProps {
   isOpen: boolean;
@@ -106,7 +107,7 @@ export const StaffAcademicJourneyModal: React.FC<StaffAcademicJourneyModalProps>
             onClick={onClose}
             className="w-8 h-8 rounded-lg flex items-center justify-center text-[#757682] hover:bg-[#e1e3e4] hover:text-[#191c1d] transition-all cursor-pointer"
           >
-            <span className="font-bold text-[10px]">✕</span>
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -120,7 +121,7 @@ export const StaffAcademicJourneyModal: React.FC<StaffAcademicJourneyModalProps>
               onClick={() => setShowAddForm(!showAddForm)}
               className="px-3 py-1.5 bg-[#00236f] text-white rounded-lg text-xs font-bold hover:brightness-110 flex items-center gap-1.5 cursor-pointer"
             >
-              
+              <Plus className="w-3.5 h-3.5" />
               <span>{showAddForm ? 'Cancel Entry' : 'Record Academic Degree / Patent'}</span>
             </button>
           )}
@@ -280,7 +281,7 @@ export const StaffAcademicJourneyModal: React.FC<StaffAcademicJourneyModalProps>
                       <p className="text-xs font-semibold text-[#00236f] mt-1">{j.degree_name}</p>
                     </div>
                     {j.verified && (
-                      <span className="font-bold text-[10px]">✓</span>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                     )}
                   </div>
 

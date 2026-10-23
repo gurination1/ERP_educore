@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { User, StudentProfile, ActiveScreen } from '../types';
-import { Lock, Unlock, AlertOctagon, CheckCircle2, Phone } from 'lucide-react';
+import { Lock, Unlock, AlertOctagon, CheckCircle2, Phone, ArrowRight, X } from 'lucide-react';
 
 interface StaffDashboardViewProps {
   currentUser: User | null;
@@ -876,7 +876,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
             className="px-3.5 py-1.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg font-bold text-[11px] shrink-0 cursor-pointer shadow-xs flex items-center gap-1"
           >
             <span>Open Follow-Up CRM</span>
-            <span className="font-bold text-[10px]">→</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
@@ -2097,9 +2097,10 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
             <button
               type="button"
               onClick={() => setIsLogCallOpen(false)}
-              className="text-slate-400 hover:text-slate-700 font-bold px-2 py-1 rounded hover:bg-slate-100"
+              className="text-slate-400 hover:text-slate-700 font-bold px-2 py-1 rounded hover:bg-slate-100 flex items-center gap-1 cursor-pointer"
             >
-              ✕ Close
+              <X className="w-3.5 h-3.5" />
+              <span>Close</span>
             </button>
           </div>
 
@@ -2199,9 +2200,10 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
             <button
               type="button"
               onClick={() => setIsNewLeadModalOpen(false)}
-              className="text-slate-400 hover:text-slate-700 font-bold px-2 py-1 rounded hover:bg-slate-100"
+              className="text-slate-400 hover:text-slate-700 font-bold px-2 py-1 rounded hover:bg-slate-100 flex items-center gap-1 cursor-pointer"
             >
-              ✕ Close
+              <X className="w-3.5 h-3.5" />
+              <span>Close</span>
             </button>
           </div>
 

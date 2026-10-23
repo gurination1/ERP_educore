@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { User, ActiveScreen } from '../types';
 import { useCampus } from '../context/CampusContext';
-import { Shield, Building2, ChevronDown, Check, User as UserIcon, KeyRound, LogOut, Globe } from 'lucide-react';
+import { Shield, Building2, ChevronDown, Check, User as UserIcon, KeyRound, LogOut, Globe, Menu, X } from 'lucide-react';
 import { api, setStoredToken, setStoredUser } from '../api/client';
 
 interface HeaderProps {
@@ -449,8 +449,9 @@ export const Header: React.FC<HeaderProps> = ({
           { id: 'fee-ledger' as ActiveScreen, label: 'Tuition Fee Assessment & Ledger', action: () => { onNavigate('fee-ledger'); setOpenDrawer(null); } },
           { id: 'payment-gateways' as ActiveScreen, label: 'Payment Gateways (Test / Live Accounts)', action: () => { onNavigate('payment-gateways'); setOpenDrawer(null); } },
           { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships', action: () => { onNavigate('scholarships'); setOpenDrawer(null); } },
+          { id: 'partner-portal' as ActiveScreen, label: 'Corporate Partners & Placement Agencies', action: () => { onNavigate('partner-portal'); setOpenDrawer(null); } },
         ],
-        isActive: ['/fees', '/scholarships', '/payment-gateways'].some(p => effectivePath.startsWith(p)),
+        isActive: ['/fees', '/scholarships', '/payment-gateways', '/partner-portal'].some(p => effectivePath.startsWith(p)),
       },
       {
         id: 'students',
@@ -689,8 +690,9 @@ export const Header: React.FC<HeaderProps> = ({
           { id: 'fee-ledger' as ActiveScreen, label: 'Tuition Fee Assessment & Collections', action: () => { onNavigate('fee-ledger'); setOpenDrawer(null); } },
           { id: 'payment-gateways' as ActiveScreen, label: 'Payment Gateways & Current Accounts', action: () => { onNavigate('payment-gateways'); setOpenDrawer(null); } },
           { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships', action: () => { onNavigate('scholarships'); setOpenDrawer(null); } },
+          { id: 'partner-portal' as ActiveScreen, label: 'Corporate Partners & Placement Agencies', action: () => { onNavigate('partner-portal'); setOpenDrawer(null); } },
         ],
-        isActive: ['fee-ledger', 'scholarships', 'payment-gateways'].includes(activeScreen as any) || effectivePath.startsWith('/fees') || effectivePath.startsWith('/scholarships') || effectivePath.startsWith('/payment-gateways'),
+        isActive: ['fee-ledger', 'scholarships', 'payment-gateways', 'partner-portal'].includes(activeScreen as any) || effectivePath.startsWith('/fees') || effectivePath.startsWith('/scholarships') || effectivePath.startsWith('/payment-gateways') || effectivePath.startsWith('/partner-portal'),
       },
       {
         id: 'students',
@@ -1434,7 +1436,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="text-amber-400 font-bold">UID</span>
             <span className="font-bold tracking-tight text-white">{displayUid}</span>
             <span className="text-white/60 text-[10px]">
-              {copiedUid ? '✓' : 'Copy'}
+              {copiedUid ? <Check className="w-3 h-3 text-emerald-400 inline" /> : 'Copy'}
             </span>
           </button>
 
@@ -1552,10 +1554,10 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-1.5 text-white hover:bg-white/10 rounded-full cursor-pointer"
+            className="lg:hidden p-1.5 text-white hover:bg-white/10 rounded-full cursor-pointer flex items-center justify-center"
             aria-label="Toggle Navigation Menu"
           >
-            {mobileMenuOpen ? '✕' : '☰'}
+            {mobileMenuOpen ? <X className="w-5 h-5 text-white" /> : <Menu className="w-5 h-5 text-white" />}
           </button>
         </div>
       </div>
@@ -1735,7 +1737,7 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-sm cursor-pointer"
               >
-                ✕
+                <X className="w-4 h-4 text-slate-600" />
               </button>
             </div>
 

@@ -1151,8 +1151,9 @@ export const TransportManagementView: React.FC<TransportManagementViewProps> = (
                 <div className="text-[8px] font-mono text-sky-200">
                   TAG: {selectedPassForCard.rfid_tag_id}
                 </div>
-                <div className="px-2 py-0.5 rounded text-[9px] font-black bg-emerald-400 text-[#00236f]">
-                  ✓ PAID & VERIFIED
+                <div className="px-2 py-0.5 rounded text-[9px] font-black bg-emerald-400 text-[#00236f] inline-flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span>PAID & VERIFIED</span>
                 </div>
               </div>
             </div>

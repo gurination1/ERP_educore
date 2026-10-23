@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { User, StaffRoleAssignment, DefaultCategoryRights } from '../types';
 import { api } from '../api/client';
-import { Building2 } from 'lucide-react';
+import { Building2, X, Check, CheckCircle2, AlertTriangle, ArrowRight } from 'lucide-react';
 
 export type StaffTab = 'overview' | 'payroll' | 'exit-noc' | 'addresses' | 'banks' | 'qualifications' | 'experience' | 'journey' | 'additional-roles';
 
@@ -958,7 +958,7 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
                     className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
                   >
                     <span>Bulk Revoke Role from {selectedStaffIdsForRevoke.length} Staff Member(s)</span>
-                    <span className="text-white/80">✕</span>
+                    <X className="w-3.5 h-3.5 text-white/90" />
                   </button>
                 )}
               </div>
@@ -2013,7 +2013,7 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
                       }`}
                     >
                       {nocData?.security_refund_released
-                        ? 'Refund Disbursed ✓'
+                        ? 'Refund Disbursed'
                         : 'Release Security Deposit Refund ↗'}
                     </button>
                   </div>
@@ -2289,9 +2289,9 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
               <button
                 type="button"
                 onClick={() => setShowDesignationModal(false)}
-                className="text-slate-400 hover:text-slate-600 font-bold"
+                className="text-slate-400 hover:text-slate-600 font-bold p-1 cursor-pointer"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -2390,9 +2390,9 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
               <button
                 type="button"
                 onClick={() => setShowAddressModal(false)}
-                className="text-slate-400 hover:text-slate-600 font-bold"
+                className="text-slate-400 hover:text-slate-600 font-bold p-1 cursor-pointer"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -2500,9 +2500,9 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
               <button
                 type="button"
                 onClick={() => setShowBankModal(false)}
-                className="text-slate-400 hover:text-slate-600 font-bold"
+                className="text-slate-400 hover:text-slate-600 font-bold p-1 cursor-pointer"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -2596,9 +2596,9 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
               <button
                 type="button"
                 onClick={() => setShowQualificationModal(false)}
-                className="text-slate-400 hover:text-slate-600 font-bold"
+                className="text-slate-400 hover:text-slate-600 font-bold p-1 cursor-pointer"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -2693,9 +2693,9 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
               <button
                 type="button"
                 onClick={() => setShowExperienceModal(false)}
-                className="text-slate-400 hover:text-slate-600 font-bold"
+                className="text-slate-400 hover:text-slate-600 font-bold p-1 cursor-pointer"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 

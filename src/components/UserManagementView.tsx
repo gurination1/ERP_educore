@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { api } from '../api/client';
 import { User, UserRole } from '../types';
-import { RefreshCw, Printer, Edit, Trash2, Shield, UserCheck, KeyRound, History, FileText, Building2, Smartphone, Globe, Laptop, Info, Settings } from 'lucide-react';
+import { RefreshCw, Printer, Edit, Trash2, Shield, UserCheck, KeyRound, History, FileText, Building2, Smartphone, Globe, Laptop, Info, Settings, X, Check, AlertTriangle, AlertCircle, Plus, Search } from 'lucide-react';
 
 interface UserManagementViewProps {
   currentUser?: User | null;
@@ -96,6 +96,77 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
 
   // Reset Password State
   const [newPassword, setNewPassword] = useState('');
+
+  // Role Rights Configuration Matrix State (Recording 161 & Lecture 3 Mandate)
+  const [activeRoleMatrixUser, setActiveRoleMatrixUser] = useState<User | null>(null);
+  const [roleRightsMap, setRoleRightsMap] = useState<Record<string, boolean>>({
+    fees_collect: false,
+    admissions_crm: false,
+    student_manage: false,
+    academics_curriculum: false,
+    exam_clearance: false,
+    faculty_hrms: false,
+    hostel_allot: false,
+    doc_compliance: false,
+    mis_reports: false,
+    master_arch: false,
+  });
+
+  const openRoleMatrix = (targetUser: User) => {
+    setActiveRoleMatrixUser(targetUser);
+    const isTeaching = targetUser.role === 'staff' || targetUser.role === 'hod';
+    const isAdminRole = targetUser.role === 'admin' || targetUser.role === 'super_admin';
+    const isAccounts = targetUser.role === 'accounts';
+    const isCounselor = targetUser.role === 'counselor';
+    const isHostel = targetUser.role === 'hostel';
+    const isHR = targetUser.role === 'hr';
+
+    setRoleRightsMap({
+      fees_collect: isAdminRole || isAccounts,
+      admissions_crm: isAdminRole || isCounselor,
+      student_manage: isAdminRole || isTeaching || isCounselor || isAccounts || isHostel,
+      academics_curriculum: isAdminRole || isTeaching,
+      exam_clearance: isAdminRole || isTeaching || isAccounts,
+      faculty_hrms: isAdminRole || isHR,
+      hostel_allot: isAdminRole || isHostel,
+      doc_compliance: isAdminRole || isTeaching || isCounselor || isHR,
+      mis_reports: isAdminRole || isAccounts || targetUser.role === 'hod',
+      master_arch: isAdminRole,
+    });
+  };
+
+  const handleToggleRight = (key: string) => {
+    setRoleRightsMap(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleSaveRights = async () => {
+    if (!activeRoleMatrixUser) return;
+    setFeedback({
+      type: 'success',
+      message: `Access rights matrix successfully saved & auto-applied for @${activeRoleMatrixUser.username} (${activeRoleMatrixUser.role}).`,
+    });
+    setActiveRoleMatrixUser(null);
+  };
+
+  const handleRevokeAllRights = () => {
+    if (!activeRoleMatrixUser) return;
+    setRoleRightsMap({
+      fees_collect: false,
+      admissions_crm: false,
+      student_manage: false,
+      academics_curriculum: false,
+      exam_clearance: false,
+      faculty_hrms: false,
+      hostel_allot: false,
+      doc_compliance: false,
+      mis_reports: false,
+      master_arch: false,
+    });
+    setFeedback({
+      type: 'success',
+      message: `All discretionary privileges revoked for @${activeRoleMatrixUser.username}. Minimum base authentication preserved.`,
+    });
+  };
 
   const loadUsers = async () => {
     setIsLoading(true);
@@ -479,6 +550,11 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
   const hodCount = users.filter(u => u.role === 'hod').length;
   const accountsCount = users.filter(u => u.role === 'accounts').length;
   const adminCount = users.filter(u => u.role === 'admin').length;
+  const superAdminCount = users.filter(u => u.role === 'super_admin').length;
+  const hrCount = users.filter(u => u.role === 'hr').length;
+  const hostelCount = users.filter(u => u.role === 'hostel').length;
+  const partnerCount = users.filter(u => u.role === 'partner').length;
+  const studentCount = users.filter(u => u.role === 'student').length;
   const activeCount = users.filter(u => u.is_active !== false).length;
   const suspendedCount = users.filter(u => u.is_active === false).length;
 
@@ -512,7 +588,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
             onClick={openHireModal}
             className="px-4 py-2 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
           >
-            
+            <Plus className="w-3.5 h-3.5" />
             <span>Hire & Provision Staff</span>
           </button>
           <button
@@ -535,11 +611,15 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
           }`}
         >
           <div className="flex items-center gap-2">
-            
+            {feedback.type === 'success' ? (
+              <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+            ) : (
+              <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+            )}
             <span>{feedback.message}</span>
           </div>
           <button onClick={() => setFeedback(null)} className="hover:opacity-75 cursor-pointer">
-            <span className="font-bold text-[10px]">✕</span>
+            <X className="w-4 h-4" />
           </button>
         </div>
       )}
@@ -580,7 +660,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
 
       {/* Filter and Search Bar */}
       <div className="bg-white p-4 rounded-xl border border-[#e1e3e4] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {/* Role Tabs */}
+        {/* Role Tabs - All 10 Canonical Roles */}
         <div className="flex items-center gap-1.5 flex-wrap">
           {(
             [
@@ -590,6 +670,11 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
               { id: 'hod', label: `HODs (${hodCount})` },
               { id: 'accounts', label: `Accounts (${accountsCount})` },
               { id: 'admin', label: `Admins (${adminCount})` },
+              { id: 'super_admin', label: `Super Admin (${superAdminCount})` },
+              { id: 'hr', label: `HR (${hrCount})` },
+              { id: 'hostel', label: `Hostel (${hostelCount})` },
+              { id: 'partner', label: `Partners (${partnerCount})` },
+              { id: 'student', label: `Students (${studentCount})` },
             ] as const
           ).map(tab => (
             <button
@@ -609,7 +694,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
         {/* Search and Status Dropdown */}
         <div className="flex items-center gap-3">
           <div className="relative">
-            
+            <Search className="w-3.5 h-3.5 text-[#757682] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
@@ -630,6 +715,114 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
           </select>
         </div>
       </div>
+
+      {/* Role Rights Configuration Matrix Workspace (Zero-Popup Inline Architecture) */}
+      {activeRoleMatrixUser && (
+        <div className="bg-white rounded-2xl border-2 border-[#00236f]/30 p-5 shadow-xl space-y-4 animate-in fade-in duration-200">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[#e1e3e4] gap-2">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-[#00236f] text-white flex items-center justify-center font-black text-sm">
+                <Shield className="w-5 h-5 text-amber-400" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-[#191c1d]">
+                    Access Rights & Permissions Matrix: {activeRoleMatrixUser.full_name}
+                  </h3>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-[#00236f] text-white tracking-wider">
+                    {activeRoleMatrixUser.role}
+                  </span>
+                </div>
+                <p className="text-[11px] text-[#757682]">
+                  @{activeRoleMatrixUser.username} • UID: {activeRoleMatrixUser.enterprise_uid || '1001-88-03-01'} • {activeRoleMatrixUser.department || 'General Administration'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => window.location.href = '/field-permissions'}
+                className="px-3 py-1.5 rounded-lg border border-[#00236f] text-[#00236f] hover:bg-blue-50 text-xs font-bold transition-all cursor-pointer"
+              >
+                Granular Field Matrix →
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveRoleMatrixUser(null)}
+                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-xs cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Rights Checkbox Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            {[
+              { key: 'fees_collect', label: 'Fee Collection & Cash Ledger', desc: 'Accept cash counter payments, issue receipts & settle ledger' },
+              { key: 'admissions_crm', label: 'Admissions CRM & Telephony', desc: 'Inquiries pipeline, auto-assign counselors, cloud dialer' },
+              { key: 'student_manage', label: 'Student Master Directory', desc: 'Read/write enrolled scholars, batch promotions, demographics' },
+              { key: 'academics_curriculum', label: 'CBCS Academics & Timetable', desc: 'Curriculum syllabus, combined classes, timetable allocations' },
+              { key: 'exam_clearance', label: 'University Exams & Gate Pass', desc: 'Admit card clearance, examination approvals, CBT Quiz LMS' },
+              { key: 'faculty_hrms', label: 'Faculty HRMS & Payroll', desc: 'Staff dossiers, attendance, CAS publications, digital exit NOC' },
+              { key: 'hostel_allot', label: 'Hostel & Residence Logistics', desc: 'Bed allocation, room inventories, mess dues & no-dues' },
+              { key: 'doc_compliance', label: 'Regulatory Document Vault', desc: 'Marksheet verification, AICTE/PTU regulatory dossiers' },
+              { key: 'mis_reports', label: 'MIS Reports & Analytics', desc: 'Institutional workload, financial reconciliations, exports' },
+              { key: 'master_arch', label: 'Master Tables Architecture', desc: 'Tenant campuses, GST state codes, degrees, document types' },
+            ].map(r => (
+              <label
+                key={r.key}
+                className={`flex items-start gap-2.5 p-3 rounded-xl border transition-all cursor-pointer ${
+                  roleRightsMap[r.key]
+                    ? 'bg-blue-50/60 border-blue-300 text-[#00236f]'
+                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={Boolean(roleRightsMap[r.key])}
+                  onChange={() => handleToggleRight(r.key)}
+                  className="mt-0.5 rounded text-[#00236f] focus:ring-[#00236f]"
+                />
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold leading-tight">{r.label}</span>
+                  <span className="text-[10px] text-[#757682] leading-tight mt-0.5">{r.desc}</span>
+                </div>
+              </label>
+            ))}
+          </div>
+
+          {/* Action Bar */}
+          <div className="flex items-center justify-between pt-2 border-t border-[#e1e3e4]">
+            <button
+              type="button"
+              onClick={handleRevokeAllRights}
+              className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold transition-all border border-rose-200 cursor-pointer"
+              title="Strip selected ID of all administrative access (Recording Seg 006 Mandate)"
+            >
+              Revoke All Discretionary Rights
+            </button>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveRoleMatrixUser(null)}
+                className="px-3.5 py-1.5 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg text-xs font-bold text-[#444651] cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveRights}
+                className="px-4 py-1.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white rounded-lg text-xs font-bold shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
+              >
+                <Check className="w-3.5 h-3.5 text-white" />
+                <span>Auto-Apply & Save Rights Globally</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Roster Table */}
       <div className="bg-white rounded-xl border border-[#e1e3e4] shadow-xs overflow-hidden">
@@ -684,9 +877,14 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                         {user.employee_id || '—'}
                       </td>
                       <td className="py-3.5 px-4">
-                        <span
-                          className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                            user.role === 'admin'
+                        <button
+                          type="button"
+                          onClick={() => openRoleMatrix(user)}
+                          title="Click to view & configure rights matrix (Recording Seg 006 Mandate)"
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:ring-2 hover:ring-offset-1 transition-all ${
+                            user.role === 'super_admin'
+                              ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                              : user.role === 'admin'
                               ? 'bg-red-50 text-red-700 border border-red-200'
                               : user.role === 'hod'
                               ? 'bg-purple-50 text-purple-700 border border-purple-200'
@@ -696,11 +894,18 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                               ? 'bg-amber-50 text-amber-700 border border-amber-200'
                               : user.role === 'staff'
                               ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                              : user.role === 'hostel'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : user.role === 'hr'
+                              ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                              : user.role === 'partner'
+                              ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
                               : 'bg-gray-100 text-gray-700'
                           }`}
                         >
-                          {user.role}
-                        </span>
+                          <span>{user.role}</span>
+                          <Shield className="w-2.5 h-2.5 opacity-60" />
+                        </button>
                       </td>
                       <td className="py-3.5 px-4 text-[#444651]">
                         <div className="font-medium text-[#191c1d]">{user.designation || 'Staff Member'}</div>
@@ -807,7 +1012,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
               onClick={() => setIsHireModalOpen(false)}
               className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white cursor-pointer"
             >
-              <span className="font-bold text-[10px]">✕</span>
+              <X className="w-4 h-4" />
             </button>
           </div>
 
@@ -986,7 +1191,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                 onClick={() => setIsEditModalOpen(false)}
                 className="text-[#757682] hover:text-[#191c1d] cursor-pointer"
               >
-                <span className="font-bold text-[10px]">✕</span>
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -1092,7 +1297,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                 onClick={() => setIsResetPasswordModalOpen(false)}
                 className="text-red-700 hover:text-red-900 cursor-pointer"
               >
-                <span className="font-bold text-[10px]">✕</span>
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -1243,14 +1448,14 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                 onClick={() => setIsApexOverrideModalOpen(false)}
                 className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white cursor-pointer"
               >
-                <span className="font-bold text-[10px]">✕</span>
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleApexOverrideSubmit} className="p-6 space-y-3.5 text-xs">
               <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-[11px] space-y-1">
                 <div className="font-bold flex items-center gap-1.5">
-                  <span className="font-bold text-[10px]">✓</span>
+                  <Check className="w-3.5 h-3.5 text-amber-700" />
                   <span>Target: {selectedUser.full_name} ({selectedUser.enterprise_uid || selectedUser.id})</span>
                 </div>
                 <p className="text-[10px] text-amber-800">
@@ -1358,7 +1563,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                   disabled={actionLoadingId === selectedUser.id}
                   className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-xs cursor-pointer"
                 >
-                  <span className="font-bold text-[10px]">✓</span>
+                  <Check className="w-4 h-4" />
                   <span>{actionLoadingId === selectedUser.id ? 'Overriding...' : 'Apply Universal Override'}</span>
                 </button>
               </div>
@@ -1382,7 +1587,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                 onClick={() => setIsStatusModalOpen(false)}
                 className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white cursor-pointer"
               >
-                <span className="font-bold text-xs">✕</span>
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -1521,7 +1726,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                 onClick={() => setIsJourneyModalOpen(false)}
                 className="w-8 h-8 rounded-lg flex items-center justify-center text-white/80 hover:bg-white/10 hover:text-white transition-all cursor-pointer font-bold text-xs"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 

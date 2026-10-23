@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { safeGoBack } from '../utils/navigation';
 import { User, LMSQuiz } from '../types';
 import { api } from '../api/client';
-import { Download } from 'lucide-react';
+import { Download, Check, ArrowLeft, ArrowRight } from 'lucide-react';
 
 interface StudentQuizLMSViewProps {
   currentUser: User | null;
@@ -350,7 +350,7 @@ Unit 4: Real-World Case Studies & Industry Benchmark Applications
                       onClick={handleSubmitQuiz}
                       className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
                     >
-                      <span className="font-bold text-[10px]">✓</span>
+                      <Check className="w-4 h-4" />
                       <span>Finish & Submit</span>
                     </button>
                   ) : (
@@ -467,7 +467,7 @@ Unit 4: Real-World Case Studies & Industry Benchmark Applications
                             onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
                             className="px-4 py-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg text-xs font-bold text-[#444651] disabled:opacity-30 cursor-pointer flex items-center gap-1"
                           >
-                            <span className="font-bold text-[10px]">←</span>
+                            <ArrowLeft className="w-3.5 h-3.5" />
                             <span>Previous</span>
                           </button>
 
@@ -478,7 +478,7 @@ Unit 4: Real-World Case Studies & Industry Benchmark Applications
                             className="px-4 py-2 bg-[#00236f] hover:bg-[#1a4bb0] text-white rounded-lg text-xs font-bold disabled:opacity-30 cursor-pointer flex items-center gap-1"
                           >
                             <span>Next Question</span>
-                            <span className="font-bold text-[10px]">→</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </div>

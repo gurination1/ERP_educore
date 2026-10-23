@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { User } from '../types';
 import { api } from '../api/client';
-import { Printer, CheckCircle2 } from 'lucide-react';
+import { Printer, CheckCircle2, Check, X, AlertTriangle, AlertCircle } from 'lucide-react';
 
 interface UniversityExamPortalViewProps {
   currentUser: User | null;
@@ -315,7 +315,9 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
               {actionSuccessMsg}
             </span>
-            <button type="button" onClick={() => setActionSuccessMsg(null)} className="text-emerald-600 hover:text-emerald-900 font-bold">✕</button>
+            <button type="button" onClick={() => setActionSuccessMsg(null)} className="text-emerald-600 hover:text-emerald-900 font-bold p-1 cursor-pointer">
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
         )}
         {actionErrorMsg && (
@@ -324,7 +326,9 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
               <span className="w-2 h-2 rounded-full bg-rose-500" />
               {actionErrorMsg}
             </span>
-            <button type="button" onClick={() => setActionErrorMsg(null)} className="text-rose-600 hover:text-rose-900 font-bold">✕</button>
+            <button type="button" onClick={() => setActionErrorMsg(null)} className="text-rose-600 hover:text-rose-900 font-bold p-1 cursor-pointer">
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
         )}
 
@@ -375,7 +379,17 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : 'bg-rose-600 text-white shadow-xs'
               }`}>
-                {isEligible ? 'Gate Cleared ✓' : 'Admit Hold ✕'}
+                {isEligible ? (
+                  <span className="flex items-center gap-1">
+                    <span>Gate Cleared</span>
+                    <Check className="w-3.5 h-3.5" />
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <span>Admit Hold</span>
+                    <X className="w-3.5 h-3.5" />
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -726,7 +740,7 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
               <div className="bg-white rounded-3xl p-6 sm:p-8 border border-rose-200 shadow-sm space-y-4 print:hidden">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center text-lg font-bold">
-                    ✕
+                    <X className="w-6 h-6" />
                   </div>
                   <div>
                     <h3 className="text-base font-black text-rose-900 uppercase">

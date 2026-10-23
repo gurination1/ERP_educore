@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { StudentProfile, User } from '../types';
+import { X, ArrowLeft, Check, CheckCircle2, GraduationCap } from 'lucide-react';
 
 interface StudentProfileModalProps {
   student: StudentProfile;
@@ -160,7 +161,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
               className="h-8 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors border border-slate-200/80"
               title="Return to Student Master Directory"
             >
-              <span className="font-bold text-sm leading-none">‹</span>
+              <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back</span>
             </button>
             <button
@@ -169,7 +170,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
               className="w-8 h-8 rounded-lg flex items-center justify-center text-[#757682] hover:bg-[#edeeef] cursor-pointer border border-transparent hover:border-slate-200"
               title="Close Profile"
             >
-              <span className="font-bold text-xs">✕</span>
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -310,7 +311,12 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                               }`}
                               title={isVerified ? 'Revoke verification' : 'Attest credential'}
                             >
-                              {isVerified ? 'Reject' : 'Verify ✓'}
+                              {isVerified ? 'Reject' : (
+                                <span className="flex items-center gap-1">
+                                  <span>Verify</span>
+                                  <Check className="w-3 h-3" />
+                                </span>
+                              )}
                             </button>
                           )}
                         </div>
@@ -360,14 +366,14 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
 
             {promoteMsg && (
               <div className="p-3 bg-[#ffedd5] border border-[#ea580c] rounded-lg text-[#00236f] text-xs font-semibold flex items-center gap-2">
-                <span className="font-bold text-xs">✓</span>
+                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>{promoteMsg}</span>
               </div>
             )}
 
             {statusMsg && (
               <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-lg text-emerald-900 text-xs font-semibold flex items-center gap-2">
-                <span className="font-bold text-xs">✓</span>
+                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>{statusMsg}</span>
               </div>
             )}

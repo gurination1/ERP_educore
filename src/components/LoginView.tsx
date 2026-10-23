@@ -13,6 +13,7 @@ import {
   ArrowLeft,
   Sparkles,
   Lock,
+  X,
 } from 'lucide-react';
 
 interface LoginViewProps {
@@ -176,9 +177,9 @@ export const LoginView: React.FC<LoginViewProps> = ({
                     <button
                       type="button"
                       onClick={() => setSupportTicketId(null)}
-                      className="text-emerald-700 hover:text-emerald-900 text-xs font-bold"
+                      className="text-emerald-700 hover:text-emerald-900 text-xs font-bold p-1 cursor-pointer"
                     >
-                      ✕
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 )}

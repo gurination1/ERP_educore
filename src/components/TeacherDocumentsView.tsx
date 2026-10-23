@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { safeGoBack } from '../utils/navigation';
 import { User, DocumentRecord } from '../types';
 import { api } from '../api/client';
+import { Check, CheckCircle2, AlertTriangle, X } from 'lucide-react';
 
 interface TeacherDocumentsViewProps {
   currentUser: User | null;
@@ -265,7 +266,7 @@ Generated at ${new Date().toISOString()} via EduCore Regulatory Compliance Engin
 
       {uploadSuccess && (
         <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center gap-2 animate-fadeIn">
-          <span className="font-bold text-[10px]">✓</span>
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>{uploadSuccess}</span>
         </div>
       )}
@@ -273,15 +274,15 @@ Generated at ${new Date().toISOString()} via EduCore Regulatory Compliance Engin
       {uploadError && (
         <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-bold flex items-center justify-between gap-2 animate-fadeIn">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-[10px]">⚠️</span>
+            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
             <span>{uploadError}</span>
           </div>
           <button
             type="button"
             onClick={() => setUploadError(null)}
-            className="text-rose-500 hover:text-rose-800 font-bold text-sm px-1.5"
+            className="text-rose-500 hover:text-rose-800 font-bold p-1 cursor-pointer"
           >
-            ×
+            <X className="w-4 h-4" />
           </button>
         </div>
       )}
@@ -302,7 +303,7 @@ Generated at ${new Date().toISOString()} via EduCore Regulatory Compliance Engin
                 onClick={() => setSelectedDoc(null)}
                 className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-500 cursor-pointer"
               >
-                <span className="font-bold text-[10px]">✕</span>
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -508,7 +509,7 @@ Generated at ${new Date().toISOString()} via EduCore Regulatory Compliance Engin
                     {doc.remarks && <p className="text-slate-800 italic">“{doc.remarks}”</p>}
                     {doc.verified_by && (
                       <div className="text-[9px] text-[#00236f] font-semibold flex items-center gap-1">
-                        <span className="font-bold">✓</span>
+                        <Check className="w-3 h-3 text-[#00236f]" />
                         <span>Attested by {doc.verified_by} on {new Date(doc.verified_at || '').toLocaleDateString()}</span>
                       </div>
                     )}

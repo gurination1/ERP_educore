@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { safeGoBack } from '../utils/navigation';
 import { api } from '../api/client';
 import { AIAssistantModal } from './AIAssistantModal';
-import { Printer } from 'lucide-react';
+import { Printer, Check, CheckCircle2, X, ArrowRight, ArrowLeft, Sparkles, Copy } from 'lucide-react';
 
 interface AdmissionFormViewProps {
   initialStudent?: any | null;
@@ -301,7 +301,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
           <div className="flex items-start justify-between relative z-10">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-                <span className="font-bold text-[10px]">✓</span>
+                <CheckCircle2 className="w-8 h-8 text-emerald-600" />
               </div>
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
@@ -320,7 +320,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
                 onClick={onClose}
                 className="text-[#757682] hover:text-[#191c1d] p-1.5 rounded-lg hover:bg-[#f1f2f4]"
               >
-                <span className="font-bold text-[10px]">✕</span>
+                <X className="w-5 h-5" />
               </button>
             )}
           </div>
@@ -486,7 +486,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
       {aiExtractedBadge && (
         <div className="p-4 bg-linear-to-r from-emerald-50 via-teal-50 to-blue-50 border border-emerald-200 rounded-xl flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="font-bold text-[10px]">✓</span>
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
             <div>
               <p className="text-xs font-bold text-emerald-900">
                 AI Parsed Profile: {formData.firstName} {formData.lastName}
@@ -758,7 +758,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
               className="px-6 py-2.5 bg-[#00236f] hover:bg-[#1a388a] text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer"
             >
               Save & Proceed to Step 2
-              <span className="font-bold text-[10px]">→</span>
+              <ArrowRight className="w-4 h-4 ml-1 inline" />
             </button>
           </div>
         </div>
@@ -929,7 +929,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
                 className="px-6 py-2.5 bg-[#00236f] hover:bg-[#1a388a] text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer"
               >
                 Proceed to Step 3 (Verification & Fees)
-                <span className="font-bold text-[10px]">→</span>
+                <ArrowRight className="w-4 h-4 ml-1 inline" />
               </button>
             </div>
           </div>
@@ -1212,7 +1212,7 @@ export const AdmissionFormView: React.FC<AdmissionFormViewProps> = ({
                 </>
               ) : (
                 <>
-                  <span className="font-bold text-[10px]">✓</span>
+                  <Check className="w-4 h-4 mr-1 inline" />
                   Finalize Admission & Provision Student Account (Step 3 Complete)
                 </>
               )}

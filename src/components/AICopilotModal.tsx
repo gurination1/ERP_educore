@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { api } from '../api/client';
 import { User } from '../types';
-import { GraduationCap, Zap, BarChart2 } from 'lucide-react';
+import { GraduationCap, Zap, BarChart2, X } from 'lucide-react';
 
 interface AICopilotModalProps {
   isOpen: boolean;
@@ -69,7 +69,7 @@ export const AICopilotModal: React.FC<AICopilotModalProps> = ({
         }`}>
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-amber-400/20 border border-amber-300/40 flex items-center justify-center">
-              
+              <Zap className="w-4 h-4 text-amber-300" />
             </div>
             <div>
               <h2 className="text-base font-bold leading-tight">
@@ -86,7 +86,7 @@ export const AICopilotModal: React.FC<AICopilotModalProps> = ({
             onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white transition-colors"
           >
-            ✕
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -147,8 +147,8 @@ export const AICopilotModal: React.FC<AICopilotModalProps> = ({
                 <span className="inline-block animate-spin">⟳</span>
               ) : (
                 <>
-                  Ask AI
-                  
+                  <span>Ask AI</span>
+                  <Zap className="w-3.5 h-3.5" />
                 </>
               )}
             </button>

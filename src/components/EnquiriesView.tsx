@@ -20,6 +20,9 @@ import {
   Clock,
   Percent,
   Plus,
+  Check,
+  ArrowRight,
+  ArrowLeft,
 } from 'lucide-react';
 
 interface EnquiriesViewProps {
@@ -487,9 +490,10 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
             <button
               type="button"
               onClick={() => setShowCreateModal(false)}
-              className="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer"
+              className="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer flex items-center gap-1"
             >
-              Close Workspace ✕
+              <span>Close Workspace</span>
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
 
@@ -608,7 +612,8 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
               {showHostelTransportConflictModal && (
                 <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl space-y-2 animate-fadeIn">
                   <div className="flex items-center gap-2 text-amber-800 font-bold text-xs">
-                    <span>⚠️ Cross-Check Residence & Transport Policy</span>
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>Cross-Check Residence & Transport Policy</span>
                   </div>
                   <p className="text-slate-700 leading-relaxed text-xs">
                     <strong>Are you sure the scholar needs both Campus Hostel residence and Institutional Bus Transport?</strong>
@@ -630,9 +635,10 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
                     <button
                       type="button"
                       onClick={() => setShowHostelTransportConflictModal(false)}
-                      className="px-3 py-1 bg-[#00236f] text-white rounded-lg font-bold text-xs cursor-pointer"
+                      className="px-3 py-1 bg-[#00236f] text-white rounded-lg font-bold text-xs cursor-pointer flex items-center gap-1"
                     >
-                      Confirm Both Services ✓
+                      <span>Confirm Both Services</span>
+                      <Check className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
@@ -670,9 +676,10 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
             <button
               type="button"
               onClick={() => setShowConvertModal(false)}
-              className="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer"
+              className="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer flex items-center gap-1"
             >
-              Close Desk ✕
+              <span>Close Desk</span>
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
 
@@ -707,8 +714,9 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
                 </div>
                 <div>
                   <span className="text-slate-500 block font-semibold mb-1">FEE STATUS:</span>
-                  <span className="inline-block mt-1 font-bold text-emerald-700 bg-emerald-100/70 px-2.5 py-1 rounded-lg">
-                    PAID & CLEARED ✓
+                  <span className="inline-flex items-center gap-1 mt-1 font-bold text-emerald-700 bg-emerald-100/70 px-2.5 py-1 rounded-lg">
+                    <span>PAID & CLEARED</span>
+                    <CheckCircle2 className="w-3.5 h-3.5" />
                   </span>
                 </div>
               </div>
@@ -785,14 +793,15 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
               type="button"
               disabled={!regFeeVerified}
               onClick={handleConvertStudent}
-              className={`px-4 py-2 font-bold rounded-xl text-xs transition cursor-pointer ${
+              className={`px-4 py-2 font-bold rounded-xl text-xs transition cursor-pointer flex items-center gap-1.5 ${
                 regFeeVerified
                   ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
               title={!regFeeVerified ? 'Registration Fee must be verified before student enrollment' : ''}
             >
-              Clear Fee & Enroll Scholar →
+              <span>Clear Fee & Enroll Scholar</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -809,9 +818,10 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
             <button
               type="button"
               onClick={() => setShowAdminSettingsModal(false)}
-              className="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer"
+              className="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer flex items-center gap-1"
             >
-              Close Settings ✕
+              <span>Close Settings</span>
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
 
@@ -883,9 +893,10 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
             <button
               type="button"
               onClick={() => setShowAdminSettingsModal(false)}
-              className="px-4 py-2 bg-[#00236f] hover:bg-[#001744] text-white font-bold rounded-xl text-xs cursor-pointer"
+              className="px-4 py-2 bg-[#00236f] hover:bg-[#001744] text-white font-bold rounded-xl text-xs cursor-pointer flex items-center gap-1.5"
             >
-              Save Settings & Close ✓
+              <span>Save Settings & Close</span>
+              <Check className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -1203,7 +1214,8 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
               onClick={() => setKpiFilter('all')}
               className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#00236f] text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
             >
-              <span>← Back to Main Inquiries CRM</span>
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Main Inquiries CRM</span>
             </button>
             <div>
               <h3 className="text-base font-black text-[#00236f]">

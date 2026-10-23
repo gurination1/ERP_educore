@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { api } from '../api/client';
 import { GrievanceItem, User } from '../types';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Check, X } from 'lucide-react';
 
 interface GrievanceViewProps {
   currentUser: User | null;
@@ -265,7 +265,7 @@ export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => 
 
       {successMessage && (
         <div className="p-4 bg-[#ffedd5] border border-[#ea580c] text-[#00236f] rounded-xl text-xs font-bold flex items-center gap-2 animate-fadeIn">
-          <span className="font-bold text-[10px]">✓</span>
+          <Check className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>{successMessage}</span>
         </div>
       )}
@@ -360,9 +360,9 @@ export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => 
               </div>
               <button
                 onClick={() => setIsLodgeModalOpen(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white"
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white cursor-pointer"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -463,9 +463,9 @@ export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => 
               </div>
               <button
                 onClick={() => setIsAdjudicateOpen(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white"
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white cursor-pointer"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 

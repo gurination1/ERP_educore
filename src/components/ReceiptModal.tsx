@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
-import { Printer } from 'lucide-react';
+import { Printer, X, ShieldCheck } from 'lucide-react';
 
 interface ReceiptModalProps {
   receiptNo?: string;
@@ -61,10 +61,10 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptNo, onClose }
             </button>
             <button
               onClick={onClose}
-              className="text-[#757682] hover:text-[#191c1d] p-1 rounded-lg hover:bg-[#edeeef]"
+              className="text-[#757682] hover:text-[#191c1d] p-1 rounded-lg hover:bg-[#edeeef] cursor-pointer"
               title="Close"
             >
-              <span className="font-bold text-[10px]">✕</span>
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -183,8 +183,9 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptNo, onClose }
               {/* Stamp & Signatory */}
               <div className="pt-8 flex items-center justify-between">
                 <div className="border border-dashed border-[#ea580c] rounded-lg p-2.5 bg-[#ffedd5] text-center">
-                  <span className="text-[10px] font-bold text-[#00236f] uppercase block">
-                    ✓ Digitally Signed & Verified
+                  <span className="text-[10px] font-bold text-[#00236f] uppercase flex items-center justify-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Digitally Signed & Verified</span>
                   </span>
                   <span className="text-[9px] text-[#757682]">
                     EduCore Accounts Automated Gateway

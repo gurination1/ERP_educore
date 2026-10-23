@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { safeGoBack } from '../utils/navigation';
 import { User, DocumentRecord } from '../types';
 import { api } from '../api/client';
-import { Download } from 'lucide-react';
+import { Download, Check, AlertTriangle, X, FileText, CheckCircle2 } from 'lucide-react';
 
 interface StudentDocumentsViewProps {
   currentUser: User | null;
@@ -270,20 +270,20 @@ Generated at ${new Date().toISOString()} via EduCore Document Vault Engine`;
       {uploadSuccess && (
         <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center justify-between animate-fadeIn">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-[10px]">✓</span>
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>{uploadSuccess}</span>
           </div>
-          <button type="button" onClick={() => setUploadSuccess(null)} className="text-emerald-700 hover:text-emerald-900 font-bold">✕</button>
+          <button type="button" onClick={() => setUploadSuccess(null)} className="text-emerald-700 hover:text-emerald-900 font-bold p-1"><X className="w-4 h-4" /></button>
         </div>
       )}
 
       {uploadError && (
         <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-bold flex items-center justify-between animate-fadeIn">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-[10px]">⚠️</span>
+            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
             <span>{uploadError}</span>
           </div>
-          <button type="button" onClick={() => setUploadError(null)} className="text-rose-700 hover:text-rose-900 font-bold">✕</button>
+          <button type="button" onClick={() => setUploadError(null)} className="text-rose-700 hover:text-rose-900 font-bold p-1"><X className="w-4 h-4" /></button>
         </div>
       )}
 
@@ -293,7 +293,7 @@ Generated at ${new Date().toISOString()} via EduCore Document Vault Engine`;
       <div className="bg-white rounded-2xl max-w-2xl mx-auto p-6 shadow-xl border-2 border-[#00236f]/30 space-y-4 my-4 animate-in fade-in">
             <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
               <div className="flex items-center gap-2">
-                <span className="font-bold text-[10px]">✓</span>
+                <FileText className="w-5 h-5 text-indigo-600" />
                 <div>
                   <h3 className="text-sm font-bold text-[#191c1d]">{selectedDoc.title}</h3>
                   <p className="text-[10px] text-[#757682] font-mono">{selectedDoc.file_name}</p>
@@ -303,7 +303,7 @@ Generated at ${new Date().toISOString()} via EduCore Document Vault Engine`;
                 onClick={() => setSelectedDoc(null)}
                 className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[#f3f4f5] text-[#757682] cursor-pointer"
               >
-                <span className="font-bold text-[10px]">✕</span>
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -508,7 +508,7 @@ Generated at ${new Date().toISOString()} via EduCore Document Vault Engine`;
                     {doc.remarks && <p className="text-[#191c1d]">“{doc.remarks}”</p>}
                     {doc.verified_by && (
                       <div className="text-[10px] text-emerald-800 font-semibold flex items-center gap-1">
-                        <span className="font-bold text-[10px]">✓</span>
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
                         <span>Attested by {doc.verified_by} on {new Date(doc.verified_at || '').toLocaleDateString()}</span>
                       </div>
                     )}

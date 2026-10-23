@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../api/client';
+import { X } from 'lucide-react';
 
 interface ForgotPasswordModalProps {
   onClose: () => void;
@@ -208,8 +209,9 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClos
             <h3 className="text-[13px] font-bold text-[#00236f]">MULTI-CHANNEL PASSWORD RECOVERY</h3>
             <p className="text-[10px] text-gray-500">Self-Service Verification & Admin Assisted Reset Matrix</p>
           </div>
-          <button onClick={onClose} className="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-gray-700 font-bold text-xs cursor-pointer">
-            ✕ CLOSE
+          <button onClick={onClose} className="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-gray-700 font-bold text-xs cursor-pointer flex items-center gap-1">
+            <X className="w-3.5 h-3.5" />
+            <span>CLOSE</span>
           </button>
         </div>
 

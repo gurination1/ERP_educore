@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import { ActiveScreen } from '../types';
-import { X, Download, Users, CheckCircle2, AlertTriangle, ArrowRight, Building2, Bus, LifeBuoy, Search } from 'lucide-react';
+import { X, Download, Users, CheckCircle2, AlertTriangle, ArrowRight, Building2, Bus, LifeBuoy, Search, Check } from 'lucide-react';
 
 interface AdminDashboardViewProps {
   onNavigate: (screen: ActiveScreen) => void;
@@ -938,9 +938,10 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                       {t.status !== 'resolved' && (
                         <button
                           onClick={() => handleResolveTicket(t.id)}
-                          className="px-2 py-0.5 bg-[#00236f] hover:bg-[#001950] text-white rounded font-bold text-[10px] transition cursor-pointer"
+                          className="px-2 py-0.5 bg-[#00236f] hover:bg-[#001950] text-white rounded font-bold text-[10px] transition cursor-pointer flex items-center gap-1"
                         >
-                          Mark Resolved ✓
+                          <Check className="w-3 h-3" />
+                          <span>Mark Resolved</span>
                         </button>
                       )}
                     </div>
@@ -1310,9 +1311,10 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                       <button
                         type="button"
                         onClick={() => handleResolveTicket(t.id)}
-                        className="px-3 py-1 bg-[#00236f] hover:bg-[#001950] text-white rounded-lg font-bold text-xs transition cursor-pointer"
+                        className="px-3 py-1 bg-[#00236f] hover:bg-[#001950] text-white rounded-lg font-bold text-xs transition cursor-pointer flex items-center gap-1"
                       >
-                        Mark Resolved ✓
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Mark Resolved</span>
                       </button>
                     )}
                   </div>

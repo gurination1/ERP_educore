@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { safeGoBack } from '../utils/navigation';
 import { api, getStoredToken } from '../api/client';
 import { StudentProfile, User } from '../types';
-import { Download, Search, Users, GraduationCap, Building2 } from 'lucide-react';
+import { Download, Search, Users, GraduationCap, Building2, Check, CheckCircle2, X } from 'lucide-react';
 
 interface ManageStudentsViewProps {
   currentUser?: User | null;
@@ -627,8 +627,13 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
       {/* Progression Toast Notification */}
       {progressionMsg && (
         <div className="fixed bottom-6 right-6 z-50 bg-[#00236f] text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 text-xs font-semibold animate-fade-in border border-blue-400">
-          <span>✓ {progressionMsg}</span>
-          <button onClick={() => setProgressionMsg(null)} className="font-bold opacity-70 hover:opacity-100">✕</button>
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <span>{progressionMsg}</span>
+          </div>
+          <button onClick={() => setProgressionMsg(null)} className="p-1 hover:bg-white/20 rounded cursor-pointer">
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
       )}
 
@@ -642,7 +647,9 @@ export const ManageStudentsView: React.FC<ManageStudentsViewProps> = ({
                 {selectedProgressionStudent.first_name} {selectedProgressionStudent.last_name} ({selectedProgressionStudent.student_id})
               </p>
             </div>
-            <button onClick={() => setIsProgressionModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold text-sm cursor-pointer">✕</button>
+            <button onClick={() => setIsProgressionModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold p-1 cursor-pointer">
+              <X className="w-4 h-4" />
+            </button>
           </div>
 
             <form onSubmit={handleUpdateProgression} className="p-5 space-y-3.5">

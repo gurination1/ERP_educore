@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../api/client';
-import { Phone, PhoneOff } from 'lucide-react';
+import { Phone, PhoneOff, ChevronDown, X, Check, Mic, MicOff, Volume2 } from 'lucide-react';
 
 export interface TelephonyCandidate {
   id: string;
@@ -416,7 +416,7 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
                 className="w-10 h-10 rounded-full bg-slate-800/80 hover:bg-slate-800 text-slate-400 border border-slate-700 flex items-center justify-center transition-all cursor-pointer"
                 title="Minimize Call Dock"
               >
-                <span className="font-bold text-[10px]">▼</span>
+                <ChevronDown className="w-5 h-5" />
               </button>
 
               {/* End Call / Red Button */}
@@ -511,7 +511,7 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
                 }}
                 className="text-white/70 hover:text-white cursor-pointer"
               >
-                <span className="font-bold text-[10px]">✕</span>
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -627,7 +627,7 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
                     </>
                   ) : (
                     <>
-                      <span className="font-bold text-[10px]">✓</span>
+                      <Check className="w-4 h-4 mr-1 inline" />
                       <span>Save & Update Lead</span>
                     </>
                   )}

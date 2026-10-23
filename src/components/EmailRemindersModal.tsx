@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
+import { Mail, X } from 'lucide-react';
 
 interface EmailRemindersModalProps {
   onClose: () => void;
@@ -44,7 +45,7 @@ export const EmailRemindersModal: React.FC<EmailRemindersModalProps> = ({ onClos
         <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-[#dce1ff] text-[#00236f] flex items-center justify-center font-bold text-sm">
-              ✉
+              <Mail className="w-4 h-4 text-[#00236f]" />
             </div>
             <div>
               <h3 className="text-base font-bold text-[#191c1d]">Broadcast Fee Reminders</h3>
@@ -53,8 +54,8 @@ export const EmailRemindersModal: React.FC<EmailRemindersModalProps> = ({ onClos
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="text-[#757682] hover:text-[#191c1d]">
-            <span className="font-bold text-[10px]">✕</span>
+          <button onClick={onClose} className="text-[#757682] hover:text-[#191c1d] p-1 rounded-lg hover:bg-[#edeeef] cursor-pointer">
+            <X className="w-4 h-4" />
           </button>
         </div>
 

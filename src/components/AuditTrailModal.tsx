@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { AuditLogItem } from '../types';
-import { Crown, Smartphone, Laptop } from 'lucide-react';
+import { Crown, Smartphone, Laptop, Search, Shield, History, X } from 'lucide-react';
 
 interface AuditTrailModalProps {
   isOpen: boolean;
@@ -102,7 +102,7 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
             onClick={onClose}
             className="w-8 h-8 rounded-lg flex items-center justify-center text-[#757682] hover:bg-[#e1e3e4] hover:text-[#191c1d] transition-all cursor-pointer"
           >
-            <span className="font-bold text-[10px]">✕</span>
+            <X className="w-5 h-5" />
           </button>
         )}
       </div>
@@ -111,7 +111,7 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
         <div className="px-6 py-3 border-b border-[#e1e3e4] bg-white flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 flex-1 max-w-md">
             <div className="relative w-full">
-              
+              <Search className="w-4 h-4 text-slate-400 absolute left-2.5 top-2 pointer-events-none" />
               <input
                 type="text"
                 value={search}
@@ -292,8 +292,9 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
                   </span>
                   <h4 className="font-bold text-sm text-[#191c1d]">Event Forensic Details</h4>
                 </div>
-                <button onClick={() => setSelectedLog(null)} className="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[#757682] hover:text-[#191c1d] text-xs font-bold cursor-pointer">
-                  ✕ Close Diff
+                <button onClick={() => setSelectedLog(null)} className="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[#757682] hover:text-[#191c1d] text-xs font-bold cursor-pointer flex items-center gap-1">
+                  <X className="w-3.5 h-3.5" />
+                  <span>Close Diff</span>
                 </button>
               </div>
               <div className="text-xs space-y-1">

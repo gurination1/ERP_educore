@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, CreditCard, QrCode, Building, Banknote, Bed, Bus, GraduationCap, FileText, AlertCircle, Check, X, ArrowLeft } from 'lucide-react';
 
 interface FeeHeadItem {
   id: string;
@@ -224,7 +224,7 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
         <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-[#00236f] text-white flex items-center justify-center shadow-xs">
-              
+              <CreditCard className="w-5 h-5 text-white" />
             </div>
             <div>
               <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-50 text-[#00236f] text-[10px] font-black uppercase tracking-wide border border-blue-200 mb-1">
@@ -246,18 +246,19 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
               className="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors border border-slate-200/80"
               title="Return to Fee Ledger"
             >
-              <span className="font-bold text-sm leading-none">‹</span>
+              <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back</span>
             </button>
-            <button onClick={onClose} className="text-[#757682] hover:text-[#191c1d] px-2 py-1 rounded-lg hover:bg-[#f3f4f5] text-xs font-bold" title="Close">
-              <span>✕ Close Workspace</span>
+            <button onClick={onClose} className="text-[#757682] hover:text-[#191c1d] px-2 py-1 rounded-lg hover:bg-[#f3f4f5] text-xs font-bold flex items-center gap-1" title="Close">
+              <X className="w-3.5 h-3.5" />
+              <span>Close Workspace</span>
             </button>
           </div>
         </div>
 
         {errorMsg && (
           <div className="p-3 bg-[#ffdad6] border border-[#ba1a1a]/30 text-[#ba1a1a] rounded-lg text-xs font-semibold flex items-center gap-2">
-            <span className="font-bold text-[10px]">[!]</span>
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
@@ -284,9 +285,9 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
               <button
                 type="button"
                 onClick={() => selectCategoryOnly('hostel')}
-                className="px-2.5 py-1 bg-[#fef3c7] hover:bg-[#fde68a] text-[#b45309] rounded-lg text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer"
+                className="px-2.5 py-1 bg-[#fef3c7] hover:bg-[#fde68a] text-[#b45309] rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
               >
-                
+                <Bed className="w-3.5 h-3.5 text-[#b45309]" />
                 <span>Hostel Fee Only</span>
               </button>
             )}
@@ -294,9 +295,9 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
               <button
                 type="button"
                 onClick={() => selectCategoryOnly('transport')}
-                className="px-2.5 py-1 bg-[#dbeafe] hover:bg-[#bfdbfe] text-[#1e40af] rounded-lg text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer"
+                className="px-2.5 py-1 bg-[#dbeafe] hover:bg-[#bfdbfe] text-[#1e40af] rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
               >
-                
+                <Bus className="w-3.5 h-3.5 text-[#1e40af]" />
                 <span>Transport Fee Only</span>
               </button>
             )}
@@ -304,9 +305,9 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
               <button
                 type="button"
                 onClick={() => selectCategoryOnly('tuition')}
-                className="px-2.5 py-1 bg-[#ede9fe] hover:bg-[#ddd6fe] text-[#5b21b6] rounded-lg text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer"
+                className="px-2.5 py-1 bg-[#ede9fe] hover:bg-[#ddd6fe] text-[#5b21b6] rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
               >
-                
+                <GraduationCap className="w-3.5 h-3.5 text-[#5b21b6]" />
                 <span>Tuition Only</span>
               </button>
             )}
@@ -340,8 +341,16 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
                     onChange={() => {}} // Handled by container onClick
                     className="w-4 h-4 text-[#00236f] rounded border-[#e1e3e4] focus:ring-[#00236f]"
                   />
-                  <div className="w-7 h-7 rounded-lg bg-white border border-[#e1e3e4] flex items-center justify-center shrink-0">
-                    
+                  <div className="w-7 h-7 rounded-lg bg-white border border-[#e1e3e4] flex items-center justify-center shrink-0 text-[#00236f]">
+                    {item.category === 'hostel' ? (
+                      <Bed className="w-4 h-4 text-amber-600" />
+                    ) : item.category === 'transport' ? (
+                      <Bus className="w-4 h-4 text-blue-600" />
+                    ) : item.category === 'exam' ? (
+                      <FileText className="w-4 h-4 text-indigo-600" />
+                    ) : (
+                      <GraduationCap className="w-4 h-4 text-[#00236f]" />
+                    )}
                   </div>
                   <div className="truncate">
                     <h4 className="text-xs font-bold text-[#191c1d] truncate">{item.title}</h4>
@@ -388,53 +397,53 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
               <button
                 type="button"
                 onClick={() => setPaymentMode('online_upi')}
-                className={`p-2 rounded-lg border text-left flex flex-col gap-1 transition-all ${
+                className={`p-2.5 rounded-xl border text-left flex items-center gap-2.5 transition-all cursor-pointer ${
                   paymentMode === 'online_upi'
-                    ? 'border-[#00236f] bg-[#dce1ff]/50 text-[#00236f] font-bold shadow-xs'
-                    : 'border-[#e1e3e4] bg-[#f8f9fa] text-[#444651]'
+                    ? 'border-[#00236f] bg-[#dce1ff]/50 text-[#00236f] font-bold shadow-xs ring-1 ring-[#00236f]'
+                    : 'border-[#e1e3e4] bg-[#f8f9fa] text-[#444651] hover:bg-slate-100'
                 }`}
               >
-                
-                <span className="text-[11px]">UPI / QR</span>
+                <QrCode className="w-4 h-4 text-[#00236f] shrink-0" />
+                <span className="text-[11px] font-semibold">UPI / QR</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPaymentMode('net_banking')}
-                className={`p-2 rounded-lg border text-left flex flex-col gap-1 transition-all ${
+                className={`p-2.5 rounded-xl border text-left flex items-center gap-2.5 transition-all cursor-pointer ${
                   paymentMode === 'net_banking'
-                    ? 'border-[#00236f] bg-[#dce1ff]/50 text-[#00236f] font-bold shadow-xs'
-                    : 'border-[#e1e3e4] bg-[#f8f9fa] text-[#444651]'
+                    ? 'border-[#00236f] bg-[#dce1ff]/50 text-[#00236f] font-bold shadow-xs ring-1 ring-[#00236f]'
+                    : 'border-[#e1e3e4] bg-[#f8f9fa] text-[#444651] hover:bg-slate-100'
                 }`}
               >
-                
-                <span className="text-[11px]">Net Banking</span>
+                <Building className="w-4 h-4 text-[#00236f] shrink-0" />
+                <span className="text-[11px] font-semibold">Net Banking</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPaymentMode('credit_card')}
-                className={`p-2 rounded-lg border text-left flex flex-col gap-1 transition-all ${
+                className={`p-2.5 rounded-xl border text-left flex items-center gap-2.5 transition-all cursor-pointer ${
                   paymentMode === 'credit_card'
-                    ? 'border-[#00236f] bg-[#dce1ff]/50 text-[#00236f] font-bold shadow-xs'
-                    : 'border-[#e1e3e4] bg-[#f8f9fa] text-[#444651]'
+                    ? 'border-[#00236f] bg-[#dce1ff]/50 text-[#00236f] font-bold shadow-xs ring-1 ring-[#00236f]'
+                    : 'border-[#e1e3e4] bg-[#f8f9fa] text-[#444651] hover:bg-slate-100'
                 }`}
               >
-                
-                <span className="text-[11px]">Debit/Credit</span>
+                <CreditCard className="w-4 h-4 text-[#00236f] shrink-0" />
+                <span className="text-[11px] font-semibold">Debit/Credit</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPaymentMode('cash')}
-                className={`p-2 rounded-lg border text-left flex flex-col gap-1 transition-all ${
+                className={`p-2.5 rounded-xl border text-left flex items-center gap-2.5 transition-all cursor-pointer ${
                   paymentMode === 'cash'
-                    ? 'border-[#00236f] bg-[#dce1ff]/50 text-[#00236f] font-bold shadow-xs'
-                    : 'border-[#e1e3e4] bg-[#f8f9fa] text-[#444651]'
+                    ? 'border-[#00236f] bg-[#dce1ff]/50 text-[#00236f] font-bold shadow-xs ring-1 ring-[#00236f]'
+                    : 'border-[#e1e3e4] bg-[#f8f9fa] text-[#444651] hover:bg-slate-100'
                 }`}
               >
-                
-                <span className="text-[11px]">Cash Counter</span>
+                <Banknote className="w-4 h-4 text-[#00236f] shrink-0" />
+                <span className="text-[11px] font-semibold">Cash Counter</span>
               </button>
             </div>
           </div>
@@ -509,7 +518,7 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
               disabled={isProcessing || totalAmount <= 0 || !gatewayStatus.can_pay}
               className="px-6 py-2.5 bg-[#00236f] hover:bg-[#1e3a8a] text-white font-bold rounded-lg transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
-              <span className="font-bold text-[10px]">✓</span>
+              <Check className="w-4 h-4" />
               <span>{isProcessing ? 'Processing Transaction...' : `Confirm & Pay ₹ ${(totalAmount || 0).toLocaleString('en-IN')}`}</span>
             </button>
           </div>
