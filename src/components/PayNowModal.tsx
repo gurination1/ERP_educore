@@ -219,15 +219,20 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-xl bg-white shadow-2xl border-l border-slate-200 p-6 overflow-y-auto animate-in slide-in-from-right duration-200 space-y-5">
-      {/* Drawer Header */}
+    <div className="w-full bg-white rounded-2xl shadow-sm border-2 border-[#00236f]/30 p-6 sm:p-8 animate-fadeIn my-4 space-y-5">
+      {/* Inline Workspace Header */}
         <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-[#00236f] text-white flex items-center justify-center shadow-xs">
               
             </div>
             <div>
-              <h3 className="text-base font-bold text-[#191c1d]">Targeted Fee Settlement</h3>
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-50 text-[#00236f] text-[10px] font-black uppercase tracking-wide border border-blue-200 mb-1">
+                <span>Fee Clearance Desk</span>
+                <span>•</span>
+                <span>Zero-Popup Inline Settlement</span>
+              </div>
+              <h3 className="text-base font-bold text-[#191c1d]">Targeted Fee Settlement Workspace</h3>
               <p className="text-xs text-[#757682]">
                 Student: <strong className="text-[#191c1d]">{studentDetails?.name || student?.first_name ? `${student?.first_name} ${student?.last_name || ''}` : 'Aryan Sharma'}</strong>
                 {studentDetails?.studentId ? ` • UID: ${studentDetails.studentId}` : ''}
@@ -244,8 +249,8 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
               <span className="font-bold text-sm leading-none">‹</span>
               <span>Back</span>
             </button>
-            <button onClick={onClose} className="text-[#757682] hover:text-[#191c1d] p-1 rounded-lg hover:bg-[#f3f4f5]" title="Close">
-              <span className="font-bold text-[10px]">✕</span>
+            <button onClick={onClose} className="text-[#757682] hover:text-[#191c1d] px-2 py-1 rounded-lg hover:bg-[#f3f4f5] text-xs font-bold" title="Close">
+              <span>✕ Close Workspace</span>
             </button>
           </div>
         </div>

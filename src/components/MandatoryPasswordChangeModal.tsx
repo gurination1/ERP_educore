@@ -61,7 +61,7 @@ export const MandatoryPasswordChangeModal: React.FC<MandatoryPasswordChangeModal
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-2xl border-l border-slate-200 overflow-y-auto animate-in slide-in-from-right duration-200">
+    <div className="w-full bg-white rounded-2xl shadow-sm border-2 border-[#00236f]/30 overflow-hidden animate-fadeIn my-4">
       <div className="w-full overflow-hidden font-sans">
         {/* Header Ribbon */}
         <div className="bg-gradient-to-r from-[#00236f] to-[#001744] text-white p-6 space-y-2">

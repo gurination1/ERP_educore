@@ -32,14 +32,13 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptNo, onClose }
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-2xl bg-white shadow-2xl border-l border-slate-200 overflow-y-auto animate-in slide-in-from-right duration-200">
+    <div className="w-full bg-white rounded-2xl shadow-sm border border-slate-200/90 overflow-hidden animate-fadeIn my-4">
       <div className="w-full overflow-hidden">
-        {/* Drawer Top Actions */}
+        {/* Canvas Top Actions */}
         <div className="p-4 bg-[#f8f9fa] border-b border-[#e1e3e4] flex items-center justify-between print:hidden">
           <div className="flex items-center gap-2">
-            
             <span className="text-sm font-bold text-[#191c1d]">
-              Institutional Fee Payment Receipt
+              Institutional Fee Payment Receipt (Inline Canvas View)
             </span>
           </div>
 
@@ -51,7 +50,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptNo, onClose }
               title="Return to Fee Ledger"
             >
               <span className="font-bold text-sm leading-none">‹</span>
-              <span>Back</span>
+              <span>Back / Close</span>
             </button>
             <button
               onClick={handlePrint}

@@ -42,10 +42,15 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
   const holdReasons = data?.holdReasons || [];
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-3xl bg-white shadow-2xl border-l border-slate-200 p-6 sm:p-8 overflow-y-auto animate-in slide-in-from-right duration-200 space-y-6 print:p-0 print:border-none print:shadow-none print:m-0">
-        {/* Drawer Controls (Hidden in Print) */}
+    <div className="w-full bg-white rounded-2xl shadow-sm border border-slate-200/90 p-6 sm:p-8 animate-fadeIn my-4 space-y-6 print:p-0 print:border-none print:shadow-none print:m-0">
+        {/* Canvas Controls (Hidden in Print) */}
         <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3 print:hidden">
           <div>
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-50 text-[#00236f] text-[10px] font-black uppercase tracking-wide border border-blue-200 mb-1">
+              <span>University Examination Portal</span>
+              <span>•</span>
+              <span>Zero-Popup Canvas Admit Card</span>
+            </div>
             <h3 className="text-sm font-bold text-[#191c1d]">University Examination Portal</h3>
             <p className="text-[11px] text-[#757682]">Roll Number Slip & Gate Clearance Verification (PUP Patiala / MRSPTU / PU)</p>
           </div>
@@ -57,7 +62,7 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
               title="Return to Student Console"
             >
               <span className="font-bold text-sm leading-none">‹</span>
-              <span>Back</span>
+              <span>Back / Close</span>
             </button>
             {isEligible && (
               <button

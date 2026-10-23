@@ -128,7 +128,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-2xl bg-white shadow-2xl border-l border-slate-200 p-6 overflow-y-auto animate-in slide-in-from-right duration-200 space-y-5">
+    <div className="w-full bg-white rounded-2xl shadow-sm border-2 border-[#00236f]/30 p-6 sm:p-8 animate-fadeIn my-4 space-y-5">
         <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-[#00236f] text-white flex items-center justify-center font-bold text-base">
@@ -136,6 +136,11 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
               {student.last_name[0]}
             </div>
             <div>
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-50 text-[#00236f] text-[10px] font-black uppercase tracking-wide border border-blue-200 mb-1">
+                <span>Scholar Dossier</span>
+                <span>•</span>
+                <span>Zero-Popup Canvas View</span>
+              </div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-bold text-[#191c1d]">{fullName}</h3>
                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${

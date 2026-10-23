@@ -385,6 +385,61 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
           </nav>
         )}
 
+        {/* ZERO-POPUP INLINE CANVAS WORKSPACES & VIEWPORTS */}
+        {internalShowMasterTables && (
+          <div className="mb-6 animate-fadeIn">
+            <MasterTablesModal
+              isOpen={internalShowMasterTables}
+              initialTab={internalMasterTablesTab}
+              onClose={() => setInternalShowMasterTables(false)}
+              isEmbeddedView={true}
+            />
+          </div>
+        )}
+
+        {internalShowAuditLogs && (
+          <div className="mb-6 animate-fadeIn">
+            <AuditTrailModal
+              isOpen={internalShowAuditLogs}
+              onClose={() => setInternalShowAuditLogs(false)}
+              isEmbeddedView={true}
+            />
+          </div>
+        )}
+
+        {showStaffJourney && (
+          <div className="mb-6 animate-fadeIn">
+            <StaffAcademicJourneyModal
+              isOpen={showStaffJourney}
+              onClose={() => setShowStaffJourney(false)}
+              currentUser={currentUser}
+            />
+          </div>
+        )}
+
+        {showAdmitCard && (
+          <div className="mb-6 animate-fadeIn">
+            <MRSPTUAdmitCardModal
+              studentId={currentUser?.role === 'student' ? (currentUser.id || 'me') : 'stu-rec-aryan'}
+              onClose={() => setShowAdmitCard(false)}
+              onOpenPayModal={() => {
+                setShowAdmitCard(false);
+                navigate('/fees');
+              }}
+            />
+          </div>
+        )}
+
+        {showCopilot && (
+          <div className="mb-6 animate-fadeIn">
+            <AICopilotModal
+              isOpen={showCopilot}
+              onClose={() => setShowCopilot(false)}
+              currentUser={currentUser}
+            />
+          </div>
+        )}
+
         {searchQuery && searchQuery.trim().length > 0 ? (
           <InlineSearchCanvas
             searchQuery={searchQuery}
@@ -399,36 +454,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
         )}
       </main>
 
-      {/* Global Modals */}
-      <AICopilotModal
-        isOpen={showCopilot}
-        onClose={() => setShowCopilot(false)}
-        currentUser={currentUser}
-      />
-      <AuditTrailModal
-        isOpen={internalShowAuditLogs}
-        onClose={() => setInternalShowAuditLogs(false)}
-      />
-      <MasterTablesModal
-        isOpen={internalShowMasterTables}
-        initialTab={internalMasterTablesTab}
-        onClose={() => setInternalShowMasterTables(false)}
-      />
-      <StaffAcademicJourneyModal
-        isOpen={showStaffJourney}
-        onClose={() => setShowStaffJourney(false)}
-        currentUser={currentUser}
-      />
-      {showAdmitCard && (
-        <MRSPTUAdmitCardModal
-          studentId={currentUser?.role === 'student' ? (currentUser.id || 'me') : 'stu-rec-aryan'}
-          onClose={() => setShowAdmitCard(false)}
-          onOpenPayModal={() => {
-            setShowAdmitCard(false);
-            navigate('/fees');
-          }}
-        />
-      )}
+      {/* Persistent CTI Telephony Dock */}
       <TelephonyCallDock
         isOpen={isTelephonyOpen}
         onClose={() => setIsTelephonyOpen(false)}
@@ -1480,83 +1506,97 @@ function MainApp() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
-      {/* Global Modals */}
+      {/* ZERO-POPUP INLINE CANVAS WORKSPACES & VIEWPORTS */}
       {isReceiptOpen && (
-        <ReceiptModal
-          receiptNo={activeReceiptNo}
-          onClose={() => setIsReceiptOpen(false)}
-        />
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 my-4 animate-fadeIn">
+          <ReceiptModal
+            receiptNo={activeReceiptNo}
+            onClose={() => setIsReceiptOpen(false)}
+          />
+        </div>
       )}
 
       {isPayModalOpen && (
-        <PayNowModal
-          student={targetPayStudent || currentStudent}
-          feeId={targetPayFeeId}
-          onClose={() => {
-            setIsPayModalOpen(false);
-            setTargetPayStudent(null);
-            setTargetPayFeeId(undefined);
-          }}
-          onPaymentSuccess={receiptNo => {
-            setIsPayModalOpen(false);
-            setTargetPayStudent(null);
-            setTargetPayFeeId(undefined);
-            setActiveReceiptNo(receiptNo);
-            setIsReceiptOpen(true);
-            refreshCurrentStudent();
-          }}
-        />
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 my-4 animate-fadeIn">
+          <PayNowModal
+            student={targetPayStudent || currentStudent}
+            feeId={targetPayFeeId}
+            onClose={() => {
+              setIsPayModalOpen(false);
+              setTargetPayStudent(null);
+              setTargetPayFeeId(undefined);
+            }}
+            onPaymentSuccess={receiptNo => {
+              setIsPayModalOpen(false);
+              setTargetPayStudent(null);
+              setTargetPayFeeId(undefined);
+              setActiveReceiptNo(receiptNo);
+              setIsReceiptOpen(true);
+              refreshCurrentStudent();
+            }}
+          />
+        </div>
       )}
 
       {currentUser?.must_change_password && (
-        <MandatoryPasswordChangeModal
-          currentUser={currentUser}
-          onSuccess={() => {
-            setCurrentUser(prev => prev ? { ...prev, must_change_password: false } : null);
-          }}
-          onLogout={handleLogout}
-        />
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 my-4 animate-fadeIn">
+          <MandatoryPasswordChangeModal
+            currentUser={currentUser}
+            onSuccess={() => {
+              setCurrentUser(prev => prev ? { ...prev, must_change_password: false } : null);
+            }}
+            onLogout={handleLogout}
+          />
+        </div>
       )}
 
       {isForgotPasswordOpen && (
-        <ForgotPasswordModal onClose={() => setIsForgotPasswordOpen(false)} />
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 my-4 animate-fadeIn">
+          <ForgotPasswordModal onClose={() => setIsForgotPasswordOpen(false)} />
+        </div>
       )}
 
       {isEmailRemindersOpen && (
-        <EmailRemindersModal onClose={() => setIsEmailRemindersOpen(false)} />
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 my-4 animate-fadeIn">
+          <EmailRemindersModal onClose={() => setIsEmailRemindersOpen(false)} />
+        </div>
       )}
 
       {isAdmitCardOpen && (
-        <MRSPTUAdmitCardModal
-          studentId={targetPayStudent?.id || currentStudent?.id || 'me'}
-          onClose={() => setIsAdmitCardOpen(false)}
-          onOpenPayModal={() => {
-            setIsAdmitCardOpen(false);
-            setTargetPayStudent(targetPayStudent || currentStudent);
-            setTargetPayFeeId(undefined);
-            setIsPayModalOpen(true);
-          }}
-        />
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 my-4 animate-fadeIn">
+          <MRSPTUAdmitCardModal
+            studentId={targetPayStudent?.id || currentStudent?.id || 'me'}
+            onClose={() => setIsAdmitCardOpen(false)}
+            onOpenPayModal={() => {
+              setIsAdmitCardOpen(false);
+              setTargetPayStudent(targetPayStudent || currentStudent);
+              setTargetPayFeeId(undefined);
+              setIsPayModalOpen(true);
+            }}
+          />
+        </div>
       )}
 
       {viewingStudent && (
-        <StudentProfileModal
-          student={viewingStudent}
-          currentUser={currentUser}
-          onStudentUpdated={refreshCurrentStudent}
-          onClose={() => setViewingStudent(null)}
-          onPayFee={() => {
-            setTargetPayStudent(viewingStudent);
-            setTargetPayFeeId(undefined);
-            setViewingStudent(null);
-            setIsPayModalOpen(true);
-          }}
-          onOpenAdmitCard={() => {
-            setTargetPayStudent(viewingStudent);
-            setViewingStudent(null);
-            setIsAdmitCardOpen(true);
-          }}
-        />
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 my-4 animate-fadeIn">
+          <StudentProfileModal
+            student={viewingStudent}
+            currentUser={currentUser}
+            onStudentUpdated={refreshCurrentStudent}
+            onClose={() => setViewingStudent(null)}
+            onPayFee={() => {
+              setTargetPayStudent(viewingStudent);
+              setTargetPayFeeId(undefined);
+              setViewingStudent(null);
+              setIsPayModalOpen(true);
+            }}
+            onOpenAdmitCard={() => {
+              setTargetPayStudent(viewingStudent);
+              setViewingStudent(null);
+              setIsAdmitCardOpen(true);
+            }}
+          />
+        </div>
       )}
 
     </ErrorBoundary>

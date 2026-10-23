@@ -196,15 +196,20 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClos
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-lg bg-white shadow-2xl border-l border-[#00236f]/30 p-6 overflow-y-auto animate-in slide-in-from-right duration-200 space-y-3 font-sans text-[11px] text-[#00236f]">
-        {/* Drawer Header */}
+    <div className="w-full bg-white rounded-2xl shadow-sm border-2 border-[#00236f]/30 p-6 sm:p-8 animate-fadeIn my-4 space-y-3 font-sans text-[11px] text-[#00236f]">
+        {/* Canvas Header */}
         <div className="flex items-center justify-between border-b border-gray-200 pb-2">
           <div>
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-50 text-[#00236f] text-[10px] font-black uppercase tracking-wide border border-blue-200 mb-1">
+              <span>Security Ordinance</span>
+              <span>•</span>
+              <span>Zero-Popup Password Recovery</span>
+            </div>
             <h3 className="text-[13px] font-bold text-[#00236f]">MULTI-CHANNEL PASSWORD RECOVERY</h3>
             <p className="text-[10px] text-gray-500">Self-Service Verification & Admin Assisted Reset Matrix</p>
           </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-black font-bold">
-            [CLOSE]
+          <button onClick={onClose} className="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-gray-700 font-bold text-xs cursor-pointer">
+            ✕ CLOSE
           </button>
         </div>
 

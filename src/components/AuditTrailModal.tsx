@@ -281,17 +281,19 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
           )}
         </div>
 
-        {/* Diff Inspection Modal Sheet */}
+        {/* Diff Inspection Inline Canvas Card (Zero-Popup) */}
         {selectedLog && (
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-6 z-10">
-            <div className="bg-white rounded-xl max-w-lg w-full p-5 border border-[#e1e3e4] shadow-2xl space-y-3">
+          <div className="p-4 bg-slate-50 border-t-2 border-[#00236f]/30 space-y-3 animate-fadeIn">
+            <div className="bg-white rounded-xl w-full p-4 border border-[#e1e3e4] shadow-sm space-y-3">
               <div className="flex items-center justify-between border-b border-[#f1f3f4] pb-2">
                 <div className="flex items-center gap-2">
-                  
-                  <h4 className="font-bold text-sm text-[#191c1d]">Audit Log Change Diff</h4>
+                  <span className="px-2 py-0.5 rounded-full bg-blue-50 text-[#00236f] text-[10px] font-black uppercase tracking-wide border border-blue-200">
+                    Audit Log Change Diff
+                  </span>
+                  <h4 className="font-bold text-sm text-[#191c1d]">Event Forensic Details</h4>
                 </div>
-                <button onClick={() => setSelectedLog(null)} className="text-[#757682] hover:text-[#191c1d]">
-                  <span className="font-bold text-[10px]">✕</span>
+                <button onClick={() => setSelectedLog(null)} className="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[#757682] hover:text-[#191c1d] text-xs font-bold cursor-pointer">
+                  ✕ Close Diff
                 </button>
               </div>
               <div className="text-xs space-y-1">
@@ -309,14 +311,6 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
                   }
                 })()}
               </pre>
-              <div className="flex justify-end pt-2">
-                <button
-                  onClick={() => setSelectedLog(null)}
-                  className="px-4 py-1.5 bg-[#00236f] text-white font-bold rounded-lg text-xs"
-                >
-                  Close
-                </button>
-              </div>
             </div>
           </div>
         )}
@@ -329,12 +323,8 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
       </div>
   );
 
-  if (isEmbeddedView) {
-    return content;
-  }
-
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-4xl bg-white shadow-2xl border-l border-slate-200 overflow-y-auto animate-in slide-in-from-right duration-200">
+    <div className="w-full my-4 animate-fadeIn">
       {content}
     </div>
   );

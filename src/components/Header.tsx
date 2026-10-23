@@ -1714,17 +1714,9 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Mobile Drawer (High-End iOS Sheet Modal Style - Zero Disconnect) */}
+      {/* Mobile Navigation Canvas Drawer (Inline Zero-Popup Expandable Viewport) */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 top-0 z-50 bg-[#00236f]/60 backdrop-blur-xl flex flex-col justify-end animate-fadeIn">
-          {/* Backdrop Dismiss Area */}
-          <div className="flex-1" onClick={() => setMobileMenuOpen(false)} />
-
-          {/* iOS Bottom / Slide-Up Control Sheet */}
-          <div className="bg-white rounded-t-3xl border-t border-slate-200 shadow-2xl p-4 sm:p-6 max-h-[85vh] overflow-y-auto space-y-4">
-            {/* Grabber Handle */}
-            <div className="w-12 h-1 bg-slate-300 rounded-full mx-auto -mt-1 mb-2" />
-
+        <div className="w-full bg-white border-b-2 border-[#00236f]/20 shadow-xl p-4 sm:p-6 max-h-[85vh] overflow-y-auto space-y-4 animate-in slide-in-from-top duration-200 relative z-40">
             {/* Header with User Info & Close */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
@@ -1814,7 +1806,6 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </div>
           </div>
-        </div>
       )}
     </header>
   );

@@ -83,10 +83,15 @@ export const StaffAcademicJourneyModal: React.FC<StaffAcademicJourneyModalProps>
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-3xl bg-white shadow-2xl border-l border-slate-200 flex flex-col overflow-hidden animate-in slide-in-from-right duration-200">
+    <div className="w-full bg-white rounded-2xl shadow-sm border-2 border-[#00236f]/30 flex flex-col overflow-hidden animate-fadeIn my-4">
         {/* Header */}
         <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#f8f9fa] flex items-center justify-between">
           <div>
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-50 text-[#00236f] text-[10px] font-black uppercase tracking-wide border border-blue-200 mb-1">
+              <span>Faculty HRMS Registry</span>
+              <span>•</span>
+              <span>Zero-Popup Canvas Journey</span>
+            </div>
             <div className="flex items-center gap-2">
               <h3 className="text-base font-bold text-[#191c1d]">Staff Academic Journey & Research R&D Engine</h3>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#ffedd5] text-[#00236f] border border-[#fed7aa]">

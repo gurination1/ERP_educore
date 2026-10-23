@@ -489,7 +489,7 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
       {/* POST-CALL AUTO-DISPOSITION SHEET (ZERO-POPUP DOCK PANEL)                   */}
       {/* ========================================================================= */}
       {showDisposition && (
-        <div className="fixed bottom-4 right-4 z-50 max-w-lg w-[calc(100vw-2rem)] bg-white rounded-2xl border-2 border-[#00236f]/30 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 max-w-xl w-[95%] bg-white rounded-3xl border-2 border-[#00236f]/30 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
           {/* Header */}
             <div className="bg-[#00236f] text-white p-5 flex items-center justify-between">
               <div className="flex items-center gap-3">

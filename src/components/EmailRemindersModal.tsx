@@ -40,7 +40,7 @@ export const EmailRemindersModal: React.FC<EmailRemindersModalProps> = ({ onClos
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-xl bg-white shadow-2xl border-l border-slate-200 p-6 overflow-y-auto animate-in slide-in-from-right duration-200 space-y-4">
+    <div className="w-full bg-white rounded-2xl shadow-sm border border-slate-200/90 p-6 sm:p-8 overflow-y-auto animate-fadeIn my-4 space-y-4">
         <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-[#dce1ff] text-[#00236f] flex items-center justify-center font-bold text-sm">
