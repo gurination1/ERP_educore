@@ -219,9 +219,8 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-[#e1e3e4] space-y-5 animate-scaleUp my-6">
-        {/* Modal Header */}
+    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-xl bg-white shadow-2xl border-l border-slate-200 p-6 overflow-y-auto animate-in slide-in-from-right duration-200 space-y-5">
+      {/* Drawer Header */}
         <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-[#00236f] text-white flex items-center justify-center shadow-xs">
@@ -510,7 +509,6 @@ export const PayNowModal: React.FC<PayNowModalProps> = ({
             </button>
           </div>
         </form>
-      </div>
     </div>
   );
 };

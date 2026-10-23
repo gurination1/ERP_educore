@@ -663,282 +663,9 @@ export const TransportManagementView: React.FC<TransportManagementViewProps> = (
               </button>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
-                    <th className="py-2.5 px-3">Vehicle No</th>
-                    <th className="py-2.5 px-3">Capacity</th>
-                    <th className="py-2.5 px-3">AC / Non-AC</th>
-                    <th className="py-2.5 px-3">Ownership</th>
-                    <th className="py-2.5 px-3">Assigned Driver</th>
-                    <th className="py-2.5 px-3">Assigned Route</th>
-                    <th className="py-2.5 px-3">Fitness Due</th>
-                    <th className="py-2.5 px-3 text-right">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {vehicles.map(v => (
-                    <tr key={v.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="py-3 px-3 font-mono font-black text-slate-900">{v.vehicle_number}</td>
-                      <td className="py-3 px-3 font-semibold text-slate-700">
-                        {v.seater_capacity} Seater ({v.total_allocated} Occ.)
-                      </td>
-                      <td className="py-3 px-3">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                          v.is_ac ? 'bg-sky-100 text-sky-800' : 'bg-slate-100 text-slate-600'
-                        }`}>
-                          {v.is_ac ? 'AC Air-Suspension' : 'Standard Non-AC'}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3">
-                        {v.ownership === 'college_owned' ? (
-                          <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                            <Building className="w-3 h-3" />
-                            College Owned
-                          </span>
-                        ) : (
-                          <div className="text-[11px]">
-                            <span className="text-amber-700 font-semibold block">Vendor Contractor</span>
-                            <span className="text-[10px] text-slate-400 truncate max-w-[140px] block">{v.vendor_name}</span>
-                          </div>
-                        )}
-                      </td>
-                      <td className="py-3 px-3">
-                        <div className="font-semibold text-slate-900">{v.driver_name}</div>
-                        <div className="text-[10px] text-slate-500 font-mono">{v.driver_phone}</div>
-                      </td>
-                      <td className="py-3 px-3 text-slate-600 font-medium max-w-[200px] truncate" title={v.route_name}>
-                        {v.route_name}
-                      </td>
-                      <td className="py-3 px-3">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
-                          (v.maintenance_due_days || 100) < 30 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'
-                        }`}>
-                          {v.maintenance_due_days} Days Left
-                        </span>
-                      </td>
-                      <td className="py-3 px-3 text-right">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                          Active Fleet
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 3: ROUTES & STOPS */}
-      {activeTab === 'routes' && (
-        <div className="space-y-4">
-          <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs space-y-4">
-            <div>
-              <h3 className="text-sm font-black text-[#00236f]">Transit Corridors & Stop-Wise Fare Matrix</h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Stops, timing schedules, and semester transportation fees per boarding point.
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              {routes.map(r => (
-                <div key={r.id} className="p-4 border border-slate-200 rounded-2xl space-y-3 bg-slate-50/40">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 pb-2.5">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono font-black text-xs bg-[#00236f] text-white px-2 py-0.5 rounded">
-                          {r.route_code}
-                        </span>
-                        <h4 className="font-bold text-sm text-slate-900">{r.route_name}</h4>
-                      </div>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        Vehicle: <strong>{r.assigned_vehicle_number}</strong> • Pickup: <strong>{r.pickup_time_morning}</strong> • Drop: <strong>{r.drop_time_evening}</strong>
-                      </p>
-                    </div>
-                    <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-xl self-start sm:self-auto">
-                      {r.total_enrolled} Scholars Enrolled
-                    </span>
-                  </div>
-
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs border-collapse">
-                      <thead>
-                        <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
-                          <th className="py-2 px-3">Stop Seq</th>
-                          <th className="py-2 px-3">Boarding Point</th>
-                          <th className="py-2 px-3">Morning Pickup</th>
-                          <th className="py-2 px-3 text-right">Semester Fare</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                        {r.stops.map(stop => (
-                          <tr key={stop.stop_sequence}>
-                            <td className="py-2 px-3 font-mono font-bold text-slate-600">#{stop.stop_sequence}</td>
-                            <td className="py-2 px-3 font-semibold text-slate-900">{stop.stop_name}</td>
-                            <td className="py-2 px-3 font-mono text-slate-600">{stop.pickup_time}</td>
-                            <td className="py-2 px-3 text-right font-mono font-bold text-slate-900">
-                              {stop.semester_fare === 0 ? 'Destination (Campus)' : `₹ ${(stop.semester_fare || 0).toLocaleString('en-IN')}`}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 4: BUS PASSES */}
-      {activeTab === 'passes' && (
-        <div className="space-y-4">
-          <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <h3 className="text-sm font-black text-[#00236f]">Active Student Digital Bus Passes (RFID Linked)</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Authorised transport users with validated semester fee receipts.</p>
-              </div>
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Search UID or student name..."
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800"
-                />
-              </div>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
-                    <th className="py-2.5 px-3">Pass Number</th>
-                    <th className="py-2.5 px-3">Student Name</th>
-                    <th className="py-2.5 px-3">UID</th>
-                    <th className="py-2.5 px-3">Route & Boarding Stop</th>
-                    <th className="py-2.5 px-3">Vehicle & Seat</th>
-                    <th className="py-2.5 px-3">RFID Tag</th>
-                    <th className="py-2.5 px-3 text-right">Card Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {busPasses
-                    .filter(
-                      p =>
-                        p.student_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        p.student_uid.toLowerCase().includes(searchTerm.toLowerCase())
-                    )
-                    .map(pass => (
-                      <tr key={pass.id} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="py-3 px-3 font-mono font-bold text-[#00236f]">{pass.pass_number}</td>
-                        <td className="py-3 px-3">
-                          <div className="font-bold text-slate-900">{pass.student_name}</div>
-                          <div className="text-[10px] text-slate-500">{pass.course_name} (Sem {pass.semester})</div>
-                        </td>
-                        <td className="py-3 px-3 font-mono text-slate-600">{pass.student_uid}</td>
-                        <td className="py-3 px-3">
-                          <div className="font-semibold text-slate-800">{pass.boarding_stop}</div>
-                          <div className="text-[10px] text-slate-400">{pass.route_name}</div>
-                        </td>
-                        <td className="py-3 px-3">
-                          <div className="font-semibold text-slate-800">{pass.vehicle_number}</div>
-                          <div className="text-[10px] text-emerald-600 font-bold">{pass.seat_number}</div>
-                        </td>
-                        <td className="py-3 px-3 font-mono text-[10px] text-slate-500">{pass.rfid_tag_id}</td>
-                        <td className="py-3 px-3 text-right">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedPassForCard(pass)}
-                            className="px-2.5 py-1 bg-sky-50 hover:bg-sky-100 text-sky-800 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1 cursor-pointer"
-                          >
-                            <QrCode className="w-3 h-3" />
-                            View Digital Pass
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 5: MAINTENANCE & STATUTORY RENEWALS */}
-      {activeTab === 'maintenance' && (
-        <div className="space-y-4">
-          <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-black text-[#00236f] flex items-center gap-2">
-                  <Wrench className="w-4 h-4 text-rose-600" />
-                  Statutory Vehicle Fitness & Mechanical Maintenance Cycle
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  RTO compliance, PUC emission certs, insurance policies, and mechanical service logs.
-                </p>
-              </div>
-              <span className="px-3 py-1 bg-sky-50 text-sky-800 rounded-full text-xs font-bold border border-sky-200">
-                Quarterly 90-Day Inspection Protocol
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {vehicles.map(v => (
-                <div key={v.id} className="p-4 rounded-2xl border border-slate-200 space-y-3 bg-slate-50/60">
-                  <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                    <span className="font-mono font-black text-slate-900">{v.vehicle_number}</span>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                      (v.maintenance_due_days || 100) < 30 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-800'
-                    }`}>
-                      {v.maintenance_due_days} Days to Service
-                    </span>
-                  </div>
-
-                  <div className="text-xs space-y-1.5 text-slate-600">
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">RTO Fitness Expiry:</span>
-                      <span className="font-mono font-semibold">{v.fitness_expiry_date}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Insurance Expiry:</span>
-                      <span className="font-mono font-semibold">{v.insurance_expiry_date}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">PUC Emission Expiry:</span>
-                      <span className="font-mono font-semibold">{v.puc_expiry_date}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Driver License:</span>
-                      <span className="font-mono font-semibold">{v.driver_license_no}</span>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => showToast(`Work order issued for mechanical & brake overhaul for ${v.vehicle_number}!`)}
-                    className="w-full py-1.5 bg-white hover:bg-slate-100 border border-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-all cursor-pointer"
-                  >
-                    Log Periodic Inspection
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* MODAL 1: REGISTER NEW BUS */}
       {isAddVehicleModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 border border-slate-200 shadow-2xl space-y-4">
+        <div className="bg-white rounded-3xl p-6 border-2 border-[#00236f]/30 shadow-xl space-y-4 my-4 animate-in fade-in">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-black text-[#00236f] flex items-center gap-2">
                 <Bus className="w-5 h-5 text-[#00236f]" />
@@ -1102,13 +829,163 @@ export const TransportManagementView: React.FC<TransportManagementViewProps> = (
               </div>
             </form>
           </div>
+      )}
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
+                    <th className="py-2.5 px-3">Vehicle No</th>
+                    <th className="py-2.5 px-3">Capacity</th>
+                    <th className="py-2.5 px-3">AC / Non-AC</th>
+                    <th className="py-2.5 px-3">Ownership</th>
+                    <th className="py-2.5 px-3">Assigned Driver</th>
+                    <th className="py-2.5 px-3">Assigned Route</th>
+                    <th className="py-2.5 px-3">Fitness Due</th>
+                    <th className="py-2.5 px-3 text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {vehicles.map(v => (
+                    <tr key={v.id} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="py-3 px-3 font-mono font-black text-slate-900">{v.vehicle_number}</td>
+                      <td className="py-3 px-3 font-semibold text-slate-700">
+                        {v.seater_capacity} Seater ({v.total_allocated} Occ.)
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          v.is_ac ? 'bg-sky-100 text-sky-800' : 'bg-slate-100 text-slate-600'
+                        }`}>
+                          {v.is_ac ? 'AC Air-Suspension' : 'Standard Non-AC'}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3">
+                        {v.ownership === 'college_owned' ? (
+                          <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                            <Building className="w-3 h-3" />
+                            College Owned
+                          </span>
+                        ) : (
+                          <div className="text-[11px]">
+                            <span className="text-amber-700 font-semibold block">Vendor Contractor</span>
+                            <span className="text-[10px] text-slate-400 truncate max-w-[140px] block">{v.vendor_name}</span>
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-3 px-3">
+                        <div className="font-semibold text-slate-900">{v.driver_name}</div>
+                        <div className="text-[10px] text-slate-500 font-mono">{v.driver_phone}</div>
+                      </td>
+                      <td className="py-3 px-3 text-slate-600 font-medium max-w-[200px] truncate" title={v.route_name}>
+                        {v.route_name}
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
+                          (v.maintenance_due_days || 100) < 30 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'
+                        }`}>
+                          {v.maintenance_due_days} Days Left
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 text-right">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                          Active Fleet
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 
+      {/* TAB 3: ROUTES & STOPS */}
+      {activeTab === 'routes' && (
+        <div className="space-y-4">
+          <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs space-y-4">
+            <div>
+              <h3 className="text-sm font-black text-[#00236f]">Transit Corridors & Stop-Wise Fare Matrix</h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Stops, timing schedules, and semester transportation fees per boarding point.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {routes.map(r => (
+                <div key={r.id} className="p-4 border border-slate-200 rounded-2xl space-y-3 bg-slate-50/40">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 pb-2.5">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-black text-xs bg-[#00236f] text-white px-2 py-0.5 rounded">
+                          {r.route_code}
+                        </span>
+                        <h4 className="font-bold text-sm text-slate-900">{r.route_name}</h4>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Vehicle: <strong>{r.assigned_vehicle_number}</strong> • Pickup: <strong>{r.pickup_time_morning}</strong> • Drop: <strong>{r.drop_time_evening}</strong>
+                      </p>
+                    </div>
+                    <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-xl self-start sm:self-auto">
+                      {r.total_enrolled} Scholars Enrolled
+                    </span>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
+                          <th className="py-2 px-3">Stop Seq</th>
+                          <th className="py-2 px-3">Boarding Point</th>
+                          <th className="py-2 px-3">Morning Pickup</th>
+                          <th className="py-2 px-3 text-right">Semester Fare</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {r.stops.map(stop => (
+                          <tr key={stop.stop_sequence}>
+                            <td className="py-2 px-3 font-mono font-bold text-slate-600">#{stop.stop_sequence}</td>
+                            <td className="py-2 px-3 font-semibold text-slate-900">{stop.stop_name}</td>
+                            <td className="py-2 px-3 font-mono text-slate-600">{stop.pickup_time}</td>
+                            <td className="py-2 px-3 text-right font-mono font-bold text-slate-900">
+                              {stop.semester_fare === 0 ? 'Destination (Campus)' : `₹ ${(stop.semester_fare || 0).toLocaleString('en-IN')}`}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 4: BUS PASSES */}
+      {activeTab === 'passes' && (
+        <div className="space-y-4">
+          <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-black text-[#00236f]">Active Student Digital Bus Passes (RFID Linked)</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Authorised transport users with validated semester fee receipts.</p>
+              </div>
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search UID or student name..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  className="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800"
+                />
+              </div>
+            </div>
+
       {/* MODAL 2: ALLOCATE BUS SEAT & PASS */}
       {isAllocatingModalOpen && allocatingStudent && (
-        <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 border border-slate-200 shadow-2xl space-y-4">
+        <div className="bg-white rounded-3xl p-6 border-2 border-[#00236f]/30 shadow-xl space-y-4 my-4 animate-in fade-in">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-black text-[#00236f] flex items-center gap-2">
                 <UserCheck className="w-5 h-5 text-[#00236f]" />
@@ -1217,13 +1094,11 @@ export const TransportManagementView: React.FC<TransportManagementViewProps> = (
               </div>
             </form>
           </div>
-        </div>
       )}
 
       {/* MODAL 3: VIEW DIGITAL BUS PASS CARD */}
       {selectedPassForCard && (
-        <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-6 border border-slate-200 shadow-2xl space-y-4 text-center">
+        <div className="bg-white rounded-3xl max-w-md mx-auto p-6 border-2 border-emerald-500/30 shadow-xl space-y-4 my-4 animate-in fade-in text-center">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Digital RFID Bus Pass</span>
               <button
@@ -1293,8 +1168,129 @@ export const TransportManagementView: React.FC<TransportManagementViewProps> = (
               Print Physical Smart Card
             </button>
           </div>
+      )}
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
+                    <th className="py-2.5 px-3">Pass Number</th>
+                    <th className="py-2.5 px-3">Student Name</th>
+                    <th className="py-2.5 px-3">UID</th>
+                    <th className="py-2.5 px-3">Route & Boarding Stop</th>
+                    <th className="py-2.5 px-3">Vehicle & Seat</th>
+                    <th className="py-2.5 px-3">RFID Tag</th>
+                    <th className="py-2.5 px-3 text-right">Card Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {busPasses
+                    .filter(
+                      p =>
+                        p.student_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        p.student_uid.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+                    .map(pass => (
+                      <tr key={pass.id} className="hover:bg-slate-50/70 transition-colors">
+                        <td className="py-3 px-3 font-mono font-bold text-[#00236f]">{pass.pass_number}</td>
+                        <td className="py-3 px-3">
+                          <div className="font-bold text-slate-900">{pass.student_name}</div>
+                          <div className="text-[10px] text-slate-500">{pass.course_name} (Sem {pass.semester})</div>
+                        </td>
+                        <td className="py-3 px-3 font-mono text-slate-600">{pass.student_uid}</td>
+                        <td className="py-3 px-3">
+                          <div className="font-semibold text-slate-800">{pass.boarding_stop}</div>
+                          <div className="text-[10px] text-slate-400">{pass.route_name}</div>
+                        </td>
+                        <td className="py-3 px-3">
+                          <div className="font-semibold text-slate-800">{pass.vehicle_number}</div>
+                          <div className="text-[10px] text-emerald-600 font-bold">{pass.seat_number}</div>
+                        </td>
+                        <td className="py-3 px-3 font-mono text-[10px] text-slate-500">{pass.rfid_tag_id}</td>
+                        <td className="py-3 px-3 text-right">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedPassForCard(pass)}
+                            className="px-2.5 py-1 bg-sky-50 hover:bg-sky-100 text-sky-800 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1 cursor-pointer"
+                          >
+                            <QrCode className="w-3 h-3" />
+                            View Digital Pass
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
+
+      {/* TAB 5: MAINTENANCE & STATUTORY RENEWALS */}
+      {activeTab === 'maintenance' && (
+        <div className="space-y-4">
+          <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-black text-[#00236f] flex items-center gap-2">
+                  <Wrench className="w-4 h-4 text-rose-600" />
+                  Statutory Vehicle Fitness & Mechanical Maintenance Cycle
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  RTO compliance, PUC emission certs, insurance policies, and mechanical service logs.
+                </p>
+              </div>
+              <span className="px-3 py-1 bg-sky-50 text-sky-800 rounded-full text-xs font-bold border border-sky-200">
+                Quarterly 90-Day Inspection Protocol
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {vehicles.map(v => (
+                <div key={v.id} className="p-4 rounded-2xl border border-slate-200 space-y-3 bg-slate-50/60">
+                  <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                    <span className="font-mono font-black text-slate-900">{v.vehicle_number}</span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                      (v.maintenance_due_days || 100) < 30 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-800'
+                    }`}>
+                      {v.maintenance_due_days} Days to Service
+                    </span>
+                  </div>
+
+                  <div className="text-xs space-y-1.5 text-slate-600">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">RTO Fitness Expiry:</span>
+                      <span className="font-mono font-semibold">{v.fitness_expiry_date}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Insurance Expiry:</span>
+                      <span className="font-mono font-semibold">{v.insurance_expiry_date}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">PUC Emission Expiry:</span>
+                      <span className="font-mono font-semibold">{v.puc_expiry_date}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Driver License:</span>
+                      <span className="font-mono font-semibold">{v.driver_license_no}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => showToast(`Work order issued for mechanical & brake overhaul for ${v.vehicle_number}!`)}
+                    className="w-full py-1.5 bg-white hover:bg-slate-100 border border-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                  >
+                    Log Periodic Inspection
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+
     </div>
   );
 };

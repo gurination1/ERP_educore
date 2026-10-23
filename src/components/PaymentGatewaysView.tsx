@@ -127,89 +127,9 @@ export const PaymentGatewaysView: React.FC<{ tenantId?: string }> = ({ tenantId 
       </div>
 
       {/* Gateway Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {gateways.map(gw => (
-          <div
-            key={gw.id}
-            className={`p-5 rounded-2xl border transition-all ${
-              gw.is_active
-                ? 'bg-slate-900 border-indigo-500/80 shadow-lg ring-1 ring-indigo-500/40'
-                : 'bg-slate-900/60 border-slate-800'
-            }`}
-          >
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-2.5">
-                <div className={`p-2 rounded-xl ${gw.is_active ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-800 text-slate-400'}`}>
-                  <Landmark className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-white">{gw.account_title}</h3>
-                  <span className="text-xs font-mono font-semibold text-slate-400">{gw.gateway_name}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase ${
-                  gw.mode === 'live'
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                    : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                }`}>
-                  {gw.mode} MODE
-                </span>
-                {gw.is_active && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500 text-white">
-                    ACTIVE
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 mb-4 space-y-1.5 text-xs">
-              <div className="flex items-center justify-between text-slate-400">
-                <span>Mode Behavior:</span>
-                <span className="text-slate-300 font-medium">
-                  {gw.mode === 'live' ? 'Open to all students campus-wide' : 'Hidden from students; Test UIDs only'}
-                </span>
-              </div>
-              {gw.mode === 'test' && (
-                <div className="text-[11px] text-amber-400/90 flex items-center gap-1.5 pt-1 border-t border-slate-800/60">
-                  <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                  <span>Sandbox active: Normal students will not see Pay button.</span>
-                </div>
-              )}
-            </div>
-
-            {/* Actions Bar */}
-            <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs">
-              <button
-                onClick={() => handleToggleMode(gw.id)}
-                className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors"
-              >
-                {gw.mode === 'live' ? <ToggleRight className="w-5 h-5 text-emerald-400" /> : <ToggleLeft className="w-5 h-5 text-amber-400" />}
-                <span>Switch to {gw.mode === 'live' ? 'Test' : 'Live'}</span>
-              </button>
-
-              {!gw.is_active ? (
-                <button
-                  onClick={() => handleActivate(gw.id)}
-                  className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-200 hover:text-white text-xs font-semibold transition-colors"
-                >
-                  Make Active
-                </button>
-              ) : (
-                <span className="text-xs text-indigo-400 font-medium flex items-center gap-1">
-                  <CheckCircle2 className="w-4 h-4" /> Routing Current Transactions
-                </span>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Add Gateway Modal */}
+            {/* Add Gateway Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl text-slate-100">
+        <div className="w-full max-w-xl mx-auto bg-slate-900 border-2 border-indigo-500/30 rounded-2xl p-6 shadow-xl text-slate-100 my-4 animate-in fade-in">
             <h3 className="text-base font-bold text-white mb-1">Add Payment Gateway & Account</h3>
             <p className="text-xs text-slate-400 mb-4">Register separate merchant account for distinct collegiate schools.</p>
 
@@ -307,8 +227,88 @@ export const PaymentGatewaysView: React.FC<{ tenantId?: string }> = ({ tenantId 
               </div>
             </form>
           </div>
-        </div>
       )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {gateways.map(gw => (
+          <div
+            key={gw.id}
+            className={`p-5 rounded-2xl border transition-all ${
+              gw.is_active
+                ? 'bg-slate-900 border-indigo-500/80 shadow-lg ring-1 ring-indigo-500/40'
+                : 'bg-slate-900/60 border-slate-800'
+            }`}
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-2.5">
+                <div className={`p-2 rounded-xl ${gw.is_active ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-800 text-slate-400'}`}>
+                  <Landmark className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">{gw.account_title}</h3>
+                  <span className="text-xs font-mono font-semibold text-slate-400">{gw.gateway_name}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase ${
+                  gw.mode === 'live'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                }`}>
+                  {gw.mode} MODE
+                </span>
+                {gw.is_active && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500 text-white">
+                    ACTIVE
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 mb-4 space-y-1.5 text-xs">
+              <div className="flex items-center justify-between text-slate-400">
+                <span>Mode Behavior:</span>
+                <span className="text-slate-300 font-medium">
+                  {gw.mode === 'live' ? 'Open to all students campus-wide' : 'Hidden from students; Test UIDs only'}
+                </span>
+              </div>
+              {gw.mode === 'test' && (
+                <div className="text-[11px] text-amber-400/90 flex items-center gap-1.5 pt-1 border-t border-slate-800/60">
+                  <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                  <span>Sandbox active: Normal students will not see Pay button.</span>
+                </div>
+              )}
+            </div>
+
+            {/* Actions Bar */}
+            <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs">
+              <button
+                onClick={() => handleToggleMode(gw.id)}
+                className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors"
+              >
+                {gw.mode === 'live' ? <ToggleRight className="w-5 h-5 text-emerald-400" /> : <ToggleLeft className="w-5 h-5 text-amber-400" />}
+                <span>Switch to {gw.mode === 'live' ? 'Test' : 'Live'}</span>
+              </button>
+
+              {!gw.is_active ? (
+                <button
+                  onClick={() => handleActivate(gw.id)}
+                  className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-200 hover:text-white text-xs font-semibold transition-colors"
+                >
+                  Make Active
+                </button>
+              ) : (
+                <span className="text-xs text-indigo-400 font-medium flex items-center gap-1">
+                  <CheckCircle2 className="w-4 h-4" /> Routing Current Transactions
+                </span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+
     </div>
   );
 };

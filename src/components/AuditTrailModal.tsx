@@ -334,7 +334,7 @@ export const AuditTrailModal: React.FC<AuditTrailModalProps> = ({ isOpen, onClos
   }
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-4xl bg-white shadow-2xl border-l border-slate-200 overflow-y-auto animate-in slide-in-from-right duration-200">
       {content}
     </div>
   );

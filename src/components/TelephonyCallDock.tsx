@@ -486,12 +486,11 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* POST-CALL AUTO-DISPOSITION SHEET (MATCHES EDUCORE ERP DESIGN SYSTEM)       */}
+      {/* POST-CALL AUTO-DISPOSITION SHEET (ZERO-POPUP DOCK PANEL)                   */}
       {/* ========================================================================= */}
       {showDisposition && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl max-w-lg w-full border border-[#e1e3e4] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-            {/* Header */}
+        <div className="fixed bottom-4 right-4 z-50 max-w-lg w-[calc(100vw-2rem)] bg-white rounded-2xl border-2 border-[#00236f]/30 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          {/* Header */}
             <div className="bg-[#00236f] text-white p-5 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-emerald-400">
@@ -636,7 +635,6 @@ export const TelephonyCallDock: React.FC<TelephonyCallDockProps> = ({
               </div>
             </form>
           </div>
-        </div>
       )}
     </>
   );

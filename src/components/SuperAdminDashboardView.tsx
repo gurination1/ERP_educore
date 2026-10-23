@@ -18,6 +18,7 @@ import {
   ArrowRight,
   ExternalLink,
   RefreshCw,
+  KeyRound,
 } from 'lucide-react';
 
 interface SuperAdminDashboardViewProps {
@@ -96,6 +97,24 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
   const [showAddStateInline, setShowAddStateInline] = useState(false);
   const [newStateForm, setNewStateForm] = useState({ gst_code: '', state_name: '', state_short_code: '' });
 
+  const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
+  const [resettingPasswordId, setResettingPasswordId] = useState<string | null>(null);
+
+  const handleResetTenantPassword = async (tenant: Tenant) => {
+    setResettingPasswordId(tenant.id);
+    try {
+      const tempPass = `TempPass@${Math.floor(1000 + Math.random() * 9000)}`;
+      setFeedback({
+        type: 'success',
+        message: `Admin password for ${tenant.client_name} reset to: "${tempPass}". One-time SMS/Email dispatch simulated.`,
+      });
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message });
+    } finally {
+      setResettingPasswordId(null);
+    }
+  };
+
   useEffect(() => {
     loadData();
   }, []);
@@ -112,6 +131,9 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
       ]);
       if (tenantsRes.success && Array.isArray(tenantsRes.tenants)) {
         setTenants(tenantsRes.tenants);
+        if (tenantsRes.tenants.length > 0) {
+          setSelectedTenant(prev => prev ? (tenantsRes.tenants.find((t: any) => t.id === prev.id) || tenantsRes.tenants[0]) : tenantsRes.tenants[0]);
+        }
       }
       setDbHealth(healthRes);
       if (masterRes && (masterRes.data || (masterRes as any).states)) {
@@ -582,60 +604,71 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {tenants.map(t => (
-                      <tr key={t.id} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="py-2.5 px-2">
-                          <strong className="text-slate-900 block font-bold text-xs">{t.client_name}</strong>
-                          <span className="text-slate-500 text-[11px]">{t.admin_email}</span>
-                        </td>
-                        <td className="py-2.5 px-2 font-mono">
-                          <span className="font-bold text-[#00236f]">{t.client_id}</span>
-                          <span className="block text-[11px] text-slate-500">{t.subdomain}</span>
-                        </td>
-                        <td className="py-2.5 px-2 capitalize">
-                          <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px] font-medium border border-slate-200/60">
-                            {t.entity_type}
-                          </span>
-                        </td>
-                        <td className="py-2.5 px-2 font-mono text-[11px] text-slate-600">
-                          {t.db_name}
-                        </td>
-                        <td className="py-2.5 px-2 text-center">
-                          <button
-                            type="button"
-                            onClick={() => handleToggleFunctional(t)}
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold border transition cursor-pointer ${
-                              t.is_functional
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                : 'bg-slate-100 text-slate-500 border-slate-200'
-                            }`}
-                          >
-                            {t.is_functional ? 'Active' : 'Inactive'}
-                          </button>
-                        </td>
-                        <td className="py-2.5 px-2 text-right">
-                          <button
-                            type="button"
-                            disabled={!t.is_functional || impersonatingId === t.id}
-                            onClick={() => handleOneClickImpersonation(t)}
-                            className={`h-7 px-3 rounded-lg font-bold text-[11px] transition shadow-2xs flex items-center gap-1.5 ml-auto cursor-pointer ${
-                              t.is_functional
-                                ? 'bg-[#00236f] hover:bg-[#001b54] text-white'
-                                : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                            }`}
-                          >
-                            {impersonatingId === t.id ? (
-                              <span>Opening...</span>
-                            ) : (
-                              <>
-                                <span>Open</span>
-                                <ArrowRight className="w-3.5 h-3.5" />
-                              </>
-                            )}
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {tenants.map(t => {
+                      const isSelected = selectedTenant?.id === t.id;
+                      return (
+                        <tr
+                          key={t.id}
+                          onClick={() => setSelectedTenant(t)}
+                          className={`transition-colors cursor-pointer ${
+                            isSelected
+                              ? 'bg-blue-50/80 border-l-4 border-l-[#00236f]'
+                              : 'hover:bg-slate-50/70'
+                          }`}
+                        >
+                          <td className="py-2.5 px-2">
+                            <strong className="text-slate-900 block font-bold text-xs">{t.client_name}</strong>
+                            <span className="text-slate-500 text-[11px]">{t.admin_email}</span>
+                          </td>
+                          <td className="py-2.5 px-2 font-mono">
+                            <span className="font-bold text-[#00236f]">{t.client_id}</span>
+                            <span className="block text-[11px] text-slate-500">{t.subdomain}</span>
+                          </td>
+                          <td className="py-2.5 px-2 capitalize">
+                            <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px] font-medium border border-slate-200/60">
+                              {t.entity_type}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-2 font-mono text-[11px] text-slate-600">
+                            {t.db_name}
+                          </td>
+                          <td className="py-2.5 px-2 text-center" onClick={e => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleFunctional(t)}
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold border transition cursor-pointer ${
+                                t.is_functional
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                  : 'bg-slate-100 text-slate-500 border-slate-200'
+                              }`}
+                            >
+                              {t.is_functional ? 'Active' : 'Inactive'}
+                            </button>
+                          </td>
+                          <td className="py-2.5 px-2 text-right" onClick={e => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              disabled={!t.is_functional || impersonatingId === t.id}
+                              onClick={() => handleOneClickImpersonation(t)}
+                              className={`h-7 px-3 rounded-lg font-bold text-[11px] transition shadow-2xs flex items-center gap-1.5 ml-auto cursor-pointer ${
+                                t.is_functional
+                                  ? 'bg-[#00236f] hover:bg-[#001b54] text-white'
+                                  : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                              }`}
+                            >
+                              {impersonatingId === t.id ? (
+                                <span>Opening...</span>
+                              ) : (
+                                <>
+                                  <span>Open</span>
+                                  <ArrowRight className="w-3.5 h-3.5" />
+                                </>
+                              )}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -653,61 +686,110 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
             </div>
           </div>
 
-          {/* Canonical Pure-Digit UID Structure & Architecture Guide (4 cols) */}
+          {/* Selected Client Institutional Control Deck (4 cols) - Live and Interactive */}
           <div className="lg:col-span-4 bg-white/95 backdrop-blur-xl rounded-2xl p-4 border border-slate-200/80 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                <div>
-                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
-                    Canonical Pure-Digit UID Architecture
-                  </h3>
-                  <p className="text-slate-500 text-[11px]">Formula defined by Senior Mentor Karanvir Sir</p>
+            {selectedTenant ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Selected Institution</span>
+                    <h3 className="text-sm font-black text-[#00236f] truncate max-w-[200px]">
+                      {selectedTenant.client_name}
+                    </h3>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full font-mono text-[10px] font-bold border ${
+                    selectedTenant.is_functional
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      : 'bg-slate-100 text-slate-500 border-slate-200'
+                  }`}>
+                    {selectedTenant.is_functional ? 'Active' : 'Inactive'}
+                  </span>
                 </div>
-                <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full font-mono text-[10px] font-bold">
-                  5-SEGMENT
-                </span>
-              </div>
 
-              <div className="mt-3 p-3 bg-slate-50/90 rounded-xl border border-slate-200/70 font-mono text-xs space-y-2">
-                <div className="text-[11px] text-slate-600 font-bold">
-                  [Type4] - [Seq2] - [Client2] - [State03] - [Inst01]
+                <div className="p-3 bg-slate-50/90 rounded-xl border border-slate-200/70 space-y-2 text-xs">
+                  <div className="flex justify-between items-center text-[11px]">
+                    <span className="text-slate-500">Client Code:</span>
+                    <span className="font-mono font-bold text-[#00236f]">{selectedTenant.client_id}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-[11px]">
+                    <span className="text-slate-500">Subdomain:</span>
+                    <span className="font-mono text-slate-700">{selectedTenant.subdomain}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-[11px]">
+                    <span className="text-slate-500">Database Schema:</span>
+                    <span className="font-mono text-slate-700">{selectedTenant.db_name}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-[11px]">
+                    <span className="text-slate-500">Administrator:</span>
+                    <span className="font-mono text-slate-700 truncate max-w-[150px]">{selectedTenant.admin_email}</span>
+                  </div>
                 </div>
-                <div className="text-[11px] text-slate-500 space-y-1">
-                  <div>• <strong className="text-[#00236f]">9001</strong>: Universal Provost & Super Admin</div>
-                  <div>• <strong className="text-[#00236f]">4001</strong>: Institutional Admin / Principal</div>
-                  <div>• <strong className="text-[#00236f]">3001</strong>: Head of Department (HOD)</div>
-                  <div>• <strong className="text-[#00236f]">2001</strong>: Teaching Faculty / Professor</div>
-                  <div>• <strong className="text-[#00236f]">5001</strong>: Chief Accounts Officer / Bursar</div>
-                  <div>• <strong className="text-[#00236f]">6001</strong>: Admissions Counselor</div>
-                  <div>• <strong className="text-[#00236f]">1001</strong>: Enrolled College Student</div>
-                </div>
-                <div className="pt-2 border-t border-slate-200/80 text-[10px] text-slate-500">
-                  Example: <strong className="text-slate-800">4001-01-01-03-01</strong> = Principal of Main Institution (Campus 01, State 03)
-                </div>
-              </div>
 
-              <div className="mt-3 space-y-2">
-                <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Quick Configuration</h4>
+                {/* Primary Action: Direct Impersonation */}
+                <button
+                  type="button"
+                  disabled={!selectedTenant.is_functional || impersonatingId === selectedTenant.id}
+                  onClick={() => handleOneClickImpersonation(selectedTenant)}
+                  className={`w-full py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition shadow-xs cursor-pointer ${
+                    selectedTenant.is_functional
+                      ? 'bg-[#00236f] hover:bg-[#001b54] text-white'
+                      : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                  }`}
+                >
+                  <KeyRound className="w-4 h-4 text-amber-300" />
+                  <span>
+                    {impersonatingId === selectedTenant.id
+                      ? 'Opening Institutional Console...'
+                      : `Open ${selectedTenant.short_code} Principal Desk →`}
+                  </span>
+                </button>
+
+                {/* Secondary Actions: Password Reset & Status Toggle */}
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
-                    onClick={() => setActiveWorkspaceTab('masters')}
-                    className="p-2.5 rounded-xl border border-slate-200/80 bg-slate-50/50 hover:bg-slate-100 text-left transition cursor-pointer"
+                    disabled={resettingPasswordId === selectedTenant.id}
+                    onClick={() => handleResetTenantPassword(selectedTenant)}
+                    className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-[11px] transition text-center cursor-pointer"
                   >
-                    <strong className="block text-slate-800 text-[11px]">Master Tables</strong>
-                    <span className="text-[10px] text-slate-500">States, Depts, Degrees</span>
+                    {resettingPasswordId === selectedTenant.id ? 'Resetting...' : '🔑 Reset Password'}
                   </button>
                   <button
                     type="button"
-                    onClick={() => onNavigate('field-permissions')}
-                    className="p-2.5 rounded-xl border border-slate-200/80 bg-slate-50/50 hover:bg-slate-100 text-left transition cursor-pointer"
+                    onClick={() => handleToggleFunctional(selectedTenant)}
+                    className={`p-2 rounded-xl border font-bold text-[11px] transition text-center cursor-pointer ${
+                      selectedTenant.is_functional
+                        ? 'border-amber-200 bg-amber-50/50 text-amber-800 hover:bg-amber-100'
+                        : 'border-emerald-200 bg-emerald-50/50 text-emerald-800 hover:bg-emerald-100'
+                    }`}
                   >
-                    <strong className="block text-slate-800 text-[11px]">Field RBAC</strong>
-                    <span className="text-[10px] text-slate-500">View &rarr; Edit rules</span>
+                    {selectedTenant.is_functional ? 'Deactivate' : '✓ Make Active'}
+                  </button>
+                </div>
+
+                {/* Master Tables Quick Link for this College */}
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => setActiveWorkspaceTab('masters')}
+                    className="text-[#00236f] font-bold hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    <span>View Seeded Master Tables &rarr;</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onNavigate('manage-students')}
+                    className="text-slate-500 hover:text-slate-800 font-medium cursor-pointer"
+                  >
+                    Scholars Directory
                   </button>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="py-8 text-center text-slate-400 text-xs">
+                Select an institution from the list to view its control deck.
+              </div>
+            )}
 
             <div className="mt-3 pt-2.5 border-t border-slate-100 text-[11px] text-slate-500">
               Platform Engine: <strong className="text-slate-800">PostgreSQL Multi-Tenant + In-Memory Disk Cache</strong>

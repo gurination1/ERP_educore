@@ -349,90 +349,10 @@ export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => 
 
       {/* Grievances List */}
       <div className="space-y-3">
-        {isLoading ? (
-          <div className="p-12 text-center text-xs text-[#757682] bg-white rounded-xl border border-[#e1e3e4]">
-            Loading grievance cell records...
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="p-12 text-center text-xs text-[#757682] bg-white rounded-xl border border-[#e1e3e4]">
-            No grievances match the selected criteria.
-          </div>
-        ) : (
-          filtered.map(g => (
-            <div
-              key={g.id}
-              className="p-5 bg-white rounded-xl border border-[#e1e3e4] hover:border-[#c5c5d3] transition-all shadow-xs space-y-3"
-            >
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 border-b border-[#f3f4f5] pb-3">
-                <div className="flex items-center gap-2.5 flex-wrap">
-                  <span className="font-mono text-xs font-bold text-[#00236f] bg-[#dce1ff]/50 px-2 py-0.5 rounded border border-[#dce1ff]">
-                    {g.tracking_code}
-                  </span>
-                  {getCategoryBadge(g.category)}
-                  {getPriorityBadge(g.priority)}
-                  {getStatusBadge(g.status)}
-                </div>
-
-                <div className="text-right text-[11px] text-[#757682]">
-                  <span>Lodged on: {new Date(g.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-sm font-bold text-[#191c1d]">{g.subject}</h3>
-                <p className="text-xs text-[#444651] mt-1.5 leading-relaxed bg-[#f8f9fa] p-3 rounded-lg border border-[#f3f4f5]">
-                  {g.description}
-                </p>
-              </div>
-
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between text-xs text-[#757682] gap-2 pt-1">
-                <div>
-                  <span>Complainant: </span>
-                  <strong className="text-[#191c1d]">{g.student_name}</strong>
-                  <span className="ml-1 text-[11px]">({g.student_id})</span>
-                </div>
-
-                {isAdmin && (
-                  <button
-                    onClick={() => {
-                      setSelectedGrievance(g);
-                      setAdjudicateStatus(g.status === 'submitted' ? 'under_investigation' : g.status);
-                      setAdminRemarks(g.admin_remarks || '');
-                      setIsAdjudicateOpen(true);
-                    }}
-                    className="px-3 py-1.5 bg-[#00236f] text-white rounded-lg text-xs font-bold hover:bg-[#1e3a8a] transition-all flex items-center gap-1 cursor-pointer self-start md:self-auto"
-                  >
-                    
-                    <span>Committee Action & Remarks</span>
-                  </button>
-                )}
-              </div>
-
-              {/* Committee Remarks Display */}
-              {g.admin_remarks && (
-                <div className="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-lg text-xs space-y-1">
-                  <div className="flex items-center gap-1.5 text-[#00236f] font-bold">
-                    
-                    <span>Official SGRC Committee Resolution:</span>
-                    {g.resolved_by && <span className="text-[10px] text-emerald-800">({g.resolved_by})</span>}
-                  </div>
-                  <p className="text-emerald-950 pl-5">{g.admin_remarks}</p>
-                  {g.resolved_at && (
-                    <div className="text-[10px] text-emerald-700 pl-5 pt-0.5">
-                      Decision timestamp: {new Date(g.resolved_at).toLocaleString('en-IN')}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          ))
-        )}
-      </div>
 
       {/* Modal: Lodge Grievance */}
       {isLodgeModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div className="bg-white rounded-2xl border-2 border-[#00236f]/30 shadow-xl overflow-hidden animate-in fade-in my-4">
             <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-linear-to-r from-[#00236f] to-[#1e3a8a] text-white">
               <div className="flex items-center gap-2">
                 
@@ -531,13 +451,11 @@ export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => 
               </div>
             </form>
           </div>
-        </div>
       )}
 
       {/* Modal: Adjudicate Grievance (Admin) */}
       {isAdjudicateOpen && selectedGrievance && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div className="bg-white rounded-2xl border-2 border-amber-500/30 shadow-xl overflow-hidden animate-in fade-in my-4">
             <div className="px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between bg-[#191c1d] text-white">
               <div>
                 <h3 className="text-base font-bold">Committee Adjudication & Action</h3>
@@ -602,8 +520,88 @@ export const GrievanceView: React.FC<GrievanceViewProps> = ({ currentUser }) => 
               </div>
             </form>
           </div>
-        </div>
       )}
+        {isLoading ? (
+          <div className="p-12 text-center text-xs text-[#757682] bg-white rounded-xl border border-[#e1e3e4]">
+            Loading grievance cell records...
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="p-12 text-center text-xs text-[#757682] bg-white rounded-xl border border-[#e1e3e4]">
+            No grievances match the selected criteria.
+          </div>
+        ) : (
+          filtered.map(g => (
+            <div
+              key={g.id}
+              className="p-5 bg-white rounded-xl border border-[#e1e3e4] hover:border-[#c5c5d3] transition-all shadow-xs space-y-3"
+            >
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 border-b border-[#f3f4f5] pb-3">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <span className="font-mono text-xs font-bold text-[#00236f] bg-[#dce1ff]/50 px-2 py-0.5 rounded border border-[#dce1ff]">
+                    {g.tracking_code}
+                  </span>
+                  {getCategoryBadge(g.category)}
+                  {getPriorityBadge(g.priority)}
+                  {getStatusBadge(g.status)}
+                </div>
+
+                <div className="text-right text-[11px] text-[#757682]">
+                  <span>Lodged on: {new Date(g.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-bold text-[#191c1d]">{g.subject}</h3>
+                <p className="text-xs text-[#444651] mt-1.5 leading-relaxed bg-[#f8f9fa] p-3 rounded-lg border border-[#f3f4f5]">
+                  {g.description}
+                </p>
+              </div>
+
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between text-xs text-[#757682] gap-2 pt-1">
+                <div>
+                  <span>Complainant: </span>
+                  <strong className="text-[#191c1d]">{g.student_name}</strong>
+                  <span className="ml-1 text-[11px]">({g.student_id})</span>
+                </div>
+
+                {isAdmin && (
+                  <button
+                    onClick={() => {
+                      setSelectedGrievance(g);
+                      setAdjudicateStatus(g.status === 'submitted' ? 'under_investigation' : g.status);
+                      setAdminRemarks(g.admin_remarks || '');
+                      setIsAdjudicateOpen(true);
+                    }}
+                    className="px-3 py-1.5 bg-[#00236f] text-white rounded-lg text-xs font-bold hover:bg-[#1e3a8a] transition-all flex items-center gap-1 cursor-pointer self-start md:self-auto"
+                  >
+                    
+                    <span>Committee Action & Remarks</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Committee Remarks Display */}
+              {g.admin_remarks && (
+                <div className="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-lg text-xs space-y-1">
+                  <div className="flex items-center gap-1.5 text-[#00236f] font-bold">
+                    
+                    <span>Official SGRC Committee Resolution:</span>
+                    {g.resolved_by && <span className="text-[10px] text-emerald-800">({g.resolved_by})</span>}
+                  </div>
+                  <p className="text-emerald-950 pl-5">{g.admin_remarks}</p>
+                  {g.resolved_at && (
+                    <div className="text-[10px] text-emerald-700 pl-5 pt-0.5">
+                      Decision timestamp: {new Date(g.resolved_at).toLocaleString('en-IN')}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+
+
     </div>
   );
 };

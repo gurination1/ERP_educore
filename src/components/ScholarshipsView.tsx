@@ -285,6 +285,382 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
         </div>
       )}
 
+      {/* Apply Modal */}
+      {selectedScheme && (
+      <div className="bg-white rounded-2xl border-2 border-emerald-500/30 shadow-xl p-6 space-y-4 my-4 animate-in fade-in max-w-3xl mx-auto">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-[#191c1d]">Apply for {selectedScheme.title}</h3>
+              <button
+                onClick={() => setSelectedScheme(null)}
+                className="text-[#757682] hover:text-[#191c1d]"
+              >
+                <span className="font-bold text-[10px]">✕</span>
+              </button>
+            </div>
+
+            <p className="text-xs text-[#757682]">
+              Award Grant Amount:{' '}
+              <strong className="text-[#00236f]">
+                ₹ {(selectedScheme.award_amount || 0).toLocaleString('en-IN')}
+              </strong>
+            </p>
+
+            <form onSubmit={handleApplySubmit} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block font-bold text-[#191c1d] mb-1">
+                  Annual Family Income (INR)
+                </label>
+                <input
+                  type="number"
+                  required
+                  value={income}
+                  onChange={e => setIncome(e.target.value)}
+                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#191c1d] mb-1">
+                  Previous Semester GPA / Score
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  value={gpa}
+                  onChange={e => setGpa(e.target.value)}
+                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#191c1d] mb-1">
+                  Statement of Purpose / Justification
+                </label>
+                <textarea
+                  rows={3}
+                  required
+                  value={reason}
+                  onChange={e => setReason(e.target.value)}
+                  placeholder="Explain why you are eligible and how this scholarship supports your academic goals..."
+                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
+                />
+              </div>
+
+              <div className="p-3 bg-[#f8f9fa] border border-dashed border-[#c5c5d3] rounded-lg text-center">
+                
+                <p className="text-[11px] font-bold text-[#191c1d]">
+                  Income Certificate / Marksheet attached (demo.pdf)
+                </p>
+              </div>
+
+              <div className="pt-3 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedScheme(null)}
+                  className="px-4 py-2 border border-[#e1e3e4] rounded-lg font-semibold hover:bg-[#f8f9fa]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isApplying}
+                  className="px-5 py-2 bg-[#00236f] text-white font-bold rounded-lg hover:bg-[#1e3a8a]"
+                >
+                  {isApplying ? 'Submitting...' : 'Submit Application'}
+                </button>
+              </div>
+            </form>
+          </div>
+      )}
+
+      {/* Admin Review Drawer / Modal */}
+      {reviewApp && (
+      <div className="bg-white rounded-2xl border-2 border-blue-500/30 shadow-xl p-6 space-y-4 my-4 animate-in fade-in max-w-3xl mx-auto">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-[#191c1d]">Review Scholarship Application</h3>
+              <button onClick={() => setReviewApp(null)} className="text-[#757682] hover:text-[#191c1d]">
+                <span className="font-bold text-[10px]">✕</span>
+              </button>
+            </div>
+
+            <div className="text-xs space-y-2 p-3 bg-[#f8f9fa] rounded-lg border border-[#edeeef]">
+              <p>
+                <strong>Applicant:</strong> {reviewApp.studentName} ({reviewApp.studentId})
+              </p>
+              <p>
+                <strong>Scheme:</strong> {reviewApp.schemeTitle}
+              </p>
+              <p>
+                <strong>CGPA:</strong> {reviewApp.previous_gpa} | <strong>Income:</strong> ₹{' '}
+                {(reviewApp.annual_family_income || 0).toLocaleString('en-IN')}
+              </p>
+              <p className="text-[#444651] italic">"{reviewApp.reason_for_application}"</p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#191c1d] mb-1">
+                Committee Remarks / Decision Notes
+              </label>
+              <textarea
+                rows={2}
+                value={adminRemarks}
+                onChange={e => setAdminRemarks(e.target.value)}
+                placeholder="e.g. Verified income certificate and department marksheet."
+                className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
+              />
+            </div>
+
+            <div className="pt-2 flex justify-between gap-3">
+              <button
+                disabled={isReviewing}
+                onClick={() => handleReviewAction('rejected')}
+                className="flex-1 py-2 bg-[#ffdad6] text-[#ba1a1a] hover:bg-[#ffdad6]/80 font-bold rounded-lg text-xs transition-colors"
+              >
+                Reject Application
+              </button>
+              <button
+                disabled={isReviewing}
+                onClick={() => handleReviewAction('approved')}
+                className="flex-1 py-2 bg-[#ea580c] text-white hover:bg-[#c2410c] font-bold rounded-lg text-xs transition-colors"
+              >
+                Approve Grant
+              </button>
+            </div>
+          </div>
+      )}
+
+      {/* Admin Create Scheme Modal */}
+      {isActualAdmin && isCreatingScheme && (
+      <div className="bg-white rounded-2xl border-2 border-[#00236f]/30 shadow-xl p-6 space-y-4 my-4 animate-in fade-in max-w-3xl mx-auto">
+            <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
+              <div>
+                <h3 className="text-lg font-bold text-[#191c1d]">Create Scholarship Scheme</h3>
+                <p className="text-xs text-[#757682]">Define new institutional financial aid or grant endowment</p>
+              </div>
+              <button onClick={() => setIsCreatingScheme(false)} className="text-[#757682] hover:text-[#191c1d]">
+                <span className="font-bold text-[10px]">✕</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateScheme} className="space-y-3.5 text-xs">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-[#191c1d] mb-1">Scheme Title *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newSchemeTitle}
+                    onChange={e => setNewSchemeTitle(e.target.value)}
+                    placeholder="e.g. Dean's Academic Merit Fellowship"
+                    className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-[#191c1d] mb-1">Scheme Code</label>
+                  <input
+                    type="text"
+                    value={newSchemeCode}
+                    onChange={e => setNewSchemeCode(e.target.value)}
+                    placeholder="e.g. DEAN-MERIT-2025"
+                    className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-[#191c1d] mb-1">Award Amount (INR) *</label>
+                  <input
+                    type="number"
+                    required
+                    value={newSchemeAmount}
+                    onChange={e => setNewSchemeAmount(e.target.value)}
+                    className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-bold text-[#00236f]"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-[#191c1d] mb-1">Application Deadline *</label>
+                  <input
+                    type="date"
+                    required
+                    value={newSchemeDeadline}
+                    onChange={e => setNewSchemeDeadline(e.target.value)}
+                    className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#191c1d] mb-1">Eligibility Criteria</label>
+                <input
+                  type="text"
+                  value={newSchemeCriteria}
+                  onChange={e => setNewSchemeCriteria(e.target.value)}
+                  placeholder="e.g. Minimum 8.5 CGPA with no active backlogs"
+                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#191c1d] mb-1">Description</label>
+                <textarea
+                  rows={2}
+                  value={newSchemeDesc}
+                  onChange={e => setNewSchemeDesc(e.target.value)}
+                  placeholder="Details regarding endowment committee and criteria..."
+                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
+                />
+              </div>
+
+              <div className="pt-3 flex justify-end gap-2 border-t border-[#f3f4f5]">
+                <button
+                  type="button"
+                  onClick={() => setIsCreatingScheme(false)}
+                  className="px-4 py-2 border border-[#e1e3e4] rounded-lg font-semibold hover:bg-[#f8f9fa]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-[#00236f] text-white font-bold rounded-lg hover:bg-[#1e3a8a]"
+                >
+                  Publish Scheme
+                </button>
+              </div>
+            </form>
+          </div>
+      )}
+
+      {/* Admin Direct Award Modal */}
+      {isActualAdmin && isAwardModalOpen && (
+      <div className="bg-white rounded-2xl border-2 border-amber-500/30 shadow-xl p-6 space-y-4 my-4 animate-in fade-in max-w-3xl mx-auto">
+            <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
+              <div>
+                <h3 className="text-lg font-bold text-[#191c1d] flex items-center gap-2">
+                  
+                  <span>Award Institutional Scholarship</span>
+                </h3>
+                <p className="text-xs text-[#757682]">Directly grant and disburse scholarship concession into student ledger</p>
+              </div>
+              <button onClick={() => setIsAwardModalOpen(false)} className="text-[#757682] hover:text-[#191c1d]">
+                <span className="font-bold text-[10px]">✕</span>
+              </button>
+            </div>
+
+            {awardErrorMsg && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 font-semibold flex items-center gap-2">
+                <span className="font-bold text-[10px]">[!]</span>
+                <span>{awardErrorMsg}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleAwardSubmit} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block font-bold text-[#191c1d] mb-1">Target Student *</label>
+                <select
+                  required
+                  value={awardStudentId}
+                  onChange={e => setAwardStudentId(e.target.value)}
+                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+                >
+                  <option value="">Select Enrolled Student</option>
+                  {studentList.map(s => (
+                    <option key={s.id} value={s.id}>
+                      {s.student_id} — {s.first_name} {s.last_name} ({s.course?.code || 'Enrolled'})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#191c1d] mb-1">Scholarship / Endowment Scheme *</label>
+                <select
+                  required
+                  value={awardSchemeId}
+                  onChange={e => {
+                    setAwardSchemeId(e.target.value);
+                    const found = schemes.find(s => s.id === e.target.value);
+                    if (found) {
+                      setAwardAmount(found.award_amount.toString());
+                      if (!awardRemarks) {
+                        setAwardRemarks(`Merit concession granted under ${found.title}`);
+                      }
+                    }
+                  }}
+                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+                >
+                  <option value="">Select Scheme</option>
+                  {schemes.map(sch => (
+                    <option key={sch.id} value={sch.id}>
+                      {sch.title} (₹ {(sch.award_amount || 0).toLocaleString('en-IN')})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#191c1d] mb-1">Award Concession Amount (INR) *</label>
+                <input
+                  type="number"
+                  min="100"
+                  required
+                  value={awardAmount}
+                  onChange={e => setAwardAmount(e.target.value)}
+                  placeholder="e.g. 45000"
+                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-bold text-[#00236f] focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+                >
+                </input>
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#191c1d] mb-1">Committee Remarks / Justification</label>
+                <textarea
+                  rows={2}
+                  value={awardRemarks}
+                  onChange={e => setAwardRemarks(e.target.value)}
+                  placeholder="e.g. Approved by Academic Senate for 100% tuition waiver under Punjab State Merit Scheme."
+                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
+                />
+              </div>
+
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-[11px] text-[#00236f] space-y-1">
+                <span className="font-bold flex items-center gap-1.5">
+                  <RefreshCw className="w-3.5 h-3.5 text-blue-700" />
+                  <span>Instant Ledger Disbursal:</span>
+                </span>
+                <p>
+                  Upon submission, this grant directly discounts the student's tuition fee head (<code className="bg-white px-1 py-0.5 rounded font-mono text-[10px]">fh-tuition</code>), immediately adjusts outstanding dues, and reflects on both the student and admin portals.
+                </p>
+              </div>
+
+              <div className="pt-3 flex justify-end gap-2 border-t border-[#f3f4f5]">
+                <button
+                  type="button"
+                  onClick={() => setIsAwardModalOpen(false)}
+                  className="px-4 py-2 border border-[#e1e3e4] rounded-lg font-semibold hover:bg-[#f8f9fa]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isAwarding}
+                  className="px-5 py-2 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold rounded-lg shadow-xs flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {isAwarding ? (
+                    <span>Disbursing Aid...</span>
+                  ) : (
+                    <>
+                      <span className="font-bold text-[10px]">✓</span>
+                      <span>Award & Disburse to Ledger</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+      )}
+
       {/* Admin Executive Summary Banner on Applications Tab */}
       {isStaffOrAdmin && activeTab === 'applications' && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -446,389 +822,7 @@ export const ScholarshipsView: React.FC<ScholarshipsViewProps> = ({ currentUser 
         </div>
       )}
 
-      {/* Apply Modal */}
-      {selectedScheme && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-[#e1e3e4] space-y-4 animate-scaleUp">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-[#191c1d]">Apply for {selectedScheme.title}</h3>
-              <button
-                onClick={() => setSelectedScheme(null)}
-                className="text-[#757682] hover:text-[#191c1d]"
-              >
-                <span className="font-bold text-[10px]">✕</span>
-              </button>
-            </div>
 
-            <p className="text-xs text-[#757682]">
-              Award Grant Amount:{' '}
-              <strong className="text-[#00236f]">
-                ₹ {(selectedScheme.award_amount || 0).toLocaleString('en-IN')}
-              </strong>
-            </p>
-
-            <form onSubmit={handleApplySubmit} className="space-y-3.5 text-xs">
-              <div>
-                <label className="block font-bold text-[#191c1d] mb-1">
-                  Annual Family Income (INR)
-                </label>
-                <input
-                  type="number"
-                  required
-                  value={income}
-                  onChange={e => setIncome(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-[#191c1d] mb-1">
-                  Previous Semester GPA / Score
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  required
-                  value={gpa}
-                  onChange={e => setGpa(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-[#191c1d] mb-1">
-                  Statement of Purpose / Justification
-                </label>
-                <textarea
-                  rows={3}
-                  required
-                  value={reason}
-                  onChange={e => setReason(e.target.value)}
-                  placeholder="Explain why you are eligible and how this scholarship supports your academic goals..."
-                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
-                />
-              </div>
-
-              <div className="p-3 bg-[#f8f9fa] border border-dashed border-[#c5c5d3] rounded-lg text-center">
-                
-                <p className="text-[11px] font-bold text-[#191c1d]">
-                  Income Certificate / Marksheet attached (demo.pdf)
-                </p>
-              </div>
-
-              <div className="pt-3 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedScheme(null)}
-                  className="px-4 py-2 border border-[#e1e3e4] rounded-lg font-semibold hover:bg-[#f8f9fa]"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isApplying}
-                  className="px-5 py-2 bg-[#00236f] text-white font-bold rounded-lg hover:bg-[#1e3a8a]"
-                >
-                  {isApplying ? 'Submitting...' : 'Submit Application'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Admin Review Drawer / Modal */}
-      {reviewApp && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-[#e1e3e4] space-y-4 animate-scaleUp">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-[#191c1d]">Review Scholarship Application</h3>
-              <button onClick={() => setReviewApp(null)} className="text-[#757682] hover:text-[#191c1d]">
-                <span className="font-bold text-[10px]">✕</span>
-              </button>
-            </div>
-
-            <div className="text-xs space-y-2 p-3 bg-[#f8f9fa] rounded-lg border border-[#edeeef]">
-              <p>
-                <strong>Applicant:</strong> {reviewApp.studentName} ({reviewApp.studentId})
-              </p>
-              <p>
-                <strong>Scheme:</strong> {reviewApp.schemeTitle}
-              </p>
-              <p>
-                <strong>CGPA:</strong> {reviewApp.previous_gpa} | <strong>Income:</strong> ₹{' '}
-                {(reviewApp.annual_family_income || 0).toLocaleString('en-IN')}
-              </p>
-              <p className="text-[#444651] italic">"{reviewApp.reason_for_application}"</p>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-[#191c1d] mb-1">
-                Committee Remarks / Decision Notes
-              </label>
-              <textarea
-                rows={2}
-                value={adminRemarks}
-                onChange={e => setAdminRemarks(e.target.value)}
-                placeholder="e.g. Verified income certificate and department marksheet."
-                className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
-              />
-            </div>
-
-            <div className="pt-2 flex justify-between gap-3">
-              <button
-                disabled={isReviewing}
-                onClick={() => handleReviewAction('rejected')}
-                className="flex-1 py-2 bg-[#ffdad6] text-[#ba1a1a] hover:bg-[#ffdad6]/80 font-bold rounded-lg text-xs transition-colors"
-              >
-                Reject Application
-              </button>
-              <button
-                disabled={isReviewing}
-                onClick={() => handleReviewAction('approved')}
-                className="flex-1 py-2 bg-[#ea580c] text-white hover:bg-[#c2410c] font-bold rounded-lg text-xs transition-colors"
-              >
-                Approve Grant
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Admin Create Scheme Modal */}
-      {isActualAdmin && isCreatingScheme && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-[#e1e3e4] space-y-4 animate-scaleUp">
-            <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
-              <div>
-                <h3 className="text-lg font-bold text-[#191c1d]">Create Scholarship Scheme</h3>
-                <p className="text-xs text-[#757682]">Define new institutional financial aid or grant endowment</p>
-              </div>
-              <button onClick={() => setIsCreatingScheme(false)} className="text-[#757682] hover:text-[#191c1d]">
-                <span className="font-bold text-[10px]">✕</span>
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateScheme} className="space-y-3.5 text-xs">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-[#191c1d] mb-1">Scheme Title *</label>
-                  <input
-                    type="text"
-                    required
-                    value={newSchemeTitle}
-                    onChange={e => setNewSchemeTitle(e.target.value)}
-                    placeholder="e.g. Dean's Academic Merit Fellowship"
-                    className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-[#191c1d] mb-1">Scheme Code</label>
-                  <input
-                    type="text"
-                    value={newSchemeCode}
-                    onChange={e => setNewSchemeCode(e.target.value)}
-                    placeholder="e.g. DEAN-MERIT-2025"
-                    className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-[#191c1d] mb-1">Award Amount (INR) *</label>
-                  <input
-                    type="number"
-                    required
-                    value={newSchemeAmount}
-                    onChange={e => setNewSchemeAmount(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-bold text-[#00236f]"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-[#191c1d] mb-1">Application Deadline *</label>
-                  <input
-                    type="date"
-                    required
-                    value={newSchemeDeadline}
-                    onChange={e => setNewSchemeDeadline(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-bold text-[#191c1d] mb-1">Eligibility Criteria</label>
-                <input
-                  type="text"
-                  value={newSchemeCriteria}
-                  onChange={e => setNewSchemeCriteria(e.target.value)}
-                  placeholder="e.g. Minimum 8.5 CGPA with no active backlogs"
-                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-[#191c1d] mb-1">Description</label>
-                <textarea
-                  rows={2}
-                  value={newSchemeDesc}
-                  onChange={e => setNewSchemeDesc(e.target.value)}
-                  placeholder="Details regarding endowment committee and criteria..."
-                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs"
-                />
-              </div>
-
-              <div className="pt-3 flex justify-end gap-2 border-t border-[#f3f4f5]">
-                <button
-                  type="button"
-                  onClick={() => setIsCreatingScheme(false)}
-                  className="px-4 py-2 border border-[#e1e3e4] rounded-lg font-semibold hover:bg-[#f8f9fa]"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-[#00236f] text-white font-bold rounded-lg hover:bg-[#1e3a8a]"
-                >
-                  Publish Scheme
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Admin Direct Award Modal */}
-      {isActualAdmin && isAwardModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-[#e1e3e4] space-y-4 animate-scaleUp">
-            <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
-              <div>
-                <h3 className="text-lg font-bold text-[#191c1d] flex items-center gap-2">
-                  
-                  <span>Award Institutional Scholarship</span>
-                </h3>
-                <p className="text-xs text-[#757682]">Directly grant and disburse scholarship concession into student ledger</p>
-              </div>
-              <button onClick={() => setIsAwardModalOpen(false)} className="text-[#757682] hover:text-[#191c1d]">
-                <span className="font-bold text-[10px]">✕</span>
-              </button>
-            </div>
-
-            {awardErrorMsg && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 font-semibold flex items-center gap-2">
-                <span className="font-bold text-[10px]">[!]</span>
-                <span>{awardErrorMsg}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleAwardSubmit} className="space-y-3.5 text-xs">
-              <div>
-                <label className="block font-bold text-[#191c1d] mb-1">Target Student *</label>
-                <select
-                  required
-                  value={awardStudentId}
-                  onChange={e => setAwardStudentId(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
-                >
-                  <option value="">Select Enrolled Student</option>
-                  {studentList.map(s => (
-                    <option key={s.id} value={s.id}>
-                      {s.student_id} — {s.first_name} {s.last_name} ({s.course?.code || 'Enrolled'})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-bold text-[#191c1d] mb-1">Scholarship / Endowment Scheme *</label>
-                <select
-                  required
-                  value={awardSchemeId}
-                  onChange={e => {
-                    setAwardSchemeId(e.target.value);
-                    const found = schemes.find(s => s.id === e.target.value);
-                    if (found) {
-                      setAwardAmount(found.award_amount.toString());
-                      if (!awardRemarks) {
-                        setAwardRemarks(`Merit concession granted under ${found.title}`);
-                      }
-                    }
-                  }}
-                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
-                >
-                  <option value="">Select Scheme</option>
-                  {schemes.map(sch => (
-                    <option key={sch.id} value={sch.id}>
-                      {sch.title} (₹ {(sch.award_amount || 0).toLocaleString('en-IN')})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-bold text-[#191c1d] mb-1">Award Concession Amount (INR) *</label>
-                <input
-                  type="number"
-                  min="100"
-                  required
-                  value={awardAmount}
-                  onChange={e => setAwardAmount(e.target.value)}
-                  placeholder="e.g. 45000"
-                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs font-bold text-[#00236f] focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
-                >
-                </input>
-              </div>
-
-              <div>
-                <label className="block font-bold text-[#191c1d] mb-1">Committee Remarks / Justification</label>
-                <textarea
-                  rows={2}
-                  value={awardRemarks}
-                  onChange={e => setAwardRemarks(e.target.value)}
-                  placeholder="e.g. Approved by Academic Senate for 100% tuition waiver under Punjab State Merit Scheme."
-                  className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
-                />
-              </div>
-
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-[11px] text-[#00236f] space-y-1">
-                <span className="font-bold flex items-center gap-1.5">
-                  <RefreshCw className="w-3.5 h-3.5 text-blue-700" />
-                  <span>Instant Ledger Disbursal:</span>
-                </span>
-                <p>
-                  Upon submission, this grant directly discounts the student's tuition fee head (<code className="bg-white px-1 py-0.5 rounded font-mono text-[10px]">fh-tuition</code>), immediately adjusts outstanding dues, and reflects on both the student and admin portals.
-                </p>
-              </div>
-
-              <div className="pt-3 flex justify-end gap-2 border-t border-[#f3f4f5]">
-                <button
-                  type="button"
-                  onClick={() => setIsAwardModalOpen(false)}
-                  className="px-4 py-2 border border-[#e1e3e4] rounded-lg font-semibold hover:bg-[#f8f9fa]"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isAwarding}
-                  className="px-5 py-2 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold rounded-lg shadow-xs flex items-center gap-1.5 disabled:opacity-50"
-                >
-                  {isAwarding ? (
-                    <span>Disbursing Aid...</span>
-                  ) : (
-                    <>
-                      <span className="font-bold text-[10px]">✓</span>
-                      <span>Award & Disburse to Ledger</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

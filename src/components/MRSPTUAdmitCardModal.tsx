@@ -42,9 +42,8 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
   const holdReasons = data?.holdReasons || [];
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl border border-[#e1e3e4] space-y-6 my-6 animate-scaleUp print:p-0 print:border-none print:shadow-none print:m-0">
-        {/* Modal Controls (Hidden in Print) */}
+    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-3xl bg-white shadow-2xl border-l border-slate-200 p-6 sm:p-8 overflow-y-auto animate-in slide-in-from-right duration-200 space-y-6 print:p-0 print:border-none print:shadow-none print:m-0">
+        {/* Drawer Controls (Hidden in Print) */}
         <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3 print:hidden">
           <div>
             <h3 className="text-sm font-bold text-[#191c1d]">University Examination Portal</h3>
@@ -271,7 +270,6 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 };

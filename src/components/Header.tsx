@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { User, ActiveScreen } from '../types';
 import { useCampus } from '../context/CampusContext';
 import { Shield, Building2, ChevronDown, Check, User as UserIcon, KeyRound, LogOut, Globe } from 'lucide-react';
-import { api } from '../api/client';
+import { api, setStoredToken, setStoredUser } from '../api/client';
 
 interface HeaderProps {
   currentUser: User | null;
@@ -115,8 +115,8 @@ export const Header: React.FC<HeaderProps> = ({
       if (tenant.id) {
         const res = await api.impersonateTenant(tenant.id);
         if (res.success && res.token && res.user) {
-          localStorage.setItem('auth_token', res.token);
-          localStorage.setItem('auth_user', JSON.stringify(res.user));
+          setStoredToken(res.token);
+          setStoredUser(res.user);
           window.location.href = '/dashboard';
           return;
         }
@@ -1386,10 +1386,14 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Breadcrumb Module */}
           <div className="hidden lg:flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-xs text-white shrink-0">
-            <span className="text-slate-300 font-medium">
-              {effectiveCampus === 'campus_01' ? 'Campus 01' : effectiveCampus === 'campus_02' ? 'Campus 02' : 'All Campuses'}
-            </span>
-            <span className="text-amber-300 font-bold">›</span>
+            {!isSuperAdmin && (
+              <>
+                <span className="text-slate-300 font-medium">
+                  {effectiveCampus === 'campus_01' ? 'Campus 01' : effectiveCampus === 'campus_02' ? 'Campus 02' : 'All Campuses'}
+                </span>
+                <span className="text-amber-300 font-bold">›</span>
+              </>
+            )}
             <span className="text-amber-300 font-black tracking-tight">{activeModuleTitle}</span>
           </div>
 

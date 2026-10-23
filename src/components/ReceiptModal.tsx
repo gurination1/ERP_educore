@@ -32,9 +32,9 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptNo, onClose }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
-      <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-[#e1e3e4] overflow-hidden my-6 animate-scaleUp">
-        {/* Modal Top Actions */}
+    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-2xl bg-white shadow-2xl border-l border-slate-200 overflow-y-auto animate-in slide-in-from-right duration-200">
+      <div className="w-full overflow-hidden">
+        {/* Drawer Top Actions */}
         <div className="p-4 bg-[#f8f9fa] border-b border-[#e1e3e4] flex items-center justify-between print:hidden">
           <div className="flex items-center gap-2">
             

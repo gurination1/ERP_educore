@@ -83,8 +83,7 @@ export const StaffAcademicJourneyModal: React.FC<StaffAcademicJourneyModalProps>
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-      <div className="bg-white rounded-2xl max-w-4xl w-full h-[80vh] shadow-2xl border border-[#e1e3e4] flex flex-col overflow-hidden animate-scaleUp">
+    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-3xl bg-white shadow-2xl border-l border-slate-200 flex flex-col overflow-hidden animate-in slide-in-from-right duration-200">
         {/* Header */}
         <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#f8f9fa] flex items-center justify-between">
           <div>
@@ -316,7 +315,6 @@ export const StaffAcademicJourneyModal: React.FC<StaffAcademicJourneyModalProps>
           <span>Faculty Academic Matrix</span>
           <span>Aligned with NIRF & NAAC Criteria 3.4 (Research Publications & Awards)</span>
         </div>
-      </div>
     </div>
   );
 };

@@ -168,20 +168,7 @@ async function run() {
   assert.strictEqual(occupiedRoomRes.success, false, 'Occupied room deletion must be forbidden!');
   console.log('✓ Karanvir Sir Deletion Safety Gate OK: Occupied room rm-101 rejected deletion with proper error.');
 
-  // Delete the empty test room
-  const deleteEmptyRes = await fetch(`${BASE_URL}/api/hostel/rooms/${testRoomId}`, {
-    method: 'DELETE',
-    headers: { 'Authorization': `Bearer ${adminToken}` },
-  }).then(r => r.json());
-  assert.strictEqual(deleteEmptyRes.success, true);
-  console.log('✓ Empty Room Deletion OK');
-
-  // 13. Test Hostel Bed Allotment & Student Sync
-  const roomsRes = await fetch(`${BASE_URL}/api/hostel/rooms`, {
-    headers: { 'Authorization': `Bearer ${adminToken}` },
-  }).then(r => r.json());
-  const targetRoom = (roomsRes.rooms || []).find(r => r.current_occupancy < r.capacity) || { id: 'rm-301', room_number: '301' };
-
+  // 13. Test Hostel Bed Allotment into the freshly created room (has vacant capacity)
   const allotRes = await fetch(`${BASE_URL}/api/hostel/allot`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
@@ -190,13 +177,21 @@ async function run() {
       student_name: 'Aryan Sharma',
       course_name: 'B.Tech CSE',
       semester: 4,
-      room_id: targetRoom.id,
+      room_id: testRoomId,
       billing_cycle: 'semester',
       mess_enrolled: true,
     }),
   }).then(r => r.json());
   assert.strictEqual(allotRes.success, true);
   console.log(`✓ Hostel Scholar Allotment OK: Bed ${allotRes.resident.bed_number} in Room ${allotRes.resident.room_number}`);
+
+  // Freshly occupied room must now also reject deletion!
+  const newlyOccupiedDelRes = await fetch(`${BASE_URL}/api/hostel/rooms/${testRoomId}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${adminToken}` },
+  }).then(r => r.json());
+  assert.strictEqual(newlyOccupiedDelRes.success, false, 'Newly occupied room deletion must be forbidden!');
+  console.log(`✓ Newly occupied room ${testRoomId} safely protected from accidental deletion.`);
 
   // 14. Test Mess No-Dues Clearance (NOC) Issuance
   const nocRes = await fetch(`${BASE_URL}/api/hostel/mess-clearance`, {

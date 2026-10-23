@@ -512,6 +512,164 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             </div>
           </div>
 
+      {/* INLINE WORKSPACE: EXECUTIVE STUDENT ENROLLMENT & DEPARTMENTAL LIFECYCLE DRILLDOWN (Zero Popups) */}
+      {isEnrollmentDrilldownOpen && (
+        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border-2 border-[#00236f]/30 text-slate-900 space-y-5 animate-in fade-in my-3">
+          {/* Header */}
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-[#00236f] text-[10px] font-black uppercase tracking-wide border border-blue-200 mb-1">
+                <span>Executive Governance Drilldown</span>
+                <span>•</span>
+                <span>Inline Topology View</span>
+              </div>
+              <h2 className="text-lg font-black text-[#00236f] tracking-tight">
+                Academic Topology & Departmental Student Status Matrix
+              </h2>
+              <p className="text-xs text-slate-500 font-medium">
+                Autonomous Campus Cohort • Session {selectedTerm} • Real-Time Registrar Sync
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsEnrollmentDrilldownOpen(false)}
+              className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+            {/* PROMINENT TOP SUMMARY TOTAL BANNER (Karanvir Sir: "Sabse neeche mat dikhana, upar hi total dikhana hai tune... words mein na!") */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-900 to-[#001744] text-white shadow-md">
+              <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
+                <span className="text-[11px] font-extrabold uppercase tracking-widest text-orange-400">
+                  Consolidated Campus Head Summary (Top Aggregation)
+                </span>
+                <span className="font-mono text-[11px] text-white/80">
+                  Sanctioned: {kpiData.sanctionedSeats} Seats ({kpiData.seatFillRate} Filled)
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                <div className="p-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/10">
+                  <span className="text-[10px] uppercase font-bold text-white/70 block">Total Cohort</span>
+                  <span className="text-2xl font-black font-mono tracking-tight text-white">{totalCampusStudents}</span>
+                  <span className="text-[9px] text-white/60 block mt-0.5">100% Enrolled</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-emerald-500/20 backdrop-blur-md border border-emerald-400/30">
+                  <span className="text-[10px] uppercase font-bold text-emerald-300 block">Active Students</span>
+                  <span className="text-2xl font-black font-mono tracking-tight text-emerald-400">{totalCampusActive}</span>
+                  <span className="text-[10px] font-bold text-emerald-300 block mt-0.5">
+                    ({totalCampusStudents > 0 ? ((totalCampusActive / totalCampusStudents) * 100).toFixed(1) : '0'}%)
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-amber-500/20 backdrop-blur-md border border-amber-400/30">
+                  <span className="text-[10px] uppercase font-bold text-amber-300 block">Deactive Students</span>
+                  <span className="text-2xl font-black font-mono tracking-tight text-amber-400">{totalCampusDeactive}</span>
+                  <span className="text-[10px] font-bold text-amber-300 block mt-0.5">
+                    ({totalCampusStudents > 0 ? ((totalCampusDeactive / totalCampusStudents) * 100).toFixed(1) : '0'}%)
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-rose-500/20 backdrop-blur-md border border-rose-400/30">
+                  <span className="text-[10px] uppercase font-bold text-rose-300 block">Struck-Off Students</span>
+                  <span className="text-2xl font-black font-mono tracking-tight text-rose-400">{totalCampusStruckOff}</span>
+                  <span className="text-[10px] font-bold text-rose-300 block mt-0.5">
+                    ({totalCampusStudents > 0 ? ((totalCampusStruckOff / totalCampusStudents) * 100).toFixed(1) : '0'}%)
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Department Breakdown Table */}
+            <div className="overflow-x-auto rounded-2xl border border-slate-200">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="bg-slate-50 text-slate-500 uppercase text-[10px] font-bold border-b border-slate-200">
+                    <th className="py-2.5 px-3">School / Department Name</th>
+                    <th className="py-2.5 px-3 text-center">Total Enrolled</th>
+                    <th className="py-2.5 px-3 text-center">Active (%)</th>
+                    <th className="py-2.5 px-3 text-center">Deactive (%)</th>
+                    <th className="py-2.5 px-3 text-center">Struck-Off (%)</th>
+                    <th className="py-2.5 px-3 text-center">Faculty</th>
+                    <th className="py-2.5 px-3 text-center">FSR</th>
+                    <th className="py-2.5 px-3 text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-medium">
+                  {filteredDepartmentRows.map((d, i) => {
+                    const activePct = d.students > 0 ? ((d.active / d.students) * 100).toFixed(1) : '0.0';
+                    const deactivePct = d.students > 0 ? ((d.deactive / d.students) * 100).toFixed(1) : '0.0';
+                    const struckOffPct = d.students > 0 ? ((d.struckOff / d.students) * 100).toFixed(1) : '0.0';
+                    return (
+                      <tr key={i} className="hover:bg-slate-50/70 transition-colors">
+                        <td className="py-3 px-3">
+                          <strong className="text-slate-900 block font-bold text-xs">{d.name}</strong>
+                          <span className="text-slate-400 font-mono text-[10px]">{d.code}</span>
+                        </td>
+                        <td className="py-3 px-3 text-center font-mono font-bold text-slate-800">
+                          {d.students}{' '}
+                          <span className="text-[10px] text-slate-500 font-normal">
+                            ({totalCampusStudents > 0 ? ((d.students / totalCampusStudents) * 100).toFixed(1) : '0'}%)
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-center font-mono font-bold text-emerald-700">
+                          {d.active}{' '}
+                          <span className="text-[10px] font-normal text-emerald-600">({activePct}%)</span>
+                        </td>
+                        <td className="py-3 px-3 text-center font-mono font-semibold text-amber-700">
+                          {d.deactive}{' '}
+                          <span className="text-[10px] font-normal text-amber-600">({deactivePct}%)</span>
+                        </td>
+                        <td className="py-3 px-3 text-center font-mono font-semibold text-rose-700">
+                          {d.struckOff}{' '}
+                          <span className="text-[10px] font-normal text-rose-600">({struckOffPct}%)</span>
+                        </td>
+                        <td className="py-3 px-3 text-center font-mono font-bold text-slate-700">{d.faculty}</td>
+                        <td className="py-3 px-3 text-center font-mono font-bold text-[#00236f]">{d.fsr}</td>
+                        <td className="py-3 px-3 text-right">
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[10px] border border-emerald-200">
+                            {d.status}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={handleExportReport}
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Export Audit (.xlsx)</span>
+              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEnrollmentDrilldownOpen(false);
+                    onNavigate('manage-students');
+                  }}
+                  className="px-4 py-2 rounded-xl bg-[#00236f] hover:bg-[#001744] text-white font-bold text-xs shadow-xs cursor-pointer"
+                >
+                  Open Full Student Registry →
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsEnrollmentDrilldownOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       {/* Main Grid: Departmental Workload & Accreditation (7 cols) + Executive Actions & Support Tickets (5 cols) */}
       <div id="dept-topology-section" className="grid grid-cols-1 lg:grid-cols-12 gap-3 scroll-mt-6">
         {/* Departmental Accreditation & Student Status Breakdown (7 cols) */}
@@ -1164,164 +1322,6 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           </div>
         </div>
       )}
-
-      {/* INLINE WORKSPACE: EXECUTIVE STUDENT ENROLLMENT & DEPARTMENTAL LIFECYCLE DRILLDOWN (Zero Popups) */}
-      {isEnrollmentDrilldownOpen && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border-2 border-[#00236f]/30 text-slate-900 space-y-5 animate-in fade-in">
-          {/* Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-[#00236f] text-[10px] font-black uppercase tracking-wide border border-blue-200 mb-1">
-                <span>Executive Governance Drilldown</span>
-                <span>•</span>
-                <span>Inline Topology View</span>
-              </div>
-              <h2 className="text-lg font-black text-[#00236f] tracking-tight">
-                Academic Topology & Departmental Student Status Matrix
-              </h2>
-              <p className="text-xs text-slate-500 font-medium">
-                Autonomous Campus Cohort • Session {selectedTerm} • Real-Time Registrar Sync
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsEnrollmentDrilldownOpen(false)}
-              className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-            {/* PROMINENT TOP SUMMARY TOTAL BANNER (Karanvir Sir: "Sabse neeche mat dikhana, upar hi total dikhana hai tune... words mein na!") */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-900 to-[#001744] text-white shadow-md">
-              <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
-                <span className="text-[11px] font-extrabold uppercase tracking-widest text-orange-400">
-                  Consolidated Campus Head Summary (Top Aggregation)
-                </span>
-                <span className="font-mono text-[11px] text-white/80">
-                  Sanctioned: {kpiData.sanctionedSeats} Seats ({kpiData.seatFillRate} Filled)
-                </span>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                <div className="p-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/10">
-                  <span className="text-[10px] uppercase font-bold text-white/70 block">Total Cohort</span>
-                  <span className="text-2xl font-black font-mono tracking-tight text-white">{totalCampusStudents}</span>
-                  <span className="text-[9px] text-white/60 block mt-0.5">100% Enrolled</span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-emerald-500/20 backdrop-blur-md border border-emerald-400/30">
-                  <span className="text-[10px] uppercase font-bold text-emerald-300 block">Active Students</span>
-                  <span className="text-2xl font-black font-mono tracking-tight text-emerald-400">{totalCampusActive}</span>
-                  <span className="text-[10px] font-bold text-emerald-300 block mt-0.5">
-                    ({totalCampusStudents > 0 ? ((totalCampusActive / totalCampusStudents) * 100).toFixed(1) : '0'}%)
-                  </span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-amber-500/20 backdrop-blur-md border border-amber-400/30">
-                  <span className="text-[10px] uppercase font-bold text-amber-300 block">Deactive Students</span>
-                  <span className="text-2xl font-black font-mono tracking-tight text-amber-400">{totalCampusDeactive}</span>
-                  <span className="text-[10px] font-bold text-amber-300 block mt-0.5">
-                    ({totalCampusStudents > 0 ? ((totalCampusDeactive / totalCampusStudents) * 100).toFixed(1) : '0'}%)
-                  </span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-rose-500/20 backdrop-blur-md border border-rose-400/30">
-                  <span className="text-[10px] uppercase font-bold text-rose-300 block">Struck-Off Students</span>
-                  <span className="text-2xl font-black font-mono tracking-tight text-rose-400">{totalCampusStruckOff}</span>
-                  <span className="text-[10px] font-bold text-rose-300 block mt-0.5">
-                    ({totalCampusStudents > 0 ? ((totalCampusStruckOff / totalCampusStudents) * 100).toFixed(1) : '0'}%)
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Department Breakdown Table */}
-            <div className="overflow-x-auto rounded-2xl border border-slate-200">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="bg-slate-50 text-slate-500 uppercase text-[10px] font-bold border-b border-slate-200">
-                    <th className="py-2.5 px-3">School / Department Name</th>
-                    <th className="py-2.5 px-3 text-center">Total Enrolled</th>
-                    <th className="py-2.5 px-3 text-center">Active (%)</th>
-                    <th className="py-2.5 px-3 text-center">Deactive (%)</th>
-                    <th className="py-2.5 px-3 text-center">Struck-Off (%)</th>
-                    <th className="py-2.5 px-3 text-center">Faculty</th>
-                    <th className="py-2.5 px-3 text-center">FSR</th>
-                    <th className="py-2.5 px-3 text-right">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 font-medium">
-                  {filteredDepartmentRows.map((d, i) => {
-                    const activePct = d.students > 0 ? ((d.active / d.students) * 100).toFixed(1) : '0.0';
-                    const deactivePct = d.students > 0 ? ((d.deactive / d.students) * 100).toFixed(1) : '0.0';
-                    const struckOffPct = d.students > 0 ? ((d.struckOff / d.students) * 100).toFixed(1) : '0.0';
-                    return (
-                      <tr key={i} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="py-3 px-3">
-                          <strong className="text-slate-900 block font-bold text-xs">{d.name}</strong>
-                          <span className="text-slate-400 font-mono text-[10px]">{d.code}</span>
-                        </td>
-                        <td className="py-3 px-3 text-center font-mono font-bold text-slate-800">
-                          {d.students}{' '}
-                          <span className="text-[10px] text-slate-500 font-normal">
-                            ({totalCampusStudents > 0 ? ((d.students / totalCampusStudents) * 100).toFixed(1) : '0'}%)
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 text-center font-mono font-bold text-emerald-700">
-                          {d.active}{' '}
-                          <span className="text-[10px] font-normal text-emerald-600">({activePct}%)</span>
-                        </td>
-                        <td className="py-3 px-3 text-center font-mono font-semibold text-amber-700">
-                          {d.deactive}{' '}
-                          <span className="text-[10px] font-normal text-amber-600">({deactivePct}%)</span>
-                        </td>
-                        <td className="py-3 px-3 text-center font-mono font-semibold text-rose-700">
-                          {d.struckOff}{' '}
-                          <span className="text-[10px] font-normal text-rose-600">({struckOffPct}%)</span>
-                        </td>
-                        <td className="py-3 px-3 text-center font-mono font-bold text-slate-700">{d.faculty}</td>
-                        <td className="py-3 px-3 text-center font-mono font-bold text-[#00236f]">{d.fsr}</td>
-                        <td className="py-3 px-3 text-right">
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[10px] border border-emerald-200">
-                            {d.status}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Footer Buttons */}
-            <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={handleExportReport}
-                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Export Audit (.xlsx)</span>
-              </button>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsEnrollmentDrilldownOpen(false);
-                    onNavigate('manage-students');
-                  }}
-                  className="px-4 py-2 rounded-xl bg-[#00236f] hover:bg-[#001744] text-white font-bold text-xs shadow-xs cursor-pointer"
-                >
-                  Open Full Student Registry →
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsEnrollmentDrilldownOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 cursor-pointer"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
     </div>
   );
 };

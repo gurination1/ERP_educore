@@ -196,9 +196,8 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClos
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded border border-[#00236f] max-w-lg w-full p-5 shadow-2xl space-y-3 font-sans text-[11px] text-[#00236f]">
-        {/* Modal Header */}
+    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-lg bg-white shadow-2xl border-l border-[#00236f]/30 p-6 overflow-y-auto animate-in slide-in-from-right duration-200 space-y-3 font-sans text-[11px] text-[#00236f]">
+        {/* Drawer Header */}
         <div className="flex items-center justify-between border-b border-gray-200 pb-2">
           <div>
             <h3 className="text-[13px] font-bold text-[#00236f]">MULTI-CHANNEL PASSWORD RECOVERY</h3>
@@ -551,7 +550,6 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClos
             )}
           </div>
         )}
-      </div>
     </div>
   );
 };

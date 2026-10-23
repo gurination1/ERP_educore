@@ -296,6 +296,376 @@ This transcript is digitally generated and certified by EduCore Academic ERP.`;
         </div>
       )}
 
+      {/* MODAL: Post New Job */}
+      {showNewJobModal && (
+        <div className="bg-white rounded-2xl border-2 border-[#ea580c]/30 shadow-lg p-5 space-y-3 font-sans text-xs my-4 animate-fadeIn">
+            <div className="flex justify-between items-center border-b pb-2">
+              <span className="font-bold text-[#00236f]">POST CAMPUS RECRUITMENT OPENING</span>
+              <button onClick={() => setShowNewJobModal(false)} className="text-gray-500 hover:text-black">
+                [CLOSE]
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <div>
+                <label className="block font-semibold mb-0.5">JOB / INTERNSHIP TITLE *:</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Associate Cloud Engineer"
+                  value={newJobData.title}
+                  onChange={e => setNewJobData({ ...newJobData, title: e.target.value })}
+                  className="w-full border p-1.5 rounded"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-semibold mb-0.5">TYPE:</label>
+                  <select
+                    value={newJobData.type}
+                    onChange={e => setNewJobData({ ...newJobData, type: e.target.value })}
+                    className="w-full border p-1.5 rounded"
+                  >
+                    <option value="internship">INTERNSHIP</option>
+                    <option value="full_time">FULL-TIME EMPLOYMENT</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-semibold mb-0.5">STIPEND / CTC:</label>
+                  <input
+                    type="text"
+                    value={newJobData.stipend_salary}
+                    onChange={e => setNewJobData({ ...newJobData, stipend_salary: e.target.value })}
+                    className="w-full border p-1.5 rounded"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-semibold mb-0.5">ELIGIBLE DEPTS:</label>
+                  <input
+                    type="text"
+                    value={newJobData.eligible_departments}
+                    onChange={e => setNewJobData({ ...newJobData, eligible_departments: e.target.value })}
+                    className="w-full border p-1.5 rounded"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-0.5">MIN CGPA:</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={newJobData.min_cgpa}
+                    onChange={e => setNewJobData({ ...newJobData, min_cgpa: parseFloat(e.target.value) })}
+                    className="w-full border p-1.5 rounded"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-0.5">DESCRIPTION & SKILLS:</label>
+                <textarea
+                  rows={3}
+                  value={newJobData.description}
+                  onChange={e => setNewJobData({ ...newJobData, description: e.target.value })}
+                  className="w-full border p-1.5 rounded"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 border-t pt-2">
+              <button
+                onClick={() => setShowNewJobModal(false)}
+                className="px-3 py-1 border rounded text-gray-600"
+              >
+                CANCEL
+              </button>
+              <button
+                onClick={handleCreateJob}
+                className="px-3 py-1 bg-[#00236f] text-white font-bold rounded"
+              >
+                PUBLISH OPENING
+              </button>
+            </div>
+          </div>
+      )}
+
+      {/* MODAL: Register New Partner Entity */}
+      {showNewPartnerModal && (
+        <div className="bg-white rounded-2xl border-2 border-[#00236f]/30 shadow-lg p-5 space-y-3 font-sans text-xs my-4 animate-fadeIn">
+            <div className="flex justify-between items-center border-b pb-2">
+              <span className="font-bold text-[#00236f]">REGISTER CORPORATE / HIRING PARTNER</span>
+              <button onClick={() => setShowNewPartnerModal(false)} className="text-gray-500 hover:text-black">
+                [CLOSE]
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block font-semibold mb-0.5">FIRM / ENTITY NAME *:</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Tata Consultancy Services"
+                  value={newPartnerData.firm_name}
+                  onChange={e => setNewPartnerData({ ...newPartnerData, firm_name: e.target.value })}
+                  className="w-full border p-1.5 rounded"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold mb-0.5">PARTNER ENTITY TYPE:</label>
+                <select
+                  value={newPartnerData.partner_type}
+                  onChange={e => setNewPartnerData({ ...newPartnerData, partner_type: e.target.value })}
+                  className="w-full border p-1.5 rounded"
+                >
+                  <option value="Sole Proprietorship">Sole Proprietorship</option>
+                  <option value="Limited Liability Partnership (LLP)">Limited Liability Partnership (LLP)</option>
+                  <option value="Partnership Firm">Partnership Firm</option>
+                  <option value="Private Limited">Private Limited</option>
+                  <option value="Public Limited">Public Limited</option>
+                  <option value="NGO">NGO / Trust</option>
+                  <option value="MNC">Multinational Corporation (MNC)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-0.5">PAN NUMBER *:</label>
+                <input
+                  type="text"
+                  placeholder="AAACT1234F"
+                  value={newPartnerData.pan_number}
+                  onChange={e => setNewPartnerData({ ...newPartnerData, pan_number: e.target.value })}
+                  className="w-full border p-1.5 rounded font-mono"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold mb-0.5">GST NUMBER *:</label>
+                <input
+                  type="text"
+                  placeholder="03AAACT1234F1Z5"
+                  value={newPartnerData.gst_number}
+                  onChange={e => setNewPartnerData({ ...newPartnerData, gst_number: e.target.value })}
+                  className="w-full border p-1.5 rounded font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-0.5">CORPORATE EMAIL *:</label>
+                <input
+                  type="email"
+                  value={newPartnerData.email}
+                  onChange={e => setNewPartnerData({ ...newPartnerData, email: e.target.value })}
+                  className="w-full border p-1.5 rounded"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold mb-0.5">PHONE NUMBER:</label>
+                <input
+                  type="text"
+                  value={newPartnerData.phone}
+                  onChange={e => setNewPartnerData({ ...newPartnerData, phone: e.target.value })}
+                  className="w-full border p-1.5 rounded"
+                />
+              </div>
+
+              <div className="col-span-2">
+                <label className="block font-semibold mb-0.5">REGISTERED ADDRESS:</label>
+                <input
+                  type="text"
+                  value={newPartnerData.address}
+                  onChange={e => setNewPartnerData({ ...newPartnerData, address: e.target.value })}
+                  className="w-full border p-1.5 rounded"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-0.5">LIAISON OFFICER NAME:</label>
+                <input
+                  type="text"
+                  value={newPartnerData.contact_name}
+                  onChange={e => setNewPartnerData({ ...newPartnerData, contact_name: e.target.value })}
+                  className="w-full border p-1.5 rounded"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold mb-0.5">LIAISON PHONE:</label>
+                <input
+                  type="text"
+                  value={newPartnerData.contact_phone}
+                  onChange={e => setNewPartnerData({ ...newPartnerData, contact_phone: e.target.value })}
+                  className="w-full border p-1.5 rounded"
+                />
+              </div>
+
+              <div className="col-span-2 pt-2 border-t mt-1">
+                <span className="font-bold text-[#00236f] block text-[10px] uppercase mb-1">
+                  Corporate Bank Account (Primary Escrow • Multi-Valued Default):
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block font-semibold mb-0.5">BANK NAME:</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. HDFC Bank Ltd"
+                      value={newPartnerData.bank_name}
+                      onChange={e => setNewPartnerData({ ...newPartnerData, bank_name: e.target.value })}
+                      className="w-full border p-1.5 rounded"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-0.5">ACCOUNT NUMBER:</label>
+                    <input
+                      type="text"
+                      placeholder="50200012345678"
+                      value={newPartnerData.account_number}
+                      onChange={e => setNewPartnerData({ ...newPartnerData, account_number: e.target.value })}
+                      className="w-full border p-1.5 rounded font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-0.5">IFSC CODE:</label>
+                    <input
+                      type="text"
+                      placeholder="HDFC0001234"
+                      value={newPartnerData.ifsc_code}
+                      onChange={e => setNewPartnerData({ ...newPartnerData, ifsc_code: e.target.value })}
+                      className="w-full border p-1.5 rounded font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-0.5">BRANCH NAME:</label>
+                    <input
+                      type="text"
+                      placeholder="Industrial Estate Branch"
+                      value={newPartnerData.branch_name}
+                      onChange={e => setNewPartnerData({ ...newPartnerData, branch_name: e.target.value })}
+                      className="w-full border p-1.5 rounded"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 border-t pt-2">
+              <button
+                onClick={() => setShowNewPartnerModal(false)}
+                className="px-3 py-1 border rounded text-gray-600"
+              >
+                CANCEL
+              </button>
+              <button
+                onClick={handleCreatePartner}
+                className="px-3 py-1 bg-[#00236f] text-white font-bold rounded"
+              >
+                REGISTER PARTNER
+              </button>
+            </div>
+          </div>
+      )}
+
+      {/* MODAL: Verified Academic Transcript & Candidate Dossier */}
+      {selectedStudentForTranscript && (
+        <div className="bg-white rounded-2xl border-2 border-[#00236f]/30 max-w-2xl mx-auto p-6 space-y-4 shadow-lg font-sans text-xs my-4 animate-fadeIn">
+            <div className="border-b border-slate-200 pb-3 flex items-center justify-between">
+              <div>
+                <span className="font-mono text-[9px] uppercase tracking-wider text-[#ea580c] font-bold block">
+                  Institutional Registrar Attestation
+                </span>
+                <h3 className="font-extrabold text-sm text-[#00236f]">
+                  Candidate Transcript & Verification Dossier
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedStudentForTranscript(null)}
+                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center font-bold text-xs"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80 space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-black text-sm text-slate-900">{selectedStudentForTranscript.full_name}</h4>
+                  <span className="font-mono text-[10px] text-slate-500">ID: {selectedStudentForTranscript.student_id}</span>
+                </div>
+                <div className="text-right">
+                  <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-extrabold text-xs block">
+                    {selectedStudentForTranscript.cgpa} CGPA
+                  </span>
+                  <span className="text-[9px] text-emerald-700 font-bold">1st Class Honours</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/70 text-[11px]">
+                <div>
+                  <span className="text-slate-400 block text-[9px] font-bold">ACADEMIC PROGRAM</span>
+                  <strong className="text-slate-800">{selectedStudentForTranscript.course_name}</strong>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[9px] font-bold">CURRENT SEMESTER</span>
+                  <strong className="text-slate-800">Semester {selectedStudentForTranscript.current_semester}</strong>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2 text-[11px]">
+              <div className="flex justify-between p-2 rounded bg-white border border-slate-200">
+                <span className="text-slate-600">Matriculation (10th Board):</span>
+                <strong className="text-slate-900">{selectedStudentForTranscript.tenth_percentage}% [Verified Central Board]</strong>
+              </div>
+              <div className="flex justify-between p-2 rounded bg-white border border-slate-200">
+                <span className="text-slate-600">Senior Secondary (12th Board PCM):</span>
+                <strong className="text-slate-900">{selectedStudentForTranscript.twelfth_percentage}% [State Council Domicile]</strong>
+              </div>
+              <div className="flex justify-between p-2 rounded bg-white border border-slate-200">
+                <span className="text-slate-600">Lecture Attendance Rate:</span>
+                <strong className="text-emerald-700">{selectedStudentForTranscript.attendance_percentage}% (Statutory 75% Gate Met)</strong>
+              </div>
+              <div className="flex justify-between p-2 rounded bg-white border border-slate-200">
+                <span className="text-slate-600">Regulatory Vault Verification:</span>
+                <span className="font-bold text-emerald-700">
+                  {selectedStudentForTranscript.documents_verified ? '✓ Attested & Verified' : 'Pending Verification'}
+                </span>
+              </div>
+            </div>
+
+            <div className="p-2.5 bg-blue-50/70 rounded-lg border border-blue-200/60 text-[10px] text-blue-900">
+              <strong>Recruitment Security Seal:</strong> Verified against institutional examination gazette and multi-university ordinance records.
+            </div>
+
+            <div className="flex justify-between items-center gap-2 border-t pt-3">
+              <button
+                type="button"
+                onClick={() => handleDownloadTranscript(selectedStudentForTranscript)}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold text-xs flex items-center gap-1.5 transition"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Download Dossier</span>
+              </button>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedStudentForTranscript(null)}
+                  className="px-3 py-1.5 border border-slate-300 rounded-lg text-slate-600 font-bold hover:bg-slate-100"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDirectShortlist(selectedStudentForTranscript)}
+                  className="px-4 py-1.5 bg-[#00236f] hover:bg-[#001b54] text-white font-bold rounded-lg shadow-xs"
+                >
+                  Shortlist Candidate
+                </button>
+              </div>
+            </div>
+          </div>
+      )}
+
       {/* Navigation Pills */}
       <div className="flex p-1.5 bg-slate-100/90 backdrop-blur-md rounded-2xl border border-black/[0.06] overflow-x-auto gap-1 shadow-2xs">
         {[
@@ -689,381 +1059,7 @@ This transcript is digitally generated and certified by EduCore Academic ERP.`;
         </div>
       )}
 
-      {/* MODAL: Post New Job */}
-      {showNewJobModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded border border-[#00236f] w-full max-w-md p-4 space-y-3 font-sans text-[11px]">
-            <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-bold text-[#00236f]">POST CAMPUS RECRUITMENT OPENING</span>
-              <button onClick={() => setShowNewJobModal(false)} className="text-gray-500 hover:text-black">
-                [CLOSE]
-              </button>
-            </div>
 
-            <div className="space-y-2">
-              <div>
-                <label className="block font-semibold mb-0.5">JOB / INTERNSHIP TITLE *:</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Associate Cloud Engineer"
-                  value={newJobData.title}
-                  onChange={e => setNewJobData({ ...newJobData, title: e.target.value })}
-                  className="w-full border p-1.5 rounded"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-semibold mb-0.5">TYPE:</label>
-                  <select
-                    value={newJobData.type}
-                    onChange={e => setNewJobData({ ...newJobData, type: e.target.value })}
-                    className="w-full border p-1.5 rounded"
-                  >
-                    <option value="internship">INTERNSHIP</option>
-                    <option value="full_time">FULL-TIME EMPLOYMENT</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-semibold mb-0.5">STIPEND / CTC:</label>
-                  <input
-                    type="text"
-                    value={newJobData.stipend_salary}
-                    onChange={e => setNewJobData({ ...newJobData, stipend_salary: e.target.value })}
-                    className="w-full border p-1.5 rounded"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-semibold mb-0.5">ELIGIBLE DEPTS:</label>
-                  <input
-                    type="text"
-                    value={newJobData.eligible_departments}
-                    onChange={e => setNewJobData({ ...newJobData, eligible_departments: e.target.value })}
-                    className="w-full border p-1.5 rounded"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold mb-0.5">MIN CGPA:</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={newJobData.min_cgpa}
-                    onChange={e => setNewJobData({ ...newJobData, min_cgpa: parseFloat(e.target.value) })}
-                    className="w-full border p-1.5 rounded"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-0.5">DESCRIPTION & SKILLS:</label>
-                <textarea
-                  rows={3}
-                  value={newJobData.description}
-                  onChange={e => setNewJobData({ ...newJobData, description: e.target.value })}
-                  className="w-full border p-1.5 rounded"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 border-t pt-2">
-              <button
-                onClick={() => setShowNewJobModal(false)}
-                className="px-3 py-1 border rounded text-gray-600"
-              >
-                CANCEL
-              </button>
-              <button
-                onClick={handleCreateJob}
-                className="px-3 py-1 bg-[#00236f] text-white font-bold rounded"
-              >
-                PUBLISH OPENING
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL: Register New Partner Entity */}
-      {showNewPartnerModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded border border-[#00236f] w-full max-w-lg p-4 space-y-3 font-sans text-[11px]">
-            <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-bold text-[#00236f]">REGISTER CORPORATE / HIRING PARTNER</span>
-              <button onClick={() => setShowNewPartnerModal(false)} className="text-gray-500 hover:text-black">
-                [CLOSE]
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="block font-semibold mb-0.5">FIRM / ENTITY NAME *:</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Tata Consultancy Services"
-                  value={newPartnerData.firm_name}
-                  onChange={e => setNewPartnerData({ ...newPartnerData, firm_name: e.target.value })}
-                  className="w-full border p-1.5 rounded"
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-0.5">PARTNER ENTITY TYPE:</label>
-                <select
-                  value={newPartnerData.partner_type}
-                  onChange={e => setNewPartnerData({ ...newPartnerData, partner_type: e.target.value })}
-                  className="w-full border p-1.5 rounded"
-                >
-                  <option value="Sole Proprietorship">Sole Proprietorship</option>
-                  <option value="Limited Liability Partnership (LLP)">Limited Liability Partnership (LLP)</option>
-                  <option value="Partnership Firm">Partnership Firm</option>
-                  <option value="Private Limited">Private Limited</option>
-                  <option value="Public Limited">Public Limited</option>
-                  <option value="NGO">NGO / Trust</option>
-                  <option value="MNC">Multinational Corporation (MNC)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-0.5">PAN NUMBER *:</label>
-                <input
-                  type="text"
-                  placeholder="AAACT1234F"
-                  value={newPartnerData.pan_number}
-                  onChange={e => setNewPartnerData({ ...newPartnerData, pan_number: e.target.value })}
-                  className="w-full border p-1.5 rounded font-mono"
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-0.5">GST NUMBER *:</label>
-                <input
-                  type="text"
-                  placeholder="03AAACT1234F1Z5"
-                  value={newPartnerData.gst_number}
-                  onChange={e => setNewPartnerData({ ...newPartnerData, gst_number: e.target.value })}
-                  className="w-full border p-1.5 rounded font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-0.5">CORPORATE EMAIL *:</label>
-                <input
-                  type="email"
-                  value={newPartnerData.email}
-                  onChange={e => setNewPartnerData({ ...newPartnerData, email: e.target.value })}
-                  className="w-full border p-1.5 rounded"
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-0.5">PHONE NUMBER:</label>
-                <input
-                  type="text"
-                  value={newPartnerData.phone}
-                  onChange={e => setNewPartnerData({ ...newPartnerData, phone: e.target.value })}
-                  className="w-full border p-1.5 rounded"
-                />
-              </div>
-
-              <div className="col-span-2">
-                <label className="block font-semibold mb-0.5">REGISTERED ADDRESS:</label>
-                <input
-                  type="text"
-                  value={newPartnerData.address}
-                  onChange={e => setNewPartnerData({ ...newPartnerData, address: e.target.value })}
-                  className="w-full border p-1.5 rounded"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-0.5">LIAISON OFFICER NAME:</label>
-                <input
-                  type="text"
-                  value={newPartnerData.contact_name}
-                  onChange={e => setNewPartnerData({ ...newPartnerData, contact_name: e.target.value })}
-                  className="w-full border p-1.5 rounded"
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-0.5">LIAISON PHONE:</label>
-                <input
-                  type="text"
-                  value={newPartnerData.contact_phone}
-                  onChange={e => setNewPartnerData({ ...newPartnerData, contact_phone: e.target.value })}
-                  className="w-full border p-1.5 rounded"
-                />
-              </div>
-
-              <div className="col-span-2 pt-2 border-t mt-1">
-                <span className="font-bold text-[#00236f] block text-[10px] uppercase mb-1">
-                  Corporate Bank Account (Primary Escrow • Multi-Valued Default):
-                </span>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block font-semibold mb-0.5">BANK NAME:</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. HDFC Bank Ltd"
-                      value={newPartnerData.bank_name}
-                      onChange={e => setNewPartnerData({ ...newPartnerData, bank_name: e.target.value })}
-                      className="w-full border p-1.5 rounded"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-semibold mb-0.5">ACCOUNT NUMBER:</label>
-                    <input
-                      type="text"
-                      placeholder="50200012345678"
-                      value={newPartnerData.account_number}
-                      onChange={e => setNewPartnerData({ ...newPartnerData, account_number: e.target.value })}
-                      className="w-full border p-1.5 rounded font-mono"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-semibold mb-0.5">IFSC CODE:</label>
-                    <input
-                      type="text"
-                      placeholder="HDFC0001234"
-                      value={newPartnerData.ifsc_code}
-                      onChange={e => setNewPartnerData({ ...newPartnerData, ifsc_code: e.target.value })}
-                      className="w-full border p-1.5 rounded font-mono"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-semibold mb-0.5">BRANCH NAME:</label>
-                    <input
-                      type="text"
-                      placeholder="Industrial Estate Branch"
-                      value={newPartnerData.branch_name}
-                      onChange={e => setNewPartnerData({ ...newPartnerData, branch_name: e.target.value })}
-                      className="w-full border p-1.5 rounded"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 border-t pt-2">
-              <button
-                onClick={() => setShowNewPartnerModal(false)}
-                className="px-3 py-1 border rounded text-gray-600"
-              >
-                CANCEL
-              </button>
-              <button
-                onClick={handleCreatePartner}
-                className="px-3 py-1 bg-[#00236f] text-white font-bold rounded"
-              >
-                REGISTER PARTNER
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL: Verified Academic Transcript & Candidate Dossier */}
-      {selectedStudentForTranscript && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white rounded-2xl border border-slate-200 max-w-lg w-full p-6 space-y-4 shadow-2xl font-sans text-xs">
-            <div className="border-b border-slate-200 pb-3 flex items-center justify-between">
-              <div>
-                <span className="font-mono text-[9px] uppercase tracking-wider text-[#ea580c] font-bold block">
-                  Institutional Registrar Attestation
-                </span>
-                <h3 className="font-extrabold text-sm text-[#00236f]">
-                  Candidate Transcript & Verification Dossier
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedStudentForTranscript(null)}
-                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center font-bold text-xs"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80 space-y-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-black text-sm text-slate-900">{selectedStudentForTranscript.full_name}</h4>
-                  <span className="font-mono text-[10px] text-slate-500">ID: {selectedStudentForTranscript.student_id}</span>
-                </div>
-                <div className="text-right">
-                  <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-extrabold text-xs block">
-                    {selectedStudentForTranscript.cgpa} CGPA
-                  </span>
-                  <span className="text-[9px] text-emerald-700 font-bold">1st Class Honours</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/70 text-[11px]">
-                <div>
-                  <span className="text-slate-400 block text-[9px] font-bold">ACADEMIC PROGRAM</span>
-                  <strong className="text-slate-800">{selectedStudentForTranscript.course_name}</strong>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[9px] font-bold">CURRENT SEMESTER</span>
-                  <strong className="text-slate-800">Semester {selectedStudentForTranscript.current_semester}</strong>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2 text-[11px]">
-              <div className="flex justify-between p-2 rounded bg-white border border-slate-200">
-                <span className="text-slate-600">Matriculation (10th Board):</span>
-                <strong className="text-slate-900">{selectedStudentForTranscript.tenth_percentage}% [Verified Central Board]</strong>
-              </div>
-              <div className="flex justify-between p-2 rounded bg-white border border-slate-200">
-                <span className="text-slate-600">Senior Secondary (12th Board PCM):</span>
-                <strong className="text-slate-900">{selectedStudentForTranscript.twelfth_percentage}% [State Council Domicile]</strong>
-              </div>
-              <div className="flex justify-between p-2 rounded bg-white border border-slate-200">
-                <span className="text-slate-600">Lecture Attendance Rate:</span>
-                <strong className="text-emerald-700">{selectedStudentForTranscript.attendance_percentage}% (Statutory 75% Gate Met)</strong>
-              </div>
-              <div className="flex justify-between p-2 rounded bg-white border border-slate-200">
-                <span className="text-slate-600">Regulatory Vault Verification:</span>
-                <span className="font-bold text-emerald-700">
-                  {selectedStudentForTranscript.documents_verified ? '✓ Attested & Verified' : 'Pending Verification'}
-                </span>
-              </div>
-            </div>
-
-            <div className="p-2.5 bg-blue-50/70 rounded-lg border border-blue-200/60 text-[10px] text-blue-900">
-              <strong>Recruitment Security Seal:</strong> Verified against institutional examination gazette and multi-university ordinance records.
-            </div>
-
-            <div className="flex justify-between items-center gap-2 border-t pt-3">
-              <button
-                type="button"
-                onClick={() => handleDownloadTranscript(selectedStudentForTranscript)}
-                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold text-xs flex items-center gap-1.5 transition"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Download Dossier</span>
-              </button>
-
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedStudentForTranscript(null)}
-                  className="px-3 py-1.5 border border-slate-300 rounded-lg text-slate-600 font-bold hover:bg-slate-100"
-                >
-                  Close
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDirectShortlist(selectedStudentForTranscript)}
-                  className="px-4 py-1.5 bg-[#00236f] hover:bg-[#001b54] text-white font-bold rounded-lg shadow-xs"
-                >
-                  Shortlist Candidate
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

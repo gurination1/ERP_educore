@@ -287,6 +287,67 @@ Generated at ${new Date().toISOString()} via EduCore Regulatory Compliance Engin
       )}
 
       {/* Grid: Upload Box + Documents Roster */}
+            {/* Inspect Modal */}
+      {selectedDoc && (
+      <div className="bg-white rounded-2xl max-w-2xl mx-auto p-6 shadow-xl border-2 border-[#00236f]/30 space-y-4 my-4 animate-in fade-in">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-[#00236f] text-xs">DOC</span>
+                <div>
+                  <h3 className="text-xs font-bold text-[#00236f]">{selectedDoc.title}</h3>
+                  <p className="text-[10px] text-slate-500 font-mono">{selectedDoc.file_name}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedDoc(null)}
+                className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-500 cursor-pointer"
+              >
+                <span className="font-bold text-[10px]">✕</span>
+              </button>
+            </div>
+
+            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5 text-xs">
+              <div className="flex justify-between">
+                <span className="text-slate-500">Credential Code:</span>
+                <span className="font-mono font-bold text-[#00236f]">{selectedDoc.doc_type_code}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Appointed Faculty:</span>
+                <span className="font-bold">{selectedDoc.owner_name} ({selectedDoc.owner_id})</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Accreditation Status:</span>
+                <span className="font-bold uppercase text-emerald-700">{selectedDoc.status}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Digest:</span>
+                <span className="font-mono text-[10px]">{(selectedDoc.sha256_hash || 'e3b0c44298fc1c14').slice(0, 24)}...</span>
+              </div>
+              {selectedDoc.remarks && (
+                <div className="pt-1.5 border-t border-slate-200">
+                  <span className="text-slate-500 block text-[9px] uppercase font-bold">Audit Remarks:</span>
+                  <p className="mt-0.5 text-slate-800 italic text-[11px]">“{selectedDoc.remarks}”</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button
+                onClick={() => handleDownloadDoc(selectedDoc)}
+                className="px-3 py-1.5 border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-bold text-slate-700 flex items-center gap-1 cursor-pointer"
+              >
+                <span>Download Certified PDF</span>
+              </button>
+              <button
+                onClick={() => setSelectedDoc(null)}
+                className="px-4 py-1.5 bg-[#00236f] text-white rounded-lg text-xs font-bold cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {/* Left Column: Deposit New Faculty Asset */}
         <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs space-y-3">
@@ -492,68 +553,7 @@ Generated at ${new Date().toISOString()} via EduCore Regulatory Compliance Engin
         </div>
       </div>
 
-      {/* Inspect Modal */}
-      {selectedDoc && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl border border-slate-200 space-y-3 animate-scaleUp">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-[#00236f] text-xs">DOC</span>
-                <div>
-                  <h3 className="text-xs font-bold text-[#00236f]">{selectedDoc.title}</h3>
-                  <p className="text-[10px] text-slate-500 font-mono">{selectedDoc.file_name}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setSelectedDoc(null)}
-                className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-500 cursor-pointer"
-              >
-                <span className="font-bold text-[10px]">✕</span>
-              </button>
-            </div>
 
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5 text-xs">
-              <div className="flex justify-between">
-                <span className="text-slate-500">Credential Code:</span>
-                <span className="font-mono font-bold text-[#00236f]">{selectedDoc.doc_type_code}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Appointed Faculty:</span>
-                <span className="font-bold">{selectedDoc.owner_name} ({selectedDoc.owner_id})</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Accreditation Status:</span>
-                <span className="font-bold uppercase text-emerald-700">{selectedDoc.status}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Digest:</span>
-                <span className="font-mono text-[10px]">{(selectedDoc.sha256_hash || 'e3b0c44298fc1c14').slice(0, 24)}...</span>
-              </div>
-              {selectedDoc.remarks && (
-                <div className="pt-1.5 border-t border-slate-200">
-                  <span className="text-slate-500 block text-[9px] uppercase font-bold">Audit Remarks:</span>
-                  <p className="mt-0.5 text-slate-800 italic text-[11px]">“{selectedDoc.remarks}”</p>
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-1">
-              <button
-                onClick={() => handleDownloadDoc(selectedDoc)}
-                className="px-3 py-1.5 border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-bold text-slate-700 flex items-center gap-1 cursor-pointer"
-              >
-                <span>Download Certified PDF</span>
-              </button>
-              <button
-                onClick={() => setSelectedDoc(null)}
-                className="px-4 py-1.5 bg-[#00236f] text-white rounded-lg text-xs font-bold cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

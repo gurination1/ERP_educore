@@ -161,7 +161,7 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
   const docTypes = data?.documentTypes || [];
 
   const content = (
-    <div className={`bg-white rounded-2xl w-full ${isEmbeddedView ? 'min-h-[70vh] border border-slate-200/90 shadow-sm' : 'max-w-4xl h-[85vh] shadow-2xl border border-[#e1e3e4]'} animate-scaleUp flex flex-col overflow-hidden`}>
+    <div className="bg-white rounded-2xl w-full min-h-[70vh] border border-slate-200/90 shadow-sm flex flex-col overflow-hidden animate-fadeIn">
       {/* Header */}
       <div className="px-6 py-4 border-b border-[#e1e3e4] bg-[#f8f9fa] flex items-center justify-between shrink-0">
         <div>
@@ -1064,12 +1064,8 @@ export const MasterTablesModal: React.FC<MasterTablesModalProps> = ({ isOpen, on
     </div>
   );
 
-  if (isEmbeddedView) {
-    return content;
-  }
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+    <div className="w-full my-4 animate-fadeIn">
       {content}
     </div>
   );

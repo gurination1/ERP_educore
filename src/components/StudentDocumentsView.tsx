@@ -288,6 +288,68 @@ Generated at ${new Date().toISOString()} via EduCore Document Vault Engine`;
       )}
 
       {/* Main Grid: Upload Card + Document List */}
+            {/* Inspect Document Modal */}
+      {selectedDoc && (
+      <div className="bg-white rounded-2xl max-w-2xl mx-auto p-6 shadow-xl border-2 border-[#00236f]/30 space-y-4 my-4 animate-in fade-in">
+            <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-[10px]">✓</span>
+                <div>
+                  <h3 className="text-sm font-bold text-[#191c1d]">{selectedDoc.title}</h3>
+                  <p className="text-[10px] text-[#757682] font-mono">{selectedDoc.file_name}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedDoc(null)}
+                className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[#f3f4f5] text-[#757682] cursor-pointer"
+              >
+                <span className="font-bold text-[10px]">✕</span>
+              </button>
+            </div>
+
+            <div className="p-4 bg-[#f8f9fa] rounded-xl border border-[#e1e3e4] space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-[#757682]">Document Code:</span>
+                <span className="font-mono font-bold text-[#00236f]">{selectedDoc.doc_type_code}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#757682]">Candidate / Owner:</span>
+                <span className="font-bold">{selectedDoc.owner_name} ({selectedDoc.owner_id})</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#757682]">Verification Status:</span>
+                <span className="font-bold uppercase text-emerald-700">{selectedDoc.status}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#757682]">Cryptographic Digest:</span>
+                <span className="font-mono text-[10px]">{(selectedDoc.sha256_hash || 'e3b0c44298fc1c14').slice(0, 24)}...</span>
+              </div>
+              {selectedDoc.remarks && (
+                <div className="pt-2 border-t border-[#e1e3e4]">
+                  <span className="text-[#757682] block text-[10px] uppercase font-bold">Attestation Remarks:</span>
+                  <p className="mt-0.5 text-[#191c1d] italic">“{selectedDoc.remarks}”</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                onClick={() => handleDownloadDoc(selectedDoc)}
+                className="px-4 py-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg text-xs font-bold text-[#444651] flex items-center gap-1.5 cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Download Vault Copy</span>
+              </button>
+              <button
+                onClick={() => setSelectedDoc(null)}
+                className="px-4 py-2 bg-[#00236f] text-white rounded-lg text-xs font-bold cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Upload New Document */}
         <div className="bg-white p-5 rounded-2xl border border-[#e1e3e4] shadow-xs space-y-4">
@@ -492,69 +554,7 @@ Generated at ${new Date().toISOString()} via EduCore Document Vault Engine`;
         </div>
       </div>
 
-      {/* Inspect Document Modal */}
-      {selectedDoc && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#e1e3e4] space-y-4 animate-in fade-in zoom-in duration-200">
-            <div className="flex items-center justify-between border-b border-[#f3f4f5] pb-3">
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-[10px]">✓</span>
-                <div>
-                  <h3 className="text-sm font-bold text-[#191c1d]">{selectedDoc.title}</h3>
-                  <p className="text-[10px] text-[#757682] font-mono">{selectedDoc.file_name}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setSelectedDoc(null)}
-                className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[#f3f4f5] text-[#757682] cursor-pointer"
-              >
-                <span className="font-bold text-[10px]">✕</span>
-              </button>
-            </div>
 
-            <div className="p-4 bg-[#f8f9fa] rounded-xl border border-[#e1e3e4] space-y-2 text-xs">
-              <div className="flex justify-between">
-                <span className="text-[#757682]">Document Code:</span>
-                <span className="font-mono font-bold text-[#00236f]">{selectedDoc.doc_type_code}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#757682]">Candidate / Owner:</span>
-                <span className="font-bold">{selectedDoc.owner_name} ({selectedDoc.owner_id})</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#757682]">Verification Status:</span>
-                <span className="font-bold uppercase text-emerald-700">{selectedDoc.status}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#757682]">Cryptographic Digest:</span>
-                <span className="font-mono text-[10px]">{(selectedDoc.sha256_hash || 'e3b0c44298fc1c14').slice(0, 24)}...</span>
-              </div>
-              {selectedDoc.remarks && (
-                <div className="pt-2 border-t border-[#e1e3e4]">
-                  <span className="text-[#757682] block text-[10px] uppercase font-bold">Attestation Remarks:</span>
-                  <p className="mt-0.5 text-[#191c1d] italic">“{selectedDoc.remarks}”</p>
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <button
-                onClick={() => handleDownloadDoc(selectedDoc)}
-                className="px-4 py-2 border border-[#e1e3e4] hover:bg-[#f8f9fa] rounded-lg text-xs font-bold text-[#444651] flex items-center gap-1.5 cursor-pointer"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Download Vault Copy</span>
-              </button>
-              <button
-                onClick={() => setSelectedDoc(null)}
-                className="px-4 py-2 bg-[#00236f] text-white rounded-lg text-xs font-bold cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -476,6 +476,421 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
         </div>
       )}
 
+      {/* ZERO-POPUP INLINE WORKSPACE: REGISTER NEW LEAD */}
+      {showCreateModal && (
+        <div className="bg-white rounded-2xl border-2 border-[#00236f]/30 p-5 shadow-lg space-y-4 animate-fadeIn my-3">
+          <div className="flex justify-between items-center border-b pb-3">
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-[#00236f] block">Lead Ingestion Workspace (Zero Popups)</span>
+              <h3 className="text-sm font-bold text-slate-800">Register New Walk-in / Telephonic Lead</h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowCreateModal(false)}
+              className="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer"
+            >
+              Close Workspace ✕
+            </button>
+          </div>
+
+          <div className="space-y-3 text-[11px]">
+            <div>
+              <label className="block font-semibold mb-1 text-gray-700">CANDIDATE FULL NAME *:</label>
+              <input
+                type="text"
+                placeholder="e.g. Navjot Kaur"
+                value={newEnquiry.student_name}
+                onChange={e => setNewEnquiry({ ...newEnquiry, student_name: e.target.value })}
+                className="w-full border p-2 rounded text-xs"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-semibold mb-1 text-gray-700">MOBILE NUMBER *:</label>
+                <input
+                  type="text"
+                  placeholder="+91 98765 11223"
+                  value={newEnquiry.mobile}
+                  onChange={e => setNewEnquiry({ ...newEnquiry, mobile: e.target.value })}
+                  className="w-full border p-2 rounded font-mono text-xs"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold mb-1 text-gray-700">EMAIL:</label>
+                <input
+                  type="email"
+                  placeholder="student@gmail.com"
+                  value={newEnquiry.email}
+                  onChange={e => setNewEnquiry({ ...newEnquiry, email: e.target.value })}
+                  className="w-full border p-2 rounded text-xs"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-semibold mb-1 text-gray-700">TARGET COURSE / DEGREE:</label>
+              <select
+                value={newEnquiry.selected_course}
+                onChange={e => setNewEnquiry({ ...newEnquiry, selected_course: e.target.value })}
+                className="w-full border p-2 rounded text-xs"
+              >
+                <option value="B.Tech Computer Science & Engineering">B.Tech Computer Science & Engineering</option>
+                <option value="B.Sc (Hons) Agriculture Sciences">B.Sc (Hons) Agriculture Sciences</option>
+                <option value="B.Tech Civil Engineering">B.Tech Civil Engineering</option>
+                <option value="B.Tech Mechanical Engineering">B.Tech Mechanical Engineering</option>
+                <option value="Bachelor of Pharmacy (B.Pharm)">Bachelor of Pharmacy (B.Pharm)</option>
+                <option value="Master of Business Administration (MBA)">Master of Business Administration (MBA)</option>
+              </select>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-semibold mb-1 text-gray-700">FATHER / GUARDIAN NAME:</label>
+                <input
+                  type="text"
+                  value={newEnquiry.father_name}
+                  onChange={e => setNewEnquiry({ ...newEnquiry, father_name: e.target.value })}
+                  className="w-full border p-2 rounded text-xs"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold mb-1 text-gray-700">INITIAL PROBABILITY (%):</label>
+                <input
+                  type="number"
+                  value={newEnquiry.admission_probability}
+                  onChange={e => setNewEnquiry({ ...newEnquiry, admission_probability: parseInt(e.target.value, 10) || 50 })}
+                  className="w-full border p-2 rounded font-bold text-xs"
+                />
+              </div>
+            </div>
+
+            {/* Hostel & Transport Options */}
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+              <span className="font-bold text-slate-800 block text-[10px] uppercase">
+                Residence & Transit Services (Auto Fee Allocation)
+              </span>
+              <div className="flex flex-wrap gap-4">
+                <label className="flex items-center gap-1.5 cursor-pointer font-medium text-slate-700 text-xs">
+                  <input
+                    type="checkbox"
+                    checked={newEnquiry.hostel_required}
+                    onChange={e => {
+                      const val = e.target.checked;
+                      setNewEnquiry(prev => ({ ...prev, hostel_required: val }));
+                      if (val && newEnquiry.transport_required) {
+                        setShowHostelTransportConflictModal(true);
+                      }
+                    }}
+                    className="rounded text-[#00236f]"
+                  />
+                  <span>Hostel Required (ARW/FCW)</span>
+                </label>
+
+                <label className="flex items-center gap-1.5 cursor-pointer font-medium text-slate-700 text-xs">
+                  <input
+                    type="checkbox"
+                    checked={newEnquiry.transport_required}
+                    onChange={e => {
+                      const val = e.target.checked;
+                      setNewEnquiry(prev => ({ ...prev, transport_required: val }));
+                      if (val && newEnquiry.hostel_required) {
+                        setShowHostelTransportConflictModal(true);
+                      }
+                    }}
+                    className="rounded text-[#00236f]"
+                  />
+                  <span>Bus Transport Required</span>
+                </label>
+              </div>
+
+              {/* Inline Conflict Warning */}
+              {showHostelTransportConflictModal && (
+                <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl space-y-2 animate-fadeIn">
+                  <div className="flex items-center gap-2 text-amber-800 font-bold text-xs">
+                    <span>⚠️ Cross-Check Residence & Transport Policy</span>
+                  </div>
+                  <p className="text-slate-700 leading-relaxed text-xs">
+                    <strong>Are you sure the scholar needs both Campus Hostel residence and Institutional Bus Transport?</strong>
+                  </p>
+                  <p className="text-slate-500 text-[11px]">
+                    Typically hostellers reside on-campus without daily transit. Select &apos;Confirm Both&apos; if student is in off-campus leased residence or needs weekend commute.
+                  </p>
+                  <div className="flex justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewEnquiry(prev => ({ ...prev, transport_required: false }));
+                        setShowHostelTransportConflictModal(false);
+                      }}
+                      className="px-3 py-1 bg-white border border-slate-300 rounded-lg text-slate-700 text-xs font-semibold cursor-pointer"
+                    >
+                      Keep Hostel Only
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowHostelTransportConflictModal(false)}
+                      className="px-3 py-1 bg-[#00236f] text-white rounded-lg font-bold text-xs cursor-pointer"
+                    >
+                      Confirm Both Services ✓
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 border-t pt-3">
+            <button
+              type="button"
+              onClick={() => setShowCreateModal(false)}
+              className="px-4 py-2 border border-slate-200 rounded-xl text-slate-700 font-bold text-xs hover:bg-slate-50 cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleCreateEnquiry}
+              className="px-4 py-2 bg-[#00236f] hover:bg-[#001744] text-white font-bold rounded-xl text-xs shadow-xs cursor-pointer"
+            >
+              Save & Register Lead
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ZERO-POPUP INLINE WORKSPACE: TOKEN FEE & CONVERT TO STUDENT */}
+      {showConvertModal && enquiryDetails && (
+        <div className="bg-white rounded-2xl border-2 border-emerald-500/40 p-5 shadow-lg space-y-4 animate-fadeIn my-3">
+          <div className="flex justify-between items-center border-b pb-3">
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 block">Admissions Conversion Desk (Zero Popups)</span>
+              <h3 className="text-sm font-bold text-slate-800">Collect Token Fee & Enroll Scholar: {enquiryDetails.student_name}</h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowConvertModal(false)}
+              className="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer"
+            >
+              Close Desk ✕
+            </button>
+          </div>
+
+          <div className="space-y-3 text-[11px]">
+            <div className="bg-emerald-50 border border-emerald-300 p-3 rounded-xl text-xs text-emerald-900 space-y-1">
+              <span className="font-bold block">[MANDATORY REGISTRATION FEE GATE - LECTURE 4]:</span>
+              <p>
+                Per collegiate statutory ordinances, students must have verified registration token payment before enrollment into the academic registry.
+              </p>
+            </div>
+
+            {/* Verified Fee Receipt Status */}
+            <div className="p-3 rounded-xl border border-blue-200 bg-blue-50/50 space-y-2">
+              <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800 text-xs">
+                <input
+                  type="checkbox"
+                  checked={regFeeVerified}
+                  onChange={e => setRegFeeVerified(e.target.checked)}
+                  className="rounded text-[#00236f]"
+                />
+                <span>Registration Fee Verified at Fee Counter</span>
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div>
+                  <span className="text-slate-500 block font-semibold mb-1">VERIFIED RECEIPT NO:</span>
+                  <input
+                    type="text"
+                    value={regFeeReceiptNo}
+                    onChange={e => setRegFeeReceiptNo(e.target.value)}
+                    className="w-full border p-2 rounded-lg font-mono font-bold text-[#00236f]"
+                  />
+                </div>
+                <div>
+                  <span className="text-slate-500 block font-semibold mb-1">FEE STATUS:</span>
+                  <span className="inline-block mt-1 font-bold text-emerald-700 bg-emerald-100/70 px-2.5 py-1 rounded-lg">
+                    PAID & CLEARED ✓
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-semibold mb-1 text-gray-700">CANDIDATE NAME:</label>
+                <input
+                  type="text"
+                  disabled
+                  value={enquiryDetails.student_name}
+                  className="w-full border p-2 rounded-lg bg-gray-100 text-xs font-semibold"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1 text-gray-700">COURSE:</label>
+                <input
+                  type="text"
+                  disabled
+                  value={enquiryDetails.selected_course}
+                  className="w-full border p-2 rounded-lg bg-gray-100 text-xs font-semibold"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-semibold mb-1 text-gray-700">ADMISSION TOKEN AMOUNT (INR) *:</label>
+                <input
+                  type="number"
+                  value={convertPayment.amount}
+                  onChange={e => setConvertPayment({ ...convertPayment, amount: parseFloat(e.target.value) || 0 })}
+                  className="w-full border p-2 rounded-lg font-mono font-bold text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1 text-gray-700">PAYMENT MODE:</label>
+                <select
+                  value={convertPayment.payment_mode}
+                  onChange={e => setConvertPayment({ ...convertPayment, payment_mode: e.target.value as any })}
+                  className="w-full border p-2 rounded-lg text-xs"
+                >
+                  <option value="online_upi">ONLINE UPI (GPAY/PHONEPE)</option>
+                  <option value="net_banking">NET BANKING / IMPS</option>
+                  <option value="credit_card">CREDIT / DEBIT CARD</option>
+                  <option value="cash">CASH COUNTER</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-semibold mb-1 text-gray-700">TRANSACTION / UTR REFERENCE:</label>
+              <input
+                type="text"
+                value={convertPayment.transaction_ref}
+                onChange={e => setConvertPayment({ ...convertPayment, transaction_ref: e.target.value })}
+                className="w-full border p-2 rounded-lg font-mono text-xs"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 border-t pt-3">
+            <button
+              type="button"
+              onClick={() => setShowConvertModal(false)}
+              className="px-4 py-2 border border-slate-200 rounded-xl text-slate-700 font-bold text-xs hover:bg-slate-50 cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={!regFeeVerified}
+              onClick={handleConvertStudent}
+              className={`px-4 py-2 font-bold rounded-xl text-xs transition cursor-pointer ${
+                regFeeVerified
+                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
+                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+              }`}
+              title={!regFeeVerified ? 'Registration Fee must be verified before student enrollment' : ''}
+            >
+              Clear Fee & Enroll Scholar →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ZERO-POPUP INLINE WORKSPACE: ADMIN ADMISSIONS CONFIGURATION */}
+      {showAdminSettingsModal && (
+        <div className="bg-white rounded-2xl border-2 border-slate-300 p-5 shadow-lg space-y-4 animate-fadeIn my-3">
+          <div className="flex justify-between items-center border-b pb-3">
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-[#00236f] block">Admissions Desk Configuration (Zero Popups)</span>
+              <h3 className="text-sm font-bold text-slate-800">Dialer Policy & Alert Thresholds</h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowAdminSettingsModal(false)}
+              className="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer"
+            >
+              Close Settings ✕
+            </button>
+          </div>
+
+          <div className="space-y-3 text-xs">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">
+                Idle Enquiry Alert Threshold (Days):
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="60"
+                value={inactiveDaysThreshold}
+                onChange={e => setInactiveDaysThreshold(parseInt(e.target.value, 10) || 5)}
+                className="w-full border p-2 rounded-lg font-mono font-bold text-xs"
+              />
+              <span className="text-[11px] text-slate-500">Flags leads with no counselor interaction exceeding this duration.</span>
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">
+                High-Probability Threshold (%):
+              </label>
+              <input
+                type="number"
+                min="50"
+                max="100"
+                value={highProbThreshold}
+                onChange={e => setHighProbThreshold(parseInt(e.target.value, 10) || 75)}
+                className="w-full border p-2 rounded-lg font-mono font-bold text-emerald-700 text-xs"
+              />
+              <span className="text-[11px] text-slate-500">Leads above this percentage cancelled or closed are flagged under Attention Required.</span>
+            </div>
+
+            <div className="p-3 bg-slate-50 border rounded-xl space-y-2">
+              <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800 text-xs">
+                <input
+                  type="checkbox"
+                  checked={requireRegFeeBeforeAdmission}
+                  onChange={e => setRequireRegFeeBeforeAdmission(e.target.checked)}
+                  className="rounded text-[#00236f]"
+                />
+                <span>Mandatory Registration Fee Gate before Enrolling</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800 text-xs">
+                <input
+                  type="checkbox"
+                  checked={requireApprovalForEnquiry}
+                  onChange={e => setRequireApprovalForEnquiry(e.target.checked)}
+                  className="rounded text-[#00236f]"
+                />
+                <span>Level-1 Approver Workflow for Bulk CSV Intake</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800 text-xs">
+                <input
+                  type="checkbox"
+                  checked={voipRecordingEnabled}
+                  onChange={e => setVoipRecordingEnabled(e.target.checked)}
+                  className="rounded text-[#00236f]"
+                />
+                <span>VoIP Telephony Call Recording & Daily Cloud Vault Sync</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 border-t pt-3">
+            <button
+              type="button"
+              onClick={() => setShowAdminSettingsModal(false)}
+              className="px-4 py-2 bg-[#00236f] hover:bg-[#001744] text-white font-bold rounded-xl text-xs cursor-pointer"
+            >
+              Save Settings & Close ✓
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Main Two-Column Layout or KPI Drilldown View */}
       {kpiFilter === 'all' ? (
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -1132,399 +1547,6 @@ export const EnquiriesView: React.FC<EnquiriesViewProps> = ({
           </div>
         )}
       </div>
-      )}
-
-      {/* MODAL: Token Fee & Convert to Student */}
-      {showConvertModal && enquiryDetails && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded border border-[#00236f] w-full max-w-md p-4 space-y-3 font-sans text-[11px]">
-            <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-bold text-[#00236f]">COLLECT TOKEN FEE & ADMIT STUDENT</span>
-              <button onClick={() => setShowConvertModal(false)} className="text-gray-500 hover:text-black">
-                [CLOSE]
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              <div className="bg-emerald-50 border border-emerald-300 p-2.5 rounded text-[10px] text-emerald-900 space-y-1">
-                <span className="font-bold block">[MANDATORY REGISTRATION FEE GATE - LECTURE 4]:</span>
-                <p>
-                  Per collegiate statutory ordinances, students must have verified registration token payment before enrollment.
-                </p>
-              </div>
-
-              {/* Verified Fee Receipt Status */}
-              <div className="p-2.5 rounded border border-blue-200 bg-blue-50/50 space-y-2">
-                <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800 text-[11px]">
-                  <input
-                    type="checkbox"
-                    checked={regFeeVerified}
-                    onChange={e => setRegFeeVerified(e.target.checked)}
-                    className="rounded text-[#00236f]"
-                  />
-                  <span>Registration Fee Verified at Fee Counter</span>
-                </label>
-                <div className="grid grid-cols-2 gap-2 text-[10px]">
-                  <div>
-                    <span className="text-slate-500 block font-semibold">VERIFIED RECEIPT NO:</span>
-                    <input
-                      type="text"
-                      value={regFeeReceiptNo}
-                      onChange={e => setRegFeeReceiptNo(e.target.value)}
-                      className="w-full border p-1 rounded font-mono font-bold text-[#00236f]"
-                    />
-                  </div>
-                  <div>
-                    <span className="text-slate-500 block font-semibold">FEE STATUS:</span>
-                    <span className="inline-block mt-1 font-bold text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded">
-                      PAID & CLEARED ✓
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-0.5 text-gray-700">CANDIDATE NAME:</label>
-                <input
-                  type="text"
-                  disabled
-                  value={enquiryDetails.student_name}
-                  className="w-full border p-1.5 rounded bg-gray-100"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-0.5 text-gray-700">COURSE:</label>
-                <input
-                  type="text"
-                  disabled
-                  value={enquiryDetails.selected_course}
-                  className="w-full border p-1.5 rounded bg-gray-100"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-semibold mb-0.5 text-gray-700">ADMISSION TOKEN AMOUNT (INR) *:</label>
-                  <input
-                    type="number"
-                    value={convertPayment.amount}
-                    onChange={e => setConvertPayment({ ...convertPayment, amount: parseFloat(e.target.value) || 0 })}
-                    className="w-full border p-1.5 rounded font-mono font-bold"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold mb-0.5 text-gray-700">PAYMENT MODE:</label>
-                  <select
-                    value={convertPayment.payment_mode}
-                    onChange={e => setConvertPayment({ ...convertPayment, payment_mode: e.target.value as any })}
-                    className="w-full border p-1.5 rounded"
-                  >
-                    <option value="online_upi">ONLINE UPI (GPAY/PHONEPE)</option>
-                    <option value="net_banking">NET BANKING / IMPS</option>
-                    <option value="credit_card">CREDIT / DEBIT CARD</option>
-                    <option value="cash">CASH COUNTER</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-0.5 text-gray-700">TRANSACTION / UTR REFERENCE:</label>
-                <input
-                  type="text"
-                  value={convertPayment.transaction_ref}
-                  onChange={e => setConvertPayment({ ...convertPayment, transaction_ref: e.target.value })}
-                  className="w-full border p-1.5 rounded font-mono"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 border-t pt-2">
-              <button
-                onClick={() => setShowConvertModal(false)}
-                className="px-3 py-1 border rounded text-gray-600"
-              >
-                CANCEL
-              </button>
-              <button
-                disabled={!regFeeVerified}
-                onClick={handleConvertStudent}
-                className={`px-3 py-1 font-bold rounded transition ${
-                  regFeeVerified
-                    ? 'bg-[#00236f] hover:bg-[#001950] text-white shadow-xs'
-                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                }`}
-                title={!regFeeVerified ? 'Registration Fee must be verified before student enrollment' : ''}
-              >
-                CLEAR FEE & ENROLL SCHOLAR
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL: Create New Single Enquiry (with Hostel & Transport) */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded border border-[#00236f] w-full max-w-md p-4 space-y-3 font-sans text-[11px]">
-            <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-bold text-[#00236f]">REGISTER NEW WALK-IN / TELEPHONIC LEAD</span>
-              <button onClick={() => setShowCreateModal(false)} className="text-gray-500 hover:text-black">
-                [CLOSE]
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              <div>
-                <label className="block font-semibold mb-0.5 text-gray-700">CANDIDATE FULL NAME *:</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Navjot Kaur"
-                  value={newEnquiry.student_name}
-                  onChange={e => setNewEnquiry({ ...newEnquiry, student_name: e.target.value })}
-                  className="w-full border p-1.5 rounded"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-semibold mb-0.5 text-gray-700">MOBILE NUMBER *:</label>
-                  <input
-                    type="text"
-                    placeholder="+91 98765 11223"
-                    value={newEnquiry.mobile}
-                    onChange={e => setNewEnquiry({ ...newEnquiry, mobile: e.target.value })}
-                    className="w-full border p-1.5 rounded font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold mb-0.5 text-gray-700">EMAIL:</label>
-                  <input
-                    type="email"
-                    placeholder="student@gmail.com"
-                    value={newEnquiry.email}
-                    onChange={e => setNewEnquiry({ ...newEnquiry, email: e.target.value })}
-                    className="w-full border p-1.5 rounded"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-0.5 text-gray-700">TARGET COURSE / DEGREE:</label>
-                <select
-                  value={newEnquiry.selected_course}
-                  onChange={e => setNewEnquiry({ ...newEnquiry, selected_course: e.target.value })}
-                  className="w-full border p-1.5 rounded"
-                >
-                  <option value="B.Tech Computer Science & Engineering">B.Tech Computer Science & Engineering</option>
-                  <option value="B.Sc (Hons) Agriculture Sciences">B.Sc (Hons) Agriculture Sciences</option>
-                  <option value="B.Tech Civil Engineering">B.Tech Civil Engineering</option>
-                  <option value="B.Tech Mechanical Engineering">B.Tech Mechanical Engineering</option>
-                  <option value="Bachelor of Pharmacy (B.Pharm)">Bachelor of Pharmacy (B.Pharm)</option>
-                  <option value="Master of Business Administration (MBA)">Master of Business Administration (MBA)</option>
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-semibold mb-0.5 text-gray-700">FATHER / GUARDIAN NAME:</label>
-                  <input
-                    type="text"
-                    value={newEnquiry.father_name}
-                    onChange={e => setNewEnquiry({ ...newEnquiry, father_name: e.target.value })}
-                    className="w-full border p-1.5 rounded"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold mb-0.5 text-gray-700">INITIAL PROBABILITY (%):</label>
-                  <input
-                    type="number"
-                    value={newEnquiry.admission_probability}
-                    onChange={e => setNewEnquiry({ ...newEnquiry, admission_probability: parseInt(e.target.value, 10) || 50 })}
-                    className="w-full border p-1.5 rounded font-bold"
-                  />
-                </div>
-              </div>
-
-              {/* Karanvir Sir Lecture 4: Hostel & Transport Checkboxes */}
-              <div className="p-2.5 bg-slate-50 border border-slate-200 rounded space-y-2">
-                <span className="font-bold text-slate-800 block text-[10px] uppercase">
-                  Residence & Transit Services (Auto Fee Allocation)
-                </span>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-1.5 cursor-pointer font-medium text-slate-700">
-                    <input
-                      type="checkbox"
-                      checked={newEnquiry.hostel_required}
-                      onChange={e => {
-                        const val = e.target.checked;
-                        setNewEnquiry(prev => ({ ...prev, hostel_required: val }));
-                        if (val && newEnquiry.transport_required) {
-                          setShowHostelTransportConflictModal(true);
-                        }
-                      }}
-                      className="rounded text-[#00236f]"
-                    />
-                    <span>Hostel Required (ARW/FCW)</span>
-                  </label>
-
-                  <label className="flex items-center gap-1.5 cursor-pointer font-medium text-slate-700">
-                    <input
-                      type="checkbox"
-                      checked={newEnquiry.transport_required}
-                      onChange={e => {
-                        const val = e.target.checked;
-                        setNewEnquiry(prev => ({ ...prev, transport_required: val }));
-                        if (val && newEnquiry.hostel_required) {
-                          setShowHostelTransportConflictModal(true);
-                        }
-                      }}
-                      className="rounded text-[#00236f]"
-                    />
-                    <span>Bus Transport Required</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 border-t pt-2">
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="px-3 py-1 border rounded text-gray-600"
-              >
-                CANCEL
-              </button>
-              <button
-                onClick={handleCreateEnquiry}
-                className="px-3 py-1 bg-[#00236f] text-white font-bold rounded"
-              >
-                CREATE ENQUIRY
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Karanvir Sir Lecture 4: Cross-Check Alert When Both Hostel & Transport are Selected */}
-      {showHostelTransportConflictModal && (
-        <div className="fixed inset-0 bg-black/60 z-60 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl border border-amber-300 w-full max-w-sm p-4 space-y-3 font-sans text-xs shadow-2xl">
-            <div className="flex items-center gap-2 text-amber-700 font-bold text-sm border-b pb-2">
-              <span>⚠️ Cross-Check Confirmation</span>
-            </div>
-            <p className="text-slate-700 leading-relaxed text-[11px]">
-              <strong>Are you sure the scholar needs both Campus Hostel residence and Institutional Bus Transport?</strong>
-            </p>
-            <p className="text-slate-500 text-[10px]">
-              Typically hostellers reside on-campus without daily transit. Select &apos;Confirm Both&apos; if student is placed in an off-campus leased residence requiring shuttle connectivity or requires weekend home commute.
-            </p>
-            <div className="flex justify-end gap-2 pt-2 border-t">
-              <button
-                onClick={() => {
-                  setNewEnquiry(prev => ({ ...prev, transport_required: false }));
-                  setShowHostelTransportConflictModal(false);
-                }}
-                className="px-3 py-1 border rounded text-slate-600 text-[11px] font-semibold"
-              >
-                Keep Hostel Only
-              </button>
-              <button
-                onClick={() => setShowHostelTransportConflictModal(false)}
-                className="px-3 py-1 bg-[#00236f] text-white rounded font-bold text-[11px]"
-              >
-                Confirm Both Services ✓
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Karanvir Sir Lecture 4: Admin Admissions Configuration Settings Modal */}
-      {showAdminSettingsModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl border border-slate-300 w-full max-w-md p-4 space-y-3 font-sans text-xs shadow-2xl">
-            <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-bold text-[#00236f] text-sm flex items-center gap-1.5">
-                ⚙ Admissions Desk & Dialer Policy Settings
-              </span>
-              <button onClick={() => setShowAdminSettingsModal(false)} className="text-slate-400 hover:text-slate-700 font-bold">✕</button>
-            </div>
-
-            <div className="space-y-3 text-[11px]">
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Idle Enquiry Alert Threshold (Days):
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="60"
-                  value={inactiveDaysThreshold}
-                  onChange={e => setInactiveDaysThreshold(parseInt(e.target.value, 10) || 5)}
-                  className="w-full border p-1.5 rounded font-mono font-bold"
-                />
-                <span className="text-[10px] text-slate-500">Flags leads with no counselor interaction exceeding this duration.</span>
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  High-Probability Threshold (%):
-                </label>
-                <input
-                  type="number"
-                  min="50"
-                  max="100"
-                  value={highProbThreshold}
-                  onChange={e => setHighProbThreshold(parseInt(e.target.value, 10) || 75)}
-                  className="w-full border p-1.5 rounded font-mono font-bold text-emerald-700"
-                />
-                <span className="text-[10px] text-slate-500">Leads above this percentage cancelled or closed are flagged under Attention Required.</span>
-              </div>
-
-              <div className="p-2.5 bg-slate-50 border rounded space-y-2">
-                <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
-                  <input
-                    type="checkbox"
-                    checked={requireRegFeeBeforeAdmission}
-                    onChange={e => setRequireRegFeeBeforeAdmission(e.target.checked)}
-                    className="rounded text-[#00236f]"
-                  />
-                  <span>Mandatory Registration Fee Gate before Enrolling</span>
-                </label>
-
-                <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
-                  <input
-                    type="checkbox"
-                    checked={requireApprovalForEnquiry}
-                    onChange={e => setRequireApprovalForEnquiry(e.target.checked)}
-                    className="rounded text-[#00236f]"
-                  />
-                  <span>Level-1 Approver Workflow for Bulk CSV Intake</span>
-                </label>
-
-                <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
-                  <input
-                    type="checkbox"
-                    checked={voipRecordingEnabled}
-                    onChange={e => setVoipRecordingEnabled(e.target.checked)}
-                    className="rounded text-[#00236f]"
-                  />
-                  <span>VoIP Telephony Call Recording & Daily Cloud Vault Sync</span>
-                </label>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 border-t pt-2">
-              <button
-                onClick={() => setShowAdminSettingsModal(false)}
-                className="px-3 py-1 bg-[#00236f] text-white font-bold rounded text-xs"
-              >
-                Save Settings ✓
-              </button>
-            </div>
-          </div>
-        </div>
       )}
 
       {/* FLOATING TELEPHONY VOIP CALL DOCK (Recording 161 & Lecture 4 Segment 3) */}

@@ -60,8 +60,7 @@ export const AICopilotModal: React.FC<AICopilotModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-[#e1e3e4] overflow-hidden animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-xl bg-white shadow-2xl border-l border-slate-200 flex flex-col overflow-hidden animate-in slide-in-from-right duration-200">
         {/* Header */}
         <div className={`px-6 py-4 border-b border-[#e1e3e4] flex items-center justify-between text-white ${
           isStudent
@@ -236,7 +235,6 @@ export const AICopilotModal: React.FC<AICopilotModalProps> = ({
             Close
           </button>
         </div>
-      </div>
     </div>
   );
 };
