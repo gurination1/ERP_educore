@@ -2,6 +2,7 @@
 // Complete Exhaustive Multi-Role Cloud Adapter for GitHub Pages & Supabase PostgreSQL
 
 import { supabase, isGitHubPages } from './supabaseClient';
+import { normalizeToCanonicalUID } from '../utils/uid';
 
 export interface AdapterResponse<T = any> {
   success: boolean;
@@ -156,47 +157,192 @@ export async function handleSupabaseRequest<T = any>(
     if (pathname === '/api/auth/login' && method === 'POST') {
       const rawInput = (body.username || '').trim();
       const username = rawInput.toLowerCase();
-      const unhyphenated = username.replace(/-/g, '');
+      const unhyphenated = username.replace(/[^0-9a-z_]/g, '');
       const reqRole = body.role;
 
+      // Canonical 10-Role Demo Accounts (always available in client mode)
+      const CANONICAL_FALLBACK_USERS: Record<string, any> = {
+        student: {
+          id: 'usr-stu-aryan',
+          username: 'aryan',
+          email: 'aryan@educore.edu',
+          role: 'student',
+          full_name: 'Aryan Sharma',
+          department: 'Computer Science & Engineering',
+          designation: 'Undergraduate Scholar',
+          enterprise_uid: '10126010001',
+          is_active: true,
+        },
+        staff: {
+          id: 'usr-staff-01',
+          username: 'staff01',
+          email: 'staff@educore.edu',
+          role: 'staff',
+          full_name: 'Dr. Gurinder Singh',
+          department: 'Computer Science & Engineering',
+          designation: 'Associate Professor',
+          enterprise_uid: '10126020014',
+          is_active: true,
+        },
+        hod: {
+          id: 'usr-hod-01',
+          username: 'hod_cse',
+          email: 'hod.cse@educore.edu',
+          role: 'hod',
+          full_name: 'Dr. Rajesh Kumar',
+          department: 'Computer Science & Engineering',
+          designation: 'Head of Department',
+          enterprise_uid: '10126030001',
+          is_active: true,
+        },
+        admin: {
+          id: 'usr-admin-01',
+          username: 'admin',
+          email: 'admin@educore.edu',
+          role: 'admin',
+          full_name: 'Dr. Manish Gupta',
+          department: 'Academic Directorate',
+          designation: 'Campus Director & Dean',
+          enterprise_uid: '10126040001',
+          is_active: true,
+        },
+        accounts: {
+          id: 'usr-accounts-01',
+          username: 'accounts01',
+          email: 'accounts@educore.edu',
+          role: 'accounts',
+          full_name: 'CA Harpreet Kaur',
+          department: 'Finance & Accounts Office',
+          designation: 'Chief Accounts Officer',
+          enterprise_uid: '10126050001',
+          is_active: true,
+        },
+        counselor: {
+          id: 'usr-counselor-01',
+          username: 'counselor01',
+          email: 'counselor@educore.edu',
+          role: 'counselor',
+          full_name: 'Smt. Neetu Sharma',
+          department: 'Admissions & Outreach Cell',
+          designation: 'Senior Admissions Counselor',
+          enterprise_uid: '10126060001',
+          is_active: true,
+        },
+        partner: {
+          id: 'usr-partner-01',
+          username: 'partner01',
+          email: 'partner@educore.edu',
+          role: 'partner',
+          full_name: 'Infosys Campus Connect',
+          department: 'Training & Placements',
+          designation: 'Placement Officer',
+          enterprise_uid: '10126070001',
+          is_active: true,
+        },
+        hr: {
+          id: 'usr-hr-01',
+          username: 'hr01',
+          email: 'hr@educore.edu',
+          role: 'hr',
+          full_name: 'Sh. Vikramjit Singh',
+          department: 'Human Resources & Establishment',
+          designation: 'Chief HR Officer',
+          enterprise_uid: '10126080001',
+          is_active: true,
+        },
+        super_admin: {
+          id: 'usr-super-01',
+          username: 'superadmin',
+          email: 'superadmin@educore.edu',
+          role: 'super_admin',
+          full_name: 'Prof. Gurinder Dhillon',
+          department: 'Executive Board',
+          designation: 'Provost & Managing Director',
+          enterprise_uid: '10126090001',
+          is_active: true,
+        },
+        hostel: {
+          id: 'usr-warden-01',
+          username: 'warden.baljinder',
+          email: 'warden@bfgi.edu.in',
+          role: 'hostel',
+          full_name: 'Warden Baljinder Singh',
+          department: 'Campus Residences & Hostels',
+          designation: 'Chief Hostel Warden & Residence Officer',
+          enterprise_uid: '10126100001',
+          is_active: true,
+        },
+      };
+
       // 1. Broad query against users in Supabase
-      const { data: allUsers, error } = await supabase.from('users').select('*');
+      let allUsers: any[] = [];
+      try {
+        const { data } = await supabase.from('users').select('*');
+        if (data && data.length > 0) allUsers = data;
+      } catch (err) {
+        console.warn('Supabase fetch users failed, falling back to canonical defaults', err);
+      }
       
       let matchedUser = null;
-      if (allUsers && allUsers.length > 0) {
+      if (allUsers.length > 0) {
         matchedUser = allUsers.find((u: any) => {
           const uUid = (u.enterprise_uid || '').toLowerCase();
-          const uUidClean = uUid.replace(/-/g, '');
+          const uUidClean = uUid.replace(/[^0-9a-z_]/g, '');
+          const uCanonical = normalizeToCanonicalUID(u.enterprise_uid, u.role).toLowerCase();
           const uName = (u.username || '').toLowerCase();
           const uEmail = (u.email || '').toLowerCase();
           const uEmp = (u.employee_id || '').toLowerCase();
           return (
             uUid === username ||
             uUidClean === unhyphenated ||
+            uCanonical === unhyphenated ||
             uName === username ||
             uEmail === username ||
             uEmp === username ||
-            (reqRole && u.role === reqRole && (username.includes(reqRole) || !username))
+            (reqRole && u.role === reqRole && (username.includes(reqRole) || !username || unhyphenated.includes(uCanonical)))
           );
         });
       }
 
+      // If not matched in remote Supabase table, match against canonical accounts
       if (!matchedUser) {
-        if (reqRole === 'hostel' || username.includes('warden') || username.includes('hostel')) {
-          matchedUser = {
-            id: 'usr-warden-01',
-            username: 'warden.baljinder',
-            email: 'warden@bfgi.edu.in',
-            role: 'hostel',
-            full_name: 'Warden Baljinder Singh',
-            department: 'Campus Residences & Hostels',
-            designation: 'Chief Hostel Warden & Residence Officer',
-            enterprise_uid: '10126100001',
-            is_active: true,
+        // Match by UID, username, email, or role
+        const fallbackList = Object.values(CANONICAL_FALLBACK_USERS);
+        matchedUser = fallbackList.find(u => {
+          const uUidClean = u.enterprise_uid.replace(/[^0-9a-z_]/g, '');
+          return (
+            u.enterprise_uid === unhyphenated ||
+            uUidClean === unhyphenated ||
+            u.username === username ||
+            u.email === username ||
+            (reqRole && u.role === reqRole)
+          );
+        });
+
+        // Or infer role from 11-digit canonical UID structure (1-01-26-XX-XXXX)
+        if (!matchedUser && unhyphenated.length === 11 && unhyphenated.startsWith('10126')) {
+          const roleCode = unhyphenated.slice(5, 7);
+          const roleMap: Record<string, string> = {
+            '01': 'student',
+            '02': 'staff',
+            '03': 'hod',
+            '04': 'admin',
+            '05': 'accounts',
+            '06': 'counselor',
+            '07': 'partner',
+            '08': 'hr',
+            '09': 'super_admin',
+            '10': 'hostel',
           };
-        } else {
-          return { success: false, error: 'User not found in Supabase database. Please check your UID / username.' };
+          const mappedRole = roleMap[roleCode];
+          if (mappedRole && CANONICAL_FALLBACK_USERS[mappedRole]) {
+            matchedUser = CANONICAL_FALLBACK_USERS[mappedRole];
+          }
         }
+      }
+
+      if (!matchedUser) {
+        return { success: false, error: 'User not found in Supabase database. Please check your UID / username.' };
       }
 
       const user = matchedUser;
@@ -209,7 +355,7 @@ export async function handleSupabaseRequest<T = any>(
         avatar_url: user.avatar_url,
         is_active: user.is_active,
         must_change_password: user.must_change_password || false,
-        enterprise_uid: user.enterprise_uid || user.username,
+        enterprise_uid: normalizeToCanonicalUID(user.enterprise_uid, user.role),
         department: user.department,
         designation: user.designation,
       };
@@ -252,6 +398,7 @@ export async function handleSupabaseRequest<T = any>(
       if (stored) {
         try {
           const user = JSON.parse(stored);
+          user.enterprise_uid = normalizeToCanonicalUID(user.enterprise_uid, user.role);
           let student = null;
           if (user.role === 'student') {
             const { data: stus } = await supabase
