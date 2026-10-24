@@ -1029,7 +1029,7 @@ export const TransportManagementView: React.FC<TransportManagementViewProps> = (
                   onChange={e => {
                     setAllocatingRouteId(e.target.value);
                     const r = routes.find(rt => rt.id === e.target.value);
-                    if (r && r.stops.length > 0) {
+                    if (r && Array.isArray(r.stops) && r.stops.length > 0) {
                       setAllocatingStop(r.stops[0].stop_name);
                     }
                   }}

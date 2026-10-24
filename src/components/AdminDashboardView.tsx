@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
-import { ActiveScreen } from '../types';
+import { ActiveScreen, User } from '../types';
 import { X, Download, Users, CheckCircle2, AlertTriangle, ArrowRight, Building2, Bus, LifeBuoy, Search, Check } from 'lucide-react';
 
 interface AdminDashboardViewProps {
+  currentUser?: User | null;
   onNavigate: (screen: ActiveScreen) => void;
   onOpenEmailReminders?: () => void;
   onOpenMasterTables?: (tab?: any) => void;
@@ -12,6 +13,7 @@ interface AdminDashboardViewProps {
 }
 
 export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
+  currentUser,
   onNavigate,
   onOpenEmailReminders,
   onOpenMasterTables,
@@ -278,14 +280,16 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="font-extrabold text-base text-[#00236f] tracking-tight">
-                Institutional Executive Governance Cockpit
+                {currentUser?.tenant_name ? `${currentUser.tenant_name} Executive Cockpit` : 'Institutional Executive Governance Cockpit'}
               </h2>
               <span className="bg-blue-50 text-[#00236f] border border-blue-200/80 font-mono text-[11px] font-bold px-2 py-0.5 rounded-md">
-                CAMPUS PROVOST 4001
+                {currentUser?.client_code ? `CLIENT: ${currentUser.client_code}` : 'CAMPUS PROVOST 4001'}
               </span>
             </div>
             <p className="text-slate-500 text-[11px]">
-              Accreditation compliance, faculty workload hierarchy, 75% attendance gate, and academic topology
+              {currentUser?.tenant_name
+                ? `Dedicated Database Schema: ${currentUser.subdomain || 'db_inst'} • Principal: ${currentUser.email || 'director@college.edu'}`
+                : 'Accreditation compliance, faculty workload hierarchy, 75% attendance gate, and academic topology'}
             </p>
           </div>
         </div>

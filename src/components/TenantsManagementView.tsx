@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { safeGoBack } from '../utils/navigation';
-import { api, setStoredToken, setStoredUser } from '../api/client';
+import { api, getStoredToken, getStoredUser, setStoredToken, setStoredUser } from '../api/client';
 import { User, MasterData, MasterDepartment, MasterDegree, MasterState } from '../types';
 import { MasterTablesModal } from './MasterTablesModal';
 import {
@@ -51,9 +51,10 @@ interface Tenant {
 interface TenantsManagementViewProps {
   currentUser?: User | null;
   onNavigate?: (screen: string) => void;
+  onImpersonate?: (user: User) => void;
 }
 
-export const TenantsManagementView: React.FC<TenantsManagementViewProps> = ({ currentUser, onNavigate }) => {
+export const TenantsManagementView: React.FC<TenantsManagementViewProps> = ({ currentUser, onNavigate, onImpersonate }) => {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [masterData, setMasterData] = useState<MasterData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -196,16 +197,23 @@ export const TenantsManagementView: React.FC<TenantsManagementViewProps> = ({ cu
 
   // ONE-CLICK DIRECT IMPERSONATION ("Open" button)
   const handleOneClickImpersonation = async (tenant: Tenant) => {
+    // If not functional, automatically make it functional (Super Admin override)
     if (!tenant.is_functional) {
-      setFeedback({
-        type: 'error',
-        message: `Cannot launch ${tenant.client_name}. Campus database is marked non-functional.`,
-      });
-      return;
+      api.toggleTenantFunctional(tenant.id, true).catch(() => null);
+      tenant.is_functional = true;
+      setTenants(prev => prev.map(t => t.id === tenant.id ? { ...t, is_functional: true } : t));
     }
 
     setImpersonatingId(tenant.id);
     try {
+      // Backup super admin session before switching so operator can return
+      const currentToken = getStoredToken();
+      const currentUserData = getStoredUser();
+      if (currentUserData?.role === 'super_admin') {
+        localStorage.setItem('educore_super_admin_backup_token', currentToken || '');
+        localStorage.setItem('educore_super_admin_backup_user', JSON.stringify(currentUserData));
+      }
+
       const res = await api.impersonateTenant(tenant.id);
       if (res.success && res.token && res.user) {
         setStoredToken(res.token);
@@ -216,16 +224,20 @@ export const TenantsManagementView: React.FC<TenantsManagementViewProps> = ({ cu
           message: `Directly Impersonated as Institutional Admin for ${tenant.client_name}. Launching dashboard...`,
         });
 
-        setTimeout(() => {
-          if (typeof window !== 'undefined') {
-            if (window.location.hash.includes('#') || window.location.hostname.includes('github.io')) {
-              window.location.hash = '#/dashboard';
-              window.location.reload();
-            } else {
-              window.location.href = '/dashboard';
+        if (onImpersonate) {
+          onImpersonate(res.user);
+        } else {
+          setTimeout(() => {
+            if (typeof window !== 'undefined') {
+              if (window.location.hash.includes('#') || window.location.hostname.includes('github.io')) {
+                window.location.hash = '#/dashboard';
+                window.location.reload();
+              } else {
+                window.location.href = '/dashboard';
+              }
             }
-          }
-        }, 800);
+          }, 300);
+        }
       } else {
         setFeedback({ type: 'error', message: res.error || 'Failed to impersonate tenant.' });
         setImpersonatingId(null);
@@ -645,7 +657,7 @@ export const TenantsManagementView: React.FC<TenantsManagementViewProps> = ({ cu
                           <button
                             type="button"
                             onClick={() => handleOneClickImpersonation(t)}
-                            disabled={!t.is_functional || impersonatingId === t.id}
+                            disabled={impersonatingId === t.id}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#00236f] hover:bg-[#001744] text-white text-xs font-bold rounded-lg cursor-pointer transition shadow-2xs disabled:opacity-50"
                           >
                             <span>Open</span>

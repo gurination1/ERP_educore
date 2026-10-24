@@ -29,8 +29,10 @@ export class ErrorBoundary extends Component<Props, State> {
 
   private handleReset = () => {
     this.setState({ hasError: false, error: null, errorInfo: null });
-    window.location.hash = '#/dashboard';
-    window.location.reload();
+    if (typeof window !== 'undefined') {
+      window.location.hash = '#/dashboard';
+      window.location.reload();
+    }
   };
 
   private handleClearAndHome = () => {
@@ -39,8 +41,10 @@ export class ErrorBoundary extends Component<Props, State> {
       sessionStorage.clear();
     } catch (e) {}
     this.setState({ hasError: false, error: null, errorInfo: null });
-    window.location.hash = '#/login';
-    window.location.reload();
+    if (typeof window !== 'undefined') {
+      window.location.hash = '#/';
+      window.location.reload();
+    }
   };
 
   public render() {

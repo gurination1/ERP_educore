@@ -151,7 +151,7 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
         if (cat.category !== category) return cat;
         return {
           ...cat,
-          rights: cat.rights.map(r => r.key === rightKey ? { ...r, enabled: !r.enabled } : r),
+          rights: (cat.rights || []).map(r => r.key === rightKey ? { ...r, enabled: !r.enabled } : r),
         };
       })
     );
@@ -1096,7 +1096,7 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
                   </div>
 
                   <div className="space-y-2 text-xs">
-                    {cat.rights.map(r => (
+                    {(cat.rights || []).map(r => (
                       <label key={r.key} className="flex items-start gap-2 cursor-pointer p-1.5 rounded-lg hover:bg-white transition-colors">
                         <input
                           type="checkbox"

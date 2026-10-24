@@ -549,14 +549,14 @@ COURSE SYNOPSIS:
 ${course.description}
 
 CURRICULUM UNITS & BREAKDOWN:
-${course.units.map(u => `
-${u.unitNo}: ${u.title} (${u.hours} Lecture Hours)
+${(course.units || []).map(u => `
+${u.unitNo || 'Unit'}: ${u.title || 'Curriculum Module'} (${u.hours || 10} Lecture Hours)
 --------------------------------------------------------------------------------
-${u.topics.map((t, idx) => `  ${idx + 1}. ${t}`).join('\n')}
+${(u.topics || []).map((t: string, idx: number) => `  ${idx + 1}. ${t}`).join('\n')}
 `).join('\n')}
 
 PRESCRIBED TEXTBOOKS & STATUTORY REFERENCES:
-${course.textbooks.map((b, idx) => `  [${idx + 1}] ${b}`).join('\n')}
+${(course.textbooks || []).map((b: string, idx: number) => `  [${idx + 1}] ${b}`).join('\n')}
 
 EVALUATION SCHEME:
   - Mid-Semester Tests (MST-1 & MST-2): 48 Marks

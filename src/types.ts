@@ -15,6 +15,11 @@ export interface User {
   must_change_password?: boolean;
   campus_id?: 'campus_01' | 'campus_02' | string;
   created_at?: string;
+  tenant_id?: string;
+  tenant_name?: string;
+  client_code?: string;
+  subdomain?: string;
+  is_impersonating?: boolean;
 }
 
 export interface Campus {

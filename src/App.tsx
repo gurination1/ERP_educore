@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, HashRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { User, StudentProfile, NoticeItem, UserRole, ActiveScreen } from './types';
-import { api, getStoredToken, setStoredToken, removeStoredToken, setStoredUser } from './api/client';
+import { api, getStoredToken, setStoredToken, removeStoredToken, setStoredUser, exitImpersonation } from './api/client';
 import { isGitHubPages } from './api/supabaseClient';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
@@ -60,6 +60,7 @@ interface LayoutProps {
   onOpenAdmitCard?: () => void;
   selectedCampus?: 'campus_01' | 'campus_02' | 'all';
   onCampusChange?: (campus: 'campus_01' | 'campus_02' | 'all') => void;
+  onExitImpersonation?: () => void;
   children: React.ReactNode;
 }
 
@@ -74,6 +75,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
   onOpenAdmitCard: propOnOpenAdmitCard,
   selectedCampus: propSelectedCampus,
   onCampusChange: propOnCampusChange,
+  onExitImpersonation,
   children,
 }) => {
   const { selectedCampus: ctxCampus, setSelectedCampus: ctxSetCampus } = useCampus();
@@ -81,6 +83,18 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
   const onCampusChange = propOnCampusChange || ctxSetCampus;
   const navigate = useNavigate();
   const location = useLocation();
+
+  const handleDefaultExitImpersonation = () => {
+    if (onExitImpersonation) {
+      onExitImpersonation();
+    } else {
+      const backupUser = exitImpersonation();
+      if (typeof window !== 'undefined') {
+        window.location.hash = '#/dashboard';
+        window.location.reload();
+      }
+    }
+  };
   const [showCopilot, setShowCopilot] = useState(false);
   const [internalShowAuditLogs, setInternalShowAuditLogs] = useState(false);
   const [internalShowMasterTables, setInternalShowMasterTables] = useState(false);
@@ -341,6 +355,7 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
         onOpenPayModal={handleOpenPay}
         selectedCampus={selectedCampus}
         onCampusChange={onCampusChange}
+        onExitImpersonation={handleDefaultExitImpersonation}
       />
 
       <main className="flex-1 min-w-0 w-full max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4 pb-12">
@@ -444,18 +459,20 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
           </div>
         )}
 
-        {searchQuery && searchQuery.trim().length > 0 ? (
-          <InlineSearchCanvas
-            searchQuery={searchQuery}
-            onClose={() => {
-              if (onSearchChange) onSearchChange('');
-            }}
-            onNavigate={handleNavigate}
-            selectedCampus={selectedCampus}
-          />
-        ) : (
-          children
-        )}
+        <ErrorBoundary>
+          {searchQuery && searchQuery.trim().length > 0 ? (
+            <InlineSearchCanvas
+              searchQuery={searchQuery}
+              onClose={() => {
+                if (onSearchChange) onSearchChange('');
+              }}
+              onNavigate={handleNavigate}
+              selectedCampus={selectedCampus}
+            />
+          ) : (
+            children
+          )}
+        </ErrorBoundary>
       </main>
 
       {/* Persistent CTI Telephony Dock */}
@@ -612,6 +629,24 @@ function MainApp() {
     navigate(wasAdmin ? '/admin' : '/', { replace: true });
   };
 
+  const handleExitImpersonation = () => {
+    const backupUser = exitImpersonation();
+    if (backupUser) {
+      setCurrentUser(backupUser);
+      navigate('/dashboard', { replace: true });
+    } else {
+      if (typeof window !== 'undefined') {
+        window.location.hash = '#/dashboard';
+        window.location.reload();
+      }
+    }
+  };
+
+  const handleImpersonate = (impersonatedUser: User) => {
+    setCurrentUser(impersonatedUser);
+    navigate('/dashboard', { replace: true });
+  };
+
   const handleScreenNavigate = (target: string) => {
     const [pathPart, queryPart] = String(target).split('?');
     const qs = queryPart ? `?${queryPart}` : '';
@@ -707,6 +742,7 @@ function MainApp() {
                 onOpenAuditLogs={handleOpenAuditLogs}
                 selectedCampus={selectedCampus}
                 onCampusChange={setSelectedCampus}
+                onExitImpersonation={handleExitImpersonation}
                 onOpenPayModal={() => {
                   setTargetPayFeeId(undefined);
                   setTargetPayStudent(currentStudent);
@@ -721,9 +757,11 @@ function MainApp() {
                     onOpenMasterTables={handleOpenMasterTables}
                     onOpenAuditLogs={handleOpenAuditLogs}
                     selectedCampus={selectedCampus}
+                    onImpersonate={handleImpersonate}
                   />
                 ) : currentUser.role === 'admin' ? (
                   <AdminDashboardView
+                    currentUser={currentUser}
                     selectedCampus={selectedCampus}
                     onSelectCampus={setSelectedCampus}
                     onNavigate={handleScreenNavigate}
@@ -1456,10 +1494,12 @@ function MainApp() {
                 onLogout={handleLogout}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
+                onExitImpersonation={handleExitImpersonation}
               >
                 <TenantsManagementView
                   currentUser={currentUser}
                   onNavigate={handleScreenNavigate}
+                  onImpersonate={handleImpersonate}
                 />
               </AuthenticatedLayout>
             )

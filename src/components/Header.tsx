@@ -2,13 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { User, ActiveScreen } from '../types';
 import { useCampus } from '../context/CampusContext';
 import {
-  Shield, Building2, ChevronDown, Check, User as UserIcon, KeyRound, LogOut, Globe, Menu, X,
+  Shield, Building2, ChevronDown, Check, User as UserIcon, KeyRound, LogOut, Globe, Menu, X, ArrowLeft,
   LayoutDashboard, UserPlus, Receipt, GraduationCap, BookOpen, Briefcase, Building,
   PhoneCall, DollarSign, AlertCircle, FileText, FolderCheck, Users, BarChart3,
   FileCheck, Brain, HelpCircle, Bed, Clock, UtensilsCrossed, Bus, UserCheck,
   Crown, ShieldCheck, Database, History, Activity, Sparkles, CheckSquare, FileSpreadsheet
 } from 'lucide-react';
-import { api, setStoredToken, setStoredUser } from '../api/client';
+import { api, setStoredToken, setStoredUser, exitImpersonation } from '../api/client';
 import { normalizeToCanonicalUID } from '../utils/uid';
 import { UserProfileModal } from './UserProfileModal';
 
@@ -35,6 +35,7 @@ interface HeaderProps {
   onToggleViewMode?: () => void;
   selectedCampus?: 'campus_01' | 'campus_02' | 'all';
   onCampusChange?: (campus: 'campus_01' | 'campus_02' | 'all') => void;
+  onExitImpersonation?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -58,6 +59,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenPayModal,
   selectedCampus: externalSelectedCampus = 'campus_01',
   onCampusChange,
+  onExitImpersonation,
 }) => {
   const isSuperAdmin = currentUser?.role === 'super_admin';
   const isAdmin = currentUser?.role === 'admin' || isSuperAdmin;
@@ -1298,8 +1300,49 @@ export const Header: React.FC<HeaderProps> = ({
     ];
   }
 
+  const handleExitImpersonation = () => {
+    if (onExitImpersonation) {
+      onExitImpersonation();
+    } else {
+      exitImpersonation();
+      if (typeof window !== 'undefined') {
+        window.location.hash = '#/dashboard';
+        window.location.reload();
+      }
+    }
+  };
+
   return (
     <header className="sticky top-0 z-50 select-none font-sans" ref={navRef}>
+      {/* IMPERSONATION NOTIFICATION BANNER (Karanvir Sir Lecture 3 Mandate: Super Admin Direct Console) */}
+      {currentUser?.is_impersonating && (
+        <div id="impersonation-active-banner" className="bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 text-slate-950 px-3 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2 text-xs font-bold border-b border-amber-500 shadow-sm animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse shrink-0" />
+            <KeyRound className="w-4 h-4 text-slate-950 shrink-0" />
+            <span>
+              Super Admin Direct Impersonation:{' '}
+              <span className="font-black underline">{currentUser.tenant_name || 'Institutional College'}</span>
+              {currentUser.client_code && (
+                <span className="ml-1.5 px-1.5 py-0.5 bg-black/15 text-slate-950 rounded text-[10px] font-mono font-black">
+                  {currentUser.client_code}
+                </span>
+              )}
+            </span>
+            <span className="hidden md:inline text-[11px] opacity-85 font-semibold">
+              — Active in Principal / Director console without credentials
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handleExitImpersonation}
+            className="px-3 py-1 bg-slate-950 hover:bg-black text-amber-300 rounded-lg text-[11px] font-black transition cursor-pointer shadow-xs flex items-center gap-1.5"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 text-amber-300" />
+            <span>Exit Impersonation & Return to Cockpit</span>
+          </button>
+        </div>
+      )}
       {headerToast && (
         <div id="header-action-toast" className="bg-emerald-600 text-white px-4 py-1.5 text-center text-xs font-semibold animate-fadeIn shadow-md">
           {headerToast}
@@ -1327,7 +1370,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
               </div>
               <span className="text-[10px] font-medium text-slate-300/80 leading-tight mt-0.5 hidden sm:inline">
-                {isSuperAdmin ? 'Platform Management' : 'Collegiate Academic Suite'}
+                {currentUser?.tenant_name || (isSuperAdmin ? 'Platform Management' : 'Collegiate Academic Suite')}
               </span>
             </div>
           </button>

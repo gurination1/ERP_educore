@@ -231,6 +231,11 @@ tenantRouter.post('/:id/impersonate', authenticateToken, requireRole('super_admi
         enterprise_uid: result.adminUser.enterprise_uid,
         department: result.adminUser.department,
         designation: result.adminUser.designation,
+        tenant_id: result.tenant.id,
+        tenant_name: result.tenant.client_name,
+        client_code: result.tenant.short_code,
+        subdomain: result.tenant.subdomain,
+        is_impersonating: true,
       },
       tenant: result.tenant,
     });

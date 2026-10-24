@@ -20,6 +20,23 @@ export const getStoredUser = (): any => {
 };
 export const setStoredUser = (user: any): void => localStorage.setItem(USER_KEY, JSON.stringify(user));
 
+export const exitImpersonation = (): any => {
+  const backupToken = localStorage.getItem('educore_super_admin_backup_token');
+  const backupUser = localStorage.getItem('educore_super_admin_backup_user');
+  if (backupToken && backupUser) {
+    localStorage.setItem(TOKEN_KEY, backupToken);
+    localStorage.setItem(USER_KEY, backupUser);
+    localStorage.removeItem('educore_super_admin_backup_token');
+    localStorage.removeItem('educore_super_admin_backup_user');
+    try {
+      return JSON.parse(backupUser);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+};
+
 export const toQueryString = (params?: Record<string, any>): string => {
   if (!params) return '';
   const searchParams = new URLSearchParams();
@@ -430,6 +447,7 @@ export const api = {
   toggleTenantFunctional: (id: string, is_functional: boolean) =>
     apiRequest(`/api/tenants/${id}/toggle-functional`, { method: 'POST', body: JSON.stringify({ is_functional }) }),
   impersonateTenant: (id: string) => apiRequest(`/api/tenants/${id}/impersonate`, { method: 'POST' }),
+  exitImpersonation: () => exitImpersonation(),
   getCampuses: () => apiRequest('/api/tenants/campuses'),
   createCampus: (data: any) => apiRequest('/api/tenants/campuses', { method: 'POST', body: JSON.stringify(data) }),
   getMigrations: () => apiRequest('/api/tenants/migrations'),

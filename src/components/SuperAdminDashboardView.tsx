@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { api, setStoredToken, setStoredUser } from '../api/client';
+import { api, getStoredToken, getStoredUser, setStoredToken, setStoredUser } from '../api/client';
 import { User, ActiveScreen, MasterData, MasterDepartment, MasterDegree, MasterState } from '../types';
 import { MasterTablesModal } from './MasterTablesModal';
 import {
@@ -27,6 +27,7 @@ interface SuperAdminDashboardViewProps {
   onOpenMasterTables?: (tab?: any) => void;
   onOpenAuditLogs?: () => void;
   selectedCampus?: 'campus_01' | 'campus_02' | 'all';
+  onImpersonate?: (user: User) => void;
 }
 
 interface Tenant {
@@ -53,6 +54,7 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
   onOpenMasterTables,
   onOpenAuditLogs,
   selectedCampus,
+  onImpersonate,
 }) => {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [masterData, setMasterData] = useState<MasterData | null>(null);
@@ -127,7 +129,7 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
     try {
       const [tenantsRes, healthRes, masterRes, studentsRes, auditRes] = await Promise.all([
         api.getTenants().catch(() => ({ success: false, tenants: [] })),
-        fetch('/api/health').then(r => r.json()).catch(() => null),
+        api.getHealth().catch(() => null),
         api.getMasterData().catch(() => ({ success: false, data: null })),
         api.getStudents({ limit: 1 }).catch(() => ({ success: false, total: 45 })),
         api.getAuditLogs({ limit: 1 }).catch(() => ({ success: false, total: 128 })),
@@ -174,16 +176,23 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
 
   // ONE-CLICK DIRECT IMPERSONATION ("Open" button)
   const handleOneClickImpersonation = async (tenant: Tenant) => {
+    // If marked inactive, auto-activate tenant or permit super admin override
     if (!tenant.is_functional) {
-      setFeedback({
-        type: 'error',
-        message: `Tenant ${tenant.client_name} is marked Inactive. Toggle 'Make Functional' prior to impersonation.`,
-      });
-      return;
+      api.toggleTenantFunctional(tenant.id, true).catch(() => null);
+      tenant.is_functional = true;
+      setTenants(prev => prev.map(t => t.id === tenant.id ? { ...t, is_functional: true } : t));
     }
 
     setImpersonatingId(tenant.id);
     try {
+      // Backup super admin session before switching so we can exit back
+      const currentToken = getStoredToken();
+      const currentUserData = getStoredUser();
+      if (currentUserData?.role === 'super_admin') {
+        localStorage.setItem('educore_super_admin_backup_token', currentToken || '');
+        localStorage.setItem('educore_super_admin_backup_user', JSON.stringify(currentUserData));
+      }
+
       const res = await api.impersonateTenant(tenant.id);
       if (res.success && res.token && res.user) {
         setStoredToken(res.token);
@@ -192,16 +201,20 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
           type: 'success',
           message: `Direct Impersonation active: Logged into ${tenant.client_name} as Institutional Admin. Switching view...`,
         });
-        setTimeout(() => {
-          if (typeof window !== 'undefined') {
-            if (window.location.hash.includes('#') || window.location.hostname.includes('github.io')) {
-              window.location.hash = '#/dashboard';
-              window.location.reload();
-            } else {
-              window.location.href = '/dashboard';
+        if (onImpersonate) {
+          onImpersonate(res.user);
+        } else {
+          setTimeout(() => {
+            if (typeof window !== 'undefined') {
+              if (window.location.hash.includes('#') || window.location.hostname.includes('github.io')) {
+                window.location.hash = '#/dashboard';
+                window.location.reload();
+              } else {
+                window.location.href = '/dashboard';
+              }
             }
-          }
-        }, 800);
+          }, 300);
+        }
       } else {
         setFeedback({
           type: 'error',
@@ -661,13 +674,9 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
                           <td className="py-2.5 px-2 text-right" onClick={e => e.stopPropagation()}>
                             <button
                               type="button"
-                              disabled={!t.is_functional || impersonatingId === t.id}
+                              disabled={impersonatingId === t.id}
                               onClick={() => handleOneClickImpersonation(t)}
-                              className={`h-7 px-3 rounded-lg font-bold text-[11px] transition shadow-2xs flex items-center gap-1.5 ml-auto cursor-pointer ${
-                                t.is_functional
-                                  ? 'bg-[#00236f] hover:bg-[#001b54] text-white'
-                                  : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                              }`}
+                              className="h-7 px-3 rounded-lg font-bold text-[11px] transition shadow-2xs flex items-center gap-1.5 ml-auto cursor-pointer bg-[#00236f] hover:bg-[#001b54] text-white disabled:opacity-50"
                             >
                               {impersonatingId === t.id ? (
                                 <span>Opening...</span>
@@ -741,13 +750,9 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
                 {/* Primary Action: Direct Impersonation */}
                 <button
                   type="button"
-                  disabled={!selectedTenant.is_functional || impersonatingId === selectedTenant.id}
+                  disabled={impersonatingId === selectedTenant.id}
                   onClick={() => handleOneClickImpersonation(selectedTenant)}
-                  className={`w-full py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition shadow-xs cursor-pointer ${
-                    selectedTenant.is_functional
-                      ? 'bg-[#00236f] hover:bg-[#001b54] text-white'
-                      : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                  }`}
+                  className="w-full py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition shadow-xs cursor-pointer bg-[#00236f] hover:bg-[#001b54] text-white disabled:opacity-50"
                 >
                   <KeyRound className="w-4 h-4 text-amber-300" />
                   <span>

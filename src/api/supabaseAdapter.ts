@@ -1866,6 +1866,11 @@ export async function handleSupabaseRequest<T = any>(
         enterprise_uid: '10126040001',
         department: tenant.client_name,
         designation: `Institutional Director (${tenant.short_code || 'Directorate'})`,
+        tenant_id: tenant.id,
+        tenant_name: tenant.client_name,
+        client_code: tenant.short_code,
+        subdomain: tenant.subdomain,
+        is_impersonating: true,
         is_active: true,
       };
 
