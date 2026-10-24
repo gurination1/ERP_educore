@@ -172,12 +172,14 @@ studentRouter.get('/:id/dashboard', authenticateToken, async (req: AuthRequest, 
   const notices = allNotices.slice(0, 3);
 
   const studentUser = student.user_id ? await db.findUserById(student.user_id) : null;
-  const enterpriseUid = (studentUser?.enterprise_uid || req.user?.enterprise_uid || '1001-88-03-01').replace(/BFGI/g, '01');
+  const rawUid = studentUser?.enterprise_uid || req.user?.enterprise_uid || student.student_id || '10126010001';
+  const enterpriseUid = rawUid.replace(/[^0-9]/g, '');
 
   res.json({
     success: true,
     student: {
       ...student,
+      student_id: (student.student_id || enterpriseUid).replace(/[^0-9]/g, ''),
       enterprise_uid: enterpriseUid,
       fullName: `${student.first_name} ${student.last_name}`,
       courseName: course?.code || 'B.Tech',
@@ -236,12 +238,14 @@ studentRouter.get('/:id', authenticateToken, async (req: AuthRequest, res: Respo
   const payments = await db.getPayments(student.id);
 
   const studentUser = student.user_id ? await db.findUserById(student.user_id) : null;
-  const enterpriseUid = (studentUser?.enterprise_uid || req.user?.enterprise_uid || '1001-88-03-01').replace(/BFGI/g, '01');
+  const rawUid = studentUser?.enterprise_uid || req.user?.enterprise_uid || student.student_id || '10126010001';
+  const enterpriseUid = rawUid.replace(/[^0-9]/g, '');
 
   res.json({
     success: true,
     student: {
       ...student,
+      student_id: (student.student_id || enterpriseUid).replace(/[^0-9]/g, ''),
       enterprise_uid: enterpriseUid,
       course: course || undefined,
       session: session || undefined,

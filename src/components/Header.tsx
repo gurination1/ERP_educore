@@ -9,6 +9,8 @@ import {
   Crown, ShieldCheck, Database, History, Activity, Sparkles, CheckSquare, FileSpreadsheet
 } from 'lucide-react';
 import { api, setStoredToken, setStoredUser } from '../api/client';
+import { normalizeToCanonicalUID } from '../utils/uid';
+import { UserProfileModal } from './UserProfileModal';
 
 interface HeaderProps {
   currentUser: User | null;
@@ -61,7 +63,7 @@ export const Header: React.FC<HeaderProps> = ({
   const isAdmin = currentUser?.role === 'admin' || isSuperAdmin;
   const userRole = currentUser?.role;
 
-  const [copiedUid, setCopiedUid] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [openDrawer, setOpenDrawer] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { selectedCampus: ctxCampus, setSelectedCampus: ctxSetCampus } = useCampus();
@@ -73,6 +75,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [headerToast, setHeaderToast] = useState<string | null>(null);
   const navRef = useRef<HTMLDivElement>(null);
   const campusDropdownRef = useRef<HTMLDivElement>(null);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
   const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const effectiveCampus = externalSelectedCampus || ctxCampus || internalSelectedCampus || 'campus_01';
@@ -90,14 +93,17 @@ export const Header: React.FC<HeaderProps> = ({
       if (campusDropdownRef.current && !campusDropdownRef.current.contains(event.target as Node)) {
         setIsCampusMenuOpen(false);
       }
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+        setIsProfileMenuOpen(false);
+      }
     };
-    if (isCampusMenuOpen) {
+    if (isCampusMenuOpen || isProfileMenuOpen) {
       document.addEventListener('mousedown', handleOutsideClick);
     }
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick);
     };
-  }, [isCampusMenuOpen]);
+  }, [isCampusMenuOpen, isProfileMenuOpen]);
 
   const [headerTenants, setHeaderTenants] = useState<any[]>([]);
 
@@ -143,29 +149,8 @@ export const Header: React.FC<HeaderProps> = ({
     setTimeout(() => setHeaderToast(null), 3000);
   };
 
-  // Pure Digit Canonical 12-13 Digit UID: [Type4]-[Seq2]-[Client2]-[State03]-[Inst01]
-  const rawUid = currentUser?.enterprise_uid || (
-    currentUser?.role === 'super_admin'
-      ? '9001-01-01-03-01'
-      : currentUser?.role === 'admin'
-      ? '4001-01-01-03-01'
-      : currentUser?.role === 'staff'
-      ? '2001-14-01-03-01'
-      : currentUser?.role === 'partner'
-      ? '7001-01-01-03-01'
-      : currentUser?.role === 'hostel'
-      ? '10001-01-01-03-01'
-      : '1001-88-01-03-01'
-  );
-  const displayUid = rawUid.replace(/BFGI/g, '01');
-
-  const handleCopyUid = () => {
-    if (displayUid) {
-      navigator.clipboard.writeText(displayUid);
-      setCopiedUid(true);
-      setTimeout(() => setCopiedUid(false), 2000);
-    }
-  };
+  // Pure Digit Canonical 11-12 Digit UID: [Server: 1]-[Client: 01]-[Session: 26]-[Role/Course: XX]-[Seq: 0001]
+  const displayUid = normalizeToCanonicalUID(currentUser?.enterprise_uid, currentUser?.role);
 
   const getInstitutionalRoleTitle = (user: User | null): string => {
     if (!user) return 'Guest';
@@ -352,7 +337,7 @@ export const Header: React.FC<HeaderProps> = ({
           },
           {
             id: 'master-types' as any,
-            label: 'Enterprise User Type Codes (1001-9001)',
+            label: 'Canonical 12-Digit UID Master Architecture (01-10)',
             icon: Users,
             action: () => {
               if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
@@ -562,94 +547,101 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'overview',
         label: 'HRMS Overview',
+        icon: LayoutDashboard,
         defaultScreen: 'staff-management?tab=overview' as any,
         action: () => {
           onNavigate('staff-management?tab=overview' as any);
           setOpenDrawer(null);
         },
         items: [
-          { id: 'staff-management?tab=overview' as any, label: 'HR Executive Command & KPI Radar', action: () => { onNavigate('staff-management?tab=overview' as any); setOpenDrawer(null); } },
-          { id: 'staff-management?tab=additional-roles' as any, label: 'Multi-Role Allocation & Administrative Duties', action: () => { onNavigate('staff-management?tab=additional-roles' as any); setOpenDrawer(null); } },
+          { id: 'staff-management?tab=overview' as any, label: 'HR Executive Command & KPI Radar', icon: LayoutDashboard, action: () => { onNavigate('staff-management?tab=overview' as any); setOpenDrawer(null); } },
+          { id: 'staff-management?tab=additional-roles' as any, label: 'Multi-Role Allocation & Administrative Duties', icon: UserCheck, action: () => { onNavigate('staff-management?tab=additional-roles' as any); setOpenDrawer(null); } },
         ],
         isActive: isStaffMgmt && (!currentTab || currentTab === 'overview' || currentTab === 'additional-roles'),
       },
       {
         id: 'roster',
         label: 'Faculty & Staff Roster',
+        icon: Users,
         defaultScreen: 'staff-management?tab=overview' as any,
         action: () => {
           onNavigate('staff-management?tab=overview' as any);
           setOpenDrawer(null);
         },
         items: [
-          { id: 'staff-management?tab=overview' as any, label: 'Faculty & Non-Teaching Master Roster', action: () => { onNavigate('staff-management?tab=overview' as any); setOpenDrawer(null); } },
-          { id: 'staff-management?tab=addresses' as any, label: 'Residential Addresses & Domicile Verification', action: () => { onNavigate('staff-management?tab=addresses' as any); setOpenDrawer(null); } },
-          { id: 'staff-management?tab=banks' as any, label: 'Bank Accounts & Salary Disbursal Mandate', action: () => { onNavigate('staff-management?tab=banks' as any); setOpenDrawer(null); } },
-          { id: 'staff-management?tab=qualifications' as any, label: 'Academic Qualifications & UGC Net/PhD', action: () => { onNavigate('staff-management?tab=qualifications' as any); setOpenDrawer(null); } },
+          { id: 'staff-management?tab=overview' as any, label: 'Faculty & Non-Teaching Master Roster', icon: Users, action: () => { onNavigate('staff-management?tab=overview' as any); setOpenDrawer(null); } },
+          { id: 'staff-management?tab=addresses' as any, label: 'Residential Addresses & Domicile Verification', icon: Building, action: () => { onNavigate('staff-management?tab=addresses' as any); setOpenDrawer(null); } },
+          { id: 'staff-management?tab=banks' as any, label: 'Bank Accounts & Salary Disbursal Mandate', icon: Receipt, action: () => { onNavigate('staff-management?tab=banks' as any); setOpenDrawer(null); } },
+          { id: 'staff-management?tab=qualifications' as any, label: 'Academic Qualifications & UGC Net/PhD', icon: GraduationCap, action: () => { onNavigate('staff-management?tab=qualifications' as any); setOpenDrawer(null); } },
         ],
         isActive: isStaffMgmt && ['addresses', 'banks', 'qualifications'].includes(currentTab || ''),
       },
       {
         id: 'lifecycle',
         label: 'Status & Lifecycle',
+        icon: History,
         defaultScreen: 'staff-management?tab=journey' as any,
         action: () => {
           onNavigate('staff-management?tab=journey' as any);
           setOpenDrawer(null);
         },
         items: [
-          { id: 'staff-management?tab=journey' as any, label: 'Active / Resigned / Terminated / AWOL', action: () => { onNavigate('staff-management?tab=journey' as any); setOpenDrawer(null); } },
-          { id: 'staff-management?tab=journey' as any, label: 'Approaching Last Working Day Radar', action: () => { onNavigate('staff-management?tab=journey' as any); setOpenDrawer(null); } },
-          { id: 'staff-management?tab=journey' as any, label: 'Fresher vs Rejoiner Tracking', action: () => { onNavigate('staff-management?tab=journey' as any); setOpenDrawer(null); } },
-          { id: 'staff-management?tab=journey' as any, label: 'Multi-Role & Designation Transitions', action: () => { onNavigate('staff-management?tab=journey' as any); setOpenDrawer(null); } },
+          { id: 'staff-management?tab=journey' as any, label: 'Active / Resigned / Terminated / AWOL', icon: Activity, action: () => { onNavigate('staff-management?tab=journey' as any); setOpenDrawer(null); } },
+          { id: 'staff-management?tab=journey' as any, label: 'Approaching Last Working Day Radar', icon: Clock, action: () => { onNavigate('staff-management?tab=journey' as any); setOpenDrawer(null); } },
+          { id: 'staff-management?tab=journey' as any, label: 'Fresher vs Rejoiner Tracking', icon: UserCheck, action: () => { onNavigate('staff-management?tab=journey' as any); setOpenDrawer(null); } },
+          { id: 'staff-management?tab=journey' as any, label: 'Multi-Role & Designation Transitions', icon: ShieldCheck, action: () => { onNavigate('staff-management?tab=journey' as any); setOpenDrawer(null); } },
         ],
         isActive: isStaffMgmt && currentTab === 'journey',
       },
       {
         id: 'payroll',
         label: 'Payroll & Deductions',
+        icon: DollarSign,
         defaultScreen: 'staff-management?tab=payroll' as any,
         action: () => {
           onNavigate('staff-management?tab=payroll' as any);
           setOpenDrawer(null);
         },
         items: [
-          { id: 'staff-management?tab=payroll' as any, label: 'Security Deduction Schedule (₹30,000 Target)', action: () => { onNavigate('staff-management?tab=payroll' as any); setOpenDrawer(null); } },
-          { id: 'staff-management?tab=payroll' as any, label: 'Salary Structure & Statutory PF / ESI', action: () => { onNavigate('staff-management?tab=payroll' as any); setOpenDrawer(null); } },
+          { id: 'staff-management?tab=payroll' as any, label: 'Security Deduction Schedule (₹30,000 Target)', icon: Receipt, action: () => { onNavigate('staff-management?tab=payroll' as any); setOpenDrawer(null); } },
+          { id: 'staff-management?tab=payroll' as any, label: 'Salary Structure & Statutory PF / ESI', icon: DollarSign, action: () => { onNavigate('staff-management?tab=payroll' as any); setOpenDrawer(null); } },
         ],
         isActive: isStaffMgmt && currentTab === 'payroll',
       },
       {
         id: 'exit-noc',
         label: 'Exit NOC & Clearances',
+        icon: FileCheck,
         defaultScreen: 'staff-management?tab=exit-noc' as any,
         action: () => {
           onNavigate('staff-management?tab=exit-noc' as any);
           setOpenDrawer(null);
         },
         items: [
-          { id: 'staff-management?tab=exit-noc' as any, label: '5-Department Digital Exit NOC', action: () => { onNavigate('staff-management?tab=exit-noc' as any); setOpenDrawer(null); } },
-          { id: 'staff-management?tab=exit-noc' as any, label: 'Caution Deposit Refund & Lock', action: () => { onNavigate('staff-management?tab=exit-noc' as any); setOpenDrawer(null); } },
+          { id: 'staff-management?tab=exit-noc' as any, label: '5-Department Digital Exit NOC', icon: FileCheck, action: () => { onNavigate('staff-management?tab=exit-noc' as any); setOpenDrawer(null); } },
+          { id: 'staff-management?tab=exit-noc' as any, label: 'Caution Deposit Refund & Lock', icon: Shield, action: () => { onNavigate('staff-management?tab=exit-noc' as any); setOpenDrawer(null); } },
         ],
         isActive: isStaffMgmt && currentTab === 'exit-noc',
       },
       {
         id: 'dossier',
         label: 'Staff Dossier & Docs',
+        icon: FolderCheck,
         defaultScreen: 'teacher-documents',
         action: () => {
           onNavigate('teacher-documents');
           setOpenDrawer(null);
         },
         items: [
-          { id: 'teacher-documents' as ActiveScreen, label: 'Statutory Credentials & Document Vault', action: () => { onNavigate('teacher-documents'); setOpenDrawer(null); } },
-          { id: 'staff-academic-journey' as any, label: 'Organizational Journey & Experience Logs', action: onOpenStaffJourney },
+          { id: 'teacher-documents' as ActiveScreen, label: 'Statutory Credentials & Document Vault', icon: FolderCheck, action: () => { onNavigate('teacher-documents'); setOpenDrawer(null); } },
+          { id: 'staff-academic-journey' as any, label: 'Organizational Journey & Experience Logs', icon: History, action: onOpenStaffJourney },
         ],
         isActive: isTeacherDocs,
       },
       {
         id: 'grievances',
         label: 'Grievances',
+        icon: AlertCircle,
         defaultScreen: 'grievances',
         action: () => {
           onNavigate('grievances');
@@ -665,6 +657,7 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'dashboard',
         label: 'Placements Home',
+        icon: Briefcase,
         defaultScreen: 'partner-portal',
         action: () => {
           onNavigate('partner-portal');
@@ -675,28 +668,30 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'talent',
         label: 'Campus Talent Pool',
+        icon: GraduationCap,
         defaultScreen: 'partner-portal?tab=talent' as any,
         action: () => {
           onNavigate('partner-portal?tab=talent' as any);
           setOpenDrawer(null);
         },
         items: [
-          { id: 'partner-portal?tab=talent' as any, label: 'Graduating Batch Talent Radar', action: () => { onNavigate('partner-portal?tab=talent' as any); setOpenDrawer(null); } },
-          { id: 'partner-portal?tab=talent' as any, label: 'Shortlisted Candidate Profiles', action: () => { onNavigate('partner-portal?tab=talent' as any); setOpenDrawer(null); } },
+          { id: 'partner-portal?tab=talent' as any, label: 'Graduating Batch Talent Radar', icon: GraduationCap, action: () => { onNavigate('partner-portal?tab=talent' as any); setOpenDrawer(null); } },
+          { id: 'partner-portal?tab=talent' as any, label: 'Shortlisted Candidate Profiles', icon: Users, action: () => { onNavigate('partner-portal?tab=talent' as any); setOpenDrawer(null); } },
         ],
         isActive: isPartner && currentTab === 'talent',
       },
       {
         id: 'drives',
         label: 'Placement Drives',
+        icon: Building2,
         defaultScreen: 'partner-portal?tab=jobs' as any,
         action: () => {
           onNavigate('partner-portal?tab=jobs' as any);
           setOpenDrawer(null);
         },
         items: [
-          { id: 'partner-portal?tab=jobs' as any, label: 'Scheduled Campus Hiring Drives', action: () => { onNavigate('partner-portal?tab=jobs' as any); setOpenDrawer(null); } },
-          { id: 'partner-portal?tab=applications' as any, label: 'Candidate Applications & Offers', action: () => { onNavigate('partner-portal?tab=applications' as any); setOpenDrawer(null); } },
+          { id: 'partner-portal?tab=jobs' as any, label: 'Scheduled Campus Hiring Drives', icon: Clock, action: () => { onNavigate('partner-portal?tab=jobs' as any); setOpenDrawer(null); } },
+          { id: 'partner-portal?tab=applications' as any, label: 'Candidate Applications & Offers', icon: FileCheck, action: () => { onNavigate('partner-portal?tab=applications' as any); setOpenDrawer(null); } },
         ],
         isActive: isPartner && (currentTab === 'jobs' || currentTab === 'applications'),
       },
@@ -707,6 +702,7 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'dashboard',
         label: 'Collections Home',
+        icon: LayoutDashboard,
         defaultScreen: 'fee-ledger',
         action: () => {
           onNavigate('fee-ledger');
@@ -717,42 +713,46 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'fees',
         label: 'Fee Ledger & Registers',
+        icon: Receipt,
         defaultScreen: 'fee-ledger',
         items: [
-          { id: 'fee-ledger' as ActiveScreen, label: 'Tuition Fee Assessment & Collections', action: () => { onNavigate('fee-ledger'); setOpenDrawer(null); } },
-          { id: 'payment-gateways' as ActiveScreen, label: 'Payment Gateways & Current Accounts', action: () => { onNavigate('payment-gateways'); setOpenDrawer(null); } },
-          { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships', action: () => { onNavigate('scholarships'); setOpenDrawer(null); } },
-          { id: 'partner-portal' as ActiveScreen, label: 'Corporate Partners & Placement Agencies', action: () => { onNavigate('partner-portal'); setOpenDrawer(null); } },
+          { id: 'fee-ledger' as ActiveScreen, label: 'Tuition Fee Assessment & Collections', icon: Receipt, action: () => { onNavigate('fee-ledger'); setOpenDrawer(null); } },
+          { id: 'payment-gateways' as ActiveScreen, label: 'Payment Gateways & Current Accounts', icon: DollarSign, action: () => { onNavigate('payment-gateways'); setOpenDrawer(null); } },
+          { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships', icon: Sparkles, action: () => { onNavigate('scholarships'); setOpenDrawer(null); } },
+          { id: 'partner-portal' as ActiveScreen, label: 'Corporate Partners & Placement Agencies', icon: Briefcase, action: () => { onNavigate('partner-portal'); setOpenDrawer(null); } },
         ],
         isActive: ['fee-ledger', 'scholarships', 'payment-gateways', 'partner-portal'].includes(activeScreen as any) || effectivePath.startsWith('/fees') || effectivePath.startsWith('/scholarships') || effectivePath.startsWith('/payment-gateways') || effectivePath.startsWith('/partner-portal'),
       },
       {
         id: 'students',
         label: 'Student Directory',
+        icon: GraduationCap,
         defaultScreen: 'manage-students',
         items: [
-          { id: 'manage-students' as ActiveScreen, label: 'Student Billing & Master Directory', action: () => { onNavigate('manage-students'); setOpenDrawer(null); } },
-          { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault', action: () => { onNavigate('student-documents'); setOpenDrawer(null); } },
+          { id: 'manage-students' as ActiveScreen, label: 'Student Billing & Master Directory', icon: Users, action: () => { onNavigate('manage-students'); setOpenDrawer(null); } },
+          { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault', icon: FolderCheck, action: () => { onNavigate('student-documents'); setOpenDrawer(null); } },
         ],
         isActive: ['manage-students', 'student-documents'].includes(activeScreen as any) || effectivePath.startsWith('/manage-students') || effectivePath.startsWith('/student-documents'),
       },
       {
         id: 'examination',
         label: 'Exam Clearance',
+        icon: FileCheck,
         defaultScreen: 'examination?tab=admit-card' as any,
         action: () => {
           onNavigate('examination?tab=admit-card' as any);
           setOpenDrawer(null);
         },
         items: [
-          { id: 'examination?tab=admit-card' as any, label: 'Gate Clearance & Exam Fee Clearance', action: () => { onNavigate('examination?tab=admit-card' as any); setOpenDrawer(null); } },
-          { id: 'examination?tab=admit-card' as any, label: 'Admit Card Fee Verification', action: () => { onNavigate('examination?tab=admit-card' as any); setOpenDrawer(null); } },
+          { id: 'examination?tab=admit-card' as any, label: 'Gate Clearance & Exam Fee Clearance', icon: FileCheck, action: () => { onNavigate('examination?tab=admit-card' as any); setOpenDrawer(null); } },
+          { id: 'examination?tab=admit-card' as any, label: 'Admit Card Fee Verification', icon: FileText, action: () => { onNavigate('examination?tab=admit-card' as any); setOpenDrawer(null); } },
         ],
         isActive: activeScreen === 'examination' || effectivePath.startsWith('/examination'),
       },
       {
         id: 'reports',
         label: 'Financial Reports',
+        icon: BarChart3,
         defaultScreen: 'reports',
         action: () => {
           onNavigate('reports?tab=financial' as any);
@@ -767,6 +767,7 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'dashboard',
         label: 'Counselor Desk',
+        icon: LayoutDashboard,
         defaultScreen: 'enquiries',
         action: () => {
           onNavigate('enquiries');
@@ -777,37 +778,41 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'crm',
         label: 'Admissions CRM',
+        icon: UserPlus,
         defaultScreen: 'enquiries',
         items: [
-          { id: 'enquiries' as ActiveScreen, label: 'Pre-Admission Leads Radar', action: () => { onNavigate('enquiries'); setOpenDrawer(null); } },
-          { id: 'bulk-import' as ActiveScreen, label: 'Bulk Lead CSV / Excel Mapper', action: () => { onNavigate('bulk-import'); setOpenDrawer(null); } },
-          { id: 'admissions' as ActiveScreen, label: 'Admissions Intake Desk', action: () => { onNavigate('admissions'); setOpenDrawer(null); } },
+          { id: 'enquiries' as ActiveScreen, label: 'Pre-Admission Leads Radar', icon: PhoneCall, action: () => { onNavigate('enquiries'); setOpenDrawer(null); } },
+          { id: 'bulk-import' as ActiveScreen, label: 'Bulk Lead CSV / Excel Mapper', icon: FileSpreadsheet, action: () => { onNavigate('bulk-import'); setOpenDrawer(null); } },
+          { id: 'admissions' as ActiveScreen, label: 'Admissions Intake Desk', icon: UserCheck, action: () => { onNavigate('admissions'); setOpenDrawer(null); } },
         ],
         isActive: ['/enquiries', '/bulk-import', '/admissions'].some(p => effectivePath.startsWith(p)),
       },
       {
         id: 'students',
         label: 'Enrolled Scholars',
+        icon: GraduationCap,
         defaultScreen: 'manage-students',
         items: [
-          { id: 'manage-students' as ActiveScreen, label: 'Student Master Directory', action: () => { onNavigate('manage-students'); setOpenDrawer(null); } },
-          { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault', action: () => { onNavigate('student-documents'); setOpenDrawer(null); } },
+          { id: 'manage-students' as ActiveScreen, label: 'Student Master Directory', icon: Users, action: () => { onNavigate('manage-students'); setOpenDrawer(null); } },
+          { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault', icon: FolderCheck, action: () => { onNavigate('student-documents'); setOpenDrawer(null); } },
         ],
         isActive: ['/manage-students', '/student-documents'].some(p => effectivePath.startsWith(p)),
       },
       {
         id: 'fees',
         label: 'Fees & Scholarships',
+        icon: Receipt,
         defaultScreen: 'fee-ledger',
         items: [
-          { id: 'fee-ledger' as ActiveScreen, label: 'Course Fee Assessment & Structure', action: () => { onNavigate('fee-ledger'); setOpenDrawer(null); } },
-          { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships', action: () => { onNavigate('scholarships'); setOpenDrawer(null); } },
+          { id: 'fee-ledger' as ActiveScreen, label: 'Course Fee Assessment & Structure', icon: Receipt, action: () => { onNavigate('fee-ledger'); setOpenDrawer(null); } },
+          { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships', icon: Sparkles, action: () => { onNavigate('scholarships'); setOpenDrawer(null); } },
         ],
         isActive: ['/fees', '/scholarships'].some(p => effectivePath.startsWith(p)),
       },
       {
         id: 'grievances',
         label: 'Grievances',
+        icon: AlertCircle,
         defaultScreen: 'grievances',
         action: () => {
           onNavigate('grievances');
@@ -822,6 +827,7 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'dashboard',
         label: 'HOD Desk',
+        icon: LayoutDashboard,
         defaultScreen: 'staff-dashboard',
         action: () => {
           onNavigate('staff-dashboard');
@@ -832,50 +838,71 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'academics',
         label: 'Academics',
+        icon: BookOpen,
         defaultScreen: 'academics',
+        action: () => {
+          onNavigate('academics');
+          setOpenDrawer(null);
+        },
         items: [
-          { id: 'academics?tab=syllabus' as any, label: 'Department CBCS Curriculum', action: () => { onNavigate('academics?tab=syllabus' as any); setOpenDrawer(null); } },
-          { id: 'academics?tab=batches' as any, label: 'Batch & Section Architecture', action: () => { onNavigate('academics?tab=batches' as any); setOpenDrawer(null); } },
-          { id: 'academics?tab=timetable' as any, label: 'Timetable & Combined Classes', action: () => { onNavigate('academics?tab=timetable' as any); setOpenDrawer(null); } },
-          { id: 'student-quiz-lms' as ActiveScreen, label: 'Continuous Assessment (CA) Quiz', action: () => { onNavigate('student-quiz-lms'); setOpenDrawer(null); } },
+          { id: 'academics?tab=syllabus' as any, label: 'Department CBCS Curriculum', icon: BookOpen, action: () => { onNavigate('academics?tab=syllabus' as any); setOpenDrawer(null); } },
+          { id: 'academics?tab=batches' as any, label: 'Batch & Section Architecture', icon: Users, action: () => { onNavigate('academics?tab=batches' as any); setOpenDrawer(null); } },
+          { id: 'academics?tab=timetable' as any, label: 'Timetable & Combined Classes', icon: Clock, action: () => { onNavigate('academics?tab=timetable' as any); setOpenDrawer(null); } },
+          { id: 'student-quiz-lms' as ActiveScreen, label: 'Continuous Assessment (CA) Quiz', icon: Brain, action: () => { onNavigate('student-quiz-lms'); setOpenDrawer(null); } },
         ],
         isActive: ['/academics', '/student-quiz-lms'].some(p => effectivePath.startsWith(p)),
       },
       {
         id: 'students',
         label: 'Department Students',
+        icon: GraduationCap,
         defaultScreen: 'manage-students',
+        action: () => {
+          onNavigate('manage-students');
+          setOpenDrawer(null);
+        },
         items: [
-          { id: 'manage-students' as ActiveScreen, label: 'Department Student Master Directory', action: () => { onNavigate('manage-students'); setOpenDrawer(null); } },
-          { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault', action: () => { onNavigate('student-documents'); setOpenDrawer(null); } },
+          { id: 'manage-students' as ActiveScreen, label: 'Department Student Master Directory', icon: Users, action: () => { onNavigate('manage-students'); setOpenDrawer(null); } },
+          { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault', icon: FolderCheck, action: () => { onNavigate('student-documents'); setOpenDrawer(null); } },
         ],
         isActive: ['/manage-students', '/student-documents'].some(p => effectivePath.startsWith(p)),
       },
       {
         id: 'examination',
         label: 'Examination',
+        icon: FileCheck,
         defaultScreen: 'examination',
+        action: () => {
+          onNavigate('examination');
+          setOpenDrawer(null);
+        },
         items: [
-          { id: 'examination?tab=regular' as any, label: 'Department Examination Approvals', action: () => { onNavigate('examination?tab=regular' as any); setOpenDrawer(null); } },
-          { id: 'examination?tab=datesheet' as any, label: 'Datesheet & Examination Timetable', action: () => { onNavigate('examination?tab=datesheet' as any); setOpenDrawer(null); } },
-          { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz & Examination LMS', action: () => { onNavigate('student-quiz-lms'); setOpenDrawer(null); } },
+          { id: 'examination?tab=regular' as any, label: 'Department Examination Approvals', icon: FileText, action: () => { onNavigate('examination?tab=regular' as any); setOpenDrawer(null); } },
+          { id: 'examination?tab=datesheet' as any, label: 'Datesheet & Examination Timetable', icon: Clock, action: () => { onNavigate('examination?tab=datesheet' as any); setOpenDrawer(null); } },
+          { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz & Examination LMS', icon: Brain, action: () => { onNavigate('student-quiz-lms'); setOpenDrawer(null); } },
         ],
         isActive: ['/examination', '/student-quiz-lms'].some(p => effectivePath.startsWith(p)),
       },
       {
         id: 'faculty',
         label: 'Department Faculty',
+        icon: Briefcase,
         defaultScreen: 'staff-management',
+        action: () => {
+          onNavigate('staff-management');
+          setOpenDrawer(null);
+        },
         items: [
-          { id: 'staff-management' as ActiveScreen, label: 'Faculty & HRMS Directory', action: () => { onNavigate('staff-management'); setOpenDrawer(null); } },
-          { id: 'teacher-documents' as ActiveScreen, label: 'Faculty Dossier Vault', action: () => { onNavigate('teacher-documents'); setOpenDrawer(null); } },
-          { id: 'staff-academic-journey' as any, label: 'CAS Research Publications & Patents', action: onOpenStaffJourney },
+          { id: 'staff-management' as ActiveScreen, label: 'Faculty & HRMS Directory', icon: Users, action: () => { onNavigate('staff-management'); setOpenDrawer(null); } },
+          { id: 'teacher-documents' as ActiveScreen, label: 'Faculty Dossier Vault', icon: FolderCheck, action: () => { onNavigate('teacher-documents'); setOpenDrawer(null); } },
+          { id: 'staff-academic-journey' as any, label: 'CAS Research Publications & Patents', icon: History, action: onOpenStaffJourney },
         ],
         isActive: ['/staff-management', '/teacher-documents'].some(p => effectivePath.startsWith(p)),
       },
       {
         id: 'reports',
         label: 'Academic Reports',
+        icon: BarChart3,
         defaultScreen: 'reports',
         action: () => {
           onNavigate('reports?tab=academic_workload' as any);
@@ -886,6 +913,7 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'grievances',
         label: 'Grievances',
+        icon: AlertCircle,
         defaultScreen: 'grievances',
         action: () => {
           onNavigate('grievances');
@@ -900,6 +928,7 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'dashboard',
         label: 'Faculty Desk',
+        icon: LayoutDashboard,
         defaultScreen: 'staff-dashboard',
         action: () => {
           onNavigate('staff-dashboard');
@@ -910,48 +939,69 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'academics',
         label: 'Academics',
+        icon: BookOpen,
         defaultScreen: 'academics',
+        action: () => {
+          onNavigate('academics');
+          setOpenDrawer(null);
+        },
         items: [
-          { id: 'academics?tab=syllabus' as any, label: 'CBCS Courses & Syllabus', action: () => { onNavigate('academics?tab=syllabus' as any); setOpenDrawer(null); } },
-          { id: 'academics?tab=timetable' as any, label: 'Semester Timetable Schedule', action: () => { onNavigate('academics?tab=timetable' as any); setOpenDrawer(null); } },
-          { id: 'student-quiz-lms' as ActiveScreen, label: 'Continuous Assessment (CA) Quiz', action: () => { onNavigate('student-quiz-lms'); setOpenDrawer(null); } },
+          { id: 'academics?tab=syllabus' as any, label: 'CBCS Courses & Syllabus', icon: BookOpen, action: () => { onNavigate('academics?tab=syllabus' as any); setOpenDrawer(null); } },
+          { id: 'academics?tab=timetable' as any, label: 'Semester Timetable Schedule', icon: Clock, action: () => { onNavigate('academics?tab=timetable' as any); setOpenDrawer(null); } },
+          { id: 'student-quiz-lms' as ActiveScreen, label: 'Continuous Assessment (CA) Quiz', icon: Brain, action: () => { onNavigate('student-quiz-lms'); setOpenDrawer(null); } },
         ],
         isActive: ['/academics', '/student-quiz-lms'].some(p => effectivePath.startsWith(p)),
       },
       {
         id: 'students',
         label: 'Students',
+        icon: GraduationCap,
         defaultScreen: 'manage-students',
+        action: () => {
+          onNavigate('manage-students');
+          setOpenDrawer(null);
+        },
         items: [
-          { id: 'manage-students' as ActiveScreen, label: 'Student Master Directory', action: () => { onNavigate('manage-students'); setOpenDrawer(null); } },
-          { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault', action: () => { onNavigate('student-documents'); setOpenDrawer(null); } },
+          { id: 'manage-students' as ActiveScreen, label: 'Student Master Directory', icon: Users, action: () => { onNavigate('manage-students'); setOpenDrawer(null); } },
+          { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault', icon: FolderCheck, action: () => { onNavigate('student-documents'); setOpenDrawer(null); } },
         ],
         isActive: ['/manage-students', '/student-documents'].some(p => effectivePath.startsWith(p)),
       },
       {
         id: 'examination',
         label: 'Examination',
+        icon: FileCheck,
         defaultScreen: 'examination',
+        action: () => {
+          onNavigate('examination');
+          setOpenDrawer(null);
+        },
         items: [
-          { id: 'examination?tab=regular' as any, label: 'University Examination Forms', action: () => { onNavigate('examination?tab=regular' as any); setOpenDrawer(null); } },
-          { id: 'examination?tab=datesheet' as any, label: 'Datesheet & Examination Timetable', action: () => { onNavigate('examination?tab=datesheet' as any); setOpenDrawer(null); } },
-          { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz & Examination LMS', action: () => { onNavigate('student-quiz-lms'); setOpenDrawer(null); } },
+          { id: 'examination?tab=regular' as any, label: 'University Examination Forms', icon: FileText, action: () => { onNavigate('examination?tab=regular' as any); setOpenDrawer(null); } },
+          { id: 'examination?tab=datesheet' as any, label: 'Datesheet & Examination Timetable', icon: Clock, action: () => { onNavigate('examination?tab=datesheet' as any); setOpenDrawer(null); } },
+          { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz & Examination LMS', icon: Brain, action: () => { onNavigate('student-quiz-lms'); setOpenDrawer(null); } },
         ],
         isActive: ['/examination', '/student-quiz-lms'].some(p => effectivePath.startsWith(p)),
       },
       {
         id: 'dossier',
         label: 'Faculty Dossier',
+        icon: Briefcase,
         defaultScreen: 'teacher-documents',
+        action: () => {
+          onNavigate('teacher-documents');
+          setOpenDrawer(null);
+        },
         items: [
-          { id: 'teacher-documents' as ActiveScreen, label: 'Teaching Dossier Vault', action: () => { onNavigate('teacher-documents'); setOpenDrawer(null); } },
-          { id: 'staff-academic-journey' as any, label: 'CAS Research Publications & Patents', action: onOpenStaffJourney },
+          { id: 'teacher-documents' as ActiveScreen, label: 'Teaching Dossier Vault', icon: FolderCheck, action: () => { onNavigate('teacher-documents'); setOpenDrawer(null); } },
+          { id: 'staff-academic-journey' as any, label: 'CAS Research Publications & Patents', icon: History, action: onOpenStaffJourney },
         ],
         isActive: effectivePath.startsWith('/teacher-documents'),
       },
       {
         id: 'grievances',
         label: 'Grievances',
+        icon: AlertCircle,
         defaultScreen: 'grievances',
         action: () => {
           onNavigate('grievances');
@@ -967,6 +1017,7 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'overview',
         label: 'Hostel Operations',
+        icon: LayoutDashboard,
         defaultScreen: 'hostel-management?tab=overview' as any,
         action: () => {
           onNavigate('hostel-management?tab=overview' as any);
@@ -977,36 +1028,39 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'buildings',
         label: 'Buildings & Blocks',
+        icon: Building2,
         defaultScreen: 'hostel-management?tab=buildings' as any,
         action: () => {
           onNavigate('hostel-management?tab=buildings' as any);
           setOpenDrawer(null);
         },
         items: [
-          { id: 'hostel-management?tab=buildings' as any, label: 'Owned vs Leased Blocks Registry', action: () => { onNavigate('hostel-management?tab=buildings' as any); setOpenDrawer(null); } },
-          { id: 'hostel-management?tab=maintenance' as any, label: '360-Day Maintenance & Overhaul', action: () => { onNavigate('hostel-management?tab=maintenance' as any); setOpenDrawer(null); } },
-          { id: 'hostel-management?tab=maintenance' as any, label: 'Quarterly Electrical Safety Inspections', action: () => { onNavigate('hostel-management?tab=maintenance' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=buildings' as any, label: 'Owned vs Leased Blocks Registry', icon: Building2, action: () => { onNavigate('hostel-management?tab=buildings' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=maintenance' as any, label: '360-Day Maintenance & Overhaul', icon: Activity, action: () => { onNavigate('hostel-management?tab=maintenance' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=maintenance' as any, label: 'Quarterly Electrical Safety Inspections', icon: ShieldCheck, action: () => { onNavigate('hostel-management?tab=maintenance' as any); setOpenDrawer(null); } },
         ],
         isActive: isHostel && currentTab === 'buildings',
       },
       {
         id: 'rooms',
         label: 'Room Inventory & Beds',
+        icon: Bed,
         defaultScreen: 'hostel-management?tab=rooms' as any,
         action: () => {
           onNavigate('hostel-management?tab=rooms' as any);
           setOpenDrawer(null);
         },
         items: [
-          { id: 'hostel-management?tab=rooms' as any, label: 'Visual Room & Bed Layout', action: () => { onNavigate('hostel-management?tab=rooms' as any); setOpenDrawer(null); } },
-          { id: 'hostel-management?tab=rooms' as any, label: 'AC vs Non-AC / Almirah Amenities', action: () => { onNavigate('hostel-management?tab=rooms' as any); setOpenDrawer(null); } },
-          { id: 'hostel-management?tab=rooms' as any, label: 'Room Deletion Safety Guard', action: () => { onNavigate('hostel-management?tab=rooms' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=rooms' as any, label: 'Visual Room & Bed Layout', icon: Bed, action: () => { onNavigate('hostel-management?tab=rooms' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=rooms' as any, label: 'AC vs Non-AC / Almirah Amenities', icon: Sparkles, action: () => { onNavigate('hostel-management?tab=rooms' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=rooms' as any, label: 'Room Deletion Safety Guard', icon: Shield, action: () => { onNavigate('hostel-management?tab=rooms' as any); setOpenDrawer(null); } },
         ],
         isActive: isHostel && currentTab === 'rooms',
       },
       {
         id: 'unassigned',
         label: 'Unallocated Queue',
+        icon: Clock,
         defaultScreen: 'hostel-management?tab=unassigned' as any,
         action: () => {
           onNavigate('hostel-management?tab=unassigned' as any);
@@ -1017,50 +1071,54 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'residents',
         label: 'Resident Scholars',
+        icon: Users,
         defaultScreen: 'hostel-management?tab=residents' as any,
         action: () => {
           onNavigate('hostel-management?tab=residents' as any);
           setOpenDrawer(null);
         },
         items: [
-          { id: 'hostel-management?tab=residents' as any, label: 'Hostellers Master Directory', action: () => { onNavigate('hostel-management?tab=residents' as any); setOpenDrawer(null); } },
-          { id: 'hostel-management?tab=unassigned' as any, label: 'Pending Scholar Bed Queue', action: () => { onNavigate('hostel-management?tab=unassigned' as any); setOpenDrawer(null); } },
-          { id: 'hostel-management?tab=residents' as any, label: 'Room Shifting & Rent Adjustment', action: () => { onNavigate('hostel-management?tab=residents' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=residents' as any, label: 'Hostellers Master Directory', icon: Users, action: () => { onNavigate('hostel-management?tab=residents' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=unassigned' as any, label: 'Pending Scholar Bed Queue', icon: Clock, action: () => { onNavigate('hostel-management?tab=unassigned' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=residents' as any, label: 'Room Shifting & Rent Adjustment', icon: History, action: () => { onNavigate('hostel-management?tab=residents' as any); setOpenDrawer(null); } },
         ],
         isActive: isHostel && currentTab === 'residents',
       },
       {
         id: 'mess',
         label: 'Mess Dues & Clearance',
+        icon: UtensilsCrossed,
         defaultScreen: 'hostel-management?tab=mess' as any,
         action: () => {
           onNavigate('hostel-management?tab=mess' as any);
           setOpenDrawer(null);
         },
         items: [
-          { id: 'hostel-management?tab=mess' as any, label: 'Diet Billing (Monthly vs Semester)', action: () => { onNavigate('hostel-management?tab=mess' as any); setOpenDrawer(null); } },
-          { id: 'hostel-management?tab=mess' as any, label: 'Issue Digital No-Dues Certificate', action: () => { onNavigate('hostel-management?tab=mess' as any); setOpenDrawer(null); } },
-          { id: 'hostel-management?tab=mess' as any, label: 'Caution Deposit Refund Release', action: () => { onNavigate('hostel-management?tab=mess' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=mess' as any, label: 'Diet Billing (Monthly vs Semester)', icon: Receipt, action: () => { onNavigate('hostel-management?tab=mess' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=mess' as any, label: 'Issue Digital No-Dues Certificate', icon: FileCheck, action: () => { onNavigate('hostel-management?tab=mess' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=mess' as any, label: 'Caution Deposit Refund Release', icon: DollarSign, action: () => { onNavigate('hostel-management?tab=mess' as any); setOpenDrawer(null); } },
         ],
         isActive: isHostel && currentTab === 'mess',
       },
       {
         id: 'transport',
         label: 'Transport Fleet',
+        icon: Bus,
         defaultScreen: 'transport' as any,
         action: () => {
           onNavigate('transport' as any);
           setOpenDrawer(null);
         },
         items: [
-          { id: 'transport' as any, label: 'Bus Fleet Capacity & Drivers', action: () => { onNavigate('transport' as any); setOpenDrawer(null); } },
-          { id: 'transport' as any, label: 'Unallocated Transport Queue', action: () => { onNavigate('transport' as any); setOpenDrawer(null); } },
+          { id: 'transport' as any, label: 'Bus Fleet Capacity & Drivers', icon: Bus, action: () => { onNavigate('transport' as any); setOpenDrawer(null); } },
+          { id: 'transport' as any, label: 'Unallocated Transport Queue', icon: Users, action: () => { onNavigate('transport' as any); setOpenDrawer(null); } },
         ],
         isActive: effectivePath.startsWith('/transport') || (isHostel && currentTab === 'transport'),
       },
       {
         id: 'grievances',
         label: 'Grievances',
+        icon: AlertCircle,
         defaultScreen: 'grievances',
         action: () => {
           onNavigate('grievances');
@@ -1078,6 +1136,7 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'dashboard',
         label: 'Scholar Home',
+        icon: LayoutDashboard,
         defaultScreen: 'student-dashboard',
         action: () => {
           onNavigate('student-dashboard');
@@ -1088,6 +1147,7 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'attendance',
         label: 'Attendance & Classes',
+        icon: Clock,
         defaultScreen: 'student-dashboard?view=attendance' as any,
         action: () => {
           onNavigate('student-dashboard?view=attendance' as any);
@@ -1097,6 +1157,7 @@ export const Header: React.FC<HeaderProps> = ({
           {
             id: 'attendance-lecture' as any,
             label: 'Lecture Attendance (75% Gate Tracking)',
+            icon: Clock,
             action: () => {
               onNavigate('student-dashboard?view=attendance' as any);
               setOpenDrawer(null);
@@ -1113,6 +1174,7 @@ export const Header: React.FC<HeaderProps> = ({
           {
             id: 'academics?tab=timetable' as any,
             label: 'Semester Timetable Schedule',
+            icon: BookOpen,
             action: () => {
               onNavigate('academics?tab=timetable' as any);
               setOpenDrawer(null);
@@ -1124,16 +1186,18 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'fees',
         label: 'Tuition & Dues',
+        icon: Receipt,
         defaultScreen: 'fee-ledger',
         action: () => {
           onNavigate('fee-ledger');
           setOpenDrawer(null);
         },
         items: [
-          { id: 'fee-ledger' as ActiveScreen, label: 'Tuition Fee Assessment & Ledger', action: () => { onNavigate('fee-ledger'); setOpenDrawer(null); } },
+          { id: 'fee-ledger' as ActiveScreen, label: 'Tuition Fee Assessment & Ledger', icon: Receipt, action: () => { onNavigate('fee-ledger'); setOpenDrawer(null); } },
           {
             id: 'pay-online-dues' as any,
             label: 'Pay Online Fee Heads',
+            icon: DollarSign,
             action: () => {
               setOpenDrawer(null);
               if (onOpenPayModal) {
@@ -1143,13 +1207,14 @@ export const Header: React.FC<HeaderProps> = ({
               }
             },
           },
-          { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships', action: () => { onNavigate('scholarships'); setOpenDrawer(null); } },
+          { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships', icon: Sparkles, action: () => { onNavigate('scholarships'); setOpenDrawer(null); } },
         ],
         isActive: ['fee-ledger', 'scholarships'].includes(activeScreen as any) || effectivePath.startsWith('/fees') || effectivePath.startsWith('/scholarships'),
       },
       {
         id: 'examination',
         label: 'Admit Card & Exams',
+        icon: FileCheck,
         defaultScreen: 'examination',
         action: () => {
           onNavigate('examination');
@@ -1159,6 +1224,7 @@ export const Header: React.FC<HeaderProps> = ({
           {
             id: 'download-admit-card' as any,
             label: 'Download Admit Card & Hall Ticket',
+            icon: FileText,
             action: () => {
               setOpenDrawer(null);
               if (onOpenAdmitCard) {
@@ -1168,54 +1234,57 @@ export const Header: React.FC<HeaderProps> = ({
               }
             },
           },
-          { id: 'examination?tab=regular' as any, label: 'University Regular Examination Form', action: () => { onNavigate('examination?tab=regular' as any); setOpenDrawer(null); } },
-          { id: 'examination?tab=results' as any, label: 'CBCS Semester Grade Card & SGPA Gazette', action: () => { onNavigate('examination?tab=results' as any); setOpenDrawer(null); } },
-          { id: 'examination?tab=reappear' as any, label: 'Reappear / Backlog Form', action: () => { onNavigate('examination?tab=reappear' as any); setOpenDrawer(null); } },
-          { id: 'examination?tab=datesheet' as any, label: 'Datesheet & Examination Timetable', action: () => { onNavigate('examination?tab=datesheet' as any); setOpenDrawer(null); } },
-          { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz & Examination LMS', action: () => { onNavigate('student-quiz-lms'); setOpenDrawer(null); } },
+          { id: 'examination?tab=regular' as any, label: 'University Regular Examination Form', icon: FileText, action: () => { onNavigate('examination?tab=regular' as any); setOpenDrawer(null); } },
+          { id: 'examination?tab=results' as any, label: 'CBCS Semester Grade Card & SGPA Gazette', icon: GraduationCap, action: () => { onNavigate('examination?tab=results' as any); setOpenDrawer(null); } },
+          { id: 'examination?tab=reappear' as any, label: 'Reappear / Backlog Form', icon: AlertCircle, action: () => { onNavigate('examination?tab=reappear' as any); setOpenDrawer(null); } },
+          { id: 'examination?tab=datesheet' as any, label: 'Datesheet & Examination Timetable', icon: Clock, action: () => { onNavigate('examination?tab=datesheet' as any); setOpenDrawer(null); } },
+          { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz & Examination LMS', icon: Brain, action: () => { onNavigate('student-quiz-lms'); setOpenDrawer(null); } },
         ],
         isActive: ['examination', 'student-quiz-lms'].includes(activeScreen as any) || effectivePath.startsWith('/examination') || effectivePath.startsWith('/student-quiz-lms'),
       },
       {
         id: 'academics',
         label: 'Syllabus & LMS',
+        icon: BookOpen,
         defaultScreen: 'academics',
         action: () => {
           onNavigate('academics');
           setOpenDrawer(null);
         },
         items: [
-          { id: 'academics?tab=syllabus' as any, label: 'Choice Based Credit System (CBCS)', action: () => { onNavigate('academics?tab=syllabus' as any); setOpenDrawer(null); } },
-          { id: 'academics?tab=syllabus' as any, label: 'Curriculum Syllabi Archive', action: () => { onNavigate('academics?tab=syllabus' as any); setOpenDrawer(null); } },
-          { id: 'student-quiz-lms' as ActiveScreen, label: 'Continuous Assessment (CA) Quiz & LMS', action: () => { onNavigate('student-quiz-lms'); setOpenDrawer(null); } },
+          { id: 'academics?tab=syllabus' as any, label: 'Choice Based Credit System (CBCS)', icon: BookOpen, action: () => { onNavigate('academics?tab=syllabus' as any); setOpenDrawer(null); } },
+          { id: 'academics?tab=syllabus' as any, label: 'Curriculum Syllabi Archive', icon: BookOpen, action: () => { onNavigate('academics?tab=syllabus' as any); setOpenDrawer(null); } },
+          { id: 'student-quiz-lms' as ActiveScreen, label: 'Continuous Assessment (CA) Quiz & LMS', icon: Brain, action: () => { onNavigate('student-quiz-lms'); setOpenDrawer(null); } },
         ],
         isActive: (effectivePath.startsWith('/academics') && currentTab !== 'timetable') || activeScreen === 'academics',
       },
       {
         id: 'documents',
         label: 'Compliance & Help',
+        icon: FolderCheck,
         defaultScreen: 'student-documents',
         action: () => {
           onNavigate('student-documents');
           setOpenDrawer(null);
         },
         items: [
-          { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault', action: () => { onNavigate('student-documents'); setOpenDrawer(null); } },
-          { id: 'grievances' as ActiveScreen, label: 'Statutory Grievance Redressal', action: () => { onNavigate('grievances'); setOpenDrawer(null); } },
+          { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault', icon: FolderCheck, action: () => { onNavigate('student-documents'); setOpenDrawer(null); } },
+          { id: 'grievances' as ActiveScreen, label: 'Statutory Grievance Redressal', icon: AlertCircle, action: () => { onNavigate('grievances'); setOpenDrawer(null); } },
         ],
         isActive: ['student-documents', 'grievances'].includes(activeScreen as any) || effectivePath.startsWith('/student-documents') || effectivePath.startsWith('/grievances'),
       },
       {
         id: 'residence',
         label: 'Hostel & Transit',
+        icon: Building,
         defaultScreen: 'hostel' as any,
         action: () => {
           onNavigate('hostel' as any);
           setOpenDrawer(null);
         },
         items: [
-          { id: 'hostel' as any, label: 'Hostel Room & Mess Clearance NOC', action: () => { onNavigate('hostel' as any); setOpenDrawer(null); } },
-          { id: 'transport' as any, label: 'Digital RFID Bus Pass & Route', action: () => { onNavigate('transport' as any); setOpenDrawer(null); } },
+          { id: 'hostel' as any, label: 'Hostel Room & Mess Clearance NOC', icon: Bed, action: () => { onNavigate('hostel' as any); setOpenDrawer(null); } },
+          { id: 'transport' as any, label: 'Digital RFID Bus Pass & Route', icon: Bus, action: () => { onNavigate('transport' as any); setOpenDrawer(null); } },
         ],
         isActive: effectivePath.startsWith('/hostel') || effectivePath.startsWith('/transport'),
       },
@@ -1458,23 +1527,9 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           )}
 
-          {/* Pure Digit Canonical UID Dynamic Island Pill */}
-          <button
-            type="button"
-            onClick={handleCopyUid}
-            title="Click to copy canonical 10-digit UID"
-            className="flex items-center gap-1.5 h-8 px-3.5 bg-white/10 backdrop-blur-md hover:bg-white/15 border border-white/20 rounded-full font-mono text-xs text-white transition-all shadow-inner cursor-pointer"
-          >
-            <span className="text-amber-400 font-bold">UID</span>
-            <span className="font-bold tracking-tight text-white">{displayUid}</span>
-            <span className="text-white/60 text-[10px]">
-              {copiedUid ? <Check className="w-3 h-3 text-emerald-400 inline" /> : 'Copy'}
-            </span>
-          </button>
-
           {/* Welcome User & Institutional Role Pill with 3-Option Profile Popover (Karanvir Sir Lecture 4) */}
           {currentUser && (
-            <div className="relative">
+            <div className="relative" ref={profileDropdownRef}>
               <button
                 type="button"
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
@@ -1497,7 +1552,6 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Profile Popover: Sleek Minimalist Menu (Profile, Reset Password, Sign Out) */}
               {isProfileMenuOpen && (
                 <div
-                  onMouseLeave={() => setIsProfileMenuOpen(false)}
                   className="absolute right-0 top-full mt-1.5 w-52 bg-white/98 backdrop-blur-xl rounded-xl shadow-xl border border-slate-200/90 py-1 z-50 text-slate-800 animate-in fade-in"
                 >
                   <div className="px-3 py-2 border-b border-slate-100">
@@ -1514,11 +1568,7 @@ export const Header: React.FC<HeaderProps> = ({
                       type="button"
                       onClick={() => {
                         setIsProfileMenuOpen(false);
-                        if (currentUser.role === 'student') {
-                          onNavigate('student-dashboard');
-                        } else {
-                          onNavigate('staff-management');
-                        }
+                        setIsProfileModalOpen(true);
                       }}
                       className="w-full px-3 py-1.5 text-left text-xs font-semibold hover:bg-slate-50 flex items-center gap-2 text-slate-700 cursor-pointer"
                     >
@@ -1556,17 +1606,6 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
               )}
             </div>
-          )}
-
-          {/* AI Copilot Action */}
-          {onOpenCopilot && (
-            <button
-              type="button"
-              onClick={onOpenCopilot}
-              className="h-8 px-3.5 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold rounded-full text-xs shadow-xs transition-all cursor-pointer"
-            >
-              AI Copilot
-            </button>
           )}
 
           {/* Mobile Back Button */}
@@ -1634,19 +1673,19 @@ export const Header: React.FC<HeaderProps> = ({
                           clearTimeout(closeTimerRef.current);
                           closeTimerRef.current = null;
                         }
+                        // Always execute primary screen navigation or action
+                        if (sec.action) {
+                          sec.action();
+                        } else if (sec.defaultScreen) {
+                          onNavigate(sec.defaultScreen);
+                        }
                         if (hasChildren) {
-                          // Click toggles the drawer so touch/click users can easily open/close submenus
                           setOpenDrawer(isDrawerOpen ? null : sec.id);
                         } else {
                           setOpenDrawer(null);
-                          if (sec.action) {
-                            sec.action();
-                          } else if (sec.defaultScreen) {
-                            onNavigate(sec.defaultScreen);
-                          }
                         }
                       }}
-                      className={`h-8 sm:h-full px-2.5 sm:px-3 text-xs font-semibold tracking-tight transition-colors flex items-center gap-1.5 cursor-pointer select-none relative rounded-lg sm:rounded-none shrink-0 ${
+                      className={`h-8 sm:h-full px-2.5 sm:px-3 text-xs font-semibold tracking-tight transition-colors flex items-center gap-1.5 cursor-pointer select-none relative rounded-lg sm:rounded-none shrink-0 group ${
                         sec.isActive || isDrawerOpen
                           ? 'text-[#00236f] font-bold bg-slate-100 sm:bg-transparent'
                           : 'text-slate-600 hover:text-[#00236f] hover:bg-slate-50 sm:hover:bg-transparent'
@@ -1654,6 +1693,9 @@ export const Header: React.FC<HeaderProps> = ({
                       aria-expanded={hasChildren ? isDrawerOpen : undefined}
                       aria-haspopup={hasChildren ? 'true' : undefined}
                     >
+                      {sec.icon && (
+                        <sec.icon className={`w-3.5 h-3.5 shrink-0 transition-colors ${sec.isActive || isDrawerOpen ? 'text-[#00236f]' : 'text-slate-500 group-hover:text-[#00236f]'}`} />
+                      )}
                       <span className="whitespace-nowrap font-medium">{sec.label}</span>
                       {hasChildren && (
                         <span
@@ -1715,7 +1757,12 @@ export const Header: React.FC<HeaderProps> = ({
                                       : 'text-slate-700 hover:bg-slate-100 hover:text-[#00236f] font-medium'
                                   }`}
                                 >
-                                  <span className="truncate">{item.label}</span>
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    {item.icon && (
+                                      <item.icon className={`w-3.5 h-3.5 shrink-0 transition-colors ${isItemActive ? 'text-[#00236f]' : 'text-slate-400 group-hover:text-[#00236f]'}`} />
+                                    )}
+                                    <span className="truncate">{item.label}</span>
+                                  </div>
                                   {isItemActive && (
                                     <span className="w-1.5 h-1.5 rounded-full bg-[#00236f] shrink-0 ml-1.5" />
                                   )}
@@ -1761,7 +1808,7 @@ export const Header: React.FC<HeaderProps> = ({
                   {(currentUser?.full_name || currentUser?.username || 'User').replace(/\s*\(\d+\)\s*$/, '')}
                 </div>
                 <div className="text-[11px] font-semibold text-amber-600">
-                  {getInstitutionalRoleTitle(currentUser)} • UID: {displayUid}
+                  {getInstitutionalRoleTitle(currentUser)}
                 </div>
               </div>
               <button
@@ -1778,8 +1825,11 @@ export const Header: React.FC<HeaderProps> = ({
               {menuSections.map(sec => (
                 <div key={sec.id} className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3">
                   <div className="flex items-center justify-between font-bold text-[#00236f] text-xs uppercase tracking-wider mb-2">
-                    <span>{sec.label}</span>
-                    {sec.items && <span className="text-[10px] text-slate-400 font-normal">{sec.items.length} items</span>}
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      {sec.icon && <sec.icon className="w-3.5 h-3.5 text-[#00236f] shrink-0" />}
+                      <span className="truncate">{sec.label}</span>
+                    </div>
+                    {sec.items && <span className="text-[10px] text-slate-400 font-normal shrink-0">{sec.items.length} items</span>}
                   </div>
 
                   {sec.items ? (
@@ -1799,8 +1849,11 @@ export const Header: React.FC<HeaderProps> = ({
                               : 'text-slate-700 hover:bg-slate-200/70 hover:text-[#00236f]'
                           }`}
                         >
-                          <span className="truncate">{item.label}</span>
-                          <span className="text-[10px] opacity-60">›</span>
+                          <div className="flex items-center gap-2 min-w-0">
+                            {item.icon && <item.icon className={`w-3.5 h-3.5 shrink-0 ${activeScreen === item.id ? 'text-white' : 'text-slate-400'}`} />}
+                            <span className="truncate">{item.label}</span>
+                          </div>
+                          <span className="text-[10px] opacity-60 shrink-0">›</span>
                         </button>
                       ))}
                     </div>
@@ -1809,12 +1862,16 @@ export const Header: React.FC<HeaderProps> = ({
                       type="button"
                       onClick={() => {
                         if (sec.action) sec.action();
+                        else if (sec.defaultScreen) onNavigate(sec.defaultScreen);
                         setMobileMenuOpen(false);
                       }}
                       className="w-full text-left px-2.5 py-2 rounded-lg text-xs font-bold bg-[#00236f] text-white flex items-center justify-between"
                     >
-                      <span>Open {sec.label}</span>
-                      <span>›</span>
+                      <div className="flex items-center gap-2 min-w-0">
+                        {sec.icon && <sec.icon className="w-3.5 h-3.5 text-white shrink-0" />}
+                        <span className="truncate">{sec.label}</span>
+                      </div>
+                      <span>→</span>
                     </button>
                   )}
                 </div>
@@ -1841,6 +1898,20 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
       )}
+
+      {/* Universal User Profile & Identity Dossier Modal */}
+      <UserProfileModal
+        currentUser={currentUser}
+        displayUid={displayUid}
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        onLogout={onLogout}
+        onResetPassword={() => {
+          setIsProfileModalOpen(false);
+          setHeaderToast(`Password recovery link dispatched to ${currentUser?.email || 'registered address'}.`);
+          setTimeout(() => setHeaderToast(null), 3500);
+        }}
+      />
     </header>
   );
 };

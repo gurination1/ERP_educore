@@ -102,6 +102,19 @@ export interface StaffAcademicJourney {
   created_at: string;
 }
 
+export const ROLE_CODE_MAP: Record<EnterpriseUserRole, string> = {
+  student: '01',
+  staff: '02',
+  hod: '03',
+  admin: '04',
+  accounts: '05',
+  counselor: '06',
+  partner: '07',
+  hr: '08',
+  super_admin: '09',
+  hostel: '10',
+};
+
 export function generateEnterpriseUID(
   userType: EnterpriseUserRole,
   stateGst: string = '03',
@@ -109,44 +122,21 @@ export function generateEnterpriseUID(
   sequenceNum?: number | string,
   clientCode: string = '01',
   sessionCode: string = '26',
-  courseCode: string = '01',
+  courseCode?: string,
   serverNode: string = '1'
 ): string {
-  // 12-Digit Canonical Pure Digit Student UID Architecture per Mentor Karanvir Sir:
-  // [Server: 1 or 01]-[Client: 02]-[Session: 02]-[Course: 02]-[Student: 0004]
-  if (userType === 'student') {
-    const sNode = serverNode || '1';
-    const cCode = (clientCode || instCode || '01').padStart(2, '0').slice(-2);
-    const sCode = (sessionCode || '26').padStart(2, '0').slice(-2);
-    const coCode = (courseCode || '01').padStart(2, '0').slice(-2);
-    const seq = sequenceNum !== undefined
-      ? String(sequenceNum).padStart(4, '0').slice(-4)
-      : Math.floor(1000 + Math.random() * 8999).toString();
-
-    // Pure 11-12 digit format: S-CC-SS-CO-NNNN (e.g. 1-01-26-01-0001 or 01-01-26-01-0001)
-    return `${sNode}-${cCode}-${sCode}-${coCode}-${seq}`;
-  }
-
-  const typeMap: Record<EnterpriseUserRole, { numeric: string; alpha: string }> = {
-    student: { numeric: '1001', alpha: 'STU' },
-    staff: { numeric: '2001', alpha: 'FAC' },
-    hod: { numeric: '3001', alpha: 'HOD' },
-    admin: { numeric: '4001', alpha: 'ADM' },
-    accounts: { numeric: '5001', alpha: 'ACC' },
-    counselor: { numeric: '6001', alpha: 'CNS' },
-    partner: { numeric: '7001', alpha: 'PRT' },
-    hr: { numeric: '8001', alpha: 'HRM' },
-    super_admin: { numeric: '9001', alpha: 'SUP' },
-    hostel: { numeric: '10001', alpha: 'HST' },
-  };
-
-  const selected = typeMap[userType] || { numeric: '1001', alpha: 'STU' };
+  // Canonical 11-12 Digit Pure-Digit UID Architecture across all roles:
+  // [Server Node: 1]-[Client Number: 01]-[Session: 26]-[Course/Role Code: 01..10]-[Student/Emp Seq: 0001..9999]
+  const sNode = serverNode || '1';
+  const cCode = (clientCode || instCode || '01').padStart(2, '0').slice(-2);
+  const sCode = (sessionCode || '26').padStart(2, '0').slice(-2);
+  const code = courseCode ? courseCode.padStart(2, '0').slice(-2) : (ROLE_CODE_MAP[userType] || '01');
   const seq = sequenceNum !== undefined
-    ? String(sequenceNum).padStart(2, '0').slice(-2)
-    : Math.floor(10 + Math.random() * 89).toString();
+    ? String(sequenceNum).padStart(4, '0').slice(-4)
+    : (userType === 'staff' ? '0014' : Math.floor(1 + Math.random() * 99).toString().padStart(4, '0'));
 
-  // Canonical Multi-College Architecture (Pure Digits 12-13 digits): [Type: 4]-[Seq: 2]-[Client: 2]-[State GST: 2]-[Inst: 2]
-  return `${selected.numeric}-${seq}-${clientCode}-${stateGst}-${instCode}`;
+  // Pure-digit UID without hyphens: [Server Node: 1][Client Number: 01][Session: 26][Course/Role Code: 01..10][Student/Emp Seq: 0001..9999]
+  return `${sNode}${cCode}${sCode}${code}${seq}`;
 }
 
 export const DEFAULT_MASTER_STATES: MasterState[] = [
@@ -163,15 +153,16 @@ export const DEFAULT_MASTER_STATES: MasterState[] = [
 ];
 
 export const DEFAULT_MASTER_USER_TYPES: MasterUserType[] = [
-  { type_code: '1001', alpha_prefix: 'STU', role_key: 'student', display_title: 'Student Scholar', description: 'Enrolled or admitted undergraduate/postgraduate student candidate' },
-  { type_code: '2001', alpha_prefix: 'FAC', role_key: 'staff', display_title: 'Faculty / Academic Staff', description: 'Teaching assistant, assistant professor, associate professor or lab in-charge' },
-  { type_code: '3001', alpha_prefix: 'HOD', role_key: 'hod', display_title: 'Head of Department (HOD)', description: 'Departmental administrative and curriculum head' },
-  { type_code: '4001', alpha_prefix: 'ADM', role_key: 'admin', display_title: 'Institutional Administrator', description: 'College registrar, dean, administrative head' },
-  { type_code: '5001', alpha_prefix: 'ACC', role_key: 'accounts', display_title: 'Accounts & Bursar Officer', description: 'Finance department, tuition collection, bursar' },
-  { type_code: '6001', alpha_prefix: 'CNS', role_key: 'counselor', display_title: 'Admissions Counselor', description: 'Counseling cell, leads pipeline, CRM coordinator' },
-  { type_code: '7001', alpha_prefix: 'PRT', role_key: 'partner', display_title: 'Corporate & Hiring Partner', description: 'Industry partners, corporate recruiters, and internship sponsors' },
-  { type_code: '8001', alpha_prefix: 'HRM', role_key: 'hr', display_title: 'HR & Establishment Officer', description: 'Human Resources, staff recruitment, leave, employee records & service books' },
-  { type_code: '9001', alpha_prefix: 'SUP', role_key: 'super_admin', display_title: 'Universal Provost & Super Admin', description: 'Apex system authority, universal access, invisible to subordinate users' },
+  { type_code: '01', alpha_prefix: 'STU', role_key: 'student', display_title: 'Student Scholar', description: 'Enrolled or admitted undergraduate/postgraduate student candidate. Format: 10126010001' },
+  { type_code: '02', alpha_prefix: 'FAC', role_key: 'staff', display_title: 'Faculty / Academic Staff', description: 'Teaching assistant, assistant professor, or lab in-charge. Format: 10126020014' },
+  { type_code: '03', alpha_prefix: 'HOD', role_key: 'hod', display_title: 'Head of Department (HOD)', description: 'Departmental administrative and curriculum head. Format: 10126030001' },
+  { type_code: '04', alpha_prefix: 'ADM', role_key: 'admin', display_title: 'Institutional Administrator', description: 'College registrar, dean, administrative head. Format: 10126040001' },
+  { type_code: '05', alpha_prefix: 'ACC', role_key: 'accounts', display_title: 'Accounts & Bursar Officer', description: 'Finance department, tuition collection, bursar. Format: 10126050001' },
+  { type_code: '06', alpha_prefix: 'CNS', role_key: 'counselor', display_title: 'Admissions Counselor', description: 'Counseling cell, leads pipeline, CRM coordinator. Format: 10126060001' },
+  { type_code: '07', alpha_prefix: 'PRT', role_key: 'partner', display_title: 'Corporate & Hiring Partner', description: 'Industry partners, corporate recruiters, and placement sponsors. Format: 10126070001' },
+  { type_code: '08', alpha_prefix: 'HRM', role_key: 'hr', display_title: 'HR & Establishment Officer', description: 'Human Resources, staff recruitment, leave, employee records. Format: 10126080001' },
+  { type_code: '09', alpha_prefix: 'SUP', role_key: 'super_admin', display_title: 'Universal Provost & Super Admin', description: 'Apex system authority, universal access, invisible to subordinate users. Format: 10126090001' },
+  { type_code: '10', alpha_prefix: 'HST', role_key: 'hostel', display_title: 'Chief Hostel Warden & Residence Admin', description: 'Hostel blocks, room inventory, mess dues, and transit pass. Format: 10126100001' },
 ];
 
 export const DEFAULT_MASTER_DEGREES: MasterDegree[] = [
@@ -1031,7 +1022,7 @@ export const DEFAULT_HOSTEL_ROOMS: HostelRoom[] = [
 export const DEFAULT_HOSTEL_RESIDENTS: HostelResident[] = [
   {
     id: 'res-01',
-    student_uid: '1-01-26-01-0001',
+    student_uid: '10126',
     student_name: 'Aryan Sharma',
     course_name: 'B.Tech Computer Science & Engg',
     semester: 4,
@@ -1053,7 +1044,7 @@ export const DEFAULT_HOSTEL_RESIDENTS: HostelResident[] = [
   },
   {
     id: 'res-02',
-    student_uid: '1-01-26-02-0002',
+    student_uid: '10126',
     student_name: 'Gurpreet Singh Dhillon',
     course_name: 'B.Tech Mechanical Engg',
     semester: 4,
@@ -1075,7 +1066,7 @@ export const DEFAULT_HOSTEL_RESIDENTS: HostelResident[] = [
   },
   {
     id: 'res-03',
-    student_uid: '1-01-26-08-0003',
+    student_uid: '10126',
     student_name: 'Navjot Kaur Brar',
     course_name: 'BCA Cloud Technology',
     semester: 2,
@@ -1097,7 +1088,7 @@ export const DEFAULT_HOSTEL_RESIDENTS: HostelResident[] = [
   },
   {
     id: 'res-04',
-    student_uid: '1-01-26-01-0004',
+    student_uid: '10126',
     student_name: 'Simranjit Singh',
     course_name: 'B.Tech CSE',
     semester: 6,
@@ -1122,7 +1113,7 @@ export const DEFAULT_HOSTEL_RESIDENTS: HostelResident[] = [
 export const DEFAULT_HOSTEL_MESS_CLEARANCES: MessClearanceRecord[] = [
   {
     id: 'mc-01',
-    student_uid: '1-01-26-01-0001',
+    student_uid: '10126',
     student_name: 'Aryan Sharma',
     room_number: '101',
     building_name: 'SBS-A',
@@ -4818,11 +4809,11 @@ class DatabaseStore {
 
     // Ensure all demo student accounts exist in MariaDB users table & link to student profiles
     const demoStudentAccounts = [
-      { id: 'usr-stu-aryan', username: 'aryan', email: 'aryan.sharma@educore.edu', full_name: 'Aryan Sharma', student_id: 'stu-rec-aryan', enterprise_uid: '1-01-26-01-0001' },
-      { id: 'usr-stu-rohan', username: 'rohan', email: 'rohan.gupta@educore.edu', full_name: 'Rohan Gupta', student_id: 'stu-rec-rohan', enterprise_uid: '1-01-26-02-0002' },
-      { id: 'usr-stu-priya', username: 'priya', email: 'priya.patel@educore.edu', full_name: 'Priya Patel', student_id: 'stu-rec-priya', enterprise_uid: '1-01-26-05-0003' },
-      { id: 'usr-stu-aarav', username: 'aarav', email: 'aarav.sharma@educore.edu', full_name: 'Aarav Sharma', student_id: 'stu-rec-aarav', enterprise_uid: '1-01-26-01-0004' },
-      { id: 'usr-stu-neha', username: 'neha', email: 'neha.singh@educore.edu', full_name: 'Neha Singh', student_id: 'stu-rec-neha', enterprise_uid: '1-01-26-07-0005' },
+      { id: 'usr-stu-aryan', username: 'aryan', email: 'aryan.sharma@educore.edu', full_name: 'Aryan Sharma', student_id: 'stu-rec-aryan', enterprise_uid: '10126' },
+      { id: 'usr-stu-rohan', username: 'rohan', email: 'rohan.gupta@educore.edu', full_name: 'Rohan Gupta', student_id: 'stu-rec-rohan', enterprise_uid: '10126' },
+      { id: 'usr-stu-priya', username: 'priya', email: 'priya.patel@educore.edu', full_name: 'Priya Patel', student_id: 'stu-rec-priya', enterprise_uid: '10126' },
+      { id: 'usr-stu-aarav', username: 'aarav', email: 'aarav.sharma@educore.edu', full_name: 'Aarav Sharma', student_id: 'stu-rec-aarav', enterprise_uid: '10126' },
+      { id: 'usr-stu-neha', username: 'neha', email: 'neha.singh@educore.edu', full_name: 'Neha Singh', student_id: 'stu-rec-neha', enterprise_uid: '10126' },
     ];
     const demoStudentHash = bcrypt.hashSync('student123', 10);
     for (const su of demoStudentAccounts) {
@@ -4848,15 +4839,15 @@ class DatabaseStore {
     const wardenHash = bcrypt.hashSync('warden123', 10);
 
     const demoStaffAccounts = [
-      { id: 'usr-super-01', username: 'superadmin', email: 'superadmin@educore.edu', hash: superHash, role: 'super_admin', full_name: 'Prof. Dr. Amritpal Singh (Chief System Provost)', department: 'Executive Directorate & University Governance', designation: 'Chief System Provost & Chancellor Delegate', employee_id: 'PRO-SUP-001', enterprise_uid: '9001-01-03-01' },
-      { id: 'usr-admin-01', username: 'admin', email: 'admin@educore.edu', hash: adminHash, role: 'admin', full_name: 'Dr. Ramesh Chandra (Registrar & Academic Provost)', department: 'Registrar Office', designation: 'Registrar & Provost', employee_id: 'REG-PRO-001', enterprise_uid: '4001-01-03-01' },
-      { id: 'usr-staff-01', username: 'staff01', email: 'staff@educore.edu', hash: staffHash, role: 'staff', full_name: 'Prof. Sunita Rao (Staff / Faculty)', department: 'Computer Science & Engineering', designation: 'Assistant Professor', employee_id: 'FAC-CSE-014', enterprise_uid: '2001-14-03-01' },
-      { id: 'usr-counselor-01', username: 'counselor01', email: 'counselor@educore.edu', hash: counselorHash, role: 'counselor', full_name: 'Harleen Kaur (Head Counselor / Admission Cell)', department: 'Admission & Counseling Cell', designation: 'Head Counselor & Admission Cell Convener', employee_id: 'ADM-CNS-002', enterprise_uid: '6001-02-03-01' },
-      { id: 'usr-hod-01', username: 'hod_cse', email: 'hod.cse@educore.edu', hash: hodHash, role: 'hod', full_name: 'Dr. Balwinder Singh (HOD Computer Science)', department: 'Computer Science & Engineering', designation: 'Head of Department', employee_id: 'FAC-HOD-001', enterprise_uid: '3001-01-03-01' },
-      { id: 'usr-accounts-01', username: 'accounts01', email: 'accounts@educore.edu', hash: accountsHash, role: 'accounts', full_name: 'Manmohan Sharma (Chief Accounts Officer)', department: 'Finance & Accounts Section', designation: 'Chief Accounts Officer', employee_id: 'ACC-OFF-005', enterprise_uid: '5001-05-03-01' },
-      { id: 'usr-partner-01', username: 'partner01', email: 'partner@educore.edu', hash: partnerHash, role: 'partner', full_name: 'Infosys Campus Relations Lead', department: 'Corporate Relations', designation: 'Campus Hiring Director', employee_id: 'PRT-INF-001', enterprise_uid: '7001-01-03-01' },
-      { id: 'usr-hr-01', username: 'hr01', email: 'hr@educore.edu', hash: hrHash, role: 'hr', full_name: 'Sumanpreet Kaur (Chief HR & Establishment Officer)', department: 'Human Resources & Establishment Section', designation: 'Chief HR & Establishment Officer', employee_id: 'HRM-OFF-001', enterprise_uid: '8001-01-03-01' },
-      { id: 'usr-hostel-01', username: 'hostel01', email: 'hostel@educore.edu', hash: wardenHash, role: 'hostel', full_name: 'Warden Baljinder Singh (Chief Residence Officer)', department: 'Campus Infrastructure & Residences', designation: 'Chief Hostel Warden', employee_id: 'HST-WRD-001', enterprise_uid: '10001-01-03-01' },
+      { id: 'usr-super-01', username: 'superadmin', email: 'superadmin@educore.edu', hash: superHash, role: 'super_admin', full_name: 'Prof. Dr. Amritpal Singh (Chief System Provost)', department: 'Executive Directorate & University Governance', designation: 'Chief System Provost & Chancellor Delegate', employee_id: 'PRO-SUP-001', enterprise_uid: '10126090001' },
+      { id: 'usr-admin-01', username: 'admin', email: 'admin@educore.edu', hash: adminHash, role: 'admin', full_name: 'Dr. Ramesh Chandra (Registrar & Academic Provost)', department: 'Registrar Office', designation: 'Registrar & Provost', employee_id: 'REG-PRO-001', enterprise_uid: '10126040001' },
+      { id: 'usr-staff-01', username: 'staff01', email: 'staff@educore.edu', hash: staffHash, role: 'staff', full_name: 'Prof. Sunita Rao (Staff / Faculty)', department: 'Computer Science & Engineering', designation: 'Assistant Professor', employee_id: 'FAC-CSE-014', enterprise_uid: '10126020014' },
+      { id: 'usr-counselor-01', username: 'counselor01', email: 'counselor@educore.edu', hash: counselorHash, role: 'counselor', full_name: 'Harleen Kaur (Head Counselor / Admission Cell)', department: 'Admission & Counseling Cell', designation: 'Head Counselor & Admission Cell Convener', employee_id: 'ADM-CNS-002', enterprise_uid: '10126060001' },
+      { id: 'usr-hod-01', username: 'hod_cse', email: 'hod.cse@educore.edu', hash: hodHash, role: 'hod', full_name: 'Dr. Balwinder Singh (HOD Computer Science)', department: 'Computer Science & Engineering', designation: 'Head of Department', employee_id: 'FAC-HOD-001', enterprise_uid: '10126030001' },
+      { id: 'usr-accounts-01', username: 'accounts01', email: 'accounts@educore.edu', hash: accountsHash, role: 'accounts', full_name: 'Manmohan Sharma (Chief Accounts Officer)', department: 'Finance & Accounts Section', designation: 'Chief Accounts Officer', employee_id: 'ACC-OFF-005', enterprise_uid: '10126050001' },
+      { id: 'usr-partner-01', username: 'partner01', email: 'partner@educore.edu', hash: partnerHash, role: 'partner', full_name: 'Infosys Campus Relations Lead', department: 'Corporate Relations', designation: 'Campus Hiring Director', employee_id: 'PRT-INF-001', enterprise_uid: '10126070001' },
+      { id: 'usr-hr-01', username: 'hr01', email: 'hr@educore.edu', hash: hrHash, role: 'hr', full_name: 'Sumanpreet Kaur (Chief HR & Establishment Officer)', department: 'Human Resources & Establishment Section', designation: 'Chief HR & Establishment Officer', employee_id: 'HRM-OFF-001', enterprise_uid: '10126080001' },
+      { id: 'usr-hostel-01', username: 'hostel01', email: 'hostel@educore.edu', hash: wardenHash, role: 'hostel', full_name: 'Warden Baljinder Singh (Chief Residence Officer)', department: 'Campus Infrastructure & Residences', designation: 'Chief Hostel Warden', employee_id: 'HST-WRD-001', enterprise_uid: '10126100001' },
     ];
 
     for (const sa of demoStaffAccounts) {
@@ -5517,14 +5508,14 @@ class DatabaseStore {
 
         // Ensure all demo staff & administrative accounts exist in SQLite mode
         const demoStaffAccounts = [
-          { username: 'admin', email: 'admin@educore.edu', name: 'Dr. Ramesh Chandra (Registrar & Provost)', role: 'admin' as const, dept: 'Registrar Office', desig: 'Registrar & Provost', empId: 'REG-PRO-001', pass: 'admin123', uid: '4001-01-03-01' },
-          { username: 'staff01', email: 'staff@educore.edu', name: 'Prof. Sunita Rao (Staff / Faculty)', role: 'staff' as const, dept: 'Computer Science & Engineering', desig: 'Assistant Professor', empId: 'FAC-CSE-014', pass: 'staff123', uid: '2001-14-03-01' },
-          { username: 'counselor01', email: 'counselor@educore.edu', name: 'Harleen Kaur (Head Counselor / Admission Cell)', role: 'counselor' as const, dept: 'Admission & Counseling Cell', desig: 'Head Counselor & Admission Cell Convener', empId: 'ADM-CNS-002', pass: 'counselor123', uid: '6001-02-03-01' },
-          { username: 'hod_cse', email: 'hod.cse@educore.edu', name: 'Dr. Balwinder Singh (HOD Computer Science)', role: 'hod' as const, dept: 'Computer Science & Engineering', desig: 'Head of Department', empId: 'FAC-HOD-001', pass: 'hod123', uid: '3001-01-03-01' },
-          { username: 'accounts01', email: 'accounts@educore.edu', name: 'Manmohan Sharma (Chief Accounts Officer)', role: 'accounts' as const, dept: 'Finance & Accounts Section', desig: 'Chief Accounts Officer', empId: 'ACC-OFF-005', pass: 'accounts123', uid: '5001-05-03-01' },
-          { username: 'partner01', email: 'partner@educore.edu', name: 'Infosys Campus Relations Lead', role: 'partner' as const, dept: 'Corporate Relations', desig: 'Campus Hiring Director', empId: 'PRT-INF-001', pass: 'partner123', uid: '7001-01-03-01' },
-          { username: 'hr01', email: 'hr@educore.edu', name: 'Sumanpreet Kaur (Chief HR & Establishment Officer)', role: 'hr' as const, dept: 'Human Resources & Establishment Section', desig: 'Chief HR & Establishment Officer', empId: 'HRM-OFF-001', pass: 'hr123', uid: '8001-01-03-01' },
-          { username: 'hostel01', email: 'hostel@educore.edu', name: 'Warden Baljinder Singh (Chief Residence Officer)', role: 'hostel' as const, dept: 'Campus Infrastructure & Residences', desig: 'Chief Hostel Warden', empId: 'HST-WRD-001', pass: 'warden123', uid: '10001-01-03-01' },
+          { username: 'admin', email: 'admin@educore.edu', name: 'Dr. Ramesh Chandra (Registrar & Provost)', role: 'admin' as const, dept: 'Registrar Office', desig: 'Registrar & Provost', empId: 'REG-PRO-001', pass: 'admin123', uid: '10126040001' },
+          { username: 'staff01', email: 'staff@educore.edu', name: 'Prof. Sunita Rao (Staff / Faculty)', role: 'staff' as const, dept: 'Computer Science & Engineering', desig: 'Assistant Professor', empId: 'FAC-CSE-014', pass: 'staff123', uid: '10126020014' },
+          { username: 'counselor01', email: 'counselor@educore.edu', name: 'Harleen Kaur (Head Counselor / Admission Cell)', role: 'counselor' as const, dept: 'Admission & Counseling Cell', desig: 'Head Counselor & Admission Cell Convener', empId: 'ADM-CNS-002', pass: 'counselor123', uid: '10126060001' },
+          { username: 'hod_cse', email: 'hod.cse@educore.edu', name: 'Dr. Balwinder Singh (HOD Computer Science)', role: 'hod' as const, dept: 'Computer Science & Engineering', desig: 'Head of Department', empId: 'FAC-HOD-001', pass: 'hod123', uid: '10126030001' },
+          { username: 'accounts01', email: 'accounts@educore.edu', name: 'Manmohan Sharma (Chief Accounts Officer)', role: 'accounts' as const, dept: 'Finance & Accounts Section', desig: 'Chief Accounts Officer', empId: 'ACC-OFF-005', pass: 'accounts123', uid: '10126050001' },
+          { username: 'partner01', email: 'partner@educore.edu', name: 'Infosys Campus Relations Lead', role: 'partner' as const, dept: 'Corporate Relations', desig: 'Campus Hiring Director', empId: 'PRT-INF-001', pass: 'partner123', uid: '10126070001' },
+          { username: 'hr01', email: 'hr@educore.edu', name: 'Sumanpreet Kaur (Chief HR & Establishment Officer)', role: 'hr' as const, dept: 'Human Resources & Establishment Section', desig: 'Chief HR & Establishment Officer', empId: 'HRM-OFF-001', pass: 'hr123', uid: '10126080001' },
+          { username: 'hostel01', email: 'hostel@educore.edu', name: 'Warden Baljinder Singh (Chief Residence Officer)', role: 'hostel' as const, dept: 'Campus Infrastructure & Residences', desig: 'Chief Hostel Warden', empId: 'HST-WRD-001', pass: 'warden123', uid: '10126100001' },
         ];
 
         for (const stf of demoStaffAccounts) {
@@ -5553,10 +5544,10 @@ class DatabaseStore {
           }
         }
 
-        // Ensure canonical UID for demo student Aryan
+        // Ensure canonical pure-digit UID for demo student Aryan
         const aryanUser = this.users.find(u => u.username.toLowerCase() === 'aryan');
         if (aryanUser) {
-          aryanUser.enterprise_uid = '1-01-26-01-0001';
+          aryanUser.enterprise_uid = '10126010001';
           aryanUser.password_hash = bcrypt.hashSync('student123', 10);
           aryanUser.is_active = true;
         }
@@ -5575,25 +5566,56 @@ class DatabaseStore {
             department: 'Executive Directorate & University Governance',
             designation: 'Chief System Provost & Chancellor Delegate',
             employee_id: 'PRO-SUP-001',
-            enterprise_uid: '9001-01-03-01',
+            enterprise_uid: '10126090001',
             is_active: true,
             created_at: new Date().toISOString(),
           });
         } else {
-          superAdminExisting.enterprise_uid = '9001-01-03-01';
+          superAdminExisting.enterprise_uid = '10126090001';
         }
 
-        // Migrate any legacy UIDs containing '-BFGI' or letters
+        // Canonical 11-12 digit pure-numeric role mapping (no hyphens)
+        const canonicalRoleUIDs: Record<string, string> = {
+          super_admin: '10126090001',
+          admin: '10126040001',
+          staff: '10126020014',
+          hod: '10126030001',
+          accounts: '10126050001',
+          counselor: '10126060001',
+          partner: '10126070001',
+          hr: '10126080001',
+          hostel: '10126100001',
+          student: '10126010001',
+        };
+
+        // Convert any legacy or hyphenated UIDs to pure-digit UIDs
         for (const u of this.users) {
-          if (u.enterprise_uid && u.enterprise_uid.includes('BFGI')) {
-            u.enterprise_uid = u.enterprise_uid.replace(/BFGI/g, '01');
+          if (u.enterprise_uid && u.enterprise_uid.includes('-')) {
+            u.enterprise_uid = u.enterprise_uid.replace(/-/g, '');
+          }
+          if (!u.enterprise_uid || !u.enterprise_uid.startsWith('10126')) {
+            if (u.username === 'superadmin') u.enterprise_uid = '10126090001';
+            else if (u.username === 'admin') u.enterprise_uid = '10126040001';
+            else if (u.username === 'staff01') u.enterprise_uid = '10126020014';
+            else if (u.username === 'counselor01') u.enterprise_uid = '10126060001';
+            else if (u.username === 'hod_cse') u.enterprise_uid = '10126030001';
+            else if (u.username === 'accounts01') u.enterprise_uid = '10126050001';
+            else if (u.username === 'partner01') u.enterprise_uid = '10126070001';
+            else if (u.username === 'hr01') u.enterprise_uid = '10126080001';
+            else if (u.username === 'hostel01') u.enterprise_uid = '10126100001';
+            else if (u.username === 'aryan') u.enterprise_uid = '10126010001';
+            else if (u.role === 'student') {
+              const num = u.id.replace(/[^0-9]/g, '') || '1';
+              u.enterprise_uid = `1012601${String(num).padStart(4, '0').slice(-4)}`;
+            } else {
+              u.enterprise_uid = canonicalRoleUIDs[u.role] || generateEnterpriseUID(u.role as any);
+            }
           }
         }
 
-        // Backfill enterprise_uid for all users if missing
-        for (const u of this.users) {
-          if (!u.enterprise_uid) {
-            u.enterprise_uid = generateEnterpriseUID(u.role);
+        for (const s of this.students) {
+          if (s.student_id && s.student_id.includes('-')) {
+            s.student_id = s.student_id.replace(/-/g, '');
           }
         }
 
@@ -5768,20 +5790,16 @@ class DatabaseStore {
     const val = input.trim().toLowerCase();
     const cleanDigits = val.replace(/[^0-9]/g, '');
     let effectiveVal = val;
-    if (val === 'staff' || val === '2001-14-03-01' || val === '2001140301' || val === '2001-14-01-03-01' || val === '200114010301') effectiveVal = 'staff01';
-    else if (val === 'counselor' || val === '6001-02-03-01' || val === '6001020301' || val === '6001-02-01-03-01' || val === '600102010301') effectiveVal = 'counselor01';
-    else if (val === 'hod' || val === '3001-01-03-01' || val === '3001010301' || val === '3001-01-01-03-01' || val === '300101010301') effectiveVal = 'hod_cse';
-    else if (val === 'accounts' || val === '5001-05-03-01' || val === '5001050301' || val === '5001-05-01-03-01' || val === '500105010301') effectiveVal = 'accounts01';
-    else if (val === 'super' || val === 'superadmin' || val === '9001-01-03-01' || val === '9001010301' || val === '9001-01-01-03-01' || val === '900101010301' || val === '9001-01-03-bfgi' || val === '9001-03-bfgi-000001' || val === '9001-03-bfgi-0001') effectiveVal = 'superadmin';
-    else if (val === 'admin' || val === '4001-01-03-01' || val === '4001010301' || val === '4001-01-01-03-01' || val === '400101010301' || val === '4001-01-03-bfgi' || val === '4001-03-bfgi-0001') effectiveVal = 'admin';
-    else if (val === '2001-14-03-bfgi' || val === '2001-03-bfgi-0014') effectiveVal = 'staff01';
-    else if (val === '1-01-26-01-0001' || val === '10126010001' || val === '010126010001' || val === '01-01-26-01-0001' || val === '1001-88-03-01' || val === '1001880301' || val === '1001-88-01-03-01' || val === '100188010301' || val === '1001-88-03-bfgi' || val === '1001-03-bfgi-260088' || val === 'aryan' || val === 'student') effectiveVal = 'aryan';
-    else if (val === 'partner' || val === 'prt-001' || val === 'prt-inf-001' || val === '7001-01-03-01' || val === '7001010301' || val === '7001-01-01-03-01' || val === '700101010301' || val === '7001-01-03-bfgi' || val === '7001-03-bfgi-0001') effectiveVal = 'partner01';
-    else if (val === '6001-02-03-bfgi' || val === '6001-03-bfgi-0002') effectiveVal = 'counselor01';
-    else if (val === '3001-01-03-bfgi' || val === '3001-03-bfgi-0001') effectiveVal = 'hod_cse';
-    else if (val === '5001-05-03-bfgi' || val === '5001-03-bfgi-0005') effectiveVal = 'accounts01';
-    else if (val === 'hr' || val === 'hr01' || val === '8001-01-03-01' || val === '8001010301' || val === '8001-01-01-03-01' || val === '800101010301' || val === '8001-01-03-bfgi' || val === '8001-03-bfgi-0001') effectiveVal = 'hr01';
-    else if (val === 'hostel' || val === 'hostel01' || val === 'warden' || val === '10001-01-03-01' || val === '10001010301' || val === '10001-01-01-03-01' || val === '1000101010301' || val === '10001-01-03-bfgi' || val === '10001-03-bfgi-0001') effectiveVal = 'hostel01';
+    if (val === 'super' || val === 'superadmin' || val === '10126' || val === '10126090001' || val === '010126090001' || val === '9001-01-03-01' || val === '9001010301') effectiveVal = 'superadmin';
+    else if (val === 'admin' || val === '10126' || val === '10126040001' || val === '010126040001' || val === '4001-01-03-01' || val === '4001010301') effectiveVal = 'admin';
+    else if (val === 'staff' || val === 'staff01' || val === '10126' || val === '10126020014' || val === '010126020014' || val === '2001-14-03-01' || val === '2001140301') effectiveVal = 'staff01';
+    else if (val === 'hod' || val === 'hod_cse' || val === '10126' || val === '10126030001' || val === '010126030001' || val === '3001-01-03-01' || val === '3001010301') effectiveVal = 'hod_cse';
+    else if (val === 'accounts' || val === 'accounts01' || val === '10126' || val === '10126050001' || val === '010126050001' || val === '5001-05-03-01' || val === '5001050301') effectiveVal = 'accounts01';
+    else if (val === 'counselor' || val === 'counselor01' || val === '10126' || val === '10126060001' || val === '010126060001' || val === '6001-02-03-01' || val === '6001020301') effectiveVal = 'counselor01';
+    else if (val === 'partner' || val === 'partner01' || val === 'prt-001' || val === '10126' || val === '10126070001' || val === '010126070001' || val === '7001-01-03-01' || val === '7001010301') effectiveVal = 'partner01';
+    else if (val === 'hr' || val === 'hr01' || val === '10126' || val === '10126080001' || val === '010126080001' || val === '8001-01-03-01' || val === '8001010301') effectiveVal = 'hr01';
+    else if (val === 'hostel' || val === 'hostel01' || val === 'warden' || val === '10126' || val === '10126100001' || val === '010126100001' || val === '10001-01-03-01' || val === '10001010301') effectiveVal = 'hostel01';
+    else if (val === '10126' || val === '10126010001' || val === '010126010001' || val === 'aryan' || val === 'student') effectiveVal = 'aryan';
 
     if (this.mode === 'mariadb' && this.mariaPool) {
       const [rows]: any = await this.mariaPool.query(
@@ -7247,45 +7265,82 @@ class DatabaseStore {
           s.email.toLowerCase().includes(q)
       );
     }
-    return result;
+    return result.map(s => {
+      const cleanStudentId = (s.student_id && (s.student_id.startsWith('STU-') || s.student_id.includes('-') || !s.student_id.startsWith('10126')))
+        ? (s.id === 'stu-rec-aryan' ? '10126010001' : s.student_id.replace(/[^0-9]/g, '') || '10126010001')
+        : (s.student_id || '10126010001');
+      return {
+        ...s,
+        student_id: cleanStudentId,
+        enterprise_uid: cleanStudentId,
+      };
+    });
   }
 
   public async getStudentById(id: string): Promise<Student | null> {
     if (this.mode === 'mariadb' && this.mariaPool) {
       const [rows]: any = await this.mariaPool.query('SELECT * FROM students WHERE id = ? OR student_id = ?', [id, id]);
       if (rows && rows.length > 0) {
+        const r = rows[0];
+        const cleanStudentId = (r.student_id && (r.student_id.startsWith('STU-') || r.student_id.includes('-') || !r.student_id.startsWith('10126')))
+          ? (r.id === 'stu-rec-aryan' ? '10126010001' : r.student_id.replace(/[^0-9]/g, '') || '10126010001')
+          : (r.student_id || '10126010001');
         return {
-          ...rows[0],
-          is_hosteller: Boolean(rows[0].is_hosteller),
-          is_transport_user: Boolean(rows[0].is_transport_user),
-          condonation_granted: Boolean(rows[0].condonation_granted),
+          ...r,
+          student_id: cleanStudentId,
+          enterprise_uid: cleanStudentId,
+          is_hosteller: Boolean(r.is_hosteller),
+          is_transport_user: Boolean(r.is_transport_user),
+          condonation_granted: Boolean(r.condonation_granted),
         };
       }
       return null;
     }
     const student = this.students.find(s => s.id === id || s.student_id === id);
-    return student ? { ...student } : null;
+    if (!student) return null;
+    const cleanStudentId = (student.student_id && (student.student_id.startsWith('STU-') || student.student_id.includes('-') || !student.student_id.startsWith('10126')))
+      ? (student.id === 'stu-rec-aryan' ? '10126010001' : student.student_id.replace(/[^0-9]/g, '') || '10126010001')
+      : (student.student_id || '10126010001');
+    return {
+      ...student,
+      student_id: cleanStudentId,
+      enterprise_uid: cleanStudentId,
+    };
   }
 
   public async getStudentByUserIdOrEmail(userIdOrEmail: string): Promise<Student | null> {
     const val = userIdOrEmail.trim().toLowerCase();
     if (this.mode === 'mariadb' && this.mariaPool) {
       const [rows]: any = await this.mariaPool.query(
-        'SELECT * FROM students WHERE user_id = ? OR LOWER(email) = ?',
-        [userIdOrEmail, val]
+        'SELECT * FROM students WHERE user_id = ? OR LOWER(email) = ? OR student_id = ? OR LOWER(id) = ?',
+        [userIdOrEmail, val, userIdOrEmail, val]
       );
       if (rows && rows.length > 0) {
+        const r = rows[0];
+        const cleanStudentId = (r.student_id && (r.student_id.startsWith('STU-') || r.student_id.includes('-') || !r.student_id.startsWith('10126')))
+          ? (r.id === 'stu-rec-aryan' ? '10126010001' : r.student_id.replace(/[^0-9]/g, '') || '10126010001')
+          : (r.student_id || '10126010001');
         return {
-          ...rows[0],
-          is_hosteller: Boolean(rows[0].is_hosteller),
-          is_transport_user: Boolean(rows[0].is_transport_user),
-          condonation_granted: Boolean(rows[0].condonation_granted),
+          ...r,
+          student_id: cleanStudentId,
+          enterprise_uid: cleanStudentId,
+          is_hosteller: Boolean(r.is_hosteller),
+          is_transport_user: Boolean(r.is_transport_user),
+          condonation_granted: Boolean(r.condonation_granted),
         };
       }
       return null;
     }
-    const student = this.students.find(s => s.user_id === userIdOrEmail || s.email.toLowerCase() === val);
-    return student ? { ...student } : null;
+    const student = this.students.find(s => s.user_id === userIdOrEmail || s.email.toLowerCase() === val || s.student_id === userIdOrEmail || s.id === userIdOrEmail);
+    if (!student) return null;
+    const cleanStudentId = (student.student_id && (student.student_id.startsWith('STU-') || student.student_id.includes('-') || !student.student_id.startsWith('10126')))
+      ? (student.id === 'stu-rec-aryan' ? '10126010001' : student.student_id.replace(/[^0-9]/g, '') || '10126010001')
+      : (student.student_id || '10126010001');
+    return {
+      ...student,
+      student_id: cleanStudentId,
+      enterprise_uid: cleanStudentId,
+    };
   }
 
   public async createStudent(student: Student): Promise<Student> {
@@ -8009,7 +8064,7 @@ class DatabaseStore {
         department: 'Executive Directorate & University Governance',
         designation: 'Chief System Provost & Chancellor Delegate',
         employee_id: 'PRO-SUP-001',
-        enterprise_uid: '9001-01-03-01',
+        enterprise_uid: '10126',
         avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
         is_active: true,
         created_at: new Date().toISOString(),
@@ -8024,7 +8079,7 @@ class DatabaseStore {
         department: 'Registrar Office',
         designation: 'Registrar & Provost',
         employee_id: 'REG-PRO-001',
-        enterprise_uid: '4001-01-03-01',
+        enterprise_uid: '10126',
         avatar_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAmCe2nK5yn2MzfaI3kCnW0nsowqO3EV58Ga69olnaTWnrwRkrVYL41WIGBNg3bCeeSll-y7q-sNxZnHAmS6R6flXcHN8FmEd7YctXzyaVMrHWtueSk6o9YibOVt8o5EF2w8Sb20QpYV9jv4_fwNINqv1CYnW8CqP4LtuL4L7W6_MOM7pY86gWQTI9AN3JgzjczSurPGgarPw32rrk9xSW0oSixeifD_sg3dYr9-I-QBTghh310DDep',
         is_active: true,
         created_at: new Date().toISOString(),
@@ -8036,7 +8091,7 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Aryan Sharma',
-        enterprise_uid: '1-01-26-01-0001',
+        enterprise_uid: '10126',
         avatar_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCeiC80XBMv76j7_mmqCTcV9ZoMVZPfV_CdXd_33ne25_LIcAK_aNzQB6o4mvRXLqi6oREzmz295hMjEcQKFSotWGv1NikCOM_tIPmBQDzFiaMO8yJKSdfRUTIfZSoUkGyEjTIjKF5D8DMp3A9swq7gKNz8yzp0zkvchBkPPxFbIrY_ZA6tW5oSONcFtKCHTd3RgKK6vRjOMjtXmy5qOVJVowbvGGivEwYdD84ExfwTGl3sAzLegZ9N',
         is_active: true,
         created_at: new Date().toISOString(),
@@ -8048,7 +8103,7 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Alice Smith',
-        enterprise_uid: '1-01-26-01-0006',
+        enterprise_uid: '10126',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8059,7 +8114,7 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Bob Johnson',
-        enterprise_uid: '1-01-26-05-0007',
+        enterprise_uid: '10126',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8070,7 +8125,7 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Charlie Davis',
-        enterprise_uid: '1-01-26-01-0008',
+        enterprise_uid: '10126',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8081,7 +8136,7 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Emma Wilson',
-        enterprise_uid: '1-01-26-02-0009',
+        enterprise_uid: '10126',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8092,7 +8147,7 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Michael Brown',
-        enterprise_uid: '1-01-26-07-0010',
+        enterprise_uid: '10126',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8103,7 +8158,7 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Rohan Gupta',
-        enterprise_uid: '1-01-26-02-0002',
+        enterprise_uid: '10126',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8114,7 +8169,7 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Priya Patel',
-        enterprise_uid: '1-01-26-05-0003',
+        enterprise_uid: '10126',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8125,7 +8180,7 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Aarav Sharma',
-        enterprise_uid: '1-01-26-01-0004',
+        enterprise_uid: '10126',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8136,7 +8191,7 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Neha Singh',
-        enterprise_uid: '1-01-26-07-0005',
+        enterprise_uid: '10126',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8150,7 +8205,7 @@ class DatabaseStore {
         department: 'Computer Science & Engineering',
         designation: 'Assistant Professor',
         employee_id: 'FAC-CSE-014',
-        enterprise_uid: '2001-14-03-01',
+        enterprise_uid: '10126',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8164,7 +8219,7 @@ class DatabaseStore {
         department: 'Admission & Counseling Cell',
         designation: 'Head Counselor & Admission Cell Convener',
         employee_id: 'ADM-CNS-002',
-        enterprise_uid: '6001-02-03-01',
+        enterprise_uid: '10126',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8178,7 +8233,7 @@ class DatabaseStore {
         department: 'Computer Science & Engineering',
         designation: 'Head of Department',
         employee_id: 'FAC-HOD-001',
-        enterprise_uid: '3001-01-03-01',
+        enterprise_uid: '10126',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8192,7 +8247,7 @@ class DatabaseStore {
         department: 'Finance & Accounts Section',
         designation: 'Chief Accounts Officer',
         employee_id: 'ACC-OFF-005',
-        enterprise_uid: '5001-05-03-01',
+        enterprise_uid: '10126',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8206,7 +8261,7 @@ class DatabaseStore {
         department: 'Corporate Relations',
         designation: 'Campus Hiring Director',
         employee_id: 'PRT-INF-001',
-        enterprise_uid: '7001-01-03-01',
+        enterprise_uid: '10126',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8220,7 +8275,21 @@ class DatabaseStore {
         department: 'Human Resources & Establishment Section',
         designation: 'Chief HR & Establishment Officer',
         employee_id: 'HRM-OFF-001',
-        enterprise_uid: '8001-01-03-01',
+        enterprise_uid: '10126',
+        is_active: true,
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: 'usr-hostel-01',
+        username: 'hostel01',
+        email: 'hostel@educore.edu',
+        password_hash: bcrypt.hashSync('warden123', 10),
+        role: 'hostel',
+        full_name: 'Warden Baljinder Singh (Chief Residence Officer)',
+        department: 'Campus Infrastructure & Residences',
+        designation: 'Chief Hostel Warden',
+        employee_id: 'HST-WRD-001',
+        enterprise_uid: '10126',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8246,7 +8315,7 @@ class DatabaseStore {
       {
         id: 'stu-rec-aryan',
         user_id: 'usr-stu-aryan',
-        student_id: 'STU-2023-088',
+        student_id: '10126010001',
         first_name: 'Aryan',
         last_name: 'Sharma',
         gender: 'male',
@@ -8270,7 +8339,7 @@ class DatabaseStore {
       {
         id: 'stu-rec-001',
         user_id: 'usr-stu-001',
-        student_id: 'STU-001',
+        student_id: '10126010002',
         first_name: 'Alice',
         last_name: 'Smith',
         gender: 'female',
@@ -8294,7 +8363,7 @@ class DatabaseStore {
       {
         id: 'stu-rec-002',
         user_id: 'usr-stu-002',
-        student_id: 'STU-002',
+        student_id: '10126010003',
         first_name: 'Bob',
         last_name: 'Johnson',
         gender: 'male',
@@ -8318,7 +8387,7 @@ class DatabaseStore {
       {
         id: 'stu-rec-003',
         user_id: 'usr-stu-003',
-        student_id: 'STU-003',
+        student_id: '10126010004',
         first_name: 'Charlie',
         last_name: 'Davis',
         gender: 'nonbinary',
@@ -8342,7 +8411,7 @@ class DatabaseStore {
       {
         id: 'stu-rec-004',
         user_id: 'usr-stu-004',
-        student_id: 'STU-004',
+        student_id: '10126010005',
         first_name: 'Emma',
         last_name: 'Wilson',
         gender: 'female',
@@ -8366,7 +8435,7 @@ class DatabaseStore {
       {
         id: 'stu-rec-005',
         user_id: 'usr-stu-005',
-        student_id: 'STU-005',
+        student_id: '10126010006',
         first_name: 'Michael',
         last_name: 'Brown',
         gender: 'male',
@@ -8390,7 +8459,7 @@ class DatabaseStore {
       {
         id: 'stu-rec-aarav',
         user_id: 'usr-stu-aarav',
-        student_id: 'STU-006',
+        student_id: '10126010007',
         first_name: 'Aarav',
         last_name: 'Sharma',
         gender: 'male',
@@ -8414,7 +8483,7 @@ class DatabaseStore {
       {
         id: 'stu-rec-priya',
         user_id: 'usr-stu-priya',
-        student_id: 'STU-007',
+        student_id: '10126010008',
         first_name: 'Priya',
         last_name: 'Patel',
         gender: 'female',
@@ -8438,7 +8507,7 @@ class DatabaseStore {
       {
         id: 'stu-rec-rohan',
         user_id: 'usr-stu-rohan',
-        student_id: 'STU-008',
+        student_id: '10126010009',
         first_name: 'Rohan',
         last_name: 'Gupta',
         gender: 'male',
@@ -8462,7 +8531,7 @@ class DatabaseStore {
       {
         id: 'stu-rec-neha',
         user_id: 'usr-stu-neha',
-        student_id: 'STU-009',
+        student_id: '10126010010',
         first_name: 'Neha',
         last_name: 'Singh',
         gender: 'female',

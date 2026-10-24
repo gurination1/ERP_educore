@@ -346,7 +346,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClos
                   required
                   value={smsIdentifier}
                   onChange={e => setSmsIdentifier(e.target.value)}
-                  placeholder="e.g. aryan, 1001-88-03-01, or admin@educore.edu"
+                  placeholder="e.g. aryan, , or admin@educore.edu"
                   className="w-full px-2.5 py-1.5 border border-gray-300 rounded text-[11px]"
                 />
               </div>
@@ -423,7 +423,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClos
                   required
                   value={whatsappIdentifier}
                   onChange={e => setWhatsappIdentifier(e.target.value)}
-                  placeholder="e.g. aryan, 1001-88-03-01, or partner01"
+                  placeholder="e.g. aryan, , or partner01"
                   className="w-full px-2.5 py-1.5 border border-gray-300 rounded text-[11px]"
                 />
               </div>
@@ -519,7 +519,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClos
                     required
                     value={adminIdentifier}
                     onChange={e => setAdminIdentifier(e.target.value)}
-                    placeholder="e.g. 2001-14-03-01 or 1001-88-03-01"
+                    placeholder="e.g.  or "
                     className="w-full px-2.5 py-1.5 border rounded"
                   />
                 </div>

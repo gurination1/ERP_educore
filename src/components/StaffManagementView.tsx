@@ -47,29 +47,29 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
   const [activeRoleAssignments, setActiveRoleAssignments] = useState<StaffRoleAssignment[]>([
     {
       id: 'ra-01',
-      employee_id: '2001-14-03-01',
+      employee_id: '',
       staff_name: 'Dr. Gurpreet Singh',
       department: 'Computer Science & Engineering',
       role_key: 'fee_collector',
       role_title: 'Tuition Fee Collection Cashier',
-      granted_by: 'Campus Provost 4001',
+      granted_by: 'Campus Provost ',
       granted_at: '2025-08-01',
       is_active: true,
     },
     {
       id: 'ra-02',
-      employee_id: '2001-14-03-03',
+      employee_id: '',
       staff_name: 'Er. Jaswinder Brar',
       department: 'Mechanical Engineering',
       role_key: 'fee_collector',
       role_title: 'Tuition Fee Collection Cashier',
-      granted_by: 'Campus Provost 4001',
+      granted_by: 'Campus Provost ',
       granted_at: '2025-08-05',
       is_active: true,
     },
     {
       id: 'ra-03',
-      employee_id: '2001-14-03-04',
+      employee_id: '',
       staff_name: 'Dr. Neha Mittal',
       department: 'Computer Science & Engineering',
       role_key: 'admissions_counselor',
@@ -80,23 +80,23 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
     },
     {
       id: 'ra-04',
-      employee_id: '10001-01-03-01',
+      employee_id: '',
       staff_name: 'Er. Harminder Singh',
       department: 'Campus Infrastructure',
       role_key: 'hostel_warden',
       role_title: 'Chief Residence Warden (Block A/B)',
-      granted_by: 'Campus Provost 4001',
+      granted_by: 'Campus Provost ',
       granted_at: '2025-06-10',
       is_active: true,
     },
     {
       id: 'ra-05',
-      employee_id: '2001-14-03-02',
+      employee_id: '',
       staff_name: 'Prof. Sunita Rao',
       department: 'Management Studies',
       role_key: 'fee_collector',
       role_title: 'Tuition Fee Collection Cashier',
-      granted_by: 'Campus Provost 4001',
+      granted_by: 'Campus Provost ',
       granted_at: '2025-08-02',
       is_active: true,
     },
@@ -2164,7 +2164,7 @@ export const StaffManagementView: React.FC<StaffManagementViewProps> = ({
                 <label className="block font-semibold mb-0.5 text-gray-700">EMPLOYEE ID *:</label>
                 <input
                   type="text"
-                  placeholder="2001-22-03-01"
+                  placeholder=""
                   value={newStaff.employee_id}
                   onChange={e => setNewStaff({ ...newStaff, employee_id: e.target.value })}
                   className="w-full border p-1.5 rounded text-[11px] font-mono"

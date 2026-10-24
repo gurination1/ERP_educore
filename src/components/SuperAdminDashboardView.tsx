@@ -71,6 +71,7 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
   const [newTenant, setNewTenant] = useState({
     client_name: '',
     short_code: '',
+    client_number: '01',
     entity_type: 'college' as 'college' | 'school' | 'department' | 'university',
     state_code: '03',
     institution_type_code: 'ENG_COLLEGE',
@@ -82,6 +83,8 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
     contact_person: '',
     contact_phone: '',
     subscription_tier: 'enterprise' as 'standard' | 'premium' | 'enterprise',
+    subscription_validity: '1_year' as '1_year' | '3_years' | '5_years' | 'perpetual',
+    database_mode: 'master' as 'master' | 'sample',
     selected_departments: ['CSE', 'ME', 'CE', 'ECE'],
     selected_degrees: ['BTECH_CSE', 'BTECH_ME', 'MBA'],
   });
@@ -343,6 +346,7 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
         setNewTenant({
           client_name: '',
           short_code: '',
+          client_number: '01',
           entity_type: 'college',
           state_code: '03',
           institution_type_code: 'ENG_COLLEGE',
@@ -354,6 +358,8 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
           contact_person: '',
           contact_phone: '',
           subscription_tier: 'enterprise',
+          subscription_validity: '1_year',
+          database_mode: 'master',
           selected_departments: ['CSE', 'ME', 'CE', 'ECE'],
           selected_degrees: ['BTECH_CSE', 'BTECH_ME', 'MBA'],
         });
@@ -888,17 +894,64 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">SaaS Subdomain</label>
-                  <div className="flex items-center">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Client Number (UID Node) *
+                    </label>
                     <input
                       type="text"
-                      placeholder="e.g. gndec"
-                      value={newTenant.subdomain}
-                      onChange={e => setNewTenant({ ...newTenant, subdomain: e.target.value.toLowerCase() })}
-                      className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-mono focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                      maxLength={2}
+                      required
+                      placeholder="01"
+                      value={newTenant.client_number}
+                      onChange={e => setNewTenant({ ...newTenant, client_number: e.target.value.padStart(2, '0').slice(-2) })}
+                      className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-mono font-bold text-[#00236f] focus:ring-1 focus:ring-[#00236f] focus:outline-none"
                     />
-                    <span className="text-[11px] text-slate-500 font-mono pl-2">.gurudotcom.erp</span>
+                    <span className="text-[10px] text-slate-500 font-mono">1XX26XXXXXX</span>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">SaaS Subdomain</label>
+                    <div className="flex items-center">
+                      <input
+                        type="text"
+                        placeholder="e.g. gndec"
+                        value={newTenant.subdomain}
+                        onChange={e => setNewTenant({ ...newTenant, subdomain: e.target.value.toLowerCase() })}
+                        className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-mono focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                      />
+                      <span className="text-[11px] text-slate-500 font-mono pl-1">.gurudotcom.erp</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Subscription Licensing */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-slate-200/60">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Subscription Tier</label>
+                    <select
+                      value={newTenant.subscription_tier}
+                      onChange={e => setNewTenant({ ...newTenant, subscription_tier: e.target.value as any })}
+                      className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                    >
+                      <option value="standard">Standard Campus Edition</option>
+                      <option value="premium">Premium Autonomous Tier</option>
+                      <option value="enterprise">Enterprise Multi-Collegiate Suite</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Subscription Validity</label>
+                    <select
+                      value={newTenant.subscription_validity}
+                      onChange={e => setNewTenant({ ...newTenant, subscription_validity: e.target.value as any })}
+                      className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:ring-1 focus:ring-[#00236f] focus:outline-none"
+                    >
+                      <option value="1_year">1 Year Annual License</option>
+                      <option value="3_years">3 Years Triennial License</option>
+                      <option value="5_years">5 Years Sovereign License</option>
+                      <option value="perpetual">Perpetual Enterprise License</option>
+                    </select>
                   </div>
                 </div>
               </div>
@@ -1280,7 +1333,56 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
               </div>
             </div>
 
-            {/* SECTION 4: Database Infrastructure */}
+            {/* SECTION 4: Database Seeding Strategy (Master DB vs Sample DB) */}
+            <div className="p-4 bg-slate-50/70 border border-slate-200/90 rounded-xl space-y-3">
+              <div className="flex items-center justify-between border-b pb-2">
+                <span className="text-xs font-bold text-slate-800 flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-[#00236f] text-white flex items-center justify-center text-[10px]">4</span>
+                  Database Seeding Strategy: Master DB vs Sample DB
+                </span>
+                <span className="text-[10px] font-mono text-slate-500">Production Ready vs Testing Sandbox</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setNewTenant({ ...newTenant, database_mode: 'master' })}
+                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                    newTenant.database_mode === 'master'
+                      ? 'border-[#00236f] bg-blue-50/60 ring-2 ring-[#00236f]/20'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-bold text-xs text-[#00236f]">Master DB (Pristine Production)</span>
+                    {newTenant.database_mode === 'master' && <Check className="w-4 h-4 text-emerald-600" />}
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    Zero dummy students. Clean regulatory tables, standard courses, and fresh sequence counter starting at <code className="font-mono text-[#00236f]">0001</code>.
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setNewTenant({ ...newTenant, database_mode: 'sample' })}
+                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                    newTenant.database_mode === 'sample'
+                      ? 'border-indigo-600 bg-indigo-50/60 ring-2 ring-indigo-600/20'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-bold text-xs text-indigo-900">Sample DB (Evaluation Sandbox)</span>
+                    {newTenant.database_mode === 'sample' && <Check className="w-4 h-4 text-emerald-600" />}
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    Preloaded with 35 demo students, faculty records, hostel allocations, fee ledgers, and mock test scores for institutional demonstration.
+                  </p>
+                </button>
+              </div>
+            </div>
+
+            {/* SECTION 5: Database Infrastructure */}
             <div className="p-3 bg-indigo-50/50 border border-indigo-200/80 rounded-xl flex items-center justify-between text-xs">
               <div>
                 <span className="font-bold text-[#00236f] block">Database Engine & Isolation:</span>

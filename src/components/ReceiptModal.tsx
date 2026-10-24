@@ -119,7 +119,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptNo, onClose }
                 <div>
                   <span className="text-[#757682] text-[11px]">Enrollment Roll No:</span>
                   <p className="font-bold text-sm text-[#00236f]">
-                    {receiptData.studentId || '1001-88-03-01'}
+                    {receiptData.studentId || ''}
                   </p>
                 </div>
                 <div>

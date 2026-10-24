@@ -176,7 +176,9 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
           ? 'staff-management'
           : currentUser?.role === 'hostel'
           ? ('hostel-management' as any)
-          : (currentUser?.role === 'staff' || currentUser?.role === 'counselor' || currentUser?.role === 'hod')
+          : currentUser?.role === 'counselor'
+          ? 'enquiries'
+          : (currentUser?.role === 'staff' || currentUser?.role === 'hod')
           ? 'staff-dashboard'
           : currentUser?.role === 'partner'
           ? 'partner-portal'
@@ -246,6 +248,8 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
           ? { category: 'Operations & Governance', title: 'Institutional Executive Governance Cockpit' }
           : currentUser?.role === 'hr'
           ? { category: 'HRMS & Establishment', title: 'Faculty & Staff Establishment Console' }
+          : currentUser?.role === 'counselor'
+          ? { category: 'Admissions & CRM', title: 'Senior Admissions Counselor Desk & Leads Radar' }
           : currentUser?.role === 'staff' || currentUser?.role === 'hod'
           ? { category: 'Faculty Desk', title: 'Academic Classroom & Sessional Console' }
           : currentUser?.role === 'student'

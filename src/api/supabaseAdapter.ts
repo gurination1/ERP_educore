@@ -108,16 +108,16 @@ export async function handleSupabaseRequest<T = any>(
         { gst_code: '27', state_name: 'Maharashtra', state_short_code: 'MH', is_union_territory: false },
       ];
       const userTypes = [
-        { type_code: '1001', alpha_prefix: 'STU', role_key: 'student', display_title: 'Student Scholar', description: 'Enrolled or admitted undergraduate/postgraduate student candidate' },
-        { type_code: '2001', alpha_prefix: 'FAC', role_key: 'staff', display_title: 'Faculty / Academic Staff', description: 'Teaching assistant, assistant professor, associate professor or lab in-charge' },
-        { type_code: '3001', alpha_prefix: 'HOD', role_key: 'hod', display_title: 'Head of Department (HOD)', description: 'Departmental administrative and curriculum head' },
-        { type_code: '4001', alpha_prefix: 'ADM', role_key: 'admin', display_title: 'Institutional Administrator', description: 'College registrar, dean, administrative head' },
-        { type_code: '5001', alpha_prefix: 'ACC', role_key: 'accounts', display_title: 'Accounts & Bursar Officer', description: 'Finance department, tuition collection, bursar' },
-        { type_code: '6001', alpha_prefix: 'CNS', role_key: 'counselor', display_title: 'Admissions Counselor', description: 'Counseling cell, leads pipeline, CRM coordinator' },
-        { type_code: '7001', alpha_prefix: 'PRT', role_key: 'partner', display_title: 'Corporate & Hiring Partner', description: 'Industry partners, corporate recruiters, and internship sponsors' },
-        { type_code: '8001', alpha_prefix: 'HRM', role_key: 'hr', display_title: 'HR & Establishment Officer', description: 'Human Resources, staff recruitment, leave, employee records & service books' },
-        { type_code: '9001', alpha_prefix: 'SUP', role_key: 'super_admin', display_title: 'Universal Provost & Super Admin', description: 'Apex system authority, universal access, invisible to subordinate users' },
-        { type_code: '10001', alpha_prefix: 'HST', role_key: 'hostel', display_title: 'Chief Hostel Warden & Residence Admin', description: 'Hostel room allocation, bed registry, mess billing & digital no-dues clearance' },
+        { type_code: '01', alpha_prefix: 'STU', role_key: 'student', display_title: 'Student Scholar', description: 'Enrolled or admitted undergraduate/postgraduate student candidate (Format: 10126010001)' },
+        { type_code: '02', alpha_prefix: 'FAC', role_key: 'staff', display_title: 'Faculty / Academic Staff', description: 'Teaching assistant, assistant professor, associate professor or lab in-charge (Format: 10126020014)' },
+        { type_code: '03', alpha_prefix: 'HOD', role_key: 'hod', display_title: 'Head of Department (HOD)', description: 'Departmental administrative and curriculum head (Format: 10126030001)' },
+        { type_code: '04', alpha_prefix: 'ADM', role_key: 'admin', display_title: 'Institutional Administrator', description: 'College registrar, dean, administrative head (Format: 10126040001)' },
+        { type_code: '05', alpha_prefix: 'ACC', role_key: 'accounts', display_title: 'Accounts & Bursar Officer', description: 'Finance department, tuition collection, bursar (Format: 10126050001)' },
+        { type_code: '06', alpha_prefix: 'CNS', role_key: 'counselor', display_title: 'Admissions Counselor', description: 'Counseling cell, leads pipeline, CRM coordinator (Format: 10126060001)' },
+        { type_code: '07', alpha_prefix: 'PRT', role_key: 'partner', display_title: 'Corporate & Hiring Partner', description: 'Industry partners, corporate recruiters, and internship sponsors (Format: 10126070001)' },
+        { type_code: '08', alpha_prefix: 'HRM', role_key: 'hr', display_title: 'HR & Establishment Officer', description: 'Human Resources, staff recruitment, leave, employee records & service books (Format: 10126080001)' },
+        { type_code: '09', alpha_prefix: 'SUP', role_key: 'super_admin', display_title: 'Universal Provost & Super Admin', description: 'Apex system authority, universal access, invisible to subordinate users (Format: 10126090001)' },
+        { type_code: '10', alpha_prefix: 'HST', role_key: 'hostel', display_title: 'Chief Hostel Warden & Residence Admin', description: 'Hostel room allocation, bed registry, mess billing & digital no-dues clearance (Format: 10126100001)' },
       ];
       const degrees = [
         { degree_code: 'BTECH_CSE', degree_name: 'Bachelor of Technology (Computer Science & Engineering)', level: 'undergraduate', duration_years: 4, total_semesters: 8, statutory_body: 'AICTE' },
@@ -191,7 +191,7 @@ export async function handleSupabaseRequest<T = any>(
             full_name: 'Warden Baljinder Singh',
             department: 'Campus Residences & Hostels',
             designation: 'Chief Hostel Warden & Residence Officer',
-            enterprise_uid: '10001-01-01-03-01',
+            enterprise_uid: '10126100001',
             is_active: true,
           };
         } else {
@@ -226,7 +226,7 @@ export async function handleSupabaseRequest<T = any>(
         } else {
           student = {
             id: 'stu-rec-aryan',
-            student_id: 'STU-2023-088',
+            student_id: '10126010001',
             first_name: 'Aryan',
             last_name: 'Sharma',
             email: user.email,
@@ -367,7 +367,7 @@ export async function handleSupabaseRequest<T = any>(
       const { data: studentRecords } = await query.limit(1);
       const student = (studentRecords && studentRecords[0]) || {
         id: studentId === 'me' ? 'stu-rec-aryan' : studentId,
-        student_id: 'STU-2023-088',
+        student_id: '10126010001',
         first_name: 'Aryan',
         last_name: 'Sharma',
         email: 'aryan@educore.edu',
@@ -423,7 +423,7 @@ export async function handleSupabaseRequest<T = any>(
           success: true,
           data: {
             studentId: student.id,
-            rollNo: student.student_id || 'STU-2023-088',
+            rollNo: student.student_id || '10126010001',
             registrationNo: '72314592001',
             studentName: `${student.first_name} ${student.last_name}`,
             fatherName: student.guardian_name || 'Sunil Sharma',
@@ -665,7 +665,7 @@ export async function handleSupabaseRequest<T = any>(
       const { data: studentRecords } = await query.limit(1);
       const student = (studentRecords && studentRecords[0]) || {
         id: studentId,
-        student_id: 'STU-2023-088',
+        student_id: '10126010001',
         first_name: 'Aryan',
         last_name: 'Sharma',
         course_id: 'crs-btech-cs',
@@ -809,7 +809,7 @@ export async function handleSupabaseRequest<T = any>(
           payment_date: new Date().toISOString(),
           status: 'success',
           student_name: 'Aryan Sharma',
-          student_id: 'STU-2023-088',
+          student_id: '10126010001',
           course: 'B.Tech Computer Science & Engineering',
           semester: 4,
           notes: 'Tuition Fee Payment verified by Institutional Accounts Branch',
@@ -907,7 +907,7 @@ export async function handleSupabaseRequest<T = any>(
       const { data: records } = await query.limit(1);
       const student = (records && records[0]) || {
         id: identifier,
-        student_id: 'STU-2023-088',
+        student_id: '10126010001',
         first_name: 'Aryan',
         last_name: 'Sharma',
         attendance_percentage: 85,
@@ -1019,7 +1019,7 @@ export async function handleSupabaseRequest<T = any>(
     if (pathname.includes('/api/examination/results')) {
       const gazette = {
         studentName: 'Aryan Sharma',
-        rollNo: 'STU-2023-088',
+        rollNo: '10126010001',
         registrationNo: '72314592001',
         programme: 'B.Tech Computer Science & Engineering',
         currentSemester: 4,
@@ -1404,7 +1404,7 @@ export async function handleSupabaseRequest<T = any>(
         {
           id: 'app-01',
           student_name: 'Aryan Sharma',
-          student_id: 'STU-2023-088',
+          student_id: '10126010001',
           cgpa: 8.64,
           applied_at: '2025-09-22T08:15:00Z',
           status: 'shortlisted',
@@ -1432,7 +1432,7 @@ export async function handleSupabaseRequest<T = any>(
         {
           id: 'app-sch-01',
           student_name: 'Aryan Sharma',
-          student_id: 'STU-2023-088',
+          student_id: '10126010001',
           scheme_title: 'State Merit & Excellence Scholarship',
           applied_amount: 50000,
           cgpa: 8.64,
@@ -1703,7 +1703,7 @@ export async function handleSupabaseRequest<T = any>(
     if (pathname === '/api/ai/fee-notice' && method === 'POST') {
       const { studentId, urgency } = body;
       const { data: students } = await supabase.from('students').select('*').eq('id', studentId);
-      const s = (students && students[0]) || { first_name: 'Aryan', last_name: 'Sharma', current_semester: 4, student_id: 'STU-2023-088' };
+      const s = (students && students[0]) || { first_name: 'Aryan', last_name: 'Sharma', current_semester: 4, student_id: '10126010001' };
       const dueAmount = 45000;
       const dueDate = '2025-10-31';
       return {

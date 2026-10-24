@@ -172,7 +172,7 @@ export const TransportManagementView: React.FC<TransportManagementViewProps> = (
     {
       id: 'pass-01',
       pass_number: 'BP-2026-0041',
-      student_uid: '1001-01-01-03-01',
+      student_uid: '',
       student_name: 'Aarav Sharma',
       course_name: 'B.Tech Computer Science & Engineering',
       semester: 3,
@@ -190,7 +190,7 @@ export const TransportManagementView: React.FC<TransportManagementViewProps> = (
     {
       id: 'pass-02',
       pass_number: 'BP-2026-0088',
-      student_uid: '1001-01-05-03-01',
+      student_uid: '',
       student_name: 'Gurpreet Singh',
       course_name: 'B.Sc Agriculture (Hons)',
       semester: 1,
@@ -210,7 +210,7 @@ export const TransportManagementView: React.FC<TransportManagementViewProps> = (
   // Unallocated transport students queue (applied for transport, awaiting seat)
   const [unallocatedScholars, setUnallocatedScholars] = useState([
     {
-      uid: '1001-01-99-03-01',
+      uid: '',
       name: 'Harpreet Kaur',
       course: 'B.Sc Agriculture',
       preferredRoute: 'Route 1: Bathinda City Bus Stand → Goniana → Campus',
@@ -220,7 +220,7 @@ export const TransportManagementView: React.FC<TransportManagementViewProps> = (
       isHosteller: false,
     },
     {
-      uid: '1001-01-98-03-01',
+      uid: '',
       name: 'Manjot Singh',
       course: 'B.Tech ECE',
       preferredRoute: 'Route 1: Bathinda City Bus Stand → Goniana → Campus',
@@ -230,7 +230,7 @@ export const TransportManagementView: React.FC<TransportManagementViewProps> = (
       isHosteller: false,
     },
     {
-      uid: '1001-01-97-03-01',
+      uid: '',
       name: 'Simranjeet Virk',
       course: 'MBA Finance',
       preferredRoute: 'Route 3: Rampura Phul → Bhucho Mandi → Campus Gate 1',

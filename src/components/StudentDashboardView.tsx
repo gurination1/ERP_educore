@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { StudentProfile, ActiveScreen, NoticeItem } from '../types';
+import { normalizeToCanonicalUID } from '../utils/uid';
 import {
   Brain,
   Award,
@@ -133,7 +134,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
             {courseCode} ({semesterOrdinal})
           </span>
           <span className="bg-orange-50 text-[#ea580c] border border-orange-200 font-mono text-[9px] font-bold px-2 py-0.5 rounded-full">
-            UID: {(student.enterprise_uid || '1001-88-03-01').replace(/BFGI/g, '01')}
+            UID: {normalizeToCanonicalUID(student.enterprise_uid || student.student_id, 'student')}
           </span>
           <span className="text-[10px] text-slate-500 hidden md:inline-flex">
             Academic Session {sessionName}

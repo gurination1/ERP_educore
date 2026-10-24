@@ -83,7 +83,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           {
             id: 'TKT-829144',
             ticket_number: 'TKT-829144',
-            user_identifier: '1001-88-03-01',
+            user_identifier: '',
             category: 'regarding_password',
             concern_text: 'Student portal password locked after multiple semester fee attempts. Need OTP reset.',
             status: 'open',
@@ -92,7 +92,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           {
             id: 'TKT-619203',
             ticket_number: 'TKT-619203',
-            user_identifier: '2001-14-03-01',
+            user_identifier: '',
             category: 'regarding_username',
             concern_text: 'Faculty handle not recognized in Sessional Mark Entry portal. Please verify mapping.',
             status: 'in_progress',
@@ -101,7 +101,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           {
             id: 'TKT-491028',
             ticket_number: 'TKT-491028',
-            user_identifier: '10001-01-03-01',
+            user_identifier: '',
             category: 'regarding_others',
             concern_text: 'Hostel warden biometric sync anomaly for Block A boys residence.',
             status: 'resolved',
@@ -147,19 +147,19 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     setIsReportGenerated(true);
     if (reportEntity === 'student') {
       setGeneratedReport([
-        { id: '1001-88-03-01', name: 'Aryan Sharma', school: 'School of Engineering', dept: 'CSE', term: 'Sem 4', metric: '₹ 85,000 Paid (Contra Policy Applied)', attendance: '88.4%', status: 'Active' },
-        { id: '1001-88-03-02', name: 'Priya Verma', school: 'School of Engineering', dept: 'CSE', term: 'Sem 4', metric: '₹ 90,000 Paid (Full Clearance)', attendance: '91.2%', status: 'Active' },
-        { id: '1001-88-03-03', name: 'Rohan Mehra', school: 'School of Management', dept: 'MBA', term: 'Sem 2', metric: '₹ 45,000 Due (Exam Hold)', attendance: '74.2% [DETENTION WARNING]', status: 'Active' },
-        { id: '1001-88-03-04', name: 'Simran Kaur', school: 'School of Engineering', dept: 'ME', term: 'Sem 6', metric: '₹ 92,000 Paid (Merit Concession)', attendance: '82.0%', status: 'Active' },
-        { id: '1001-88-03-05', name: 'Gurjit Singh', school: 'School of Engineering', dept: 'CE', term: 'Sem 4', metric: 'Demoted to Sem 2 (Pending Fees Voided)', attendance: '68.5%', status: 'Demoted' },
-        { id: '1001-88-03-06', name: 'Harpreet Gill', school: 'School of Commerce', dept: 'B.Com', term: 'Sem 2', metric: 'Struck-off (Non-Payment of Dues)', attendance: '42.1%', status: 'Struck-Off' },
+        { id: '', name: 'Aryan Sharma', school: 'School of Engineering', dept: 'CSE', term: 'Sem 4', metric: '₹ 85,000 Paid (Contra Policy Applied)', attendance: '88.4%', status: 'Active' },
+        { id: '', name: 'Priya Verma', school: 'School of Engineering', dept: 'CSE', term: 'Sem 4', metric: '₹ 90,000 Paid (Full Clearance)', attendance: '91.2%', status: 'Active' },
+        { id: '', name: 'Rohan Mehra', school: 'School of Management', dept: 'MBA', term: 'Sem 2', metric: '₹ 45,000 Due (Exam Hold)', attendance: '74.2% [DETENTION WARNING]', status: 'Active' },
+        { id: '', name: 'Simran Kaur', school: 'School of Engineering', dept: 'ME', term: 'Sem 6', metric: '₹ 92,000 Paid (Merit Concession)', attendance: '82.0%', status: 'Active' },
+        { id: '', name: 'Gurjit Singh', school: 'School of Engineering', dept: 'CE', term: 'Sem 4', metric: 'Demoted to Sem 2 (Pending Fees Voided)', attendance: '68.5%', status: 'Demoted' },
+        { id: '', name: 'Harpreet Gill', school: 'School of Commerce', dept: 'B.Com', term: 'Sem 2', metric: 'Struck-off (Non-Payment of Dues)', attendance: '42.1%', status: 'Struck-Off' },
       ]);
     } else {
       setGeneratedReport([
-        { id: '2001-14-03-01', name: 'Dr. Gurpreet Singh', school: 'School of Engineering', dept: 'CSE', term: 'Associate Prof', metric: '₹ 1,15,000 / mo (Cleared)', attendance: '18 Lectures / Wk', status: 'Active' },
-        { id: '2001-14-03-02', name: 'Prof. Sunita Rao', school: 'School of Management', dept: 'MBA', term: 'Assistant Prof', metric: 'Under Exit NOC Handover', attendance: '14 Lectures / Wk', status: 'Resigned' },
-        { id: '2001-14-03-03', name: 'Er. Jaswinder Brar', school: 'School of Engineering', dept: 'ME', term: 'Assistant Prof', metric: '₹ 95,000 / mo (Cleared)', attendance: '16 Lectures / Wk', status: 'Active' },
-        { id: '2001-14-03-04', name: 'Dr. Neha Mittal', school: 'School of Engineering', dept: 'CSE', term: 'Associate Prof', metric: '₹ 1,10,000 / mo (Cleared)', attendance: '19 Lectures / Wk', status: 'Active' },
+        { id: '', name: 'Dr. Gurpreet Singh', school: 'School of Engineering', dept: 'CSE', term: 'Associate Prof', metric: '₹ 1,15,000 / mo (Cleared)', attendance: '18 Lectures / Wk', status: 'Active' },
+        { id: '', name: 'Prof. Sunita Rao', school: 'School of Management', dept: 'MBA', term: 'Assistant Prof', metric: 'Under Exit NOC Handover', attendance: '14 Lectures / Wk', status: 'Resigned' },
+        { id: '', name: 'Er. Jaswinder Brar', school: 'School of Engineering', dept: 'ME', term: 'Assistant Prof', metric: '₹ 95,000 / mo (Cleared)', attendance: '16 Lectures / Wk', status: 'Active' },
+        { id: '', name: 'Dr. Neha Mittal', school: 'School of Engineering', dept: 'CSE', term: 'Associate Prof', metric: '₹ 1,10,000 / mo (Cleared)', attendance: '19 Lectures / Wk', status: 'Active' },
       ]);
     }
   };

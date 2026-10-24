@@ -208,7 +208,7 @@ ACCREDITATION: Autonomous Tier-1 Engineering & Management System
 CANDIDATE INFORMATION:
   Scholar Name       : ${stu.full_name}
   Candidate ID       : ${stu.student_id}
-  Enterprise UID     : ${stu.enterprise_uid || '1001-88-03-01'}
+  Enterprise UID     : ${stu.enterprise_uid || ''}
   Course & Branch    : ${stu.course_name}
   Current Semester   : Semester ${stu.current_semester}
   University Roll No : ${stu.roll_number || '2201041001'}

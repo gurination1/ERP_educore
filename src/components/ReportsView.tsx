@@ -343,27 +343,27 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currentUser, selectedC
       } else if (masterScope === 'student') {
         if (masterReportType === 'identity_dossier') {
           data = [
-            { id: '1', col1: 'Aarav Sharma', col2: '1001-01-01-03-01', col3: 'B.Tech CSE (Sem 3)', col4: '+91 98141 00001', col5: 'Punjab Domicile 85%', col6: 'Aadhaar & 10+2 Verified', col7: 'Enrolled' },
-            { id: '2', col1: 'Rohan Verma', col2: '1001-01-02-03-01', col3: 'B.Tech CSE (Sem 3)', col4: '+91 98722 00002', col5: 'Punjab Domicile 85%', col6: 'Hosteller (Block A-101)', col7: 'Enrolled' },
-            { id: '3', col1: 'Jaspreet Singh', col2: '1001-01-03-03-01', col3: 'BCA (Sem 1)', col4: '+91 94170 00003', col5: 'All India 15% Quota', col6: 'Day Scholar (Bus Route 1)', col7: 'Enrolled' },
-            { id: '4', col1: 'Harman Kaur', col2: '1001-01-04-03-01', col3: 'BCA (Sem 1)', col4: '+91 98150 00004', col5: 'Punjab Domicile 85%', col6: 'PMS Scholarship Applied', col7: 'Enrolled' },
+            { id: '1', col1: 'Aarav Sharma', col2: '', col3: 'B.Tech CSE (Sem 3)', col4: '+91 98141 00001', col5: 'Punjab Domicile 85%', col6: 'Aadhaar & 10+2 Verified', col7: 'Enrolled' },
+            { id: '2', col1: 'Rohan Verma', col2: '', col3: 'B.Tech CSE (Sem 3)', col4: '+91 98722 00002', col5: 'Punjab Domicile 85%', col6: 'Hosteller (Block A-101)', col7: 'Enrolled' },
+            { id: '3', col1: 'Jaspreet Singh', col2: '', col3: 'BCA (Sem 1)', col4: '+91 94170 00003', col5: 'All India 15% Quota', col6: 'Day Scholar (Bus Route 1)', col7: 'Enrolled' },
+            { id: '4', col1: 'Harman Kaur', col2: '', col3: 'BCA (Sem 1)', col4: '+91 98150 00004', col5: 'Punjab Domicile 85%', col6: 'PMS Scholarship Applied', col7: 'Enrolled' },
           ];
         } else if (masterReportType === 'attendance_condonation') {
           data = [
-            { id: '1', col1: 'Aarav Sharma', col2: '1001-01-01-03-01', col3: '88% (44 / 50 Classes)', col4: 'Eligible (Above 75% Gate)', col5: 'None Required', col6: 'Hall Ticket Cleared', col7: 'Normal Stand' },
-            { id: '2', col1: 'Rohan Verma', col2: '1001-01-02-03-01', col3: '71% (35 / 50 Classes)', col4: 'Shortage (65% to 74% Bracket)', col5: 'Dean Condonation ORD-DEAN-001', col6: 'Hall Ticket Issued', col7: 'Condoned' },
-            { id: '3', col1: 'Gurdit Singh', col2: '1001-01-07-03-01', col3: '58% (29 / 50 Classes)', col4: 'Severe Shortage (<65%)', col5: 'Ineligible for Condonation', col6: 'Hall Ticket Blocked', col7: 'Detained' },
+            { id: '1', col1: 'Aarav Sharma', col2: '', col3: '88% (44 / 50 Classes)', col4: 'Eligible (Above 75% Gate)', col5: 'None Required', col6: 'Hall Ticket Cleared', col7: 'Normal Stand' },
+            { id: '2', col1: 'Rohan Verma', col2: '', col3: '71% (35 / 50 Classes)', col4: 'Shortage (65% to 74% Bracket)', col5: 'Dean Condonation ORD-DEAN-001', col6: 'Hall Ticket Issued', col7: 'Condoned' },
+            { id: '3', col1: 'Gurdit Singh', col2: '', col3: '58% (29 / 50 Classes)', col4: 'Severe Shortage (<65%)', col5: 'Ineligible for Condonation', col6: 'Hall Ticket Blocked', col7: 'Detained' },
           ];
         } else if (masterReportType === 'fee_dues') {
           data = [
-            { id: '1', col1: 'Aarav Sharma', col2: '1001-01-01-03-01', col3: '₹ 45,000 (Sem 3 Tuition)', col4: '₹ 45,000 Paid (Receipt #RCP-441)', col5: '₹ 0 Outstanding', col6: 'Accounts Cleared', col7: 'Zero Dues' },
-            { id: '2', col1: 'Rohan Verma', col2: '1001-01-02-03-01', col3: '₹ 67,000 (Tuition + Hostel)', col4: '₹ 50,000 Paid', col5: '₹ 17,000 Pending (Hostel Due)', col6: 'Partial Clearance', col7: 'Notice Issued' },
-            { id: '3', col1: 'Jaspreet Singh', col2: '1001-01-03-03-01', col3: '₹ 32,800 (Tuition + Transport)', col4: '₹ 32,800 Paid (Online Razorpay)', col5: '₹ 0 Outstanding', col6: 'Accounts Cleared', col7: 'Zero Dues' },
+            { id: '1', col1: 'Aarav Sharma', col2: '', col3: '₹ 45,000 (Sem 3 Tuition)', col4: '₹ 45,000 Paid (Receipt #RCP-441)', col5: '₹ 0 Outstanding', col6: 'Accounts Cleared', col7: 'Zero Dues' },
+            { id: '2', col1: 'Rohan Verma', col2: '', col3: '₹ 67,000 (Tuition + Hostel)', col4: '₹ 50,000 Paid', col5: '₹ 17,000 Pending (Hostel Due)', col6: 'Partial Clearance', col7: 'Notice Issued' },
+            { id: '3', col1: 'Jaspreet Singh', col2: '', col3: '₹ 32,800 (Tuition + Transport)', col4: '₹ 32,800 Paid (Online Razorpay)', col5: '₹ 0 Outstanding', col6: 'Accounts Cleared', col7: 'Zero Dues' },
           ];
         } else {
           data = [
-            { id: '1', col1: 'Aarav Sharma', col2: '1001-01-01-03-01', col3: 'CS-301 DBMS: 88/100 (Grade A+)', col4: 'CS-302 OS: 82/100 (Grade A)', col5: 'CS-303 Data Structures: 91/100 (Grade O)', col6: 'SGPA: 8.78 • Credits: 24', col7: 'Passed' },
-            { id: '2', col1: 'Rohan Verma', col2: '1001-01-02-03-01', col3: 'CS-301 DBMS: 72/100 (Grade B+)', col4: 'CS-302 OS: 70/100 (Grade B+)', col5: 'CS-303 Data Structures: 74/100 (Grade B+)', col6: 'SGPA: 7.20 • Credits: 24', col7: 'Passed' },
+            { id: '1', col1: 'Aarav Sharma', col2: '', col3: 'CS-301 DBMS: 88/100 (Grade A+)', col4: 'CS-302 OS: 82/100 (Grade A)', col5: 'CS-303 Data Structures: 91/100 (Grade O)', col6: 'SGPA: 8.78 • Credits: 24', col7: 'Passed' },
+            { id: '2', col1: 'Rohan Verma', col2: '', col3: 'CS-301 DBMS: 72/100 (Grade B+)', col4: 'CS-302 OS: 70/100 (Grade B+)', col5: 'CS-303 Data Structures: 74/100 (Grade B+)', col6: 'SGPA: 7.20 • Credits: 24', col7: 'Passed' },
           ];
         }
       } else {

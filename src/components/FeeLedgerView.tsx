@@ -84,7 +84,7 @@ const DEFAULT_FEE_POLICIES: FeePolicy[] = [
 const DEFAULT_CONTRA_ENTRIES: ContraLedgerEntry[] = [
   {
     id: 'contra-01',
-    student_id: '1001-01-01-03-01',
+    student_id: '',
     semester: 4,
     entry_type: 'contra_negation',
     amount: 10000,
@@ -96,7 +96,7 @@ const DEFAULT_CONTRA_ENTRIES: ContraLedgerEntry[] = [
   },
   {
     id: 'contra-02',
-    student_id: '1001-01-02-03-01',
+    student_id: '',
     semester: 3,
     entry_type: 'demotion_void',
     amount: 22500,
@@ -107,7 +107,7 @@ const DEFAULT_CONTRA_ENTRIES: ContraLedgerEntry[] = [
   },
   {
     id: 'contra-03',
-    student_id: '1001-01-04-03-01',
+    student_id: '',
     semester: 5,
     entry_type: 'demotion_adjustment',
     amount: 18000,
@@ -698,7 +698,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Search candidate by 13-digit UID (1001-01-01-03-01), mobile (+91 98141), or candidate name..."
+                  placeholder="Search candidate by 12-digit UID (), mobile (+91 98141), or candidate name..."
                   value={deskSearch}
                   onChange={e => setDeskSearch(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#00236f]/30"
@@ -777,7 +777,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                         {deskSelectedStudent.first_name} {deskSelectedStudent.last_name}
                       </h3>
                       <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
-                        <span>UID: {deskSelectedStudent.student_id || '1001-01-01-03-01'}</span>
+                        <span>UID: {deskSelectedStudent.student_id || ''}</span>
                         <span>•</span>
                         <span>{deskSelectedStudent.course?.name || 'B.Tech Computer Science'}</span>
                         <span>•</span>
@@ -1375,7 +1375,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                 <div className="relative flex-1">
                   <input
                     type="text"
-                    placeholder="Search student by Canonical UID (1001-01-01-03-01), Name (Aryan), Department, or Email..."
+                    placeholder="Search student by Canonical UID (), Name (Aryan), Department, or Email..."
                     value={studentSearch}
                     onChange={e => {
                       setStudentSearch(e.target.value);
@@ -1438,7 +1438,7 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
                   </h3>
                   <div className="flex flex-wrap items-center gap-2 mt-1">
                     <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#f3f4f5] text-[#444651] font-mono">
-                      UID: {ledgerData?.student?.studentId || activeStudentObj?.student_id || '1001-01-01-03-01'}
+                      UID: {ledgerData?.student?.studentId || activeStudentObj?.student_id || ''}
                     </span>
                     <span className="text-xs text-[#757682]">
                       {ledgerData?.student?.program || activeStudentObj?.course?.name || 'B.Tech CSE'} • Sem {ledgerData?.student?.currentSemester || 4}

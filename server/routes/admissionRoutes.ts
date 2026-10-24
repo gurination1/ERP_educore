@@ -302,14 +302,14 @@ admissionRouter.post('/progressive-intake', async (req: Request, res: Response):
         return;
       }
 
-      // Ensure proper Roll ID format STU-YYYY-XXX
+      // Ensure proper pure-digit canonical UID format: 1012601XXXX
       let officialRollId = targetStudent.student_id;
-      if (officialRollId.startsWith('INQ-')) {
-        let counter = allStudents.filter(s => s.student_id.startsWith(`STU-${currentYear}`)).length + 1;
-        officialRollId = `STU-${currentYear}-${counter.toString().padStart(3, '0')}`;
+      if (officialRollId.startsWith('INQ-') || officialRollId.startsWith('STU-') || officialRollId.includes('-')) {
+        let counter = allStudents.filter(s => s.student_id && s.student_id.startsWith('1012601')).length + 1;
+        officialRollId = `1012601${counter.toString().padStart(4, '0')}`;
         while (allStudents.some(s => s.student_id === officialRollId)) {
           counter++;
-          officialRollId = `STU-${currentYear}-${counter.toString().padStart(3, '0')}`;
+          officialRollId = `1012601${counter.toString().padStart(4, '0')}`;
         }
       }
 
@@ -547,12 +547,11 @@ admissionRouter.post(
     const transcriptUrl = files?.transcript?.[0] ? `/uploads/documents/${files.transcript[0].filename}` : undefined;
     const idProofUrl = files?.idProof?.[0] ? `/uploads/documents/${files.idProof[0].filename}` : undefined;
 
-    const currentYear = new Date().getFullYear();
-    let idCounter = allStudents.length + 1;
-    let generatedId = `STU-${currentYear}-${idCounter.toString().padStart(3, '0')}`;
+    let idCounter = allStudents.filter(s => s.student_id && s.student_id.startsWith('1012601')).length + 1;
+    let generatedId = `1012601${idCounter.toString().padStart(4, '0')}`;
     while (allStudents.some(s => s.student_id === generatedId)) {
       idCounter++;
-      generatedId = `STU-${currentYear}-${idCounter.toString().padStart(3, '0')}`;
+      generatedId = `1012601${idCounter.toString().padStart(4, '0')}`;
     }
     const courses = await db.getCourses();
     const sessions = await db.getSessions();
@@ -725,11 +724,11 @@ admissionRouter.post('/admin-admit', authenticateToken, requireRole('admin', 'su
   const session = sessions.find(s => s.id === data.sessionId || s.is_current) || sessions[0];
 
   const currentYear = new Date().getFullYear();
-  let idCounter = allStudents.length + 1;
-  let generatedId = `STU-${currentYear}-${idCounter.toString().padStart(3, '0')}`;
+  let idCounter = allStudents.filter(s => s.student_id && s.student_id.startsWith('1012601')).length + 1;
+  let generatedId = `1012601${idCounter.toString().padStart(4, '0')}`;
   while (allStudents.some(s => s.student_id === generatedId)) {
     idCounter++;
-    generatedId = `STU-${currentYear}-${idCounter.toString().padStart(3, '0')}`;
+    generatedId = `1012601${idCounter.toString().padStart(4, '0')}`;
   }
   const username = generatedId.toLowerCase().replace(/[^a-z0-9]/g, '');
   const tempPassword = `Punjab@${currentYear}`;

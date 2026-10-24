@@ -39,7 +39,7 @@ paymentGatewayRouter.get('/payment-gateways/active', authenticateToken, async (r
       const allowedUids: string[] = JSON.parse(gateway.test_allowed_uids_json || '[]');
       const userUid = req.user?.enterprise_uid || req.user?.username || req.user?.id || '';
       const isAdmin = req.user?.role === 'admin' || req.user?.role === 'super_admin';
-      const isDemoStudent = ['1001-88-03-01', 'student', 'student01', 'usr-stu-01', 'STU-2023-088'].includes(userUid) || ['1001-88-03-01', 'student', 'student01', 'STU-2023-088'].includes(req.user?.username || '');
+      const isDemoStudent = ['10126', '1001-88-03-01', 'student', 'student01', 'usr-stu-01', 'STU-2023-088'].includes(userUid) || ['10126', '1001-88-03-01', 'student', 'student01', 'STU-2023-088'].includes(req.user?.username || '');
 
       if (!isAdmin && !isDemoStudent && !allowedUids.includes(userUid) && !allowedUids.includes(req.user?.username || '')) {
         can_pay = false;

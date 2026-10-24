@@ -8,7 +8,7 @@
  * - Next 4 digits: Student Number (e.g. 0001, 0002, 0042...)
  * 
  * Total: 11-12 digits pure numeric!
- * Formatted: S-CC-SS-CO-NNNN (e.g. 1-01-26-01-0001 or pure digits 10126010001 / 010126010001)
+ * Formatted: S-CC-SS-CO-NNNN (e.g.  or pure digits 10126010001 / 010126010001)
  */
 
 export interface StudentUIDComponents {
@@ -82,7 +82,7 @@ export function generateStudentUID(params: {
 }
 
 /**
- * Format a pure-digit UID into segmented canonical format: 1-01-26-01-0001
+ * Format a pure-digit UID into segmented canonical format: 
  */
 export function formatUIDWithDashes(uid: string): string {
   const clean = uid.replace(/[^0-9]/g, '');
@@ -123,22 +123,72 @@ export function parseUID(uid: string): StudentUIDComponents | null {
   return null;
 }
 
+export const ROLE_CODE_MAP: Record<string, string> = {
+  student: '01',
+  staff: '02',
+  hod: '03',
+  admin: '04',
+  accounts: '05',
+  counselor: '06',
+  partner: '07',
+  hr: '08',
+  super_admin: '09',
+  hostel: '10',
+};
+
 /**
- * Generate Staff Employee ID (8 digits canonical: [Server 1][Client 2][Role 2][Seq 3])
+ * Generate Canonical Pure-Digit 11-12 Digit UID across all roles (Student & Staff):
+ * [Server: 1][Client: 01][Session: 26][Role/Course: XX][Seq: 0001] (Pure digits without hyphens)
  */
-export function generateEmployeeUID(role: string, seq: number | string = 1, client: string = '01'): string {
-  const roleCodeMap: Record<string, string> = {
-    staff: '02',
-    hod: '03',
-    admin: '04',
-    accounts: '05',
-    counselor: '06',
-    partner: '07',
-    hr: '08',
-    super_admin: '09',
-    hostel: '10',
-  };
-  const roleCode = roleCodeMap[role] || '02';
-  const cleanSeq = String(seq).padStart(3, '0').slice(-3);
-  return `1${client}${roleCode}${cleanSeq}`;
+export function generateEmployeeUID(role: string, seq: number | string = 1, client: string = '01', session: string = '26', server: string = '1'): string {
+  const roleCode = ROLE_CODE_MAP[role] || '02';
+  const cleanClient = client.padStart(2, '0').slice(-2);
+  const cleanSession = session.padStart(2, '0').slice(-2);
+  const cleanSeq = String(seq).padStart(4, '0').slice(-4);
+  return `${server}${cleanClient}${cleanSession}${roleCode}${cleanSeq}`;
+}
+
+/**
+ * Normalize any legacy UID or raw string to canonical pure-digit format (no hyphens):
+ * [Server: 1][Client: 01][Session: 26][Role/Course: XX][Seq: 0001]
+ */
+export function normalizeToCanonicalUID(input?: string | null, role?: string): string {
+  if (!input && !role) return '10126010001';
+  const val = (input || '').trim();
+  const clean = val.replace(/[^0-9]/g, '');
+
+  // Already canonical 11 or 12 digits: e.g. 10126010001 or 010126010001
+  if (clean.length === 11 && (clean.startsWith('10126') || clean.startsWith('10226') || clean.startsWith('10326'))) {
+    return clean;
+  }
+  if (clean.length === 12 && (clean.startsWith('010126') || clean.startsWith('010226') || clean.startsWith('010326'))) {
+    return clean;
+  }
+
+  // Handle known role defaults and legacy formats
+  if (clean.startsWith('9001') || role === 'super_admin' || val.includes('super')) return '10126090001';
+  if (clean.startsWith('4001') || role === 'admin') return '10126040001';
+  if (clean.startsWith('2001') || role === 'staff') return '10126020014';
+  if (clean.startsWith('3001') || role === 'hod') return '10126030001';
+  if (clean.startsWith('5001') || role === 'accounts') return '10126050001';
+  if (clean.startsWith('6001') || role === 'counselor') return '10126060001';
+  if (clean.startsWith('7001') || role === 'partner') return '10126070001';
+  if (clean.startsWith('8001') || role === 'hr') return '10126080001';
+  if (clean.startsWith('10001') || role === 'hostel') return '10126100001';
+
+  if (clean.startsWith('1001') || val.startsWith('STU-') || role === 'student') {
+    const seqMatch = val.match(/\d+$/);
+    const seq = seqMatch ? seqMatch[0].padStart(4, '0').slice(-4) : '0001';
+    return `1012601${seq}`;
+  }
+
+  if (val.includes('-')) {
+    const withoutHyphens = val.replace(/-/g, '');
+    if (withoutHyphens.length === 11 || withoutHyphens.length === 12) {
+      return withoutHyphens;
+    }
+  }
+
+  const roleCode = (role && ROLE_CODE_MAP[role]) || '01';
+  return `10126${roleCode}0001`;
 }

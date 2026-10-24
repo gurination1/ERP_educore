@@ -734,7 +734,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                   </span>
                 </div>
                 <p className="text-[11px] text-[#757682]">
-                  @{activeRoleMatrixUser.username} • UID: {activeRoleMatrixUser.enterprise_uid || '1001-88-03-01'} • {activeRoleMatrixUser.department || 'General Administration'}
+                  @{activeRoleMatrixUser.username} • UID: {activeRoleMatrixUser.enterprise_uid || ''} • {activeRoleMatrixUser.department || 'General Administration'}
                 </p>
               </div>
             </div>

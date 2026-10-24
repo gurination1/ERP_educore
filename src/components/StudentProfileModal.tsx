@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { StudentProfile, User } from '../types';
+import { normalizeToCanonicalUID } from '../utils/uid';
 import { X, ArrowLeft, Check, CheckCircle2, GraduationCap } from 'lucide-react';
 
 interface StudentProfileModalProps {
@@ -150,7 +151,9 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                   {isStudentActive ? '● ACTIVE' : '● SUSPENDED'}
                 </span>
               </div>
-              <p className="text-xs font-semibold text-[#00236f]">{student.student_id}</p>
+              <p className="text-xs font-semibold text-[#00236f] font-mono">
+                UID: {normalizeToCanonicalUID((student as any).enterprise_uid || student.student_id, 'student')}
+              </p>
             </div>
           </div>
 

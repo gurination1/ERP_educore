@@ -604,7 +604,7 @@ export const StaffDashboardView: React.FC<StaffDashboardViewProps> = ({
             </p>
             <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-[#757682]">
               <span className="flex items-center gap-1">
-                <span>UID: {currentUser?.enterprise_uid || '2001-14-03-01'}</span>
+                <span>UID: {currentUser?.enterprise_uid || ''}</span>
               </span>
               <span>•</span>
               <span className="flex items-center gap-1 font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">

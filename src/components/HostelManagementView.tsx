@@ -318,7 +318,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
   const [residents, setResidents] = useState<HostelResident[]>([
     {
       id: 'res-01',
-      student_uid: '1001-01-01-03-01',
+      student_uid: '',
       student_name: 'Aryan Sharma',
       course_name: 'B.Tech Computer Science & Engg',
       semester: 6,
@@ -340,7 +340,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
     },
     {
       id: 'res-02',
-      student_uid: '1001-01-02-03-01',
+      student_uid: '',
       student_name: 'Gurpreet Singh Dhillon',
       course_name: 'B.Tech Mechanical Engg',
       semester: 4,
@@ -362,7 +362,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
     },
     {
       id: 'res-03',
-      student_uid: '1001-01-03-03-01',
+      student_uid: '',
       student_name: 'Navjot Kaur Brar',
       course_name: 'BCA Cloud Technology',
       semester: 2,
@@ -384,7 +384,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
     },
     {
       id: 'res-04',
-      student_uid: '1001-01-04-03-01',
+      student_uid: '',
       student_name: 'Simranjit Singh',
       course_name: 'B.Tech CSE',
       semester: 6,
@@ -410,7 +410,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
   const [messClearances, setMessClearances] = useState<MessClearanceRecord[]>([
     {
       id: 'mc-01',
-      student_uid: '1001-01-01-03-01',
+      student_uid: '',
       student_name: 'Aryan Sharma',
       room_number: '101',
       building_name: 'SBS-A',
@@ -457,14 +457,14 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
 
   // Unallocated Transport Scholars
   const unallocatedTransportScholars = [
-    { uid: '1001-01-99-03-01', name: 'Harpreet Kaur', course: 'B.Sc Agriculture', stopRequested: 'Goniana Mandi', appliedDate: '2026-10-15' },
-    { uid: '1001-01-98-03-01', name: 'Manjot Singh', course: 'B.Tech ECE', stopRequested: 'Civil Lines', appliedDate: '2026-10-16' },
+    { uid: '', name: 'Harpreet Kaur', course: 'B.Sc Agriculture', stopRequested: 'Goniana Mandi', appliedDate: '2026-10-15' },
+    { uid: '', name: 'Manjot Singh', course: 'B.Tech ECE', stopRequested: 'Civil Lines', appliedDate: '2026-10-16' },
   ];
 
   // Unallocated Hostel Scholars Queue (Karanvir Sir Lecture 4 Segment 7)
   const [unallocatedHostelScholars, setUnallocatedHostelScholars] = useState([
     {
-      uid: '1001-01-10-03-01',
+      uid: '',
       name: 'Manpreet Singh',
       course: 'BCA (Cloud & AI)',
       semester: 1,
@@ -475,7 +475,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
       hasTransport: false,
     },
     {
-      uid: '1001-01-11-03-01',
+      uid: '',
       name: 'Simran Kaur',
       course: 'B.Tech Computer Science',
       semester: 1,
@@ -486,7 +486,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
       hasTransport: true,
     },
     {
-      uid: '1001-01-12-03-01',
+      uid: '',
       name: 'Harjot Singh Virk',
       course: 'MBA Finance',
       semester: 1,
@@ -497,7 +497,7 @@ export const HostelManagementView: React.FC<HostelManagementViewProps> = ({
       hasTransport: false,
     },
     {
-      uid: '1001-01-13-03-01',
+      uid: '',
       name: 'Gagandeep Sharma',
       course: 'B.Sc Agriculture',
       semester: 1,
