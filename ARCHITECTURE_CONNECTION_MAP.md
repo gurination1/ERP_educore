@@ -6,15 +6,28 @@
 ## 1. Architectural Philosophy & Core Axioms
 1. **Zero Popups / Zero Modal Overlays**:
    All workflows (onboarding, master tables, admissions, transfers, batch promotion, hostel allotment, fee collection) operate as inline canvas cards, expandable viewports, or segmented master tabs directly embedded on the page canvas.
-2. **Canonical Pure-Digit Identifiers (Karanvir Sir Seg 000 & Lecture 4)**:
-   - **Student UID (10-13 digits)**: `[Type4]-[Seq2]-[Client2]-[State03]-[Inst01]`
-     - E.g. `1001-88-03-01` (Aryan Sharma, CSE, Punjab Campus 01)
-   - **Employee ID (8-9 digits)**: `[RoleType4]-[EmpSeq2]-[State03]-[Inst01]`
-     - E.g. `2001-14-03-01` (Teaching Faculty), `4001-01-03-01` (Institutional Principal), `9001-01-03-01` (Universal Provost / Super Admin)
-3. **Master Table Governance (Seg 006 & Recording 160)**:
+2. **Canonical 11-12 Digit Pure-Digit Student UID (Karanvir Sir Core Architecture)**:
+   - **Student UID Formula**: `[Server: 1 or 01]-[Client: 02]-[Session: 02]-[Course: 02]-[Student: 0004]`
+     - **Digit 1 (or 1-2)**: Server Node (e.g. `1` = Primary Production Server Node)
+     - **Digits 2-3**: Client Number / Campus Code (e.g. `01` = Bathinda Main, `02` = Faridkot Regional)
+     - **Digits 4-5**: Session ID (e.g. `26` for 2026 Intake, `25` for 2025 Current Session)
+     - **Digits 6-7**: Course ID (e.g. `01` = B.Tech CSE, `02` = B.Tech ME, `05` = MBA, `07` = B.Sc Agri)
+     - **Digits 8-11**: Student Sequence Number (e.g. `0001`, `0002` ... `9999`)
+     - **Canonical Representation**: Pure digits `10126010001` or segmented `1-01-26-01-0001`.
+   - **Employee ID Formula**: `[Type 4]-[Seq 2]-[Client 2]-[State 2]-[Inst 2]` (e.g. `2001-14-01-03-01` Teaching Faculty, `4001-01-01-03-01` Administrator, `9001-01-01-03-01` Super Admin).
+3. **3D Coin-Flip Login Architecture (Karanvir Sir Lecture 1 & Seg 000)**:
+   - 3D Coin-flip perspective (`[perspective:1400px]`, `transform-style: preserve-3d`).
+   - **Front Face**: Single consolidated identifier input ("Registered UID / EMP ID"), password toggle, fast 1-click role logins with canonical 12-digit student UID (`1-01-26-01-0001`).
+   - **Back Face 1 (Forgot Password - Orange Theme)**: Vibrant orange design tokens (`border-[#ea580c]`, orange background gradients, orange action buttons). Dispatches credentials via OTP channel (SMS/WhatsApp/Email) and flips back with alert: *"Please check your SMS / WhatsApp / Email for your password."*
+   - **Back Face 2 (Contact Admin - Collegiate Blue Theme)**: Deep blue design tokens (`border-[#00236f]`, blue background gradients, blue action buttons). Collects UID/EMP ID, Dropdown "Regarding" (Regarding Username, Regarding Password, Regarding Others), concern textarea, and auto-generates support ticket `#TKT-XXXXXX` routed to campus administrative desk.
+4. **Master Table Governance (Seg 006 & Recording 160)**:
    Every categorical entity (GST States, Departments, Degrees, Batches, Designations, Employee Statuses, Student Admission Statuses, Maintenance Check Types) lives in dynamic database Master Tables. Zero hardcoded lists.
    Master records referenced in active transactions cannot be hard-deleted (Safety Gate).
-4. **Financial Invariance & Contra Ledger (Seg 005 & Recording 161)**:
+5. **Database Seeding & Migration Engine (Seg 006 & Recording 162)**:
+   - **Master DB (Pristine Production)**: Clean empty schema with statutory master tables only for live client go-live.
+   - **Sample DB (Evaluation Sandbox)**: Pre-populated with demo scholars (12-digit UIDs), leads, fee structures, and contra ledgers for client trial/evaluation.
+   - **Relational Migrations Catalog (`schema_migrations`)**: Immutable version-tracked migrations ledger with cryptographic checksums and physical table record health monitoring.
+6. **Financial Invariance & Contra Ledger (Seg 005 & Recording 161)**:
    Zero deletion policy for financial ledgers. Every modification, discount, demotion adjustment, or reversal generates an immutable balancing contra-entry.
 
 ---
@@ -58,10 +71,23 @@ flowchart TD
   - **"Open" Button**: One-click direct impersonation without password into the client college admin console. Stores `educore_jwt_token` and `educore_user_data` cleanly.
   - **Active Toggle**: Instantly activate or suspend tenant access.
   - **Reset Admin Password**: Inline password reset with OTP simulation.
-- **Inline College Onboarding**:
-  - Section 1: Institutional Identity (Full name, short code, entity category, city, subdomain).
+- **Inline College Onboarding & Subscriptions Suite**:
+  - Section 1: Institutional Identity (Full name, short code, entity category, city, subdomain, and **Client Number** allocated for UID architecture).
   - Section 2: Administrative Credentials (Principal/Registrar name, phone, official email, initial password).
-  - Section 3: **Direct Master Tables Configuration** (GST State code selection with inline state creation, Departments selection, Degrees selection). Automatically seeds master tables into new tenant database schema.
+  - Section 3: **Subscription Plan & Commercial Quota Page**:
+    - Subscription Tier: Starter (₹1.5L/yr, 500 scholars), Professional (₹4.5L/yr, 2,500 scholars), Enterprise Provost (₹12L/yr, 10,000 scholars).
+    - Billing Cycle: Annual / Multi-Year.
+    - Capacity Quotas: Maximum students & maximum faculty limits.
+    - Core ERP Modules Checklist: Admissions CRM, CBCS Academics, Tuition Accounts & Contra Ledger, Faculty HRMS & Service Books, Residence & Mess, Examination & Hall Tickets, Corporate Placements, Cloud Telephony dialer.
+  - Section 4: **Database Seeding Strategy**:
+    - **Master DB (Pristine Production)**: Clean empty schema with statutory master tables only for live client go-live.
+    - **Sample DB (Evaluation Sandbox)**: Pre-populated with demo scholars (12-digit UIDs), leads, fee structures, and contra ledgers for client trial/evaluation.
+  - Section 5: **Direct Master Tables Configuration** (GST State code selection with inline state creation, Departments selection, Degrees selection). Automatically seeds master tables into new tenant database schema.
+- **Database Migrations Engine (`schema_migrations`)**:
+  - Relational migration history ledger showing 6 applied schema revisions (`001_core_relational_schema` through `006_dual_db_sample_and_master_catalogs`).
+  - Cryptographic sha256 checksums, execution timestamps, and schema version (`2026.06.15-PRD`).
+  - Physical tables record count & health metrics (`tenants`, `students`, `users`, `courses`, `sessions`, `fee_heads`, `audit_logs`).
+  - Action: "Verify & Run Migrations" (`POST /api/tenants/run-migrations`) to execute relational integrity audit.
 - **Cluster Telemetry & Logs**:
   - Database pool status (PostgreSQL / SQLite).
   - Cryptographic audit trail with forensic event log viewer.

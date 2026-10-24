@@ -107,8 +107,26 @@ export function generateEnterpriseUID(
   stateGst: string = '03',
   instCode: string = '01',
   sequenceNum?: number | string,
-  clientCode: string = '01'
+  clientCode: string = '01',
+  sessionCode: string = '26',
+  courseCode: string = '01',
+  serverNode: string = '1'
 ): string {
+  // 12-Digit Canonical Pure Digit Student UID Architecture per Mentor Karanvir Sir:
+  // [Server: 1 or 01]-[Client: 02]-[Session: 02]-[Course: 02]-[Student: 0004]
+  if (userType === 'student') {
+    const sNode = serverNode || '1';
+    const cCode = (clientCode || instCode || '01').padStart(2, '0').slice(-2);
+    const sCode = (sessionCode || '26').padStart(2, '0').slice(-2);
+    const coCode = (courseCode || '01').padStart(2, '0').slice(-2);
+    const seq = sequenceNum !== undefined
+      ? String(sequenceNum).padStart(4, '0').slice(-4)
+      : Math.floor(1000 + Math.random() * 8999).toString();
+
+    // Pure 11-12 digit format: S-CC-SS-CO-NNNN (e.g. 1-01-26-01-0001 or 01-01-26-01-0001)
+    return `${sNode}-${cCode}-${sCode}-${coCode}-${seq}`;
+  }
+
   const typeMap: Record<EnterpriseUserRole, { numeric: string; alpha: string }> = {
     student: { numeric: '1001', alpha: 'STU' },
     staff: { numeric: '2001', alpha: 'FAC' },
@@ -1013,7 +1031,7 @@ export const DEFAULT_HOSTEL_ROOMS: HostelRoom[] = [
 export const DEFAULT_HOSTEL_RESIDENTS: HostelResident[] = [
   {
     id: 'res-01',
-    student_uid: '1001-88-03-01',
+    student_uid: '1-01-26-01-0001',
     student_name: 'Aryan Sharma',
     course_name: 'B.Tech Computer Science & Engg',
     semester: 4,
@@ -1035,7 +1053,7 @@ export const DEFAULT_HOSTEL_RESIDENTS: HostelResident[] = [
   },
   {
     id: 'res-02',
-    student_uid: '1001-01-02-03-01',
+    student_uid: '1-01-26-02-0002',
     student_name: 'Gurpreet Singh Dhillon',
     course_name: 'B.Tech Mechanical Engg',
     semester: 4,
@@ -1057,7 +1075,7 @@ export const DEFAULT_HOSTEL_RESIDENTS: HostelResident[] = [
   },
   {
     id: 'res-03',
-    student_uid: '1001-01-03-03-01',
+    student_uid: '1-01-26-08-0003',
     student_name: 'Navjot Kaur Brar',
     course_name: 'BCA Cloud Technology',
     semester: 2,
@@ -1079,7 +1097,7 @@ export const DEFAULT_HOSTEL_RESIDENTS: HostelResident[] = [
   },
   {
     id: 'res-04',
-    student_uid: '1001-01-04-03-01',
+    student_uid: '1-01-26-01-0004',
     student_name: 'Simranjit Singh',
     course_name: 'B.Tech CSE',
     semester: 6,
@@ -1104,7 +1122,7 @@ export const DEFAULT_HOSTEL_RESIDENTS: HostelResident[] = [
 export const DEFAULT_HOSTEL_MESS_CLEARANCES: MessClearanceRecord[] = [
   {
     id: 'mc-01',
-    student_uid: '1001-88-03-01',
+    student_uid: '1-01-26-01-0001',
     student_name: 'Aryan Sharma',
     room_number: '101',
     building_name: 'SBS-A',
@@ -4800,11 +4818,11 @@ class DatabaseStore {
 
     // Ensure all demo student accounts exist in MariaDB users table & link to student profiles
     const demoStudentAccounts = [
-      { id: 'usr-stu-aryan', username: 'aryan', email: 'aryan.sharma@educore.edu', full_name: 'Aryan Sharma', student_id: 'stu-rec-aryan', enterprise_uid: '1001-88-03-01' },
-      { id: 'usr-stu-rohan', username: 'rohan', email: 'rohan.gupta@educore.edu', full_name: 'Rohan Gupta', student_id: 'stu-rec-rohan', enterprise_uid: '1001-01-03-01' },
-      { id: 'usr-stu-priya', username: 'priya', email: 'priya.patel@educore.edu', full_name: 'Priya Patel', student_id: 'stu-rec-priya', enterprise_uid: '1001-02-03-01' },
-      { id: 'usr-stu-aarav', username: 'aarav', email: 'aarav.sharma@educore.edu', full_name: 'Aarav Sharma', student_id: 'stu-rec-aarav', enterprise_uid: '1001-03-03-01' },
-      { id: 'usr-stu-neha', username: 'neha', email: 'neha.singh@educore.edu', full_name: 'Neha Singh', student_id: 'stu-rec-neha', enterprise_uid: '1001-04-03-01' },
+      { id: 'usr-stu-aryan', username: 'aryan', email: 'aryan.sharma@educore.edu', full_name: 'Aryan Sharma', student_id: 'stu-rec-aryan', enterprise_uid: '1-01-26-01-0001' },
+      { id: 'usr-stu-rohan', username: 'rohan', email: 'rohan.gupta@educore.edu', full_name: 'Rohan Gupta', student_id: 'stu-rec-rohan', enterprise_uid: '1-01-26-02-0002' },
+      { id: 'usr-stu-priya', username: 'priya', email: 'priya.patel@educore.edu', full_name: 'Priya Patel', student_id: 'stu-rec-priya', enterprise_uid: '1-01-26-05-0003' },
+      { id: 'usr-stu-aarav', username: 'aarav', email: 'aarav.sharma@educore.edu', full_name: 'Aarav Sharma', student_id: 'stu-rec-aarav', enterprise_uid: '1-01-26-01-0004' },
+      { id: 'usr-stu-neha', username: 'neha', email: 'neha.singh@educore.edu', full_name: 'Neha Singh', student_id: 'stu-rec-neha', enterprise_uid: '1-01-26-07-0005' },
     ];
     const demoStudentHash = bcrypt.hashSync('student123', 10);
     for (const su of demoStudentAccounts) {
@@ -5538,7 +5556,7 @@ class DatabaseStore {
         // Ensure canonical UID for demo student Aryan
         const aryanUser = this.users.find(u => u.username.toLowerCase() === 'aryan');
         if (aryanUser) {
-          aryanUser.enterprise_uid = '1001-88-03-01';
+          aryanUser.enterprise_uid = '1-01-26-01-0001';
           aryanUser.password_hash = bcrypt.hashSync('student123', 10);
           aryanUser.is_active = true;
         }
@@ -5757,7 +5775,7 @@ class DatabaseStore {
     else if (val === 'super' || val === 'superadmin' || val === '9001-01-03-01' || val === '9001010301' || val === '9001-01-01-03-01' || val === '900101010301' || val === '9001-01-03-bfgi' || val === '9001-03-bfgi-000001' || val === '9001-03-bfgi-0001') effectiveVal = 'superadmin';
     else if (val === 'admin' || val === '4001-01-03-01' || val === '4001010301' || val === '4001-01-01-03-01' || val === '400101010301' || val === '4001-01-03-bfgi' || val === '4001-03-bfgi-0001') effectiveVal = 'admin';
     else if (val === '2001-14-03-bfgi' || val === '2001-03-bfgi-0014') effectiveVal = 'staff01';
-    else if (val === '1001-88-03-01' || val === '1001880301' || val === '1001-88-01-03-01' || val === '100188010301' || val === '1001-88-03-bfgi' || val === '1001-03-bfgi-260088' || val === 'aryan' || val === 'student') effectiveVal = 'aryan';
+    else if (val === '1-01-26-01-0001' || val === '10126010001' || val === '010126010001' || val === '01-01-26-01-0001' || val === '1001-88-03-01' || val === '1001880301' || val === '1001-88-01-03-01' || val === '100188010301' || val === '1001-88-03-bfgi' || val === '1001-03-bfgi-260088' || val === 'aryan' || val === 'student') effectiveVal = 'aryan';
     else if (val === 'partner' || val === 'prt-001' || val === 'prt-inf-001' || val === '7001-01-03-01' || val === '7001010301' || val === '7001-01-01-03-01' || val === '700101010301' || val === '7001-01-03-bfgi' || val === '7001-03-bfgi-0001') effectiveVal = 'partner01';
     else if (val === '6001-02-03-bfgi' || val === '6001-03-bfgi-0002') effectiveVal = 'counselor01';
     else if (val === '3001-01-03-bfgi' || val === '3001-03-bfgi-0001') effectiveVal = 'hod_cse';
@@ -8018,7 +8036,7 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Aryan Sharma',
-        enterprise_uid: '1001-88-03-01',
+        enterprise_uid: '1-01-26-01-0001',
         avatar_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCeiC80XBMv76j7_mmqCTcV9ZoMVZPfV_CdXd_33ne25_LIcAK_aNzQB6o4mvRXLqi6oREzmz295hMjEcQKFSotWGv1NikCOM_tIPmBQDzFiaMO8yJKSdfRUTIfZSoUkGyEjTIjKF5D8DMp3A9swq7gKNz8yzp0zkvchBkPPxFbIrY_ZA6tW5oSONcFtKCHTd3RgKK6vRjOMjtXmy5qOVJVowbvGGivEwYdD84ExfwTGl3sAzLegZ9N',
         is_active: true,
         created_at: new Date().toISOString(),
@@ -8030,6 +8048,7 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Alice Smith',
+        enterprise_uid: '1-01-26-01-0006',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8040,6 +8059,7 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Bob Johnson',
+        enterprise_uid: '1-01-26-05-0007',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8050,6 +8070,7 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Charlie Davis',
+        enterprise_uid: '1-01-26-01-0008',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8060,6 +8081,7 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Emma Wilson',
+        enterprise_uid: '1-01-26-02-0009',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8070,6 +8092,7 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Michael Brown',
+        enterprise_uid: '1-01-26-07-0010',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8080,6 +8103,7 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Rohan Gupta',
+        enterprise_uid: '1-01-26-02-0002',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8090,6 +8114,7 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Priya Patel',
+        enterprise_uid: '1-01-26-05-0003',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8100,6 +8125,7 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Aarav Sharma',
+        enterprise_uid: '1-01-26-01-0004',
         is_active: true,
         created_at: new Date().toISOString(),
       },
@@ -8110,6 +8136,7 @@ class DatabaseStore {
         password_hash: studentHash,
         role: 'student',
         full_name: 'Neha Singh',
+        enterprise_uid: '1-01-26-07-0005',
         is_active: true,
         created_at: new Date().toISOString(),
       },

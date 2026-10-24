@@ -432,6 +432,8 @@ export const api = {
   impersonateTenant: (id: string) => apiRequest(`/api/tenants/${id}/impersonate`, { method: 'POST' }),
   getCampuses: () => apiRequest('/api/tenants/campuses'),
   createCampus: (data: any) => apiRequest('/api/tenants/campuses', { method: 'POST', body: JSON.stringify(data) }),
+  getMigrations: () => apiRequest('/api/tenants/migrations'),
+  runMigrations: () => apiRequest('/api/tenants/run-migrations', { method: 'POST' }),
 
   // Academic Topology (Batches, Sections, Curriculum, Allocations, Timetable)
   getBatches: (courseId?: string) => apiRequest(`/api/academics/batches${courseId ? `?courseId=${courseId}` : ''}`),

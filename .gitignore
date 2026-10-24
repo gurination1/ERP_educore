@@ -42,3 +42,4 @@ coverage/
 # uncomment whichever this project isn't using)
 # bun.lock
 # package-lock.json
+screenshots/

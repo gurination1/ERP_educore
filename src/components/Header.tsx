@@ -1,7 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { User, ActiveScreen } from '../types';
 import { useCampus } from '../context/CampusContext';
-import { Shield, Building2, ChevronDown, Check, User as UserIcon, KeyRound, LogOut, Globe, Menu, X } from 'lucide-react';
+import {
+  Shield, Building2, ChevronDown, Check, User as UserIcon, KeyRound, LogOut, Globe, Menu, X,
+  LayoutDashboard, UserPlus, Receipt, GraduationCap, BookOpen, Briefcase, Building,
+  PhoneCall, DollarSign, AlertCircle, FileText, FolderCheck, Users, BarChart3,
+  FileCheck, Brain, HelpCircle, Bed, Clock, UtensilsCrossed, Bus, UserCheck,
+  Crown, ShieldCheck, Database, History, Activity, Sparkles, CheckSquare, FileSpreadsheet
+} from 'lucide-react';
 import { api, setStoredToken, setStoredUser } from '../api/client';
 
 interface HeaderProps {
@@ -265,8 +271,14 @@ export const Header: React.FC<HeaderProps> = ({
   let menuSections: Array<{
     id: string;
     label: string;
+    icon?: React.ComponentType<{ className?: string }>;
     defaultScreen: ActiveScreen;
-    items?: Array<{ id?: ActiveScreen; label: string; action?: () => void }>;
+    items?: Array<{
+      id?: ActiveScreen;
+      label: string;
+      icon?: React.ComponentType<{ className?: string }>;
+      action?: () => void;
+    }>;
     action?: () => void;
     isActive: boolean;
   }> = [];
@@ -277,6 +289,7 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'platform',
         label: 'Platform Overview',
+        icon: Crown,
         defaultScreen: 'super-admin-dashboard',
         action: () => {
           onNavigate('super-admin-dashboard');
@@ -287,35 +300,38 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'tenants',
         label: 'Tenants & Campuses',
+        icon: Building2,
         defaultScreen: 'tenants' as any,
         action: () => {
           onNavigate('tenants' as any);
           setOpenDrawer(null);
         },
         items: [
-          { id: 'tenants' as any, label: 'Multi-Tenant Institutions & Subdomains', action: () => { onNavigate('tenants' as any); setOpenDrawer(null); } },
-          { id: 'payment-gateways' as ActiveScreen, label: 'Payment Gateways & Current Accounts', action: () => { onNavigate('payment-gateways'); setOpenDrawer(null); } },
-          { id: 'master-inst' as any, label: 'Multi-College Institutional Campuses', action: () => { onOpenMasterTables?.('institutions'); onNavigate('master-architecture?tab=institutions' as any); setOpenDrawer(null); } },
-          { id: 'master-univ' as any, label: 'University Affiliations & Boards', action: () => { onOpenMasterTables?.('institutions'); onNavigate('master-architecture?tab=institutions' as any); setOpenDrawer(null); } },
-          { id: 'master-dept' as any, label: 'Academic Departments Catalog', action: () => { onOpenMasterTables?.('departments'); onNavigate('master-architecture?tab=departments' as any); setOpenDrawer(null); } },
+          { id: 'tenants' as any, label: 'Multi-Tenant Institutions & Subdomains', icon: Building2, action: () => { onNavigate('tenants' as any); setOpenDrawer(null); } },
+          { id: 'payment-gateways' as ActiveScreen, label: 'Payment Gateways & Current Accounts', icon: Receipt, action: () => { onNavigate('payment-gateways'); setOpenDrawer(null); } },
+          { id: 'master-inst' as any, label: 'Multi-College Institutional Campuses', icon: Building, action: () => { onOpenMasterTables?.('institutions'); onNavigate('master-architecture?tab=institutions' as any); setOpenDrawer(null); } },
+          { id: 'master-univ' as any, label: 'University Affiliations & Boards', icon: Globe, action: () => { onOpenMasterTables?.('institutions'); onNavigate('master-architecture?tab=institutions' as any); setOpenDrawer(null); } },
+          { id: 'master-dept' as any, label: 'Academic Departments Catalog', icon: BookOpen, action: () => { onOpenMasterTables?.('departments'); onNavigate('master-architecture?tab=departments' as any); setOpenDrawer(null); } },
         ],
         isActive: effectivePath.startsWith('/tenants') || effectivePath.startsWith('/payment-gateways'),
       },
       {
         id: 'access',
         label: 'Universal Access & RBAC',
+        icon: ShieldCheck,
         defaultScreen: 'user-management',
         items: [
-          { id: 'user-management' as ActiveScreen, label: 'Universal User Directory & Security', action: () => { onNavigate('user-management'); setOpenDrawer(null); } },
-          { id: 'field-permissions' as ActiveScreen, label: 'Field-Level Permissions Matrix', action: () => { onNavigate('field-permissions'); setOpenDrawer(null); } },
-          { id: 'user-management' as ActiveScreen, label: 'Apex Institutional Role Delegation', action: () => { onNavigate('user-management'); setOpenDrawer(null); } },
-          { id: 'user-management' as ActiveScreen, label: 'Universal Password Override & Security', action: () => { onNavigate('user-management'); setOpenDrawer(null); } },
+          { id: 'user-management' as ActiveScreen, label: 'Universal User Directory & Security', icon: Users, action: () => { onNavigate('user-management'); setOpenDrawer(null); } },
+          { id: 'field-permissions' as ActiveScreen, label: 'Field-Level Permissions Matrix', icon: Shield, action: () => { onNavigate('field-permissions'); setOpenDrawer(null); } },
+          { id: 'user-management' as ActiveScreen, label: 'Apex Institutional Role Delegation', icon: UserCheck, action: () => { onNavigate('user-management'); setOpenDrawer(null); } },
+          { id: 'user-management' as ActiveScreen, label: 'Universal Password Override & Security', icon: KeyRound, action: () => { onNavigate('user-management'); setOpenDrawer(null); } },
         ],
         isActive: effectivePath.startsWith('/user-management') || effectivePath.startsWith('/field-permissions'),
       },
       {
         id: 'architecture',
         label: 'Master Architecture',
+        icon: Database,
         defaultScreen: 'master-architecture' as any,
         action: () => {
           if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
@@ -326,6 +342,7 @@ export const Header: React.FC<HeaderProps> = ({
           {
             id: 'master-gst' as any,
             label: 'State GST Codes (GST-01 to 37)',
+            icon: FileText,
             action: () => {
               if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
               setOpenDrawer(null);
@@ -336,6 +353,7 @@ export const Header: React.FC<HeaderProps> = ({
           {
             id: 'master-types' as any,
             label: 'Enterprise User Type Codes (1001-9001)',
+            icon: Users,
             action: () => {
               if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
               setOpenDrawer(null);
@@ -346,6 +364,7 @@ export const Header: React.FC<HeaderProps> = ({
           {
             id: 'master-degrees' as any,
             label: 'Approved Degrees (AICTE / UGC / PCI)',
+            icon: GraduationCap,
             action: () => {
               if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
               setOpenDrawer(null);
@@ -356,6 +375,7 @@ export const Header: React.FC<HeaderProps> = ({
           {
             id: 'master-docs' as any,
             label: 'Statutory Document Types & MIME Rules',
+            icon: FolderCheck,
             action: () => {
               if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
               setOpenDrawer(null);
@@ -369,6 +389,7 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'audit',
         label: 'Cryptographic Forensics',
+        icon: History,
         defaultScreen: 'audit-logs' as any,
         action: () => {
           if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
@@ -379,6 +400,7 @@ export const Header: React.FC<HeaderProps> = ({
           {
             id: 'audit-stream' as any,
             label: 'Immutable Audit Log Stream',
+            icon: History,
             action: () => {
               if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
               setOpenDrawer(null);
@@ -389,6 +411,7 @@ export const Header: React.FC<HeaderProps> = ({
           {
             id: 'audit-forensics' as any,
             label: 'Security & Actor Difference Forensics',
+            icon: ShieldCheck,
             action: () => {
               if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
               setOpenDrawer(null);
@@ -402,6 +425,7 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'telemetry',
         label: 'Database & Telemetry',
+        icon: Activity,
         defaultScreen: 'telemetry' as any,
         action: () => {
           if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
@@ -409,9 +433,9 @@ export const Header: React.FC<HeaderProps> = ({
           onNavigate('telemetry' as any);
         },
         items: [
-          { id: 'telemetry' as any, label: 'High-Throughput PostgreSQL DB Telemetry', action: () => { onNavigate('telemetry' as any); setOpenDrawer(null); } },
-          { id: 'telemetry' as any, label: 'Cloud MariaDB Dual-Pool Health', action: () => { onNavigate('telemetry' as any); setOpenDrawer(null); } },
-          { id: 'telemetry' as any, label: 'Platform Performance Metrics', action: () => { onNavigate('telemetry' as any); setOpenDrawer(null); } },
+          { id: 'telemetry' as any, label: 'High-Throughput PostgreSQL DB Telemetry', icon: Activity, action: () => { onNavigate('telemetry' as any); setOpenDrawer(null); } },
+          { id: 'telemetry' as any, label: 'Cloud MariaDB Dual-Pool Health', icon: Database, action: () => { onNavigate('telemetry' as any); setOpenDrawer(null); } },
+          { id: 'telemetry' as any, label: 'Platform Performance Metrics', icon: BarChart3, action: () => { onNavigate('telemetry' as any); setOpenDrawer(null); } },
         ],
         isActive: effectivePath.startsWith('/telemetry'),
       },
@@ -422,6 +446,7 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'dashboard',
         label: 'Operations Console',
+        icon: LayoutDashboard,
         defaultScreen: 'admin-dashboard',
         action: () => {
           onNavigate('admin-dashboard');
@@ -432,90 +457,97 @@ export const Header: React.FC<HeaderProps> = ({
       {
         id: 'crm',
         label: 'Admissions Desk',
+        icon: UserPlus,
         defaultScreen: 'enquiries' as ActiveScreen,
         items: [
-          { id: 'enquiries' as ActiveScreen, label: 'Pre-Admission Leads Radar', action: () => { onNavigate('enquiries'); setOpenDrawer(null); } },
-          { id: 'bulk-import' as ActiveScreen, label: 'Bulk Lead CSV / Excel Mapper', action: () => { onNavigate('bulk-import'); setOpenDrawer(null); } },
-          { id: 'admissions' as ActiveScreen, label: 'Admissions Intake Desk', action: () => { onNavigate('admissions'); setOpenDrawer(null); } },
-          { id: 'form-builder' as ActiveScreen, label: 'Application Form Builder', action: () => { onNavigate('form-builder'); setOpenDrawer(null); } },
+          { id: 'enquiries' as ActiveScreen, label: 'Pre-Admission Leads Radar', icon: PhoneCall, action: () => { onNavigate('enquiries'); setOpenDrawer(null); } },
+          { id: 'bulk-import' as ActiveScreen, label: 'Bulk Lead CSV / Excel Mapper', icon: FileSpreadsheet, action: () => { onNavigate('bulk-import'); setOpenDrawer(null); } },
+          { id: 'admissions' as ActiveScreen, label: 'Admissions Intake Desk', icon: UserPlus, action: () => { onNavigate('admissions'); setOpenDrawer(null); } },
+          { id: 'form-builder' as ActiveScreen, label: 'Application Form Builder', icon: CheckSquare, action: () => { onNavigate('form-builder'); setOpenDrawer(null); } },
         ],
         isActive: ['/enquiries', '/bulk-import', '/admissions', '/form-builder'].some(p => effectivePath.startsWith(p)),
       },
       {
         id: 'fees',
         label: 'Tuition & Ledgers',
+        icon: Receipt,
         defaultScreen: 'fee-ledger' as ActiveScreen,
         items: [
-          { id: 'fee-ledger' as ActiveScreen, label: 'Tuition Fee Assessment & Ledger', action: () => { onNavigate('fee-ledger'); setOpenDrawer(null); } },
-          { id: 'payment-gateways' as ActiveScreen, label: 'Payment Gateways (Test / Live Accounts)', action: () => { onNavigate('payment-gateways'); setOpenDrawer(null); } },
-          { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships', action: () => { onNavigate('scholarships'); setOpenDrawer(null); } },
-          { id: 'partner-portal' as ActiveScreen, label: 'Corporate Partners & Placement Agencies', action: () => { onNavigate('partner-portal'); setOpenDrawer(null); } },
+          { id: 'fee-ledger' as ActiveScreen, label: 'Tuition Fee Assessment & Ledger', icon: Receipt, action: () => { onNavigate('fee-ledger'); setOpenDrawer(null); } },
+          { id: 'payment-gateways' as ActiveScreen, label: 'Payment Gateways (Test / Live Accounts)', icon: Receipt, action: () => { onNavigate('payment-gateways'); setOpenDrawer(null); } },
+          { id: 'scholarships' as ActiveScreen, label: 'State & Merit Scholarships', icon: Sparkles, action: () => { onNavigate('scholarships'); setOpenDrawer(null); } },
+          { id: 'partner-portal' as ActiveScreen, label: 'Corporate Partners & Placement Agencies', icon: Briefcase, action: () => { onNavigate('partner-portal'); setOpenDrawer(null); } },
         ],
         isActive: ['/fees', '/scholarships', '/payment-gateways', '/partner-portal'].some(p => effectivePath.startsWith(p)),
       },
       {
         id: 'students',
         label: 'Student Directory',
+        icon: GraduationCap,
         defaultScreen: 'manage-students' as ActiveScreen,
         items: [
-          { id: 'manage-students' as ActiveScreen, label: 'Student Master Directory', action: () => { onNavigate('manage-students'); setOpenDrawer(null); } },
-          { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault', action: () => { onNavigate('student-documents'); setOpenDrawer(null); } },
-          { id: 'grievances' as ActiveScreen, label: 'Statutory Grievance Redressal', action: () => { onNavigate('grievances'); setOpenDrawer(null); } },
+          { id: 'manage-students' as ActiveScreen, label: 'Student Master Directory', icon: Users, action: () => { onNavigate('manage-students'); setOpenDrawer(null); } },
+          { id: 'student-documents' as ActiveScreen, label: 'Regulatory Document Compliance Vault', icon: FolderCheck, action: () => { onNavigate('student-documents'); setOpenDrawer(null); } },
+          { id: 'grievances' as ActiveScreen, label: 'Statutory Grievance Redressal', icon: AlertCircle, action: () => { onNavigate('grievances'); setOpenDrawer(null); } },
         ],
         isActive: ['/manage-students', '/student-documents', '/grievances'].some(p => effectivePath.startsWith(p)),
       },
       {
         id: 'examination',
         label: 'Academics & Exams',
+        icon: BookOpen,
         defaultScreen: 'examination' as ActiveScreen,
         items: [
-          { id: 'examination?tab=regular' as any, label: 'University Examination Forms', action: () => { onNavigate('examination?tab=regular' as any); setOpenDrawer(null); } },
-          { id: 'examination?tab=reappear' as any, label: 'Reappear / Backlog Portal', action: () => { onNavigate('examination?tab=reappear' as any); setOpenDrawer(null); } },
-          { id: 'examination?tab=admit-card' as any, label: 'Admit Card & Gate Clearance', action: () => { onNavigate('examination?tab=admit-card' as any); setOpenDrawer(null); } },
-          { id: 'examination?tab=datesheet' as any, label: 'Datesheet & Examination Timetable', action: () => { onNavigate('examination?tab=datesheet' as any); setOpenDrawer(null); } },
-          { id: 'academics?tab=syllabus' as any, label: 'Choice Based Credit System (CBCS)', action: () => { onNavigate('academics?tab=syllabus' as any); setOpenDrawer(null); } },
-          { id: 'academics?tab=timetable' as any, label: 'Timetable & Combined Classes (CC)', action: () => { onNavigate('academics?tab=timetable' as any); setOpenDrawer(null); } },
-          { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz & Examination LMS', action: () => { onNavigate('student-quiz-lms'); setOpenDrawer(null); } },
+          { id: 'examination?tab=regular' as any, label: 'University Examination Forms', icon: FileText, action: () => { onNavigate('examination?tab=regular' as any); setOpenDrawer(null); } },
+          { id: 'examination?tab=reappear' as any, label: 'Reappear / Backlog Portal', icon: FileText, action: () => { onNavigate('examination?tab=reappear' as any); setOpenDrawer(null); } },
+          { id: 'examination?tab=admit-card' as any, label: 'Admit Card & Gate Clearance', icon: FileCheck, action: () => { onNavigate('examination?tab=admit-card' as any); setOpenDrawer(null); } },
+          { id: 'examination?tab=datesheet' as any, label: 'Datesheet & Examination Timetable', icon: Clock, action: () => { onNavigate('examination?tab=datesheet' as any); setOpenDrawer(null); } },
+          { id: 'academics?tab=syllabus' as any, label: 'Choice Based Credit System (CBCS)', icon: BookOpen, action: () => { onNavigate('academics?tab=syllabus' as any); setOpenDrawer(null); } },
+          { id: 'academics?tab=timetable' as any, label: 'Timetable & Combined Classes (CC)', icon: Clock, action: () => { onNavigate('academics?tab=timetable' as any); setOpenDrawer(null); } },
+          { id: 'student-quiz-lms' as ActiveScreen, label: 'CBT Quiz & Examination LMS', icon: Brain, action: () => { onNavigate('student-quiz-lms'); setOpenDrawer(null); } },
         ],
         isActive: ['/examination', '/academics', '/student-quiz-lms'].some(p => effectivePath.startsWith(p)),
       },
       {
         id: 'staff',
         label: 'Faculty & HRMS',
+        icon: Briefcase,
         defaultScreen: 'staff-management' as ActiveScreen,
         items: [
-          { id: 'staff-management' as ActiveScreen, label: 'Faculty & HRMS Directory', action: () => { onNavigate('staff-management'); setOpenDrawer(null); } },
-          { id: 'teacher-documents' as ActiveScreen, label: 'Faculty Dossier Vault', action: () => { onNavigate('teacher-documents'); setOpenDrawer(null); } },
-          { id: 'staff-management?tab=additional-roles' as any, label: 'Assign Multi-Roles & Administrative Duties', action: () => { onNavigate('staff-management?tab=additional-roles' as any); setOpenDrawer(null); } },
-          { id: 'staff-academic-journey' as any, label: 'CAS Research Publications & Patents', action: onOpenStaffJourney },
+          { id: 'staff-management' as ActiveScreen, label: 'Faculty & HRMS Directory', icon: Users, action: () => { onNavigate('staff-management'); setOpenDrawer(null); } },
+          { id: 'teacher-documents' as ActiveScreen, label: 'Faculty Dossier Vault', icon: FolderCheck, action: () => { onNavigate('teacher-documents'); setOpenDrawer(null); } },
+          { id: 'staff-management?tab=additional-roles' as any, label: 'Assign Multi-Roles & Administrative Duties', icon: UserCheck, action: () => { onNavigate('staff-management?tab=additional-roles' as any); setOpenDrawer(null); } },
+          { id: 'staff-academic-journey' as any, label: 'CAS Research Publications & Patents', icon: History, action: onOpenStaffJourney },
         ],
         isActive: ['/staff-management', '/teacher-documents'].some(p => effectivePath.startsWith(p)),
       },
       {
         id: 'governance',
         label: 'Institutional Governance',
+        icon: Shield,
         defaultScreen: 'user-management' as ActiveScreen,
         items: [
-          { id: 'user-management' as ActiveScreen, label: 'Campus User Accounts & Access', action: () => { onNavigate('user-management'); setOpenDrawer(null); } },
-          { id: 'field-permissions' as ActiveScreen, label: 'Field-Level Permissions Matrix', action: () => { onNavigate('field-permissions'); setOpenDrawer(null); } },
-          { id: 'master-tables-admin' as any, label: 'Statutory Master Tables', action: () => { onOpenMasterTables?.('states'); onNavigate('master-architecture?tab=states' as any); setOpenDrawer(null); } },
-          { id: 'audit-trail-admin' as any, label: 'Cryptographic Audit Trail', action: () => { onOpenAuditLogs?.(); onNavigate('audit-logs' as any); setOpenDrawer(null); } },
-          { id: 'reports' as ActiveScreen, label: 'Institutional MIS Reports', action: () => { onNavigate('reports'); setOpenDrawer(null); } },
+          { id: 'user-management' as ActiveScreen, label: 'Campus User Accounts & Access', icon: Users, action: () => { onNavigate('user-management'); setOpenDrawer(null); } },
+          { id: 'field-permissions' as ActiveScreen, label: 'Field-Level Permissions Matrix', icon: ShieldCheck, action: () => { onNavigate('field-permissions'); setOpenDrawer(null); } },
+          { id: 'master-tables-admin' as any, label: 'Statutory Master Tables', icon: Database, action: () => { onOpenMasterTables?.('states'); onNavigate('master-architecture?tab=states' as any); setOpenDrawer(null); } },
+          { id: 'audit-trail-admin' as any, label: 'Cryptographic Audit Trail', icon: History, action: () => { onOpenAuditLogs?.(); onNavigate('audit-logs' as any); setOpenDrawer(null); } },
+          { id: 'reports' as ActiveScreen, label: 'Institutional MIS Reports', icon: BarChart3, action: () => { onNavigate('reports'); setOpenDrawer(null); } },
         ],
         isActive: ['/user-management', '/field-permissions', '/reports', '/master-architecture', '/audit-logs'].some(p => effectivePath.startsWith(p)),
       },
       {
         id: 'hostel',
         label: 'Hostel & Residence',
+        icon: Building,
         defaultScreen: 'hostel-management' as ActiveScreen,
         items: [
-          { id: 'hostel-management?tab=overview' as any, label: 'Hostel Operations Command', action: () => { onNavigate('hostel-management?tab=overview' as any); setOpenDrawer(null); } },
-          { id: 'hostel-management?tab=buildings' as any, label: 'Residence Blocks & Safety Checks', action: () => { onNavigate('hostel-management?tab=buildings' as any); setOpenDrawer(null); } },
-          { id: 'hostel-management?tab=rooms' as any, label: 'Room Inventory & Bed Allocation', action: () => { onNavigate('hostel-management?tab=rooms' as any); setOpenDrawer(null); } },
-          { id: 'hostel-management?tab=residents' as any, label: 'Resident Scholars Registry', action: () => { onNavigate('hostel-management?tab=residents' as any); setOpenDrawer(null); } },
-          { id: 'hostel-management?tab=mess' as any, label: 'Mess & Digital No-Dues Clearance', action: () => { onNavigate('hostel-management?tab=mess' as any); setOpenDrawer(null); } },
-          { id: 'hostel-management?tab=maintenance' as any, label: '360-Day Maintenance & Overhaul', action: () => { onNavigate('hostel-management?tab=maintenance' as any); setOpenDrawer(null); } },
-          { id: 'transport' as any, label: 'Transport Fleet & Seat Queues', action: () => { onNavigate('transport' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=overview' as any, label: 'Hostel Operations Command', icon: LayoutDashboard, action: () => { onNavigate('hostel-management?tab=overview' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=buildings' as any, label: 'Residence Blocks & Safety Checks', icon: Building2, action: () => { onNavigate('hostel-management?tab=buildings' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=rooms' as any, label: 'Room Inventory & Bed Allocation', icon: Bed, action: () => { onNavigate('hostel-management?tab=rooms' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=residents' as any, label: 'Resident Scholars Registry', icon: Users, action: () => { onNavigate('hostel-management?tab=residents' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=mess' as any, label: 'Mess & Digital No-Dues Clearance', icon: UtensilsCrossed, action: () => { onNavigate('hostel-management?tab=mess' as any); setOpenDrawer(null); } },
+          { id: 'hostel-management?tab=maintenance' as any, label: '360-Day Maintenance & Overhaul', icon: Activity, action: () => { onNavigate('hostel-management?tab=maintenance' as any); setOpenDrawer(null); } },
+          { id: 'transport' as any, label: 'Transport Fleet & Seat Queues', icon: Bus, action: () => { onNavigate('transport' as any); setOpenDrawer(null); } },
         ],
         isActive: ['/hostel', '/hostel-management', '/transport'].some(p => effectivePath.startsWith(p)) || activeScreen === 'hostel-management',
       },
