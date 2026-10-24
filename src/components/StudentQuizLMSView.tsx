@@ -162,7 +162,15 @@ export const StudentQuizLMSView: React.FC<StudentQuizLMSViewProps> = ({ currentU
           api.getLMSResources(),
         ]);
         if (qRes.success && qRes.quizzes && qRes.quizzes.length > 0) {
-          setQuizzes(qRes.quizzes);
+          const hydrated = qRes.quizzes.map((q: any) => {
+            const sample = SAMPLE_QUIZZES.find(sq => sq.id === q.id);
+            return {
+              ...q,
+              questions: (q.questions && q.questions.length > 0) ? q.questions : (sample?.questions || []),
+              instructions: (q.instructions && q.instructions.length > 0) ? q.instructions : (sample?.instructions || ['Continuous CBCS assessment.']),
+            };
+          });
+          setQuizzes(hydrated);
         }
         if (rRes.success && rRes.resources && rRes.resources.length > 0) {
           setResources(rRes.resources);
@@ -402,20 +410,20 @@ Unit 4: Real-World Case Studies & Industry Benchmark Applications
                       <div className="space-y-4">
                         <div className="flex items-center justify-between text-xs border-b border-[#f3f4f5] pb-3">
                           <span className="font-bold text-[#757682]">
-                            Question {currentQuestionIndex + 1} of {activeQuiz.questions.length}
+                            Question {currentQuestionIndex + 1} of {activeQuiz?.questions?.length || 0}
                           </span>
                           <span className="font-mono font-bold text-[#00236f] bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-                            {q.marks} Marks
+                            {q?.marks || 0} Marks
                           </span>
                         </div>
 
                         <p className="text-sm font-bold text-[#191c1d] leading-relaxed">
-                          {q.question}
+                          {q?.question}
                         </p>
 
                         {/* Options Cards */}
                         <div className="space-y-2.5 pt-2">
-                          {q.options.map((opt, optIdx) => {
+                          {(q?.options || []).map((opt, optIdx) => {
                             const isChosen = selectedIdx === optIdx;
                             const isCorrect = q.correctAnswer === optIdx;
 
@@ -473,7 +481,7 @@ Unit 4: Real-World Case Studies & Industry Benchmark Applications
 
                           <button
                             type="button"
-                            disabled={currentQuestionIndex === activeQuiz.questions.length - 1}
+                            disabled={!activeQuiz?.questions || currentQuestionIndex >= activeQuiz.questions.length - 1}
                             onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
                             className="px-4 py-2 bg-[#00236f] hover:bg-[#1a4bb0] text-white rounded-lg text-xs font-bold disabled:opacity-30 cursor-pointer flex items-center gap-1"
                           >
@@ -493,7 +501,7 @@ Unit 4: Real-World Case Studies & Industry Benchmark Applications
                   </h3>
 
                   <div className="grid grid-cols-4 gap-2">
-                    {activeQuiz.questions.map((q, qIdx) => {
+                    {(activeQuiz?.questions || []).map((q, qIdx) => {
                       const isCurrent = currentQuestionIndex === qIdx;
                       const isAnswered = selectedAnswers[q.id] !== undefined;
 
@@ -522,7 +530,7 @@ Unit 4: Real-World Case Studies & Industry Benchmark Applications
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span className="w-2.5 h-2.5 rounded-full bg-[#f8f9fa] border border-[#e1e3e4]"></span>
-                      <span>Remaining ({activeQuiz.questions.length - Object.keys(selectedAnswers).length})</span>
+                      <span>Remaining ({(activeQuiz?.questions?.length || 0) - Object.keys(selectedAnswers).length})</span>
                     </div>
                   </div>
                 </div>
@@ -555,7 +563,7 @@ Unit 4: Real-World Case Studies & Industry Benchmark Applications
                       </div>
                       <div>
                         <span className="text-[10px] text-[#757682] block">Questions</span>
-                        <strong className="text-[#191c1d]">{quiz.questions.length} Items</strong>
+                        <strong className="text-[#191c1d]">{(quiz.questions?.length || 0)} Items</strong>
                       </div>
                       <div>
                         <span className="text-[10px] text-[#757682] block">Pass Mark</span>
@@ -564,7 +572,7 @@ Unit 4: Real-World Case Studies & Industry Benchmark Applications
                     </div>
 
                     <ul className="text-[11px] text-[#757682] space-y-1 list-disc pl-4">
-                      {quiz.instructions.map((ins, i) => (
+                      {(quiz.instructions || []).map((ins, i) => (
                         <li key={i}>{ins}</li>
                       ))}
                     </ul>

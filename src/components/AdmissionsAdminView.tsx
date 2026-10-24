@@ -1867,7 +1867,7 @@ export const AdmissionsAdminView: React.FC<AdmissionsAdminViewProps> = ({
                 <div className="space-y-1.5 pt-1">
                   <span className="font-bold text-[#191c1d] block">Assigned Initial Fees:</span>
                   <div className="border border-[#e1e3e4] rounded-lg divide-y divide-[#f3f4f5] text-[11px]">
-                    {credentialsSlip.feeBreakdown.map((f: any, idx: number) => (
+                    {(credentialsSlip.feeBreakdown || []).map((f: any, idx: number) => (
                       <div key={idx} className="flex justify-between py-1.5 px-3">
                         <span className="text-[#444651]">{f.title}</span>
                         <strong className="text-[#191c1d]">₹ {(f.amount || 0).toLocaleString('en-IN')}</strong>

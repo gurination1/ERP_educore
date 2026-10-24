@@ -217,7 +217,14 @@ export const TenantsManagementView: React.FC<TenantsManagementViewProps> = ({ cu
         });
 
         setTimeout(() => {
-          window.location.href = '/dashboard';
+          if (typeof window !== 'undefined') {
+            if (window.location.hash.includes('#') || window.location.hostname.includes('github.io')) {
+              window.location.hash = '#/dashboard';
+              window.location.reload();
+            } else {
+              window.location.href = '/dashboard';
+            }
+          }
         }, 800);
       } else {
         setFeedback({ type: 'error', message: res.error || 'Failed to impersonate tenant.' });

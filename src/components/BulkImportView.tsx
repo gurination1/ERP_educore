@@ -152,12 +152,12 @@ Navkiran Gill,9872011223,navkiran.gill@gmail.com,B.Tech CSE,S. Harnek Singh,fema
   const downloadErrorReport = () => {
     if (!validationResult) return;
     const errors = [
-      ...validationResult.wrongRows.map(w => ({
+      ...(validationResult.wrongRows || []).map(w => ({
         type: 'WRONG_DATA',
         reason: w.error_reason,
         ...w.original_data,
       })),
-      ...validationResult.duplicateRows.map(d => ({
+      ...(validationResult.duplicateRows || []).map(d => ({
         type: 'DUPLICATE',
         reason: d.duplicate_field,
         ...d.original_data,
@@ -512,13 +512,13 @@ Navkiran Gill,9872011223,navkiran.gill@gmail.com,B.Tech CSE,S. Harnek Singh,fema
                     [TIER 2 & 3] DUPLICATES & WRONG DATA SAMPLE
                   </span>
                   <div className="space-y-1 max-h-[260px] overflow-y-auto">
-                    {validationResult.wrongRows.map((w, i) => (
+                    {(validationResult.wrongRows || []).map((w, i) => (
                       <div key={i} className="border border-rose-300 bg-white p-1.5 rounded">
                         <span className="text-rose-800 font-bold block">[WRONG DATA]: {w.error_reason}</span>
                         <span className="text-gray-500 font-mono text-[9px]">Row #{w.row_index}: {JSON.stringify(w.original_data)}</span>
                       </div>
                     ))}
-                    {validationResult.duplicateRows.map((d, i) => (
+                    {(validationResult.duplicateRows || []).map((d, i) => (
                       <div key={i} className="border border-amber-300 bg-white p-1.5 rounded">
                         <span className="text-amber-800 font-bold block">[PROBABLE DUPLICATE]: {d.duplicate_field}</span>
                         <span className="text-gray-500 font-mono text-[9px]">Row #{d.row_index}: {JSON.stringify(d.original_data)}</span>

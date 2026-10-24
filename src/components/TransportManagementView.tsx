@@ -587,7 +587,7 @@ export const TransportManagementView: React.FC<TransportManagementViewProps> = (
                       <div className="text-[10px] text-slate-500 space-y-0.5 font-medium">
                         <div>Bus: <strong>{route.assigned_vehicle_number}</strong> ({capacity} Seater)</div>
                         <div>Timing: {route.pickup_time_morning} → {route.drop_time_evening}</div>
-                        <div>Stops: {route.stops.length} Boarding Points</div>
+                        <div>Stops: {route.stops?.length || 0} Boarding Points</div>
                       </div>
                     </div>
                   );
@@ -942,7 +942,7 @@ export const TransportManagementView: React.FC<TransportManagementViewProps> = (
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
-                        {r.stops.map(stop => (
+                        {(r.stops || []).map(stop => (
                           <tr key={stop.stop_sequence}>
                             <td className="py-2 px-3 font-mono font-bold text-slate-600">#{stop.stop_sequence}</td>
                             <td className="py-2 px-3 font-semibold text-slate-900">{stop.stop_name}</td>

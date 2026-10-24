@@ -1768,7 +1768,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                     }`}
                   >
                     <Building2 className="w-3.5 h-3.5" />
-                    <span>Staff Promotions & Career ({journeyData.linkedStaffJourney.length})</span>
+                    <span>Staff Promotions & Career ({journeyData.linkedStaffJourney?.length || 0})</span>
                   </button>
                 )}
               </div>

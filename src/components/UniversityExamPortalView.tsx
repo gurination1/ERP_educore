@@ -76,7 +76,7 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
             } else {
               setSelectedStudentId('me');
             }
-          } else if (studentsRes.students.length > 0) {
+          } else if (studentsRes?.students && studentsRes.students.length > 0) {
             setSelectedStudentId(studentsRes.students[0].id);
           }
         }
@@ -664,7 +664,7 @@ export const UniversityExamPortalView: React.FC<UniversityExamPortalViewProps> =
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 font-medium">
-                      {studentProfile.reappearPapers.map((paper: any) => {
+                      {(studentProfile?.reappearPapers || []).map((paper: any) => {
                         const isChecked = selectedReappearPapers.includes(paper.paperCode);
                         return (
                           <tr key={paper.paperCode} className={isChecked ? 'bg-amber-50/40' : ''}>

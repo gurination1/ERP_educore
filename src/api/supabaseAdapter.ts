@@ -1707,6 +1707,29 @@ export async function handleSupabaseRequest<T = any>(
           durationMinutes: 15,
           totalMarks: 30,
           passingMarks: 12,
+          instructions: [
+            'Each question carries specified marks. Negative marking applies for incorrect choices.',
+            'Do not switch tabs during examination session.',
+            'Scores are automatically converted into CBCS Internal Assessment.',
+          ],
+          questions: [
+            {
+              id: 'q1',
+              question: 'What is the tightest asymptotic upper bound (Big-O) for the worst-case time complexity of QuickSort?',
+              options: ['O(n log n)', 'O(n²)', 'O(n)', 'O(log n)'],
+              correctAnswer: 1,
+              explanation: 'Worst case partition yields unbalanced subproblems of size 0 and n-1, resulting in O(n²) time complexity.',
+              marks: 5,
+            },
+            {
+              id: 'q2',
+              question: 'Which algorithmic paradigm does Dijkstra’s Single-Source Shortest Path algorithm adhere to?',
+              options: ['Dynamic Programming', 'Divide and Conquer', 'Greedy Method', 'Branch and Bound'],
+              correctAnswer: 2,
+              explanation: 'Dijkstra’s algorithm greedily chooses the unvisited vertex with the minimum tentative distance.',
+              marks: 5,
+            },
+          ],
         },
         {
           id: 'quiz-cs502',
@@ -1716,6 +1739,20 @@ export async function handleSupabaseRequest<T = any>(
           durationMinutes: 10,
           totalMarks: 20,
           passingMarks: 8,
+          instructions: [
+            'CAP Theorem, Consensus protocols (Raft/Paxos), and Docker Containerization principles.',
+            'Timer begins upon clicking Start Quiz Session.',
+          ],
+          questions: [
+            {
+              id: 'qc1',
+              question: 'According to Brewer’s CAP theorem, which property MUST be sacrificed during a network partition (P)?',
+              options: ['Either Consistency (C) or Availability (A)', 'Network Latency', 'Data Durability', 'Security'],
+              correctAnswer: 0,
+              explanation: 'Under network partitions, a distributed system must choose between Availability or Consistency.',
+              marks: 5,
+            },
+          ],
         },
       ];
       return { success: true, count: quizzes.length, quizzes, data: quizzes };
@@ -1769,10 +1806,75 @@ export async function handleSupabaseRequest<T = any>(
     }
 
     if (pathname.includes('/api/tenants/') && pathname.endsWith('/impersonate')) {
+      const parts = pathname.split('/');
+      const tId = parts[3] || 'ten-01';
+
+      let tenant: any = null;
+      try {
+        const { data } = await supabase.from('tenants').select('*').eq('id', tId).single();
+        if (data) tenant = data;
+      } catch {}
+
+      if (!tenant) {
+        const fallbackTenants: Record<string, any> = {
+          'ten-01': {
+            id: 'ten-01',
+            client_id: 'CL_BFGI',
+            short_code: 'BFGI',
+            client_name: 'Baba Farid Group of Institutions (Bathinda)',
+            subdomain: 'bfgi.gurudotcom',
+            entity_type: 'college',
+            db_name: 'db_bfgi',
+            is_functional: true,
+            admin_username: 'admin',
+            admin_email: 'registrar@bfgi.gurudotcom',
+          },
+          'ten-02': {
+            id: 'ten-02',
+            client_id: 'CL_SANAWAR',
+            short_code: 'SANAWAR',
+            client_name: 'The Lawrence School Sanawar (Kasauli Hills)',
+            subdomain: 'sanawar.gurudotcom',
+            entity_type: 'school',
+            db_name: 'db_sanawar',
+            is_functional: true,
+            admin_username: 'admin_sanawar',
+            admin_email: 'bursar@sanawar.gurudotcom',
+          },
+          'ten-03': {
+            id: 'ten-03',
+            client_id: 'CL_GNDEC',
+            short_code: 'GNDEC',
+            client_name: 'Guru Nanak Dev Engineering College (Ludhiana)',
+            subdomain: 'gndec.gurudotcom',
+            entity_type: 'college',
+            db_name: 'db_gndec',
+            is_functional: true,
+            admin_username: 'admin_gndec',
+            admin_email: 'principal@gndec.gurudotcom',
+          },
+        };
+        tenant = fallbackTenants[tId] || fallbackTenants['ten-01'];
+      }
+
+      const impersonatedAdmin = {
+        id: `usr-admin-${tenant.short_code?.toLowerCase() || 'inst'}`,
+        username: tenant.admin_username || 'admin',
+        email: tenant.admin_email || 'admin@educore.edu',
+        role: 'admin',
+        full_name: `Principal / Director (${tenant.short_code || tenant.client_name})`,
+        enterprise_uid: '10126040001',
+        department: tenant.client_name,
+        designation: `Institutional Director (${tenant.short_code || 'Directorate'})`,
+        is_active: true,
+      };
+
       return {
         success: true,
-        token: `delegated_jwt_tenant_${Date.now()}`,
-        message: 'Delegated campus tenant credentials generated.',
+        message: `Apex Super Admin direct impersonation into ${tenant.client_name} authorized.`,
+        token: `delegated_jwt_tenant_${tenant.id}_${Date.now()}`,
+        user: impersonatedAdmin,
+        tenant,
       };
     }
 

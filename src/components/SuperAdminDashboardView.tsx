@@ -193,7 +193,14 @@ export const SuperAdminDashboardView: React.FC<SuperAdminDashboardViewProps> = (
           message: `Direct Impersonation active: Logged into ${tenant.client_name} as Institutional Admin. Switching view...`,
         });
         setTimeout(() => {
-          window.location.href = '/dashboard';
+          if (typeof window !== 'undefined') {
+            if (window.location.hash.includes('#') || window.location.hostname.includes('github.io')) {
+              window.location.hash = '#/dashboard';
+              window.location.reload();
+            } else {
+              window.location.href = '/dashboard';
+            }
+          }
         }, 800);
       } else {
         setFeedback({

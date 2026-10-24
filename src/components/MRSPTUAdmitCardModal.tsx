@@ -234,7 +234,7 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#f3f4f5] text-[11px]">
-                    {card.papers.map((paper: any, idx: number) => (
+                    {(card.papers || []).map((paper: any, idx: number) => (
                       <tr key={idx} className="hover:bg-[#f8f9fa]">
                         <td className="py-2 px-3 font-mono font-bold text-[#00236f]">{paper.paperCode}</td>
                         <td className="py-2 px-3 font-medium text-[#191c1d]">{paper.subjectTitle}</td>
@@ -254,7 +254,7 @@ export const MRSPTUAdmitCardModal: React.FC<MRSPTUAdmitCardModalProps> = ({
             <div className="p-3 bg-[#f8f9fa] rounded-lg border border-[#edeeef] space-y-1 text-[10px] text-[#444651]">
               <span className="font-bold text-[#191c1d] uppercase block">Mandatory University Instructions:</span>
               <ul className="list-disc pl-4 space-y-0.5">
-                {card.instructions.map((inst: string, i: number) => (
+                {(card.instructions || []).map((inst: string, i: number) => (
                   <li key={i}>{inst}</li>
                 ))}
               </ul>

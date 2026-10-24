@@ -129,7 +129,14 @@ export const Header: React.FC<HeaderProps> = ({
         if (res.success && res.token && res.user) {
           setStoredToken(res.token);
           setStoredUser(res.user);
-          window.location.href = '/dashboard';
+          if (typeof window !== 'undefined') {
+            if (window.location.hash.includes('#') || window.location.hostname.includes('github.io')) {
+              window.location.hash = '#/dashboard';
+              window.location.reload();
+            } else {
+              window.location.href = '/dashboard';
+            }
+          }
           return;
         }
       }
